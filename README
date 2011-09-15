@@ -1,0 +1,130 @@
+
+Transforms an operator expression into an expression in terms of integrals and amplitudes.
+
+COMPILATION
+------------
+
+tar -xvf quant2.tgz
+cd quant2
+make
+
+Generates an executable "quant2"
+
+MAKE COMMANDS:
+
+1) make : compiles the program
+2) make clean : removes all object files and executables
+3) make veryclean : removes all object files, executables, *.pdf, *.aux, *.dvi, *.ps, *.log, *~
+4) make equation : generates "equation.pdf" from "input"
+5) make depend : analyze dependencies in src
+
+EXECUTION
+---------
+
+To run the program:
+"quant2 <input-file> [<output-file>]"
+
+If an <output-file> was not given, the output will be written in <input-file>.tex
+
+The output file can be transformed to PDF using latex:
+"pdflatex equation.tex"
+(NOTE: the output filename has to be "input.tex" or should be changed in file equation.tex)
+The equation can of course also be copied to some external TEX file. The definitions can be found 
+in definitions.tex)
+
+COMMAND-LINE PARAMETERS
+
+--help (-h) print this README
+--version (-v) print program version 
+
+INPUT FILE
+----------
+
+The input file has the Latex form.
+The equation has to be surrounded by \begin(equation) (or \beq) and \end(equation) (or \eeq).
+The comments can be done using %.
+
+At this stage the following mathematical operators and latex commands will be recognized:
+(, [, ), ], {, }, +, -, <number>, \frac{<number>}{<number>}, \half, < <bra> |, | <ket> >, \op <operator>, \mu_<integer>,
+\dagger, \dg, \prm <parameter>, \sum_{<excitation>[,<excitation>[,...]]}
+
+Following latex commands will be ignored:
+\left, \right, \lk, \rk, &, \\
+
+All not recognized symbols will be ignored and a warning will be written.
+
+OPERATORS:
+
+1) Parts of Hamiltonian: \op H, \op F, \op W and \op X (1-electron perturbation)
+2) Excitation operators: \op \tau_{<excitation>}, where <excitation> can be, e.g., \mu_1, \nu_3, etc
+3) Cluster operators and intermediates: \op <name of operator>_<excitation class>^<addition to name and/or \dagger>, e.g., 
+                                        \op T_2, \op U_3, \op S_4^{X}, \op Z^{bla}_1
+   <name of operator> must not match name of a part of Hamiltonian (1)!
+Deexcitation operators have to be marked with ^\dagger (or ^\dg), e.g., \op T_2^\dg, \op T_4^{X\dagger}
+
+BRA/KET:
+
+bra and ket can be  
+1) Reference state: 0, \Phi_0 or HF (all have the same meaning)
+2) Excited determinant:  <excitation> (like in excitation operators ), e.g., \mu_1, \nu_3, etc.
+
+PARAMETERS:
+
+1) Parameter with excitation indices:  \prm <name of parameter>_<excitation>^<addition to name>
+    e.g., \prm \Lambda_{\mu_2}
+  <excitation> should match one of <excitation>s in Excitation operators or Excited determinant
+2) Number : \prm <name of parameter>^<addition to name>   , e.g., \prm \omega^X
+
+SUM:
+
+1) Sum over excitations: \sum_{<excitation>[,<excitation>[,...]]} 
+    e.g., \sum_{\mu_2}
+  <excitation> should match one of <excitation>s in Excitation operators or Excited determinant
+  
+CONNECTIONS
+
+Connection (disconnection) of an expression can be shown using "_C" ("_D").
+E.g., (\op T_2^\dg \op W \op T_2 \op T_1)_C means that the whole expression has to be connected.
+(\op T_2^\dg \op W \op T_2 \op T_1)_D means that a part of the equation has to be disconnected.
+The following equality apply:
+(...) = (...)_C + (...)_D
+
+If connection sign is written after ket (|...>_C), the expression inside of bra/ket have to be connected 
+(as in usual Coupled Cluster).
+
+EXAMPLE
+
+Energy expression:
+\beq
+<0|\op W (\op T_2+\frac{1}{2}\op T_1 \op T_1) |0>
+\eeq
+
+CCD amplitude equation:
+\beq
+<\mu_2|(\op F + \op W) (1+\op T_2) |0>_C
+\eeq
+
+MP2 Lagrangian:
+\beq
+<0|\op W \op T_2 |0> + \sum_{\mu_2} \prm \Lambda_{\mu_2} <\mu_2|\op W +\op F \op T_2 |0>_C
+\eeq
+
+OUTPUT FILE
+-----------
+
+Closed-shell expressions in spacial orbitals.
+Occupied indices: ijklmno
+Virtual indices: abcdefgh
+General indices: pqrstuvwxyz
+
+4-index integrals are written in chemical notation (without |): (aibj) => (ai|bj)
+All indices of amplitudes are written as subscript: T_{aibj} - first two indices corresponds to electron 1, etc.
+Amplitudes coming from deexcitation operators have opposite order of occupied and virtual indices, e.g.
+T_{iajb}^{\dg} - again first two indices corresponds to electron 1, etc. 
+
+
+PERMUTATIONS
+
+\Perm(<from>,<to>)
+Indices in the expression has to be permute, the first set of indices is "from", the second is "to", e.g.,
+\Perm(ijk,jki)T_{aibjck} => T_{ajbkci}
