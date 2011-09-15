@@ -12,7 +12,7 @@ using namespace std;
 
 int main(int argc, char **argv) {
   // version of the program
-  string version("1.0b3");
+  string version("1.0");
   // handle input and output
   string inputfile, outputfile;
   if (argc>1) 
@@ -44,11 +44,15 @@ int main(int argc, char **argv) {
       }
       ++i;
     }
-    inputfile=argv[i];
-    if (argc>i+1)
-      outputfile=argv[i+1];
-    else
-      outputfile=inputfile+".tex";
+    if (i<argc) {
+      inputfile=argv[i];
+      if (argc>i+1)
+        outputfile=argv[i+1];
+      else
+        outputfile=inputfile+".tex";
+    } else {
+      error("Please provide an input file!");
+    }
   }
   else
     error("Please provide an input file!");
@@ -88,8 +92,8 @@ int main(int argc, char **argv) {
     Output myfout(fout);
     // set current ouput to fout
     MyOut::pcurout = &myfout;
-    // "save" 12 lines for titel
-    MyOut::pcurout->nlines=12;
+    // "save" 15 lines for titel
+    MyOut::pcurout->nlines=15;
     MyOut::pcurout->beq();
     MyOut::pcurout->buf <<sum_final << endl;
     MyOut::pcurout->eeq();
