@@ -22,7 +22,7 @@ int main(int argc, char **argv) {
     {// handle options
       if (strcmp(argv[i],"-h")==0 || strcmp(argv[i],"--help")==0)
       {
-        cout << "quant2 <input-file> [<output-file>]" << endl;
+        cout << "quantwo <input-file> [<output-file>]" << endl;
         // print README file if exists
         ifstream readme;
         readme.open("README");
@@ -39,7 +39,7 @@ int main(int argc, char **argv) {
       }
       else if (strcmp(argv[i],"-v")==0 || strcmp(argv[i],"--version")==0)
       {
-        cout << "quant2, Version " << version << endl;
+        cout << "Quantwo, Version " << version << endl;
         return 0;
       }
       ++i;

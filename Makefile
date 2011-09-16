@@ -5,7 +5,7 @@ DIR = src
 OBJ0 = main.o finput.o orbital.o matrices.o operators.o kronecker.o term.o globals.o
 OBJ = $(patsubst %,$(DIR)/%,$(OBJ0))
 SRC = $(OBJ:.o=.cpp)
-MAIN = quant2
+MAIN = quantwo
 
 all : $(MAIN)
 
