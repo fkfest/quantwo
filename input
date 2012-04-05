@@ -1,7 +1,4 @@
+CCD amplitude equation:
 \beq
-<0|\op \tau_{\mu_1}^\dg \op U_1 |0>
-% <0|\half \op \tau_{\mu_1}^\dg \op T_2^\dg (\op F \op U_1)_C \op T_2  
-%    +\half  \op T_2^\dg (\op \tau_{\mu_1}^\dg \op F )_C \op U_1\op T_2
-%-\prm \omega \op T_2^\dg \op \tau_{\mu_1}^\dg  \op U_1\op T_2|0>_C
+<\mu_2|\op H (1+\op T_2 + \half \op T_2 \op T_2) |0>_C
 \eeq
-
