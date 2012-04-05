@@ -5,6 +5,10 @@
 #include <sstream>
 #include <iostream>
 #include <stdlib.h>
+#include <algorithm>
+#ifdef TARGET_OS_MAC
+#include <mach-o/dyld.h>	/* _NSGetExecutablePath */
+#endif
 
 /*! 
     Implements utilities (e.g. error function)
@@ -16,6 +20,9 @@ void error(std::string what, std::string where="");
 // log function
 void say(std::string what, std::string where="");
 
+// path of executable
+std::string exepath();
+
 // string to number transformation
 // call: str2num<double>(x,"3.14",std::dec), number will be in x
 template <class T>
@@ -25,6 +32,13 @@ bool str2num(T& t, const std::string& s,std::ios_base& (*f)(std::ios_base&));
 // call: num2str(3.14,std::dec), string will be returned
 template <class T>
 std::string num2str(const T& t,std::ios_base& (*f)(std::ios_base&));
+
+template<typename string_t>
+string_t DirName(string_t source)
+{
+    source.erase(std::find(source.rbegin(), source.rend(), '/').base(), source.end());
+    return source;
+}
 
 // implementation of InSet commands (comparing one value with up to 10 other values)
 template <typename T>

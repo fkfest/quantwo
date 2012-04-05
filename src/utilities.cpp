@@ -11,6 +11,30 @@ inline void say(std::string what, std::string where)
   if (where!="")
     std::cout << "  in " << where << std::endl;
 }
+inline std::string exepath(){
+  std::string path;
+  char buff[1024];
+#ifdef __linux__
+// Linux
+  ssize_t len = ::readlink("/proc/self/exe", buff, sizeof(buff)-1);
+  if (len != -1) {
+    buff[len] = '\0';
+    path = std::string(buff);
+#elif defined TARGET_OS_MAC
+// Mac
+  int  bufsize = sizeof(buff);
+  if (_NSGetExecutablePath(buff, &bufsize) == 0){
+    path = std::string(buff);
+#else
+#error "unknown platform"
+  if (false){
+#endif
+  } else {
+     /* handle error condition */
+     error("Problem by detection of exe-path");
+  }
+  return DirName(path);
+}
 
 template <class T>
 inline

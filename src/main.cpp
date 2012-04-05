@@ -14,7 +14,8 @@ int main(int argc, char **argv) {
   // version of the program
   string version("1.0");
   // handle input and output
-  string inputfile, outputfile;
+  string inputfile, outputfile,
+    exePath = exepath(), outPath;
   if (argc>1) 
   {
     unsigned int i=1;
@@ -25,7 +26,7 @@ int main(int argc, char **argv) {
         cout << "quantwo <input-file> [<output-file>]" << endl;
         // print README file if exists
         ifstream readme;
-        readme.open("README");
+        readme.open((exePath+"README").c_str());
         if (readme.is_open())
         {
           string line;
@@ -53,8 +54,8 @@ int main(int argc, char **argv) {
     } else {
       error("Please provide an input file!");
     }
-  }
-  else
+    outPath = DirName(outputfile);
+  } else
     error("Please provide an input file!");
   // read input
   Finput finput;
