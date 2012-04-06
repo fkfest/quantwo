@@ -16,47 +16,37 @@ int main(int argc, char **argv) {
   // handle input and output
   string inputfile, outputfile,
     exePath = exepath(), outPath;
-  if (argc>1) 
-  {
-    unsigned int i=1;
-    while (argv[i][0]=='-')
-    {// handle options
-      if (strcmp(argv[i],"-h")==0 || strcmp(argv[i],"--help")==0)
-      {
-        cout << "quantwo <input-file> [<output-file>]" << endl;
-        // print README file if exists
-        ifstream readme;
-        readme.open((exePath+"README").c_str());
-        if (readme.is_open())
-        {
-          string line;
-          while (readme.good())
-          {
-            getline (readme,line);
-            cout << line << endl;
-          }
+  unsigned int i=1;
+  while ( i<argc && argv[i][0]=='-') {// handle options
+    if (strcmp(argv[i],"-h")==0 || strcmp(argv[i],"--help")==0) {
+      cout << "quantwo <input-file> [<output-file>]" << endl;
+      // print README file if exists
+      ifstream readme;
+      readme.open((exePath+"README").c_str());
+      if (readme.is_open()) {
+	string line;
+        while (readme.good()) {
+	  getline (readme,line);
+          cout << line << endl;
         }
-        return 0;
       }
-      else if (strcmp(argv[i],"-v")==0 || strcmp(argv[i],"--version")==0)
-      {
-        cout << "Quantwo, Version " << version << endl;
-        return 0;
-      }
-      ++i;
+      return 0;
+    } else if (strcmp(argv[i],"-v")==0 || strcmp(argv[i],"--version")==0) {
+      cout << "Quantwo, Version " << version << endl;
+      return 0;
     }
-    if (i<argc) {
-      inputfile=argv[i];
-      if (argc>i+1)
-        outputfile=argv[i+1];
-      else
-        outputfile=inputfile+".tex";
-    } else {
-      error("Please provide an input file!");
-    }
-    outPath = DirName(outputfile);
-  } else
+    ++i;
+  }
+  if (i<argc) {
+    inputfile=argv[i];
+    if (argc>i+1)
+      outputfile=argv[i+1];
+    else
+      outputfile=inputfile+".tex";
+  } else {
     error("Please provide an input file!");
+  }
+  outPath = DirName(outputfile);
   // read input
   Finput finput;
   ifstream fin;
