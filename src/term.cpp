@@ -117,11 +117,12 @@ std::vector< Product< long int > > Term::connections() const
 
 bool Term::term_is_0() const
 { 
-  if ((_opProd.size()>0 || _kProd.size()>0 || _mat.size()>0) && std::abs(_prefac)>=Input::minfac)
-    return false;
-  for ( std::map<Permut,double>::const_iterator it = _perm.begin(); it != _perm.end(); ++it )
-    if (std::abs(it->second) >= Input::minfac ) return false;
-  return true;
+  bool 
+    is0 = (_opProd.size()==0 && _kProd.size()==0 && _mat.size()==0) || std::abs(_prefac)<Input::minfac,
+    loop = !is0;
+  for ( typename Sum<Permut,double>::const_iterator it = _perm.begin(); loop && it != _perm.end(); ++it )
+    loop = is0 = std::abs(it->second) < Input::minfac;
+  return is0;
 }
 bool Term::term_is_valid()
 {

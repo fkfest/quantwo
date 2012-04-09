@@ -89,8 +89,8 @@ std::ostream & operator << (std::ostream & o, Sum<Object,Field> const & p)
     MyOut::pcurout->lenbuf += o.tellp()-ipos0;
     
     o << i->first ; // lenline should be handled in other routines
-    MyOut::pcurout->breaklongline();
-    if (i!=last) MyOut::pcurout->flushbuf();
+    if ( ! MyOut::pcurout->breaklongline() && i!=last ) 
+      MyOut::pcurout->flushbuf();
   }
   return o;
 }

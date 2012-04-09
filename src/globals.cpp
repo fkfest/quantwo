@@ -31,7 +31,7 @@ void Output::newpageeqn()
   beq();
   nlines=0;
   lenline=0;
-  hbufline=1.0;
+//   hbufline=1.0;
   ++npages;
   flushbuf();
 }

@@ -37,7 +37,7 @@ class Output
   // how many super and subscript indices one needs to fill a position
   static const int wsi=1;
   // height of \sum
-  static const double hsum=1.8;
+  static const double hsum=2;
   // start new page of equations
   void newpageeqn();
   // new line of equations
