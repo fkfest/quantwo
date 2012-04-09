@@ -33,7 +33,7 @@ class Output
   // max length of line
   static const int maxlenline=80;
   // max number of lines on page
-  static const int maxnlines=45;
+  static const int maxnlines=42;
   // how many super and subscript indices one needs to fill a position
   static const int wsi=1;
   // height of \sum
@@ -63,6 +63,8 @@ namespace Input
 {
   // result in spin or space orbitals
   extern bool dospinintegr;
+  // terms with prefactor smaller than this will be neglected
+  extern double minfac;
 }
  
 #endif

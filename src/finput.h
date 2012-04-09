@@ -3,10 +3,12 @@
 #include <string>
 #include <vector>
 #include <iostream>
+#include <fstream>
 #include "utilities.h"
 #include "product.h"
 #include "term.h"
 
+typedef long unsigned int lui;
 /*!
     Lexic elements
 */
@@ -36,6 +38,12 @@ class Lelem {
 
 std::ostream & operator << (std::ostream & o, Lelem const & lel);
 
+//! functions to analyze input line
+namespace IL{
+  std::string key(std::string line, std::string keyword);
+  // skip all characters in str beginning from ipos, which are present in what
+  lui skip(std::string const & str, unsigned long int const & ipos, std::string const & what);
+};
 /*!
     Input analyzer 
 */
@@ -59,6 +67,8 @@ class Finput {
   static const char hms[4]; // hamiltonian parts
   // constructor
   Finput ();
+  // constructor + init input-parameters
+  Finput( std::string paramspath );
   // add string
   Finput & operator += (std::string const & line);
   // get input
@@ -68,13 +78,12 @@ class Finput {
   Sum<Term,double> sumterms() const;
   // analyze input
   bool analyzeit();
-  // analyze bra and ket
   
   private:
+  // initialyse default input-parameters 
+  void InitInpars(std::string paramspath);
   // get positions of next word (begin and end)
   unsigned long int nextwordpos(std::string const & str, unsigned long int & ipos);
-  // skip all characters in str beginning from ipos, which are present in what
-  unsigned long int skip(std::string const & str, unsigned long int const & ipos, std::string const & what);
   // analyze command coming after backslash
   unsigned long int analyzecommand(std::string const & str, unsigned long int ipos);
   // get position of the closing bracket (which corresponds to the bracket on ipos)
@@ -122,6 +131,14 @@ class Finput {
   void add2name(std::string & name, std::string const & nameadd);
   // variables
   std::string _input;
+  // input-parameters
+  typedef std::map< std::string, std::string > TsInpars;
+  typedef std::map< std::string, int > TiInpars;
+  typedef std::map< std::string, double > TfInpars;
+  TsInpars sInpars;
+  TiInpars iInpars;
+  TfInpars fInpars;
+  
   Product<Lelem> _eqn;
   bool _eq;
   Sum<Term, double> _sumterms;

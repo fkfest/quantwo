@@ -116,7 +116,13 @@ std::vector< Product< long int > > Term::connections() const
 { return _connections; }
 
 bool Term::term_is_0() const
-{ return (_opProd.size()==0 && _kProd.size()==0 && _mat.size()==0) || std::abs(_prefac)<Numbers::small; }
+{ 
+  if ((_opProd.size()>0 || _kProd.size()>0 || _mat.size()>0) && std::abs(_prefac)>=Input::minfac)
+    return false;
+  for ( std::map<Permut,double>::const_iterator it = _perm.begin(); it != _perm.end(); ++it )
+    if (std::abs(it->second) >= Input::minfac ) return false;
+  return true;
+}
 bool Term::term_is_valid()
 {
   for (unsigned long int i=0; i<_realsumindx.size(); i++)
@@ -852,7 +858,8 @@ Sum<Term,double> Q2::reduceSum(Sum<Term,double> s)
         sum.erase(k);
         term1+=std::make_pair<Permut,double>(perm,prefac);
         //std::cout<<"term old" << term1 <<std::endl;
-        sum+=term1;
+	if ( !term1.term_is_0() )
+	  sum+=term1;
         added=true;
         break;
       }
@@ -860,8 +867,9 @@ Sum<Term,double> Q2::reduceSum(Sum<Term,double> s)
     if (!added) 
     {
       term+=std::make_pair<Permut,double>(Permut(),prefac);
+      if ( !term.term_is_0() )
+	sum+=term;
       //std::cout<<"term new" << term <<std::endl;
-      sum+=term;
     }
   } 
     //sum+=sum1; 

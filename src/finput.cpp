@@ -34,15 +34,56 @@ Lelem Lelem::braexpanded() const
 bool Lelem::operator==(const Lelem& lel) const
 { return _lex==lel._lex && _name==lel._name; }
 
-
+std::string IL::key(std::string line, std::string keyword)
+{
+  lui ipos = line.find(keyword);
+  if ( ipos != std::string::npos ){
+    ipos += keyword.size();
+    ipos = skip(line,ipos,"= ");
+    
+  }
+}
+lui IL::skip(const std::string& str, const long unsigned int& ipos, const std::string& what)
+{
+  long unsigned int ires=ipos;
+  while (ires<str.size()&& what.find(str[ires])!=std::string::npos )
+    ++ires;
+  return ires;
+}
 
 Finput::Finput() : 
 _eq(false){}
 
+Finput::Finput(std::string paramspath) :
+_eq(false)
+{
+  InitInpars(paramspath);
+}
+
+void Finput::InitInpars(std::string paramspath)
+{
+  std::string finp_file(paramspath+"params.reg");
+  std::ifstream finp;
+  finp.open(finp_file.c_str());
+  if (finp.is_open())
+  {
+    std::string line;
+    while (finp.good())
+    {
+      std::getline (finp,line);
+      std::cout << line << std::endl;
+//       finput+=line;
+    }
+  }
+  else
+    error(finp_file+": Bad input-parameters file!");
+  finp.close();
+}
+
 Finput& Finput::operator+=(const std::string& line)
 {
   unsigned long int ipos=0;
-  ipos=skip(line,ipos," "); // skip space characters
+  ipos=IL::skip(line,ipos," "); // skip space characters
   if (InSet(line.substr(ipos), beqs))
   {// begin equation
     _input="";
@@ -191,7 +232,7 @@ long unsigned int Finput::closbrack(std::string const & str,long unsigned int ip
 unsigned long int Finput::nextwordpos(const std::string& str, long unsigned int& ipos)
 {
   unsigned long int nwpos;
-  ipos=skip(str,ipos," "); // remove spaces
+  ipos=IL::skip(str,ipos," "); // remove spaces
   for (nwpos=ipos ;(separator.find(str[nwpos])==std::string::npos || gluer.find(str[nwpos-1])!=std::string::npos || nwpos==ipos)
                    && nwpos < str.size(); ++nwpos) 
   {
@@ -200,13 +241,6 @@ unsigned long int Finput::nextwordpos(const std::string& str, long unsigned int&
   };
   if (nwpos==ipos) nwpos=1;
   return nwpos-1;
-}
-long unsigned int Finput::skip(const std::string& str, const long unsigned int& ipos, const std::string& what)
-{
-  long unsigned int ires=ipos;
-  while (ires<str.size()&& what.find(str[ires])!=std::string::npos )
-    ++ires;
-  return ires;
 }
 unsigned long int Finput::analyzecommand(const std::string& str,unsigned long int ipos)
 {
@@ -698,7 +732,7 @@ Oper Finput::handle_excitation(const std::string& name, bool dg, Term& term)
   else
   {
     ++ipos;
-    ipos=skip(name,ipos,"{} ");
+    ipos=IL::skip(name,ipos,"{} ");
     ipos1=nextwordpos(name,ipos);
     if(!str2num<short>(excl,name.substr(ipos,ipos1-ipos+1),std::dec))
       error("Excitation class "+name.substr(ipos,ipos1-ipos+1),"Finput::handle_excitation");
@@ -741,7 +775,7 @@ double Finput::handle_factor(const Lelem& lel)
   }
   else
   {
-    ipos=skip(lelnam,ipos,"{} ");
+    ipos=IL::skip(lelnam,ipos,"{} ");
     ipos1=nextwordpos(lelnam,ipos);
     if(!str2num<double>(fac,lelnam.substr(ipos,ipos1-ipos+1),std::dec))
         error("Numerator is not a number "+lelnam.substr(ipos,ipos1-ipos+1),"Finput::handle_factor");
@@ -749,7 +783,7 @@ double Finput::handle_factor(const Lelem& lel)
     if(ipos==std::string::npos)
       error("Something wrong with frac "+lelnam,"Finput::handle_factor");
     ++ipos;
-    ipos=skip(lelnam,ipos,"{} ");
+    ipos=IL::skip(lelnam,ipos,"{} ");
     ipos1=nextwordpos(lelnam,ipos);
     if(!str2num<double>(fac1,lelnam.substr(ipos,ipos1-ipos+1),std::dec))
         error("Denominator is not a number "+lelnam.substr(ipos,ipos1-ipos+1),"Finput::handle_factor");
@@ -786,7 +820,7 @@ Oper Finput::handle_operator(const Lelem& lel, Term& term, bool excopsonly)
   else
   {
     ipos=up+1;
-    ipos=skip(lelnam,ipos,"{} ");
+    ipos=IL::skip(lelnam,ipos,"{} ");
     while((ipos1=nextwordpos(lelnam,ipos))!=0)
     {
       if(InSet(lelnam.substr(ipos,ipos1-ipos+1), dgs))
@@ -801,7 +835,7 @@ Oper Finput::handle_operator(const Lelem& lel, Term& term, bool excopsonly)
   } 
   add2name(name,nameadd); // add nameadd to name (as superscript)
   ipos=down+1;
-  ipos=skip(lelnam,ipos,"{} ");
+  ipos=IL::skip(lelnam,ipos,"{} ");
   ipos1=nextwordpos(lelnam,ipos);
   if (InSet(name.substr(0,4), bexcops))
   { // bare excitation operator
@@ -829,7 +863,7 @@ void Finput::handle_sum(const Lelem& lel, Term& term)
   ipos=down+1;
   while (ipos<lelnam.size())
   {
-    ipos=skip(lelnam,ipos,"{}, ");
+    ipos=IL::skip(lelnam,ipos,"{}, ");
     if (ipos==lelnam.size()) break;
     ipos1=nextwordpos(lelnam,ipos);
     name=lelnam.substr(ipos,ipos1-ipos+1);
@@ -864,7 +898,7 @@ void Finput::handle_parameters(Term& term, bool excopsonly)
       else
       {
         ipos=up+1;
-        ipos=skip(lelnam,ipos,"{} ");
+        ipos=IL::skip(lelnam,ipos,"{} ");
         while((ipos1=nextwordpos(lelnam,ipos))!=0)
         {
           if (lelnam[ipos]!='}')
@@ -881,7 +915,7 @@ void Finput::handle_parameters(Term& term, bool excopsonly)
       else
       {
         ipos=down+1;
-        ipos=skip(lelnam,ipos,"{} ");
+        ipos=IL::skip(lelnam,ipos,"{} ");
         ipos1=nextwordpos(lelnam,ipos);
         excn=lelnam.substr(ipos,ipos1-ipos+1);
         indxexcn=_excops.find(excn);

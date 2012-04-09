@@ -72,3 +72,4 @@ Output MyOut::defout;
 Output * MyOut::pcurout = &MyOut::defout;
 bool Input::dospinintegr=true;
 //bool Input::dospinintegr=false;
+double Input::minfac=1e-10;

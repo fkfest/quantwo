@@ -48,7 +48,7 @@ int main(int argc, char **argv) {
   }
   outPath = DirName(outputfile);
   // read input
-  Finput finput;
+  Finput finput(exePath);
   ifstream fin;
   fin.open(inputfile.c_str());
   if (fin.is_open())
