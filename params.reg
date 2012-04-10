@@ -1,0 +1,7 @@
+set="syntax",type=s,name="beq",value={"\beq","\begin(equation)"}
+set="syntax",type=s,name="eeq",value={"\eeq","\end(equation)"}
+set="syntax",type=s,name="comment",value={"%","\comment"}
+set="syntax",type=s,name="skipop",value={"left","right","lk","rk","\\"}
+set="syntax",type=s,name="ref",value={"0","\Phi_0", "HF"}
+set="syntax",type=s,name="dg",value={"\dg","\dagger"}
+set="syntax",type=s,name="bexcop",value={"\tau","\Tau"}
