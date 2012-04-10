@@ -70,6 +70,7 @@ bool Output::breaklongline()
 
 Output MyOut::defout;
 Output * MyOut::pcurout = &MyOut::defout;
-bool Input::dospinintegr=true;
-//bool Input::dospinintegr=false;
 double Input::minfac=1e-10;
+TsInpars Input::sInpars;
+TiInpars Input::iInpars;
+TfInpars Input::fInpars;

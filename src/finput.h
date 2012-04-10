@@ -4,11 +4,12 @@
 #include <vector>
 #include <iostream>
 #include <fstream>
+#include <assert.h>
 #include "utilities.h"
 #include "product.h"
 #include "term.h"
+#include "globals.h"
 
-typedef long unsigned int lui;
 /*!
     Lexic elements
 */
@@ -40,9 +41,11 @@ std::ostream & operator << (std::ostream & o, Lelem const & lel);
 
 //! functions to analyze input line
 namespace IL{
-  std::string key(std::string line, std::string keyword);
+  std::string key(const std::string& line, const std::string& keyword);
   // skip all characters in str beginning from ipos, which are present in what
-  lui skip(std::string const & str, unsigned long int const & ipos, std::string const & what);
+  lui skip(const std::string& str, unsigned long int const & ipos, const std::string & what);
+  // end of word (may be in " )
+  lui endword(const std::string& line, lui& ipos);
 };
 /*!
     Input analyzer 
@@ -131,13 +134,6 @@ class Finput {
   void add2name(std::string & name, std::string const & nameadd);
   // variables
   std::string _input;
-  // input-parameters
-  typedef std::map< std::string, std::string > TsInpars;
-  typedef std::map< std::string, int > TiInpars;
-  typedef std::map< std::string, double > TfInpars;
-  TsInpars sInpars;
-  TiInpars iInpars;
-  TfInpars fInpars;
   
   Product<Lelem> _eqn;
   bool _eq;

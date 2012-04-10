@@ -34,22 +34,45 @@ Lelem Lelem::braexpanded() const
 bool Lelem::operator==(const Lelem& lel) const
 { return _lex==lel._lex && _name==lel._name; }
 
-std::string IL::key(std::string line, std::string keyword)
+std::string IL::key(const std::string& line, const std::string& keyword)
 {
-  lui ipos = line.find(keyword);
-  if ( ipos != std::string::npos ){
-    ipos += keyword.size();
-    ipos = skip(line,ipos,"= ");
-    
+  lui ipos; 
+  while (true) {
+    ipos = line.find(keyword);
+    if ( ipos != std::string::npos ){
+      ipos += keyword.size();
+      ipos = skip(line,ipos," ");
+      if ( line[ipos] == '=' )
+	break;
+    } else
+      error(keyword+" not found");
   }
+  ++ipos;
+  lui ipend = endword(line,ipos);
+  return line.substr(ipos,ipend-ipos);
 }
-lui IL::skip(const std::string& str, const long unsigned int& ipos, const std::string& what)
+lui IL::skip(const std::string& str, const lui& ipos, const std::string& what)
 {
-  long unsigned int ires=ipos;
+  lui ires=ipos;
   while (ires<str.size()&& what.find(str[ires])!=std::string::npos )
     ++ires;
   return ires;
 }
+lui IL::endword(const std::string& line, lui& ipos)
+{
+  assert(ipos < line.size());
+  ipos = skip(line,ipos," ");
+  char end = ',';
+  if ( line[ipos] == '"' ){
+    end = '"'; ++ipos;
+  }else if ( line[ipos] == '{' ){
+    end = '}'; ++ipos;
+  }
+  lui ipend;
+  for ( ipend = ipos+1; ipend < line.size() && line[ipend] != end; ++ipend ){}
+  return ipend;
+}
+
 
 Finput::Finput() : 
 _eq(false){}
@@ -65,14 +88,34 @@ void Finput::InitInpars(std::string paramspath)
   std::string finp_file(paramspath+"params.reg");
   std::ifstream finp;
   finp.open(finp_file.c_str());
-  if (finp.is_open())
-  {
-    std::string line;
-    while (finp.good())
-    {
+  if (finp.is_open()) {
+    std::string 
+      line, type, set, name;
+    while (finp.good()) {
       std::getline (finp,line);
-      std::cout << line << std::endl;
+      if ( !line.empty()){
+	std::cout << line << std::endl;
+	type = IL::key(line,"type");
+	set = IL::key(line,"set");
+	name = IL::key(line,"name");
+	
+	if ( type.size() == 0 )
+	  error("no type is given");
+	else if ( type[0] == 's' ){
+	  Input::sInpars[name] = IL::key(line,"value");
+	} else if ( type[0] == 'i' ){
+	  int x;
+	  str2num<int>(x,IL::key(line,"value"),std::dec);
+	  Input::iInpars[name] = x;
+	} else if ( type[0] == 'f' ){
+	  double x; 
+	  str2num<double>(x,IL::key(line,"value"),std::dec); 
+	  Input::fInpars[name] = x;
+	} else if ( type[0] == 'a' ){
+	} else
+	  error("unknown type in params.reg");
 //       finput+=line;
+      }
     }
   }
   else
@@ -203,9 +246,9 @@ bool Finput::analyzeit()
   }
   return true;
 }
-long unsigned int Finput::closbrack(std::string const & str,long unsigned int ipos)
+lui Finput::closbrack(std::string const & str, lui ipos)
 {
-  unsigned long int i=brackets.find(str[ipos]),ipos1=ipos;
+  lui i=brackets.find(str[ipos]),ipos1=ipos;
   if (i==std::string::npos) 
     error(str[ipos]+"is not a bracket!","Finput::closbrack"); 
   char lk(brackets[i]), rk(brackets[i+1]); // left and right brackets

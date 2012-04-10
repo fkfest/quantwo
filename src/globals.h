@@ -3,6 +3,9 @@
 
 #include <iostream>
 #include <sstream>
+#include <map>
+
+typedef long unsigned int lui;
 
 namespace Numbers
 {
@@ -58,13 +61,35 @@ namespace MyOut
   extern Output defout;
   extern Output * pcurout;
 }
+  typedef std::map< std::string, std::string > TsInpars;
+  typedef std::map< std::string, int > TiInpars;
+  typedef std::map< std::string, double > TfInpars;
 // global variables and functions from input
 namespace Input
 {
-  // result in spin or space orbitals
-  extern bool dospinintegr;
   // terms with prefactor smaller than this will be neglected
   extern double minfac;
+  // input-parameters
+  extern TsInpars sInpars;
+  extern TiInpars iInpars;
+  extern TfInpars fInpars;
 }
- 
+
+// class Inpars
+// {
+// public:
+//   static Inpars * getInpars();
+//   static void setInparsFileName(std::string filename){ m_filename = filename; };
+// private:
+//   Inpars();
+//   static std::string m_filename;
+//   static Inpars * m_configInstance;
+//   // input-parameters
+//   typedef std::map< std::string, std::string > TsInpars;
+//   typedef std::map< std::string, int > TiInpars;
+//   typedef std::map< std::string, double > TfInpars;
+//   TsInpars sInpars;
+//   TiInpars iInpars;
+//   TfInpars fInpars;
+// };
 #endif

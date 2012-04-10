@@ -835,7 +835,7 @@ Sum<Term,double> Q2::reduceSum(Sum<Term,double> s)
     if (!term.properconnect())
       continue;
     // expand antisymmetrized integrals and do spin integration
-    sum=term.expand_antisym(Input::dospinintegr);
+    sum=term.expand_antisym(Input::iInpars["spinintegr"]);
 //    sum=term.expand_antisym(false);
     sum*=i->second;
     sum1+=sum;
