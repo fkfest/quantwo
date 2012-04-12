@@ -99,7 +99,7 @@ Energy expression:
 <0|\op W (\op T_2+\frac{1}{2}\op T_1 \op T_1) |0>
 \eeq
 
-CCD amplitude equation:
+LCCD amplitude equation:
 \beq
 <\mu_2|(\op F + \op W) (1+\op T_2) |0>_C
 \eeq

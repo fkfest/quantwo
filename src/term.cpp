@@ -120,7 +120,7 @@ bool Term::term_is_0() const
   bool 
     is0 = (_opProd.size()==0 && _kProd.size()==0 && _mat.size()==0) || std::abs(_prefac)<Input::minfac,
     loop = !is0;
-  for ( typename Sum<Permut,double>::const_iterator it = _perm.begin(); loop && it != _perm.end(); ++it )
+  for ( Sum<Permut,double>::const_iterator it = _perm.begin(); loop && it != _perm.end(); ++it )
     loop = is0 = std::abs(it->second) < Input::minfac;
   return is0;
 }

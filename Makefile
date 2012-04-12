@@ -1,11 +1,16 @@
 CC = g++
 CFLAGS = -c -Wall -O3
 INCLUDES=
+# program name
+MAIN = quantwo
+# base directory
+BASE=$(shell dirname $$(readlink -f Makefile))
+# files to be linked to working-directory
+FILIN=definitions.tex equation.tex
 DIR = src
 OBJ0 = main.o finput.o orbital.o matrices.o operators.o kronecker.o term.o globals.o
 OBJ = $(patsubst %,$(DIR)/%,$(OBJ0))
 SRC = $(OBJ:.o=.cpp)
-MAIN = quantwo
 
 all : $(MAIN)
 
@@ -19,6 +24,18 @@ veryclean :
 equation :
 	 $(MAIN) input
 	 pdflatex equation.tex
+
+base : $(FILIN)
+ifneq ($(BASE),$(PWD))
+	 @rm -f $(MAIN)
+	 @ln -s $(BASE)/$(MAIN) .
+endif
+
+$(FILIN) :
+ifneq ($(BASE),$(PWD))
+	 @rm -f $@
+	 @ln -s $(BASE)/$@ .
+endif
 
 depend: $(SRC)
 	 makedepend -- $(INCLUDES) $(CFLAGS) -Y -- $^
