@@ -6,6 +6,7 @@ Output::Output()
   hbufline=1.0;
   inequation=false;
   pout = &std::cout;
+  small = std::pow(10,-pout->precision());
 }
 
 Output::Output(std::ostream& o)
@@ -14,6 +15,7 @@ Output::Output(std::ostream& o)
   hbufline=1.0;
   inequation=false;
   pout=&o;
+  small = std::pow(10,-pout->precision());
 }
 void Output::flushbuf()
 {

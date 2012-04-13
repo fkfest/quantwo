@@ -271,13 +271,11 @@ bool Permut::operator==(const Permut& p) const
 
 std::ostream & operator << (std::ostream & o, Permut const & p)
 {
-  if (p.orbsfrom().size()>0)
-  {
+  if (p.orbsfrom().size()>0) {
     o << "\\Perm{" << p.orbsfrom() << "," << p.orbsto() << "}";
     MyOut::pcurout->lenbuf += 3+(p.orbsfrom().size()+p.orbsto().size())/MyOut::pcurout->wsi;
     //o << "[" << MyOut::pcurout->lenbuf << "]";
-  }
-  else
+  } else 
     o << "1";
   return o;
 }

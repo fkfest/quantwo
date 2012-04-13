@@ -4,6 +4,7 @@
 #include <iostream>
 #include <sstream>
 #include <map>
+#include <cmath>
 
 typedef long unsigned int lui;
 
@@ -17,6 +18,8 @@ class Output
   public:
   Output();
   Output(std::ostream & o);
+  // 1+small == 1 in output
+  double small;
   // length of current line
   int lenline;
   // length of buffer
