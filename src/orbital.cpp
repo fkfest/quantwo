@@ -70,6 +70,25 @@ bool Orbital::operator<(const Orbital& orb) const
   if (_name>orb._name) return false;
   return _spin<orb._spin;
 }
+std::string Orbital::letname() const
+{
+  long int iend;
+  for ( iend = this->_name.size(); iend > 0 && isdigit(this->_name[iend-1]); --iend ){}
+  return _name.substr(0,iend);
+}
+
+int Orbital::comp_letname(const Orbital& orb) const
+{
+  //remove numbers from end
+  std::string 
+    lname = this->letname(), 
+    lnameo = orb.letname();
+  if ( lname.size() < lnameo.size() ) return -1;
+  else if ( lname.size() > lnameo.size() ) return 1;
+  else if ( lname < lnameo ) return -1;
+  else if ( lname > lnameo ) return 1;
+  return 0;
+}
 
 std::ostream & operator << (std::ostream & o, Orbital const & orb)
 {

@@ -809,8 +809,12 @@ Orbital Term::getfreeorbname(void* Obj, Orbital::Type type)
   // call member
   return myself->freeorbname(type);
 }
-void Term::set_lastorb(Orbital orb)
-{ _lastorb[orb.type()]=orb; }
+void Term::set_lastorb(Orbital orb, bool onlylarger)
+{ 
+  if ( onlylarger && orb.comp_letname(_lastorb[orb.type()]) <= 0 ) return; // do nothing
+  _lastorb[orb.type()]=orb; 
+  
+}
 
 
 Sum<Term,double> Q2::reduceSum(Sum<Term,double> s)
@@ -843,40 +847,46 @@ Sum<Term,double> Q2::reduceSum(Sum<Term,double> s)
   //std::cout << "SUM:" << sum1 << std::endl;
   sum=Sum<Term,double>();
   // sum up all equal terms
-  for ( Sum<Term,double>::const_iterator j=sum1.begin();j!=sum1.end(); ++j)
-  {
+  for ( Sum<Term,double>::const_iterator j=sum1.begin();j!=sum1.end(); ++j) {
     term=j->first;
     prefac=j->second*term.prefac();
     // remove prefactors in terms
     term.reset_prefac();
     added=false;
-    for ( Sum<Term,double>::iterator k=sum.begin();k!=sum.end(); ++k)
-    {
+    for ( Sum<Term,double>::iterator k=sum.begin();k!=sum.end(); ++k) {
       Permut perm;
       term1=k->first;
-      if (term.equal(term1,perm)) 
-      {
+      if (term.equal(term1,perm)) {
         sum.erase(k);
         term1+=std::make_pair<Permut,double>(perm,prefac);
         //std::cout<<"term old" << term1 <<std::endl;
-	if ( !term1.term_is_0() )
-	  sum+=term1;
+        if ( !term1.term_is_0() ) sum+=term1;
         added=true;
         break;
       }
     }
-    if (!added) 
-    {
+    if (!added) {
       term+=std::make_pair<Permut,double>(Permut(),prefac);
-      if ( !term.term_is_0() )
-	sum+=term;
+      if ( !term.term_is_0() ) sum+=term;
       //std::cout<<"term new" << term <<std::endl;
     }
   } 
-    //sum+=sum1; 
-    //sum+=std::make_pair<Term,double>(term,i->second);
+  // now remove everything with small prefactor
+  sum1 = Sum<Term,double>();
+  for ( Sum<Term,double>::const_iterator j=sum.begin(); j!=sum.end(); ++j) {
+    if ( std::abs(j->second) < Input::minfac ) continue;
+    term1 = term = j->first;
+    if ( std::abs(term.prefac()) < Input::minfac ) continue;
+    term1.reset_prefac();
+    const Sum<Permut,double>& perms = term.perm();
+    for ( Sum<Permut,double>::const_iterator it = perms.begin(); it != perms.end(); ++it ){
+      if ( std::abs(it->second) < Input::minfac ) continue;
+      term1 += *it; //std::make_pair<Permut,double>(it->first,it->second);
+    }
+    sum1 += term1;
+  }
   
-  return sum;
+  return sum1;
 }
 Sum< Term, double > Q2::normalOrderPH(Sum< Term, double > s)
 {

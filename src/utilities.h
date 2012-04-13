@@ -81,6 +81,7 @@ bool InSet(const ValueType& val, const ValueType (&arr)[arraySize])
   return false;
   /*return std::find(&arr[0], &arr[arraySize], val)!=&arr[arraySize]; }*/
 }
+
 #include "utilities.cpp"
 
 #endif

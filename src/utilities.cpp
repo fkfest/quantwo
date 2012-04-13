@@ -1,3 +1,4 @@
+#include "utilities.h"
 inline void error(std::string what, std::string where)
 {
   std::cerr << "  ERROR: " << what << std::endl;
@@ -54,4 +55,5 @@ std::string num2str(const T& t,
   oss << f << t;
   return oss.str();
 }
+
 

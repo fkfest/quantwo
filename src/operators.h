@@ -11,6 +11,7 @@
 #include "orbital.h"
 #include "matrices.h"
 #include "product.h"
+#include "assert.h"
 
 
 /*!
@@ -59,6 +60,8 @@ class Oper {
   Oper (Ops::Type type, short exccl, void * term, Orbital (*freeorb)(void * , Orbital::Type), std::string name="T");
   // constructor from excitation class, Type and orbitals
   Oper (Ops::Type type, short exccl,Orbital occ, Orbital virt ,std::string name="T");
+  // constructor from excitation class, Type and product of orbitals (size == exccl)
+  Oper (Ops::Type type, short exccl,const Product<Orbital>& occs, const Product<Orbital>& virts ,std::string name="T");
   //return matrix (integral or amplitude)
   Matrices mat() const;
   //return operator
@@ -71,7 +74,11 @@ class Oper {
   Product<Orbital> realsumindx() const;
 
   private:
+  // for hamiltonian-parts
+  void create_Oper(const std::string& name);
+  // for excitation operators
   void create_Oper(const short int& exccl, const Orbital& occ, const Orbital& virt, const std::string& name);
+  void create_Oper(const Product<Orbital>& occs, const Product<Orbital>& virts, const std::string& name);
   Ops::Type _type;
   Product<SQOp> _SQprod;
   Matrices _mat;

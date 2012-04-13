@@ -4,6 +4,7 @@
 #include <string>
 #include <iostream>
 #include "utilities.h"
+#include "globals.h"
 
 /*
     Orbitals (occ, virt, general) with spin (nospin, alpha, beta, general) 
@@ -40,6 +41,11 @@ class Orbital {
   bool operator != (Orbital const & orb) const;
   // check ordering relation (for sorting)
   bool operator < (Orbital const & orb) const;
+  // return letter-name of orbital
+  std::string letname() const;
+  // check main (i.e. letter) names (e.g. i<j; ii>j, i23==i42 )
+  // -1: <; 0: ==; 1: >
+  int comp_letname( const Orbital& orb ) const;
   
   private:
   Type _type;

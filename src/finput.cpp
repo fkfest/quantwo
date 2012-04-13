@@ -1,8 +1,8 @@
 #include "finput.h"
 
-const std::string Finput::separator=" \\{}()[]+-*/&<>|";
-const std::string Finput::gluer="^_";
-const std::string Finput::brackets="(){}[]<>";
+const std::string IL::separator=" \\{}()[]+-*/&<>|";
+const std::string IL::gluer="^_";
+const std::string IL::brackets="(){}[]<>";
 // define possible operator names (the order is very important sometimes!)
 const std::string Finput::commands[5]={ "op", "prm", "sum", "frac", "half"};
 const std::string Finput::beqs[2]={"\\beq", "\\begin(equation)"};
@@ -10,6 +10,7 @@ const std::string Finput::eeqs[2]={"\\eeq", "\\end(equation)"};
 const std::string Finput::comments[2]={"%", "\\comment"};
 const std::string Finput::skipops[5]={"left","right","lk","rk","\\"};
 const std::string Finput::refs[3]={"0","\\Phi_0", "HF"};
+const std::string Finput::csfs[2]={"\\Phi", "\\phi"};
 const std::string Finput::dgs[2]={"\\dg","\\dagger"};
 const std::string Finput::bexcops[2]={"\\tau","\\Tau"};
 const char Finput::hms[4]={'H', 'F', 'W', 'X'}; 
@@ -71,6 +72,67 @@ lui IL::endword(const std::string& line, lui& ipos)
   lui ipend;
   for ( ipend = ipos+1; ipend < line.size() && line[ipend] != end; ++ipend ){}
   return ipend;
+}
+lui IL::closbrack(const std::string& str, lui ipos)
+{
+  lui i=brackets.find(str[ipos]),ipos1=ipos;
+  if (i==std::string::npos) 
+    error(str[ipos]+"is not a bracket!","IL::closbrack"); 
+  char lk(brackets[i]), rk(brackets[i+1]); // left and right brackets
+  int nk=1;
+  for ( i=ipos+1;i<str.size();++i)
+  {
+    if (str[i]==lk) 
+      ++nk; // count number of "("
+    else if (str[i]==rk) 
+    {
+      --nk; // count number of ")"
+      if (nk==0) 
+      {
+        ipos1=i;
+        break;
+      }
+    }
+  }
+  if ( nk != 0 ) 
+    error("Number of brackets is incosistent: "+nk,"IL::closbrack"); 
+  return ipos1;
+}
+
+lui IL::nextwordpos(const std::string& str, lui& ipos, bool glue, bool greedy)
+{
+  lui nwpos;
+  ipos=IL::skip(str,ipos," "); // remove spaces
+  // e.g. from ab_{cd}ef
+  if ( greedy && glue ){
+    // ab_{cd}
+    for (nwpos=ipos ;nwpos < str.size() && (separator.find(str[nwpos])==std::string::npos || 
+                    nwpos==ipos || gluer.find(str[nwpos-1])!=std::string::npos); ++nwpos) 
+      if (char(str[nwpos])=='{') nwpos=closbrack(str,nwpos);
+  } else if ( greedy && !glue ) {
+    // ab
+    for (nwpos=ipos ;nwpos < str.size() && ((separator.find(str[nwpos])==std::string::npos && 
+                    gluer.find(str[nwpos])==std::string::npos) || nwpos==ipos); ++nwpos) 
+      if (char(str[nwpos])=='{') nwpos=closbrack(str,nwpos);
+  } else if ( !greedy && glue ){
+    // a (and b_{cd})
+    for (nwpos=ipos ;nwpos < str.size() && (gluer.find(str[nwpos])!=std::string::npos ||
+                   nwpos==ipos || gluer.find(str[nwpos-1])!=std::string::npos); ++nwpos) 
+      if (char(str[nwpos])=='{') nwpos=closbrack(str,nwpos);
+  } else {
+    // a (and b and {cd} )
+    for (nwpos=ipos ;nwpos < str.size() && nwpos==ipos; ++nwpos) //stupid construction... :)
+      if (char(str[nwpos])=='{') nwpos=closbrack(str,nwpos);
+  }
+  return nwpos;
+}
+inline std::string IL::plainname(std::string name)
+{
+  std::string pname;
+  for ( uint i = 0; i < name.size(); ++i )
+    if ( !InSet(name[i],"_^{}") )
+      pname += name[i];
+  return pname;
 }
 
 
@@ -172,8 +234,9 @@ bool Finput::analyzeit()
         error("Can not find bra","Finput::analyzeit");
       else
       {
-        ipos1=nextwordpos(_input,++i);
-        _eqn*=Lelem(_input.substr(i,ipos1-i+1),Lelem::Bra);
+        ++i;
+        ipos1=IL::nextwordpos(_input,i);
+        _eqn*=Lelem(_input.substr(i,ipos1-i),Lelem::Bra);
       }
       i=ipos;
     }
@@ -184,12 +247,13 @@ bool Finput::analyzeit()
         error("Can not find ket","Finput::analyzeit");
       else
       {
-        ipos1=nextwordpos(_input,++i);
+        ++i;
+        ipos1=IL::nextwordpos(_input,i);
         //connections
         if (_input.substr(ipos+1,2)=="_C") conn=Lelem::Connect;
         else if (_input.substr(ipos+1,2)=="_D") conn=Lelem::Disconnect;
         else conn=Lelem::Normal;
-        _eqn*=Lelem(_input.substr(i,ipos1-i+1),Lelem::Ket,conn);
+        _eqn*=Lelem(_input.substr(i,ipos1-i),Lelem::Ket,conn);
         if (InSet(conn, Lelem::Connect,Lelem::Disconnect))
           ipos+=2;
       }
@@ -197,9 +261,10 @@ bool Finput::analyzeit()
     }
     else if (ch=='\\')
     { // command
-      ipos=nextwordpos(_input,++i);
-      ipos=analyzecommand(_input.substr(i,ipos-i+1),ipos+1);
-      i=ipos;
+      ++i;
+      ipos=IL::nextwordpos(_input,i);
+      ipos=analyzecommand(_input.substr(i,ipos-i),ipos);
+      i=ipos-1;
     }
     else if (ch=='+')
     { // plus
@@ -233,9 +298,9 @@ bool Finput::analyzeit()
     }    
     else if (isdigit(ch))
     { // number
-      ipos=nextwordpos(_input,i);
-      _eqn*=Lelem(_input.substr(i,ipos-i+1),Lelem::Num);
-      i=ipos;
+      ipos=IL::nextwordpos(_input,i);
+      _eqn*=Lelem(_input.substr(i,ipos-i),Lelem::Num);
+      i=ipos-1;
     }  
     else if (InSet(ch, '&',' '))
       ; // do nothing
@@ -246,79 +311,36 @@ bool Finput::analyzeit()
   }
   return true;
 }
-lui Finput::closbrack(std::string const & str, lui ipos)
-{
-  lui i=brackets.find(str[ipos]),ipos1=ipos;
-  if (i==std::string::npos) 
-    error(str[ipos]+"is not a bracket!","Finput::closbrack"); 
-  char lk(brackets[i]), rk(brackets[i+1]); // left and right brackets
-  int nk=1;
-  for ( i=ipos+1;i<str.size();++i)
-  {
-    if (str[i]==lk) 
-      ++nk; // count number of "("
-    else if (str[i]==rk) 
-    {
-      --nk; // count number of ")"
-      if (nk==0) 
-      {
-        ipos1=i;
-        break;
-      }
-    }
-  }
-  if ( nk != 0 ) 
-    error("Number of brackets is incosistent: "+nk,"Finput::closbrack"); 
-  return ipos1;
-}
-
-unsigned long int Finput::nextwordpos(const std::string& str, long unsigned int& ipos)
-{
-  unsigned long int nwpos;
-  ipos=IL::skip(str,ipos," "); // remove spaces
-  for (nwpos=ipos ;(separator.find(str[nwpos])==std::string::npos || gluer.find(str[nwpos-1])!=std::string::npos || nwpos==ipos)
-                   && nwpos < str.size(); ++nwpos) 
-  {
-    if (char(str[nwpos])=='{') 
-      nwpos=closbrack(str,nwpos);
-  };
-  if (nwpos==ipos) nwpos=1;
-  return nwpos-1;
-}
 unsigned long int Finput::analyzecommand(const std::string& str,unsigned long int ipos)
 {
   unsigned long int ipos1=ipos, ipos2, ipos3;
   if (str==commands[0])//"op")
   { // operators
-    ipos1=nextwordpos(_input,ipos);
-    _eqn*=Lelem(_input.substr(ipos,ipos1-ipos+1),Lelem::Oper);
+    ipos1=IL::nextwordpos(_input,ipos);
+    _eqn*=Lelem(_input.substr(ipos,ipos1-ipos),Lelem::Oper);
   }
   else if (str==commands[1])//"prm")
   { // parameters
-    ipos1=nextwordpos(_input,ipos);
-    _eqn*=Lelem(_input.substr(ipos,ipos1-ipos+1),Lelem::Par);
+    ipos1=IL::nextwordpos(_input,ipos);
+    _eqn*=Lelem(_input.substr(ipos,ipos1-ipos),Lelem::Par);
   }
   else if (str.substr(0,3)==commands[2])//"sum")
   { // sum
     _eqn*=Lelem(str.substr(3),Lelem::Sum);
-    --ipos1;
   }
   else if (str.substr(0,4)==commands[3])//"frac")
   { // fraction
-    ipos1=nextwordpos(_input,ipos);
-    ipos2=ipos1+1;
-    ipos3=nextwordpos(_input,ipos2);
-    _eqn*=Lelem(_input.substr(ipos,ipos1-ipos+1)+"/"+_input.substr(ipos2,ipos3-ipos2+1),Lelem::Frac);
+    ipos1=IL::nextwordpos(_input,ipos);
+    ipos2=ipos1;
+    ipos3=IL::nextwordpos(_input,ipos2);
+    _eqn*=Lelem(_input.substr(ipos,ipos1-ipos)+"/"+_input.substr(ipos2,ipos3-ipos2),Lelem::Frac);
     ipos1=ipos3;
   }
   else if (str==commands[4])//"half")
   { // a half
     _eqn*=Lelem("0.5",Lelem::Num);
-    --ipos1;
   }
-  else if (InSet(str, skipops))//,"left","right","lk","rk","\\"))
-    --ipos1; // nothing to do
-  else
+  else if (!InSet(str, skipops))//,"left","right","lk","rk","\\"))
     error("Unknown command in equation! "+str,"Finput::analyzecommand");
   return ipos1;
 }
@@ -756,9 +778,73 @@ Oper Finput::handle_braket(const Lelem& lel, Term& term)
   std::string lelnam=lel.name();
   if (InSet(lelnam, refs))
     return Oper(); // Reference, blank operator
-  else 
+    
+  lui 
+    ibeg = 0,
+    iend = IL::nextwordpos(lelnam,ibeg,false);
+  if (InSet(lelnam.substr(ibeg,iend-ibeg), csfs)){
+    return handle_explexcitation(lelnam.substr(iend),(lel.lex()==Lelem::Bra),term);
+  } else
     return handle_excitation(lelnam,(lel.lex()==Lelem::Bra),term);
 }
+Oper Finput::handle_explexcitation(const std::string& name, bool dg, Term& term)
+{
+  std::cout << name << std::endl;
+  lui ipos, ipos1;
+  long int ipos2;
+  short excl;
+  Product<Orbital> occs, virts;
+  if ( name[0] != '_' && name[0] != '^' )
+    error("Doesn't start with _ or ^ :"+name,"Finput::handle_explexcitation");
+  ipos = 0;
+  ipos = IL::skip(name,ipos,"{}_^ ");
+  while ( (ipos1 = IL::nextwordpos(name,ipos,true,false)) != ipos ){//non greedy
+    std::cout << "orb " << name.substr(ipos,ipos1-ipos) << " " << IL::plainname(name.substr(ipos,ipos1-ipos)) << std::endl;
+    Orbital orb(IL::plainname(name.substr(ipos,ipos1-ipos)),Orbital::GenS);
+    if ( orb.type() == Orbital::Occ )
+      occs *= orb;
+    else if ( orb.type() == Orbital::Virt )
+      virts *= orb;
+    else
+      error("general orbitals in excitation operators are not supported! "+name);
+    ipos = IL::skip(name,ipos1,"{}_^ ");
+  }
+  if ( occs.size() != virts.size() )
+    error("can handle particle-number conserving operators only! "+name);
+  excl = occs.size();
+  std::cout << "occ " << occs << " virt " << virts << std::endl;
+  // set lastorb (if smaller)
+  for ( uint i = 0; i < occs.size(); ++i )
+    term.set_lastorb(occs[i],true);
+  for ( uint i = 0; i < virts.size(); ++i )
+    term.set_lastorb(virts[i],true);
+  if ( _occexcops.size() > 0 ){
+    //make sure that we haven't use these orbital names already
+    for ( uint i = 0; i < occs.size(); ++i ){
+      std::cout << "_occexcops " << _occexcops << std::endl;
+      std::cout << "name " << occs[i].letname() << std::endl;
+      ipos2=_occexcops.find( Orbital(occs[i].letname(),Orbital::GenS));
+      if (ipos2>=0){  // is there, change it
+        std::cout << "old " << _occexcops[ipos2] << std::endl;
+        _occexcops[ipos2] = term.freeorbname(Orbital::Occ);
+        std::cout << "new " << _occexcops[ipos2] << std::endl;
+      }
+    }
+  }
+  if ( _virexcops.size() > 0 ){
+    for ( uint i = 0; i < virts.size(); ++i ){
+      ipos2=_virexcops.find(Orbital(virts[i].letname(),Orbital::GenS));
+      if (ipos2>=0)  // is there, change it
+        _virexcops[ipos2] = term.freeorbname(Orbital::Virt);
+    }
+  }
+  // create \tau_{excl}
+  if (dg)
+    return Oper(Ops::Deexc0,excl,occs,virts);  
+  else
+    return Oper(Ops::Exc0,excl,occs,virts);
+}
+
 Oper Finput::handle_excitation(const std::string& name, bool dg, Term& term)
 {
   unsigned long int ipos,ipos1;
@@ -776,14 +862,13 @@ Oper Finput::handle_excitation(const std::string& name, bool dg, Term& term)
   {
     ++ipos;
     ipos=IL::skip(name,ipos,"{} ");
-    ipos1=nextwordpos(name,ipos);
-    if(!str2num<short>(excl,name.substr(ipos,ipos1-ipos+1),std::dec))
-      error("Excitation class "+name.substr(ipos,ipos1-ipos+1),"Finput::handle_excitation");
+    ipos1=IL::nextwordpos(name,ipos);
+    if(!str2num<short>(excl,name.substr(ipos,ipos1-ipos),std::dec))
+      error("Excitation class "+name.substr(ipos,ipos1-ipos),"Finput::handle_excitation");
   }
   ipos2=_excops.find(name);
   Orbital occ,virt;
-  if (ipos2<0) 
-  {// first run (dont distinguish terms)
+  if (ipos2<0) {// first run (don't distinguish terms)
     _excops*=name;
     occ=term.freeorbname(Orbital::Occ);
     virt=term.freeorbname(Orbital::Virt);
@@ -792,9 +877,7 @@ Oper Finput::handle_excitation(const std::string& name, bool dg, Term& term)
     _exccls*=excl;
     _spinsymexcs*=Matrices::Singlet; //TODO: implement Triplet!
     _posexcopsterm*=-1; // initialize
-  }
-  else
-  {// may be second run...
+  } else {// may be second run...
     occ=_occexcops[ipos2];
     virt=_virexcops[ipos2];
     _posexcopsterm[ipos2]=term.mat().size(); //set position of this operator in the term
@@ -819,17 +902,17 @@ double Finput::handle_factor(const Lelem& lel)
   else
   {
     ipos=IL::skip(lelnam,ipos,"{} ");
-    ipos1=nextwordpos(lelnam,ipos);
-    if(!str2num<double>(fac,lelnam.substr(ipos,ipos1-ipos+1),std::dec))
-        error("Numerator is not a number "+lelnam.substr(ipos,ipos1-ipos+1),"Finput::handle_factor");
+    ipos1=IL::nextwordpos(lelnam,ipos);
+    if(!str2num<double>(fac,lelnam.substr(ipos,ipos1-ipos),std::dec))
+        error("Numerator is not a number "+lelnam.substr(ipos,ipos1-ipos),"Finput::handle_factor");
     ipos=lelnam.find("/");
     if(ipos==std::string::npos)
       error("Something wrong with frac "+lelnam,"Finput::handle_factor");
     ++ipos;
     ipos=IL::skip(lelnam,ipos,"{} ");
-    ipos1=nextwordpos(lelnam,ipos);
-    if(!str2num<double>(fac1,lelnam.substr(ipos,ipos1-ipos+1),std::dec))
-        error("Denominator is not a number "+lelnam.substr(ipos,ipos1-ipos+1),"Finput::handle_factor");
+    ipos1=IL::nextwordpos(lelnam,ipos);
+    if(!str2num<double>(fac1,lelnam.substr(ipos,ipos1-ipos),std::dec))
+        error("Denominator is not a number "+lelnam.substr(ipos,ipos1-ipos),"Finput::handle_factor");
     fac=fac/fac1;
   }
   return fac;
@@ -864,29 +947,29 @@ Oper Finput::handle_operator(const Lelem& lel, Term& term, bool excopsonly)
   {
     ipos=up+1;
     ipos=IL::skip(lelnam,ipos,"{} ");
-    while((ipos1=nextwordpos(lelnam,ipos))!=0)
+    while((ipos1=IL::nextwordpos(lelnam,ipos))!=ipos)
     {
-      if(InSet(lelnam.substr(ipos,ipos1-ipos+1), dgs))
+      if(InSet(lelnam.substr(ipos,ipos1-ipos), dgs))
       {
         dg=true;
         nameadd+=dgs[0];
       }
       else if (lelnam[ipos]!='}')
-        nameadd+=lelnam.substr(ipos,ipos1-ipos+1);
-      ipos=ipos1+1;
+        nameadd+=lelnam.substr(ipos,ipos1-ipos);
+      ipos=ipos1;
     }
   } 
   add2name(name,nameadd); // add nameadd to name (as superscript)
   ipos=down+1;
   ipos=IL::skip(lelnam,ipos,"{} ");
-  ipos1=nextwordpos(lelnam,ipos);
+  ipos1=IL::nextwordpos(lelnam,ipos);
   if (InSet(name.substr(0,4), bexcops))
   { // bare excitation operator
-    return handle_excitation(lelnam.substr(ipos,ipos1-ipos+1),dg,term);
+    return handle_excitation(lelnam.substr(ipos,ipos1-ipos),dg,term);
   }
   if (excopsonly) return Oper();
-  if(!str2num<short>(excl,lelnam.substr(ipos,ipos1-ipos+1),std::dec))
-    error("Excitation class "+lelnam.substr(ipos,ipos1-ipos+1),"Finput::handle_operator");
+  if(!str2num<short>(excl,lelnam.substr(ipos,ipos1-ipos),std::dec))
+    error("Excitation class "+lelnam.substr(ipos,ipos1-ipos),"Finput::handle_operator");
   if(dg)
     return Oper(Ops::Deexc,excl,(void*) &term, Term::getfreeorbname,name);
   else
@@ -908,8 +991,8 @@ void Finput::handle_sum(const Lelem& lel, Term& term)
   {
     ipos=IL::skip(lelnam,ipos,"{}, ");
     if (ipos==lelnam.size()) break;
-    ipos1=nextwordpos(lelnam,ipos);
-    name=lelnam.substr(ipos,ipos1-ipos+1);
+    ipos1=IL::nextwordpos(lelnam,ipos);
+    name=lelnam.substr(ipos,ipos1-ipos);
     iposnam=_excops.find(name);
     if (iposnam >= 0)
     {
@@ -918,7 +1001,7 @@ void Finput::handle_sum(const Lelem& lel, Term& term)
     }
     else
       say("No excitation operator which would correspond to summation index "+name);
-    ipos=ipos1+1;
+    ipos=ipos1;
   }
 }
 void Finput::handle_parameters(Term& term, bool excopsonly)
@@ -942,11 +1025,11 @@ void Finput::handle_parameters(Term& term, bool excopsonly)
       {
         ipos=up+1;
         ipos=IL::skip(lelnam,ipos,"{} ");
-        while((ipos1=nextwordpos(lelnam,ipos))!=0)
+        while((ipos1=IL::nextwordpos(lelnam,ipos))!=ipos)
         {
           if (lelnam[ipos]!='}')
-            nameadd+=lelnam.substr(ipos,ipos1-ipos+1);
-          ipos=ipos1+1;
+            nameadd+=lelnam.substr(ipos,ipos1-ipos);
+          ipos=ipos1;
         }
       } 
       add2name(name,nameadd); // add nameadd to name (as superscript)
@@ -959,8 +1042,8 @@ void Finput::handle_parameters(Term& term, bool excopsonly)
       {
         ipos=down+1;
         ipos=IL::skip(lelnam,ipos,"{} ");
-        ipos1=nextwordpos(lelnam,ipos);
-        excn=lelnam.substr(ipos,ipos1-ipos+1);
+        ipos1=IL::nextwordpos(lelnam,ipos);
+        excn=lelnam.substr(ipos,ipos1-ipos);
         indxexcn=_excops.find(excn);
         if (indxexcn>=0)
         {
@@ -993,9 +1076,9 @@ void Finput::add2name(std::string& name, const std::string& nameadd)
     if (ipos!=std::string::npos)
     { // there is already a superscript
       ++ipos;
-      ipos1=nextwordpos(name,ipos);
+      ipos1=IL::nextwordpos(name,ipos);
       name.insert(ipos,"{");
-      name.insert(ipos1+1,nameadd+"}");
+      name.insert(ipos1,nameadd+"}");
     }
     else
     { // no superscript yet

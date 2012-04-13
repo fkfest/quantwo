@@ -41,23 +41,31 @@ std::ostream & operator << (std::ostream & o, Lelem const & lel);
 
 //! functions to analyze input line
 namespace IL{
+  // word separators
+  extern const std::string separator;
+  // neglect word separator after the gluer
+  extern const std::string gluer;
+  // brackets
+  extern const std::string brackets;
   std::string key(const std::string& line, const std::string& keyword);
   // skip all characters in str beginning from ipos, which are present in what
-  lui skip(const std::string& str, unsigned long int const & ipos, const std::string & what);
+  lui skip(const std::string& str, const lui& ipos, const std::string& what);
   // end of word (may be in " )
   lui endword(const std::string& line, lui& ipos);
+  // get positions of next word (begin and end)
+  // use gluer if glue is true, otherwise a gluer is a separator too
+  // greedy: only separators will separate words, otherwise only gluer and {} can glue symbols together
+  lui nextwordpos(const std::string& str, lui& ipos, bool glue = true, bool greedy = true);
+  // get position of the closing bracket (which corresponds to the bracket on ipos)
+  lui closbrack(const std::string& str, lui ipos);
+  // generate plain name out of latex name, i.e. skip "^_{}" (e.g., a_{15}^2 -> a152)
+  std::string plainname(std::string name);
 };
 /*!
     Input analyzer 
 */
 class Finput {
   public:
-  // word separators
-  static const std::string separator;
-  // neglect word separator after the gluer
-  static const std::string gluer;
-  // brackets
-  static const std::string brackets;
   // define possible operator names (the order is important!)
   static const std::string commands[5]; // general commands
   static const std::string beqs[2]; // beq
@@ -65,6 +73,7 @@ class Finput {
   static const std::string comments[2]; // comment
   static const std::string skipops[5]; // operators to skip
   static const std::string refs[3]; // reference functions
+  static const std::string csfs[2]; // determinants
   static const std::string dgs[2]; // daggers
   static const std::string bexcops[2]; // bare excitation operators
   static const char hms[4]; // hamiltonian parts
@@ -85,12 +94,8 @@ class Finput {
   private:
   // initialyse default input-parameters 
   void InitInpars(std::string paramspath);
-  // get positions of next word (begin and end)
-  unsigned long int nextwordpos(std::string const & str, unsigned long int & ipos);
   // analyze command coming after backslash
   unsigned long int analyzecommand(std::string const & str, unsigned long int ipos);
-  // get position of the closing bracket (which corresponds to the bracket on ipos)
-  unsigned long int closbrack(std::string const & str, unsigned long int ipos);
   // get position of the closing bracket in vector<Lelem> (which corresponds to the bracket on ipos)
   unsigned long int closbrack(Product<Lelem> const & eqn, unsigned long int ipos);
   // get position of the opening bracket in vector<Lelem> (which corresponds to the bracket on ipos)
@@ -120,6 +125,8 @@ class Finput {
   bool do_sumterms(bool excopsonly=false);
   // handle bra/ket
   Oper handle_braket(Lelem const & lel, Term & term);
+  // handle explicit excitation index (like ^{ab}_{ij})
+  Oper handle_explexcitation(std::string const & name, bool dg, Term & term);
   // handle excitation index
   Oper handle_excitation(std::string const & name, bool dg, Term & term);
   // handle factor

@@ -52,124 +52,118 @@ Oper::Oper()
 
 Oper::Oper(Ops::Type type)
 {
+  assert( InSet(type, Ops::FluctP,Ops::Fock,Ops::XPert) );
   std::string name;
   _type=type;
-  if ( InSet(type, Ops::FluctP,Ops::Fock,Ops::XPert) )
-  {
-    Orbital orb0(std::string("P")); //dummy
-    Orbital orb1(std::string("Q")); //dummy
-    if (type == Ops::Fock )
-      name="F";
-    else if (type == Ops::FluctP )
-      name="W";
-    else
-      name="X";
-    create_Oper(0,orb1,orb0,name);
-  }
+  if (type == Ops::Fock )
+    name="F";
+  else if (type == Ops::FluctP )
+    name="W";
   else
-    error("Use Oper(exccl,Type) to construct Cluster operators","Oper::Oper");
+    name="X";
+  create_Oper(name);
 }
 Oper::Oper(Ops::Type type, short int exccl, std::string name)
 {
+  assert( !InSet(type, Ops::FluctP,Ops::Fock,Ops::XPert) );
   _type=type;
-  if ( InSet(type, Ops::FluctP,Ops::Fock,Ops::XPert) )
-    error("Use Oper(Type) to construct Hamiltonian","Oper::Oper");
-  else
-  {
-    Orbital orb0(std::string("A"));
-    Orbital orb1(std::string("I"));
-    create_Oper(exccl,orb1,orb0,name);
-  }
+  Orbital orb0(std::string("A"));
+  Orbital orb1(std::string("I"));
+  create_Oper(exccl,orb1,orb0,name);
 }
 Oper::Oper(Ops::Type type, short int exccl, 
            void * term, Orbital (*freeorb)(void * term, Orbital::Type type), std::string name)
 {
+  assert( !InSet(type, Ops::FluctP,Ops::Fock,Ops::XPert) );
   _type=type;
-  if ( InSet(type, Ops::FluctP,Ops::Fock,Ops::XPert) )
-    error("Use Oper(Type) to construct Hamiltonian","Oper::Oper");
-  else
-  {
-    Orbital orb0(freeorb(term,Orbital::Virt));
-    Orbital orb1(freeorb(term,Orbital::Occ));
-    create_Oper(exccl,orb1,orb0,name);
-  }
+  Orbital orb0(freeorb(term,Orbital::Virt));
+  Orbital orb1(freeorb(term,Orbital::Occ));
+  create_Oper(exccl,orb1,orb0,name);
 }
 Oper::Oper(Ops::Type type, short int exccl, Orbital occ, Orbital virt, std::string name)
 {
+  assert( !InSet(type, Ops::FluctP,Ops::Fock,Ops::XPert) );
   _type=type;
-  if ( InSet(type, Ops::FluctP,Ops::Fock,Ops::XPert) )
-    error("Use Oper(Type) to construct Hamiltonian","Oper::Oper");
   create_Oper(exccl,occ,virt,name);
 }
-
-void Oper::create_Oper(short int const & exccl,Orbital const & occ, Orbital const & virt, std::string const & name)
+Oper::Oper(Ops::Type type, short int exccl, const Product< Orbital >& occs, const Product< Orbital >& virts, 
+           std::string name)
 {
+  assert( occs.size() == virts.size() );
+  assert( occs.size() == exccl );
+  assert( !InSet(type, Ops::FluctP,Ops::Fock,Ops::XPert) );
+  _type=type;
+  create_Oper(occs,virts,name);
+}
+
+void Oper::create_Oper(const std::string& name)
+{
+  assert( InSet(_type, Ops::FluctP,Ops::Fock,Ops::XPert) );
   Product<Orbital> porbs;
-  std::string excl;
-  if ( InSet(_type, Ops::FluctP,Ops::Fock,Ops::XPert) )
-  { // operators with general indices
-    Orbital orb(std::string("P"));
+  // operators with general indices
+  Orbital orb(std::string("P"));
+  _SQprod*=SQOp(SQOp::Creator,orb);
+  porbs*=orb;
+  _sumindx*=orb;
+  orb=Orbital(std::string("Q"));
+  porbs*=orb;
+  _sumindx*=orb;
+  if ( InSet(_type, Ops::Fock,Ops::XPert) ) {
+    _SQprod*=SQOp(SQOp::Annihilator,orb);
+    _prefac=1.0;
+  } else {
+   // we use chemical notation (PQ|RS) P^\dg R^\dg S Q
+    orb=Orbital(std::string("R"));
     _SQprod*=SQOp(SQOp::Creator,orb);
     porbs*=orb;
     _sumindx*=orb;
-    orb=Orbital(std::string("Q"));
+    orb=Orbital(std::string("S"));
+    _SQprod*=SQOp(SQOp::Annihilator,orb);
     porbs*=orb;
     _sumindx*=orb;
-    if ( InSet(_type, Ops::Fock,Ops::XPert) )
-    {
-      _SQprod*=SQOp(SQOp::Annihilator,orb);
-      _prefac=1.0;
-    }
-    else
-    {
-     // we use chemical notation (PQ|RS) P^\dg R^\dg S Q
-      orb=Orbital(std::string("R"));
-      _SQprod*=SQOp(SQOp::Creator,orb);
-      porbs*=orb;
-      _sumindx*=orb;
-      orb=Orbital(std::string("S"));
-      _SQprod*=SQOp(SQOp::Annihilator,orb);
-      porbs*=orb;
-      _sumindx*=orb;
-      orb=Orbital(std::string("Q"));
-      _SQprod*=SQOp(SQOp::Annihilator,orb);
-      _prefac=1.0/4.0;
-    }
+    orb=Orbital(std::string("Q"));
+    _SQprod*=SQOp(SQOp::Annihilator,orb);
+    _prefac=1.0/4.0;
   }
-  else
-  { // excitation and deexcitation operators
-    Orbital orb0=virt;
-    Orbital orb1=occ;
-  
-    if (InSet(_type, Ops::Deexc,Ops::Deexc0)) std::swap(orb0,orb1);
-    Orbital orb;
-    _prefac=1.0;
-    for (short i=0; i<exccl ; ++i)
-    {  
-      if (i>0) excl=num2str(i,std::dec);
-      orb=Orbital(orb0.name()+excl,orb0.spin());
-      _SQprod*=SQOp(SQOp::Creator,orb);
-      //in the case of blank excitation and deexcitation operators use blank matrix
- //     if (type!=Ops::Exc0 && type!=Ops::Deexc0) 
- //     {
-        porbs*=orb;
-        _sumindx*=orb;
-        if (InSet(_type, Ops::Exc0,Ops::Deexc0)) 
-          _fakesumindx*=orb;
- //     }
-      orb=Orbital(orb1.name()+excl,orb1.spin());
-      _SQprod*=SQOp(SQOp::Annihilator,orb);
- //     if (type!=Ops::Exc0 && type!=Ops::Deexc0)
- //     {
-        porbs*=orb;
-        _sumindx*=orb;
-        if (InSet(_type, Ops::Exc0,Ops::Deexc0)) 
-          _fakesumindx*=orb;
-        _prefac=_prefac/double(i+1);
- //     }
-    }
-    _prefac=_prefac*_prefac;
+  _mat=Matrices(_type,porbs,name);
+}
+void Oper::create_Oper(short int const & exccl,Orbital const & occ, Orbital const & virt, std::string const & name)
+{
+  assert( !InSet(_type, Ops::FluctP,Ops::Fock,Ops::XPert) );
+  std::string excl;
+  Product<Orbital> occs, virts; 
+  for (short i=0; i<exccl ; ++i) {  
+    if (i>0) excl=num2str(i,std::dec);
+    occs *= Orbital(occ.name()+excl,occ.spin());
+    virts *= Orbital(virt.name()+excl,virt.spin());
   }
+  create_Oper(occs,virts,name);
+}
+void Oper::create_Oper(const Product< Orbital >& occs, const Product< Orbital >& virts, const std::string& name)
+{
+  assert( !InSet(_type, Ops::FluctP,Ops::Fock,Ops::XPert) );
+  assert( occs.size() == virts.size() );
+  Product<Orbital> porbs;
+  // excitation and deexcitation operators
+  const Product<Orbital> 
+    * p_orb0 = &virts,
+    * p_orb1 = &occs;
+  if (InSet(_type, Ops::Deexc,Ops::Deexc0)) std::swap(p_orb0,p_orb1);
+  _prefac = 1.0;
+  for (short i = 0; i < p_orb0->size(); ++i) {  
+    _SQprod*=SQOp(SQOp::Creator, (*p_orb0)[i]);
+    porbs *= (*p_orb0)[i];
+    _sumindx *= (*p_orb0)[i];
+    if (InSet(_type, Ops::Exc0,Ops::Deexc0)) 
+      _fakesumindx *= (*p_orb0)[i];
+    _SQprod *= SQOp(SQOp::Annihilator, (*p_orb1)[i]);
+    porbs *= (*p_orb1)[i];
+    _sumindx *= (*p_orb1)[i];
+    if (InSet(_type, Ops::Exc0,Ops::Deexc0)) 
+      _fakesumindx *= (*p_orb1)[i];
+    _prefac = _prefac/double(i+1);
+  }
+  _prefac=_prefac*_prefac;
   _mat=Matrices(_type,porbs,name);
 }
 

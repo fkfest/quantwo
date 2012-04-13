@@ -147,8 +147,10 @@ class Term {
     Orbital freeorbname(Orbital::Type type);
     //! static wrapper-function to be able to callback the member function freeorbname()
     static Orbital getfreeorbname(void * Obj, Orbital::Type type);
-    //! set last orbital
-    void set_lastorb(Orbital orb);
+//    //! get last orbital
+//    Orbital get_lastorb(Orbital::Type type) const { return _lastorb[type]; };
+    //! set last orbital (onlylarger: only if it's larger than current one)
+    void set_lastorb(Orbital orb, bool onlylarger = false);
 
   private:
     Sum<Term, double>  normalOrder(bool fullyContractedOnly) const;

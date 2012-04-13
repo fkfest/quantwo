@@ -1,6 +1,7 @@
 #ifndef Product_H
 #define Product_H
 #include <vector>
+#include <algorithm>
 #include <iostream>
 #include "utilities.h"
 
@@ -11,6 +12,9 @@
 template <class T>
 class Product : public std::vector<T> {
   public:
+    Product<T> () : std::vector<T>(){};
+    Product<T> ( typename Product<T>::const_iterator beg, typename Product<T>::const_iterator end)
+     : std::vector<T>(beg,end){};
     // append t to product
     Product<T> & operator *= (T const & t);
     // append product to product
