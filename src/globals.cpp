@@ -21,7 +21,7 @@ void Output::flushbuf()
 {
   *pout << buf.str();
   buf.str("");
-  hline=hbufline;
+  hline=std::max(hline, hbufline);
   hbufline=1.0;
   lenline += lenbuf;
   lenbuf=0;
@@ -33,7 +33,7 @@ void Output::newpageeqn()
   beq();
   nlines=0;
   lenline=0;
-//   hbufline=1.0;
+  hline=1.0;
   ++npages;
   flushbuf();
 }
@@ -42,6 +42,7 @@ void Output::newlineeqn()
   *pout <<"\\nl"<<std::endl;
   lenline=0;
   nlines+=hline;
+  hline=1.0;
   flushbuf();
 }
 void Output::beq()
