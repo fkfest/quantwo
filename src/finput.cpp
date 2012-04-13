@@ -812,9 +812,9 @@ Oper Finput::handle_explexcitation(const std::string& name, bool dg, Term& term)
   excl = occs.size();
   // set lastorb (if smaller)
   for ( uint i = 0; i < occs.size(); ++i )
-    term.set_lastorb(occs[i],true);
+    term.set_lastorb(Orbital(occs[i].letname(),Orbital::GenS),true);
   for ( uint i = 0; i < virts.size(); ++i )
-    term.set_lastorb(virts[i],true);
+    term.set_lastorb(Orbital(virts[i].letname(),Orbital::GenS),true);
   if ( _occexcops.size() > 0 ){
     //make sure that we haven't use these orbital names already
     for ( uint i = 0; i < occs.size(); ++i ){
