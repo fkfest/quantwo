@@ -314,12 +314,25 @@ std::ostream & operator << (std::ostream & o, Term const & t)
  // o << "CN:" ;
  // for (unsigned long int i=0; i<t.connections().size(); i++)
  //   o << t.connections().at(i)<<":";
+  double sml = std::pow(10,-o.precision());
   std::streampos ipos0=o.tellp();
-  if ( std::abs(std::abs(t.prefac()) - 1.0) > Numbers::small) o << t.prefac();
-  MyOut::pcurout->lenbuf += o.tellp()-ipos0;
-  MyOut::pcurout->lenbuf++ ; // for "("
-  o << "(" << t.perm() << ")";
-  MyOut::pcurout->lenbuf++ ; // for ")"
+  bool printed = false;
+  if ( std::abs(std::abs(t.prefac()) - 1.0) > sml){
+    o << t.prefac();
+    MyOut::pcurout->lenbuf += o.tellp()-ipos0;
+    printed = true;
+  }
+  
+  if ( t.perm().size() > 1 ){
+    MyOut::pcurout->lenbuf++ ; // for "("
+    o << "(" << t.perm() << ")";
+    MyOut::pcurout->lenbuf++ ; // for ")"
+  } else if ( std::abs(std::abs(t.perm().begin()->second) - 1.0) > sml ||
+              !t.perm().begin()->first.is1() ){ // don't print permutation 1
+    if ( printed ) o << "*";
+    o << t.perm();
+  }
+                                    
   if (t.realsumindx().size()>0) 
   {
     o <<"\\sum_{"<<t.realsumindx()<<"}";

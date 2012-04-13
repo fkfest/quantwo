@@ -67,6 +67,7 @@ template <class Object, class Field>
 std::ostream & operator << (std::ostream & o, Sum<Object,Field> const & p)
 {
   std::streampos ipos0;
+  double sml = std::pow(10,-o.precision());
   typename Sum<Object,Field>::const_iterator last=p.end(); 
   if (p.begin()!=last)last--;
   for ( typename Sum<Object,Field>::const_iterator i=p.begin();i!=p.end(); ++i)
@@ -84,7 +85,7 @@ std::ostream & operator << (std::ostream & o, Sum<Object,Field> const & p)
       if ( i!=p.begin() )
         o << " + ";
     }
-    if ( std::abs(i->second)!=1 )
+    if ( std::abs(i->second) < 1.0 - sml || std::abs(i->second) > 1.0 + sml )
       o << std::abs(i->second) << "*";
     MyOut::pcurout->lenbuf += o.tellp()-ipos0;
     

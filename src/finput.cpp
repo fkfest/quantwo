@@ -789,7 +789,6 @@ Oper Finput::handle_braket(const Lelem& lel, Term& term)
 }
 Oper Finput::handle_explexcitation(const std::string& name, bool dg, Term& term)
 {
-  std::cout << name << std::endl;
   lui ipos, ipos1;
   long int ipos2;
   short excl;
@@ -799,7 +798,6 @@ Oper Finput::handle_explexcitation(const std::string& name, bool dg, Term& term)
   ipos = 0;
   ipos = IL::skip(name,ipos,"{}_^ ");
   while ( (ipos1 = IL::nextwordpos(name,ipos,true,false)) != ipos ){//non greedy
-    std::cout << "orb " << name.substr(ipos,ipos1-ipos) << " " << IL::plainname(name.substr(ipos,ipos1-ipos)) << std::endl;
     Orbital orb(IL::plainname(name.substr(ipos,ipos1-ipos)),Orbital::GenS);
     if ( orb.type() == Orbital::Occ )
       occs *= orb;
@@ -812,7 +810,6 @@ Oper Finput::handle_explexcitation(const std::string& name, bool dg, Term& term)
   if ( occs.size() != virts.size() )
     error("can handle particle-number conserving operators only! "+name);
   excl = occs.size();
-  std::cout << "occ " << occs << " virt " << virts << std::endl;
   // set lastorb (if smaller)
   for ( uint i = 0; i < occs.size(); ++i )
     term.set_lastorb(occs[i],true);
@@ -821,14 +818,9 @@ Oper Finput::handle_explexcitation(const std::string& name, bool dg, Term& term)
   if ( _occexcops.size() > 0 ){
     //make sure that we haven't use these orbital names already
     for ( uint i = 0; i < occs.size(); ++i ){
-      std::cout << "_occexcops " << _occexcops << std::endl;
-      std::cout << "name " << occs[i].letname() << std::endl;
       ipos2=_occexcops.find( Orbital(occs[i].letname(),Orbital::GenS));
-      if (ipos2>=0){  // is there, change it
-        std::cout << "old " << _occexcops[ipos2] << std::endl;
+      if (ipos2>=0)  // is there, change it
         _occexcops[ipos2] = term.freeorbname(Orbital::Occ);
-        std::cout << "new " << _occexcops[ipos2] << std::endl;
-      }
     }
   }
   if ( _virexcops.size() > 0 ){

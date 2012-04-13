@@ -100,6 +100,7 @@ class Permut {
     bool operator < (Permut const & p) const;
     // equality of permutators
     bool operator == (Permut const & p) const;
+    bool is1() const { return _orbsfrom.size() == 0; };
   private: 
     Product<Orbital> _orbsfrom, _orbsto;
 };
