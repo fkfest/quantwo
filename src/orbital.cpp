@@ -68,6 +68,7 @@ bool Orbital::operator<(const Orbital& orb) const
   if (orb._type<_type) return false;
   if (_name<orb._name) return true;
   if (_name>orb._name) return false;
+//  assert( _type == orb._type );
   return _spin<orb._spin;
 }
 std::string Orbital::letname() const

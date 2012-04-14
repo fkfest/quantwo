@@ -156,7 +156,8 @@ Orbital Matrices::orbel(const Orbital& orb)
 }
 Orbital Matrices::orbel(const long int& ipos)
 {
-  if (ipos<0 || unsigned(ipos)>=_orbs.size()) return Orbital();
+  assert( 0 <= ipos && unsigned(ipos) < _orbs.size() );
+//  if (ipos<0 || unsigned(ipos)>=_orbs.size()) return Orbital();
   return (ipos%2==0?_orbs[ipos+1]:_orbs[ipos-1]);
 }
 

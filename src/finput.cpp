@@ -557,7 +557,7 @@ Product< Lelem > Finput::expandterm(const Product< Lelem >& aterm, std::vector< 
 Product< Lelem > Finput::expandpar(const Product< Lelem >& aterm, long unsigned int beg, 
                                    std::vector< Product< long int > >& connections)
 { // e.g., aterm=-a(b+c)d
-  unsigned long int i=0, end,ipos,start=0,ijcon,iposres,lena,lenb,ipar;
+  unsigned long int i=0, end,ipos,start=0,ijcon,iposres,lenb,ipar;//lena,
   end=closbrack(aterm,beg);
   Product<Lelem> result, inpar=aterm.subprod(beg+1,end-1);
   std::vector< Product<long int> > con(connections);
@@ -605,7 +605,7 @@ Product< Lelem > Finput::expandpar(const Product< Lelem >& aterm, long unsigned 
     if (aterm[end].lex()==Lelem::Ket) result *= aterm[end];
     if (end<aterm.size()-1) result *= aterm.subprod(end+1,aterm.size());
     // handle connections
-    lena=beg-start;
+//    lena=beg-start;
     lenb=ipos-i+1;
     for (unsigned long int k=0;k<con.size();k++)
     {

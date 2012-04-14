@@ -1,5 +1,8 @@
-CC = g++
-CFLAGS = -c -Wall -O3
+CC = g++ 
+PROFILE =
+#PROFILE = -pg
+CFLAGS = -c -Wall -O2 $(PROFILE)
+LDFLAGS = $(PROFILE)
 INCLUDES=
 # program name
 MAIN = quantwo
@@ -15,7 +18,10 @@ SRC = $(OBJ:.o=.cpp)
 all : $(MAIN)
 
 $(MAIN) : $(OBJ)
-	$(CC) $(OBJ) $(INCLUDES) -o $(MAIN)
+	$(CC) $(LDFLAGS) $(OBJ) $(INCLUDES) -o $(MAIN)
+
+%.o : %.cpp 
+	$(CC) $(CFLAGS) $< -o $@
 
 clean : 
 	rm -rf $(MAIN) $(OBJ) 
@@ -35,8 +41,8 @@ ifneq ($(BASE),$(PWD))
 	 @test -e $@ || ln -s $(BASE)/$@ .
 endif
 
-depend: $(SRC)
-	 makedepend -- $(INCLUDES) $(CFLAGS) -Y -- $^
+depend: 
+	 makedepend -- $(INCLUDES) $(CFLAGS) -Y -- $(SRC) 
 
 # DO NOT DELETE THIS LINE -- make depend needs it
 
@@ -47,7 +53,7 @@ src/finput.o: src/finput.h src/utilities.h src/utilities.cpp src/product.h
 src/finput.o: src/product.cpp src/term.h src/operators.h src/globals.h
 src/finput.o: src/orbital.h src/matrices.h src/kronecker.h src/sum.h
 src/finput.o: src/sum.cpp
-src/orbital.o: src/orbital.h src/utilities.h src/utilities.cpp
+src/orbital.o: src/orbital.h src/utilities.h src/utilities.cpp src/globals.h
 src/matrices.o: src/matrices.h src/product.h src/utilities.h
 src/matrices.o: src/utilities.cpp src/product.cpp src/orbital.h src/globals.h
 src/operators.o: src/operators.h src/utilities.h src/utilities.cpp

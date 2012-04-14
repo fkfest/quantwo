@@ -90,7 +90,7 @@ Oper::Oper(Ops::Type type, short int exccl, const Product< Orbital >& occs, cons
            std::string name)
 {
   assert( occs.size() == virts.size() );
-  assert( occs.size() == exccl );
+  assert( occs.size() == uint(exccl) );
   assert( !InSet(type, Ops::FluctP,Ops::Fock,Ops::XPert) );
   _type=type;
   create_Oper(occs,virts,name);
@@ -150,7 +150,7 @@ void Oper::create_Oper(const Product< Orbital >& occs, const Product< Orbital >&
     * p_orb1 = &occs;
   if (InSet(_type, Ops::Deexc,Ops::Deexc0)) std::swap(p_orb0,p_orb1);
   _prefac = 1.0;
-  for (short i = 0; i < p_orb0->size(); ++i) {  
+  for (unsigned short i = 0; i < p_orb0->size(); ++i) {  
     _SQprod*=SQOp(SQOp::Creator, (*p_orb0)[i]);
     porbs *= (*p_orb0)[i];
     _sumindx *= (*p_orb0)[i];

@@ -3,6 +3,7 @@
 
 #include <string>
 #include <iostream>
+#include <assert.h>
 #include "product.h"
 #include "orbital.h"
 #include "globals.h"

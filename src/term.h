@@ -95,6 +95,7 @@ class Term {
     //! equal terms
     // terms will be not changed! (but const can't be applied) 
     bool equal(Term & t, Permut & perm);
+    bool equal_old(Term & t, Permut & perm);
     
     //! calculate normal ordering
     Sum<Term, double>  normalOrder() const;

@@ -156,13 +156,149 @@ bool Term::operator < (Term const & t) const
     return _prefac<t._prefac;
 return true;
 }
-
 bool Term::equal(Term& t, Permut& perm) 
 {
   
-  if (_mat.size() != t._mat.size()) return false;
-  if (_sumindx.size() != t._sumindx.size()) return false;
-  if (_nintloops != t._nintloops || _nocc != t._nocc) return false;
+  if (_mat.size() != t._mat.size() ||
+      _sumindx.size() != t._sumindx.size() ||
+      _realsumindx.size() != t._realsumindx.size() ||
+      _nintloops != t._nintloops || _nocc != t._nocc) return false;
+  // generate Product of all orbitals and external-lines orbitals
+  List<Orbital> peo(extindx()), peot(t.extindx());
+  List<Orbital> po(peo),pot(peot); // start with external lines!
+  po*=_realsumindx; // internal indices
+  pot*=t._realsumindx; // internal indices
+  if (po.size() != pot.size()) return false;
+
+  //std::cout <<"term " << *this << "   " << t << std::endl;
+  //std::cout <<"po,pot " << po << "   " << pot << std::endl;
+  //std::cout <<"nocc,nintloops " << _nocc << "   " << t._nocc <<" and "<< _nintloops << "   " << t._nintloops << std::endl;
+  Product<Matrices> mat, tmat;
+  List<Orbital> por, port;
+  Permut perm1;
+  Orbital orb,orb1,orbt,orb1t;
+  long int ipos=0,ipost=0;
+  List<Orbital>::iterator it, jt;
+  unsigned int ithis=0,ithist=0,i;
+  bool equal=false,first,exter,extert,exter1,extert1;
+  for (i=0; i<_mat.size(); i++) {
+    _mat[i].reset_vertices();
+    t._mat[i].reset_vertices();
+  }
+  while (po.size()>0) {
+    orb=po.front();
+    exter=(peo.find(orb)>=0); //external orbital
+    i=0;
+    equal=false;
+    while (i<pot.size() && pot.size()>0 && !equal) {
+      it = pot.begin();
+      for ( unsigned int j = 0; j < i; ++j, ++it ){}
+      orbt = *it;
+      ++i;
+      if (orb.type()!=orbt.type()) {
+        equal=false;
+        continue;
+      }
+      extert=(peot.find(orbt)>=0);
+      if (exter!=extert) {// one is external orbital and the other not
+        equal=false;
+        continue;
+      }
+      orb1=orb;
+      orb1t=orbt;
+      port=por=List<Orbital>();
+      mat=_mat;
+      tmat=t._mat;
+      perm1=perm;
+      equal=true;
+      first=true;
+      exter1=extert1=false;
+      if (exter) { //add orbitals to the product for removing
+        por*=orb1;
+        port*=orb1t;
+        if (orb1 != orb1t) { // external orbitals not match -> add permutation
+          perm1 *= Permut(orb1,orb1t);
+        }
+      }
+      do {
+        // find orbital which corresponds to the same electron
+        for (unsigned int j=0; j<mat.size(); j++) {
+          // dont search in the same matrix and in "external" matrices
+          if((first || j!=ithis)&&(mat[j].type()!=Ops::Deexc0 && mat[j].type()!=Ops::Exc0)) {
+            ipos=mat[j].orbitals().find(orb1);
+            if (ipos>=0) {
+              orb1=mat[j].orbel(ipos);
+              ithis=j;
+              break;
+            }
+          }
+        }
+        for (unsigned int j=0; j<tmat.size(); j++) {
+          // dont search in the same matrix
+          if((first || j!=ithist)&&(tmat[j].type()!=Ops::Deexc0 && tmat[j].type()!=Ops::Exc0)) {
+            ipost=tmat[j].orbitals().find(orb1t);
+            if (ipost>=0) {
+              orb1t=tmat[j].orbel(ipost);
+              ithist=j;
+              break;
+            }
+          }
+        }
+
+        if (orb1.type() != orb1t.type() || !mat[ithis].vertices(ipos,tmat[ithist],ipost,ithis))
+          equal=false;
+        else { 
+          exter1= (peo.find(orb1)>=0);
+          extert1= (peot.find(orb1t)>=0);
+          if (exter1!=extert1) { // if one of indices is external and the other not
+            equal=false;
+            break;
+          }
+          if (((orb1==orb) != (orb1t==orbt))&&!exter1) { // in one of matrices we have a loop and in the other not, and the index is not external!
+              equal=false;
+              break;
+          }
+          // add orbitals to the product for removing
+          por*=orb1;
+          port*=orb1t;
+          first=false;
+          if (exter1 && orb1 != orb1t) { // external orbitals not match -> add permutation
+            perm1 *= Permut(orb1,orb1t);
+          }
+        }
+      }while (orb1!=orb && equal && !exter1);
+      if(equal) {
+        // set _mat and t._mat to mat and tmat
+        _mat=mat;
+        t._mat=tmat;
+        //set permutator to perm1
+        perm=perm1;
+        // remove por and port from product of orbitals (we dont need to handle this orbital again!)
+        for ( jt = por.begin(); jt != por.end(); ++jt) {
+          it = std::find(po.begin(),po.end(),*jt);
+          assert( it != po.end() );
+          po.erase(it);
+        }
+        for ( jt = port.begin(); jt != port.end(); ++jt) {
+          it = std::find(pot.begin(),pot.end(),*jt);
+          assert( it != pot.end() );
+          pot.erase(it);
+        }
+      }
+    }
+    if (!equal && i>=pot.size())
+      break;
+  }
+  return equal;
+}
+
+bool Term::equal_old(Term& t, Permut& perm) 
+{
+  
+  if (_mat.size() != t._mat.size() ||
+      _sumindx.size() != t._sumindx.size() ||
+//      _realsumindx.size() != t._realsumindx.size() ||
+      _nintloops != t._nintloops || _nocc != t._nocc) return false;
   // generate Product of all orbitals and external-lines orbitals
   Product<Orbital> peo(extindx()), peot(t.extindx());
   Product<Orbital> po(peo),pot(peot); // start with external lines!
@@ -180,7 +316,7 @@ bool Term::equal(Term& t, Permut& perm)
   long int ipos=0,ipost=0;
   unsigned int ithis=0,ithist=0,i;
   bool equal=false,first,found,foundt,exter,extert,exter1,extert1;
-  for (unsigned int i=0; i<_mat.size(); i++) 
+  for (i=0; i<_mat.size(); i++) 
   {
     _mat[i].reset_vertices();
     t._mat[i].reset_vertices();
@@ -836,6 +972,7 @@ Sum<Term,double> Q2::reduceSum(Sum<Term,double> s)
   bool added;
   double prefac;
   say("Reduce sum of terms");
+  say("Kroneckers, Connections, and Spin-integration...");
   for ( Sum<Term,double>::const_iterator i=s.begin();i!=s.end(); ++i)
   {
     term=i->first;
@@ -856,6 +993,7 @@ Sum<Term,double> Q2::reduceSum(Sum<Term,double> s)
     sum*=i->second;
     sum1+=sum;
   }
+  say("Equal terms and permutations...");
   //std::cout << "SUM:" << sum1 << std::endl;
   sum=Sum<Term,double>();
   // sum up all equal terms
@@ -883,6 +1021,7 @@ Sum<Term,double> Q2::reduceSum(Sum<Term,double> s)
       //std::cout<<"term new" << term <<std::endl;
     }
   } 
+  say("Remove terms with small prefactors...");
   // now remove everything with small prefactor
   sum1 = Sum<Term,double>();
   for ( Sum<Term,double>::const_iterator j=sum.begin(); j!=sum.end(); ++j) {

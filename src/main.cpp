@@ -16,7 +16,7 @@ int main(int argc, char **argv) {
   // handle input and output
   string inputfile, outputfile,
     exePath = exepath(), outPath;
-  unsigned int i=1;
+  int i=1;
   while ( i<argc && argv[i][0]=='-') {// handle options
     if (strcmp(argv[i],"-h")==0 || strcmp(argv[i],"--help")==0) {
       cout << "quantwo <input-file> [<output-file>]" << endl;

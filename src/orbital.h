@@ -3,6 +3,7 @@
 
 #include <string>
 #include <iostream>
+#include <assert.h>
 #include "utilities.h"
 #include "globals.h"
 

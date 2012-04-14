@@ -1,4 +1,13 @@
-CCD amplitude equation:
 \beq
-<\mu_2|\op H (1+\op T_2 + \half \op T_2 \op T_2) |0>_C
+ <0|\op T_2^\dg (\op \tau_{\mu_1}^\dg \op F \op U_1)_C \op T_2  |0>_C
+% <0|\half \op \tau_{\mu_1}^\dg \op T_2^\dg (\op F \op U_1)_C \op T_2  
+%    +\half  \op T_2^\dg (\op \tau_{\mu_1}^\dg \op F )_C \op U_1\op T_2
+%- \prm \omega \op \tau_{\mu_1}^\dg \op U_1|0>_C
+%<0|\op W (\op T_2 + \half \op T_1 \op T_1) |0>
+%<0|\op W \op T_2 |0> + \sum_{\mu_2} \prm \Lambda_{\mu_2} <\mu_2|\op F \op T_2 |0>_C
+% <\mu_2|\op W +\op F \op T_2 |0>_C
+% <0|\op H \op T_2 |0> + \sum_{\mu_2} \prm \Lambda_{\mu_2} <\mu_2|\op W +\op F \op T_2 |0>_C
+% <\mu_1|(\op H+ \op T_2^\dg \op H \op T_2 + \op T_1^\dg \op W + \op T_2^\dg \op H ) \op T_1 |0>
+%<\mu_2 |\op H (\op T_2 + \op U_2) |0>
 \eeq
+
