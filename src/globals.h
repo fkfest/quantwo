@@ -4,9 +4,22 @@
 #include <iostream>
 #include <sstream>
 #include <map>
+#include <list>
 #include <cmath>
+#include "utilities.h"
 
 typedef long unsigned int lui;
+typedef std::list< std::string > TParArray;
+typedef std::map< std::string, std::string > TsPar;
+typedef std::map< std::string, int > TiPar;
+typedef std::map< std::string, double > TfPar;
+typedef std::map< std::string, TParArray > TaPar;
+
+typedef std::map< std::string, TsPar > TsParSet;
+typedef std::map< std::string, TiPar > TiParSet;
+typedef std::map< std::string, TfPar > TfParSet;
+typedef std::map< std::string, TaPar > TaParSet;
+
 
 namespace Numbers
 {
@@ -64,18 +77,37 @@ namespace MyOut
   extern Output defout;
   extern Output * pcurout;
 }
-  typedef std::map< std::string, std::string > TsInpars;
-  typedef std::map< std::string, int > TiInpars;
-  typedef std::map< std::string, double > TfInpars;
+// singleton class which saves the current output
+class CurOut
+{
+  public:
+  static CurOut* Create(Output* pOut_);
+  static CurOut* Instance();
+  Output* pOut;
+  protected:
+  CurOut(Output* pOut_) : pOut(pOut_) { delout=false;};
+  CurOut() { pOut = new Output(); delout=true;};
+  CurOut(const CurOut&);
+  CurOut& operator= (const CurOut&);
+  private:
+  static CurOut* pInstance;
+  bool delout;
+};
+
 // global variables and functions from input
 namespace Input
 {
   // terms with prefactor smaller than this will be neglected
   extern double minfac;
   // input-parameters
-  extern TsInpars sInpars;
-  extern TiInpars iInpars;
-  extern TfInpars fInpars;
+  //string parameters
+  extern TsParSet sPars;
+  //integer parameters
+  extern TiParSet iPars;
+  //float parameters
+  extern TfParSet fPars;
+  //array of string parameters
+  extern TaParSet aPars;
 }
 
 // class Inpars

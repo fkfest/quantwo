@@ -1,20 +1,5 @@
 #include "finput.h"
 
-const std::string IL::separator=" \\{}()[]+-*/&<>|";
-const std::string IL::gluer="^_";
-const std::string IL::brackets="(){}[]<>";
-// define possible operator names (the order is very important sometimes!)
-const std::string Finput::commands[5]={ "op", "prm", "sum", "frac", "half"};
-const std::string Finput::beqs[2]={"\\beq", "\\begin(equation)"};
-const std::string Finput::eeqs[2]={"\\eeq", "\\end(equation)"};
-const std::string Finput::comments[2]={"%", "\\comment"};
-const std::string Finput::skipops[5]={"left","right","lk","rk","\\"};
-const std::string Finput::refs[3]={"0","\\Phi_0", "HF"};
-const std::string Finput::csfs[2]={"\\Phi", "\\phi"};
-const std::string Finput::dgs[2]={"\\dg","\\dagger"};
-const std::string Finput::bexcops[2]={"\\tau","\\Tau"};
-const char Finput::hms[4]={'H', 'F', 'W', 'X'}; 
-
 Lelem::Lelem(std::string name, Lelem::Lex lex, Conn conn) : 
 _name(name), _lex(lex), _conn(conn), _expandedbra(false){}
 std::string Lelem::name() const
@@ -38,20 +23,35 @@ bool Lelem::operator==(const Lelem& lel) const
 std::string IL::key(const std::string& line, const std::string& keyword)
 {
   lui ipos; 
-  while (true) {
+  do {
     ipos = line.find(keyword);
     if ( ipos != std::string::npos ){
       ipos += keyword.size();
       ipos = skip(line,ipos," ");
       if ( line[ipos] == '=' )
-	break;
+        break;
     } else
       error(keyword+" not found");
-  }
+  } while (ipos != std::string::npos);
   ++ipos;
   lui ipend = endword(line,ipos);
   return line.substr(ipos,ipend-ipos);
 }
+TParArray IL::parray(const std::string& str)
+{
+  TParArray res;
+  lui 
+    ipos = 0,
+    ipend = endword(str,ipos);
+  while( ipend != ipos ){
+    res.push_back(str.substr(ipos,ipend-ipos));
+    ipos = ipend+1;
+    ipos = skip(str,ipos," ,");
+    ipend = endword(str,ipos);
+  }
+  return res;
+}
+
 lui IL::skip(const std::string& str, const lui& ipos, const std::string& what)
 {
   lui ires=ipos;
@@ -61,8 +61,9 @@ lui IL::skip(const std::string& str, const lui& ipos, const std::string& what)
 }
 lui IL::endword(const std::string& line, lui& ipos)
 {
-  assert(ipos < line.size());
+//  assert(ipos < line.size());
   ipos = skip(line,ipos," ");
+  if ( ipos >= line.size() ) return ipos;
   char end = ',';
   if ( line[ipos] == '"' ){
     end = '"'; ++ipos;
@@ -75,6 +76,7 @@ lui IL::endword(const std::string& line, lui& ipos)
 }
 lui IL::closbrack(const std::string& str, lui ipos)
 {
+  const std::string& brackets = Input::sPars["syntax"]["brackets"];
   lui i=brackets.find(str[ipos]),ipos1=ipos;
   if (i==std::string::npos) 
     error(str[ipos]+"is not a bracket!","IL::closbrack"); 
@@ -101,6 +103,8 @@ lui IL::closbrack(const std::string& str, lui ipos)
 
 lui IL::nextwordpos(const std::string& str, lui& ipos, bool glue, bool greedy)
 {
+  const std::string& separator = Input::sPars["syntax"]["separator"];
+  const std::string& gluer = Input::sPars["syntax"]["gluer"];
   lui nwpos;
   ipos=IL::skip(str,ipos," "); // remove spaces
   // e.g. from ab_{cd}ef
@@ -156,26 +160,26 @@ void Finput::InitInpars(std::string paramspath)
     while (finp.good()) {
       std::getline (finp,line);
       if ( !line.empty()){
-	std::cout << line << std::endl;
-	type = IL::key(line,"type");
-	set = IL::key(line,"set");
-	name = IL::key(line,"name");
-	
-	if ( type.size() == 0 )
-	  error("no type is given");
-	else if ( type[0] == 's' ){
-	  Input::sInpars[name] = IL::key(line,"value");
-	} else if ( type[0] == 'i' ){
-	  int x;
-	  str2num<int>(x,IL::key(line,"value"),std::dec);
-	  Input::iInpars[name] = x;
-	} else if ( type[0] == 'f' ){
-	  double x; 
-	  str2num<double>(x,IL::key(line,"value"),std::dec); 
-	  Input::fInpars[name] = x;
-	} else if ( type[0] == 'a' ){
-	} else
-	  error("unknown type in params.reg");
+        std::cout << line << std::endl;
+        type = IL::key(line,"type");
+        set = IL::key(line,"set");
+        name = IL::key(line,"name");
+        if ( type.size() == 0 )
+          error("no type is given");
+        else if ( type[0] == 's' ){
+          Input::sPars[set][name] = IL::key(line,"value");
+        } else if ( type[0] == 'i' ){
+          int x;
+          str2num<int>(x,IL::key(line,"value"),std::dec);
+          Input::iPars[set][name] = x;
+        } else if ( type[0] == 'f' ){
+          double x; 
+          str2num<double>(x,IL::key(line,"value"),std::dec); 
+          Input::fPars[set][name] = x;
+        } else if ( type[0] == 'a' ){
+          Input::aPars[set][name] = IL::parray(IL::key(line,"value"));
+        } else
+          error("unknown type in params.reg");
 //       finput+=line;
       }
     }
@@ -187,6 +191,9 @@ void Finput::InitInpars(std::string paramspath)
 
 Finput& Finput::operator+=(const std::string& line)
 {
+  const TParArray& beqs = Input::aPars["syntax"]["beq"];
+  const TParArray& eeqs = Input::aPars["syntax"]["eeq"];
+  const TParArray& comments = Input::aPars["syntax"]["comment"];
   unsigned long int ipos=0;
   ipos=IL::skip(line,ipos," "); // skip space characters
   if (InSet(line.substr(ipos), beqs))
@@ -311,24 +318,24 @@ bool Finput::analyzeit()
   }
   return true;
 }
-unsigned long int Finput::analyzecommand(const std::string& str,unsigned long int ipos)
+lui Finput::analyzecommand(const std::string& str, lui ipos)
 {
-  unsigned long int ipos1=ipos, ipos2, ipos3;
-  if (str==commands[0])//"op")
+  const TParArray& skipops = Input::aPars["syntax"]["skipop"];
+  TsPar& commands = Input::sPars["command"];
+  lui 
+    ipos1=ipos, 
+    ipos2, ipos3;
+  if (str==commands["operator"])//"op")
   { // operators
     ipos1=IL::nextwordpos(_input,ipos);
     _eqn*=Lelem(_input.substr(ipos,ipos1-ipos),Lelem::Oper);
   }
-  else if (str==commands[1])//"prm")
+  else if (str==commands["parameter"])//"prm")
   { // parameters
     ipos1=IL::nextwordpos(_input,ipos);
     _eqn*=Lelem(_input.substr(ipos,ipos1-ipos),Lelem::Par);
   }
-  else if (str.substr(0,3)==commands[2])//"sum")
-  { // sum
-    _eqn*=Lelem(str.substr(3),Lelem::Sum);
-  }
-  else if (str.substr(0,4)==commands[3])//"frac")
+  else if (str==commands["fraction"])//"frac")
   { // fraction
     ipos1=IL::nextwordpos(_input,ipos);
     ipos2=ipos1;
@@ -336,9 +343,13 @@ unsigned long int Finput::analyzecommand(const std::string& str,unsigned long in
     _eqn*=Lelem(_input.substr(ipos,ipos1-ipos)+"/"+_input.substr(ipos2,ipos3-ipos2),Lelem::Frac);
     ipos1=ipos3;
   }
-  else if (str==commands[4])//"half")
+  else if (str==commands["half"])//"half")
   { // a half
     _eqn*=Lelem("0.5",Lelem::Num);
+  }
+  else if (str.substr(0,commands["sum"].size())==commands["sum"])//"sum")
+  { // sum
+    _eqn*=Lelem(str.substr(commands["sum"].size()),Lelem::Sum);
   }
   else if (!InSet(str, skipops))//,"left","right","lk","rk","\\"))
     error("Unknown command in equation! "+str,"Finput::analyzecommand");
@@ -445,15 +456,17 @@ bool Finput::extractit()
 }
 Product<Lelem> Finput::expandH(Product<Lelem> const & eqn)
 {
+  TsPar& hms = Input::sPars["hamilton"];
+  const std::string& hamilt = hms["hamiltonian"];
   Product<Lelem> result;
   for (unsigned long int i=0; i<eqn.size(); i++ )
   {
-    if (eqn[i].lex()==Lelem::Oper && eqn[i].name().at(0)==hms[0])//H
+    if (eqn[i].lex()==Lelem::Oper && eqn[i].name().substr(0,hamilt.size())==hamilt)//H
     {// (\op F + \op W)
       result *= Lelem("",Lelem::LPar);
-      result *= Lelem(hms[1]+eqn[i].name().substr(1),Lelem::Oper);//F
+      result *= Lelem(hms["fock"]+eqn[i].name().substr(1),Lelem::Oper);//F
       result *= Lelem("",Lelem::Plus);
-      result *= Lelem(hms[2]+eqn[i].name().substr(1),Lelem::Oper);//W
+      result *= Lelem(hms["flucpot"]+eqn[i].name().substr(1),Lelem::Oper);//W
       result *= Lelem("",Lelem::RPar);
     }
     else  
@@ -775,6 +788,8 @@ void Finput::addterm(Term& term, bool plus, long unsigned int beg, long unsigned
 
 Oper Finput::handle_braket(const Lelem& lel, Term& term)
 {
+  const TParArray& refs = Input::aPars["syntax"]["ref"];
+  const TParArray& csfs = Input::aPars["syntax"]["csf"];
   std::string lelnam=lel.name();
   if (InSet(lelnam, refs))
     return Oper(); // Reference, blank operator
@@ -911,28 +926,32 @@ double Finput::handle_factor(const Lelem& lel)
 }
 Oper Finput::handle_operator(const Lelem& lel, Term& term, bool excopsonly)
 {
+  const TParArray& dgs = Input::aPars["syntax"]["dg"];
+  const TParArray& bexcops = Input::aPars["syntax"]["bexcop"];
+  TsPar& hms = Input::sPars["hamilton"];
   unsigned long int ipos, ipos1, iposnam, up, down;
   std::string lelnam=lel.name(),name,nameadd;
   short excl;
   bool dg=false;
-  // parts of Hamilton operator
   down=lelnam.find("_");
   up=lelnam.find("^");
-  if ( InSet(lelnam[0], hms))
+  // last position of name of operator
+  iposnam=std::min(up,down)-1;
+  iposnam=std::min(iposnam,lelnam.size()-1);
+  name=lelnam.substr(0,iposnam+1);
+  // parts of Hamilton operator
+  if ( InSet(name, hms))
   {
     if (excopsonly) return Oper();
     if (up!=std::string::npos || down!=std::string::npos)
       say("Sub- and superscripts in Hamiltonian will be ignored: "+lelnam);
-    if ( lelnam[0]==hms[1] ) return Oper(Ops::Fock);
-    if ( lelnam[0]==hms[2] ) return Oper(Ops::FluctP);
-    if ( lelnam[0]==hms[3] ) return Oper(Ops::XPert);
+    if ( name==hms["fock"] ) return Oper(Ops::Fock);
+    if ( name==hms["flucpot"] ) return Oper(Ops::FluctP);
+    if ( name==hms["perturbation"] ) return Oper(Ops::XPert);
   }
-  // last position of name of operator
-  iposnam=std::min(up,down)-1;
   // excitation class
   if (down==std::string::npos || down==lelnam.size()-1)
     error("No excitation class in operator "+lelnam,"Finput::handle_operator");
-  name=lelnam.substr(0,iposnam+1);
   if (up==std::string::npos || up==lelnam.size()-1)
     ; // no dagger
   else
@@ -944,7 +963,7 @@ Oper Finput::handle_operator(const Lelem& lel, Term& term, bool excopsonly)
       if(InSet(lelnam.substr(ipos,ipos1-ipos), dgs))
       {
         dg=true;
-        nameadd+=dgs[0];
+        nameadd+=dgs.front();
       }
       else if (lelnam[ipos]!='}')
         nameadd+=lelnam.substr(ipos,ipos1-ipos);
@@ -1082,6 +1101,7 @@ void Finput::add2name(std::string& name, const std::string& nameadd)
 
 std::ostream& operator<<(std::ostream& o, const Lelem& lel)
 {
+  TsPar& commands = Input::sPars["command"];
   if (lel.lex()==Lelem::Bra) 
     o << "< ";
   else if (lel.lex()==Lelem::Ket)
@@ -1091,9 +1111,9 @@ std::ostream& operator<<(std::ostream& o, const Lelem& lel)
   else if (lel.lex()==Lelem::RPar)
     o << ")";
   else if (lel.lex()==Lelem::Oper)
-    o << "\\"<< Finput::commands[0]<<" ";
+    o << "\\"<< commands["operator"]<<" ";
   else if (lel.lex()==Lelem::Par)
-    o << "\\"<< Finput::commands[1]<<" ";
+    o << "\\"<< commands["parameter"]<<" ";
   else if (lel.lex()==Lelem::Plus)
     o << "+";
   else if (lel.lex()==Lelem::Minus)
@@ -1103,7 +1123,7 @@ std::ostream& operator<<(std::ostream& o, const Lelem& lel)
   else if (lel.lex()==Lelem::Div)
     o << "/";
   else if (lel.lex()==Lelem::Sum)
-    o << "\\"<< Finput::commands[2];
+    o << "\\"<< commands["sum"];
   
   o << lel.name() << " ";
   if (lel.lex()==Lelem::Bra) 

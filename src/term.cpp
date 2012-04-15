@@ -973,6 +973,7 @@ Sum<Term,double> Q2::reduceSum(Sum<Term,double> s)
   double prefac;
   say("Reduce sum of terms");
   say("Kroneckers, Connections, and Spin-integration...");
+  bool spinintegr = Input::iPars["prog"]["spinintegr"];
   for ( Sum<Term,double>::const_iterator i=s.begin();i!=s.end(); ++i)
   {
     term=i->first;
@@ -988,7 +989,7 @@ Sum<Term,double> Q2::reduceSum(Sum<Term,double> s)
     if (!term.properconnect())
       continue;
     // expand antisymmetrized integrals and do spin integration
-    sum=term.expand_antisym(Input::iInpars["spinintegr"]);
+    sum=term.expand_antisym(spinintegr);
 //    sum=term.expand_antisym(false);
     sum*=i->second;
     sum1+=sum;

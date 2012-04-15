@@ -71,9 +71,27 @@ bool Output::breaklongline()
   return false;
 }
 
+CurOut* CurOut::pInstance(0);
+CurOut* CurOut::Create(Output* pOut_)
+{
+  if ( pInstance ){ //destroy the previous instance
+//    if (delout) delete pOut;
+    delete pInstance;
+  }
+  pInstance = new CurOut(pOut_);
+  return pInstance;
+}
+CurOut* CurOut::Instance()
+{
+  if (pInstance == 0)
+    pInstance = new CurOut();
+  return pInstance;
+}
+
 Output MyOut::defout;
 Output * MyOut::pcurout = &MyOut::defout;
 double Input::minfac=1e-10;
-TsInpars Input::sInpars;
-TiInpars Input::iInpars;
-TfInpars Input::fInpars;
+TsParSet Input::sPars;
+TiParSet Input::iPars;
+TfParSet Input::fPars;
+TaParSet Input::aPars;

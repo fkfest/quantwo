@@ -41,13 +41,10 @@ std::ostream & operator << (std::ostream & o, Lelem const & lel);
 
 //! functions to analyze input line
 namespace IL{
-  // word separators
-  extern const std::string separator;
-  // neglect word separator after the gluer
-  extern const std::string gluer;
-  // brackets
-  extern const std::string brackets;
+  // get key which corresponds to keyword in parameter registry
   std::string key(const std::string& line, const std::string& keyword);
+  // generate TParArray from string of parameters (e.g. "\dg","\dagger" -> \dg and \dagger )
+  TParArray parray(const std::string& str);
   // skip all characters in str beginning from ipos, which are present in what
   lui skip(const std::string& str, const lui& ipos, const std::string& what);
   // end of word (may be in " )
@@ -66,17 +63,6 @@ namespace IL{
 */
 class Finput {
   public:
-  // define possible operator names (the order is important!)
-  static const std::string commands[5]; // general commands
-  static const std::string beqs[2]; // beq
-  static const std::string eeqs[2]; // beq
-  static const std::string comments[2]; // comment
-  static const std::string skipops[5]; // operators to skip
-  static const std::string refs[3]; // reference functions
-  static const std::string csfs[2]; // determinants
-  static const std::string dgs[2]; // daggers
-  static const std::string bexcops[2]; // bare excitation operators
-  static const char hms[4]; // hamiltonian parts
   // constructor
   Finput ();
   // constructor + init input-parameters

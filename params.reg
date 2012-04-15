@@ -1,9 +1,22 @@
+set="syntax",type=s,name="brackets",value="(){}[]<>",desc="brackets"
+set="syntax",type=s,name="separator",value=" \\{}()[]+-*/&<>|",desc="word separators"
+set="syntax",type=s,name="gluer",value="^_",desc="neglect word separator after the gluer"
 set="syntax",type=a,name="beq",value={"\beq","\begin(equation)"}
 set="syntax",type=a,name="eeq",value={"\eeq","\end(equation)"}
 set="syntax",type=a,name="comment",value={"%","\comment"}
-set="syntax",type=a,name="skipop",value={"left","right","lk","rk","\\"}
-set="syntax",type=a,name="ref",value={"0","\Phi_0", "HF"}
-set="syntax",type=a,name="dg",value={"\dg","\dagger"}
-set="syntax",type=a,name="bexcop",value={"\tau","\Tau"}
+set="syntax",type=a,name="skipop",value={"left","right","lk","rk","\\"},desc="operators to skip"
+set="syntax",type=a,name="ref",value={"0","\Phi_0", "HF"},desc="reference determinant"
+set="syntax",type=a,name="csf",value={"\Phi", "\phi"},desc="determinant"
+set="syntax",type=a,name="dg",value={"\dg","\dagger"},desc="conjugate transpose"
+set="syntax",type=a,name="bexcop",value={"\tau","\Tau"},desc="bare excitation operators"
+set="command",type=s,name="operator",value="op",desc="command for operator"
+set="command",type=s,name="parameter",value="prm",desc="command for parameter"
+set="command",type=s,name="sum",value="sum",desc="command for sum"
+set="command",type=s,name="fraction",value="frac",desc="command for fraction"
+set="command",type=s,name="half",value="half",desc="command for 1/2"
 set="hamilton",type=s,name="hamiltonian",value="H"
+set="hamilton",type=s,name="fock",value="F"
+set="hamilton",type=s,name="flucpot",value="W",desc="fluctuation potential"
+set="hamilton",type=s,name="perturbation",value="X",desc="one-electron perturbation"
 set="prog",type=i,name="spinintegr",value=1
+set="output",type=i,name="emptylines",value=15,desc="write n lines less on the first page"

@@ -2,6 +2,8 @@
 #define Util_H
 
 #include <string>
+#include <map>
+#include <list>
 #include <sstream>
 #include <iostream>
 #include <stdlib.h>
@@ -80,6 +82,22 @@ bool InSet(const ValueType& val, const ValueType (&arr)[arraySize])
     if (val==arr[i]) return true;
   return false;
   /*return std::find(&arr[0], &arr[arraySize], val)!=&arr[arraySize]; }*/
+}
+// implementation of InSet command for search in an map::second
+template <typename ValueType>
+bool InSet(const ValueType& val, const std::map<std::string,ValueType>& m)
+{ 
+  for ( typename std::map<std::string,ValueType>::const_iterator it = m.begin(); it != m.end(); ++it )
+    if ( val == it->second ) return true;
+  return false;
+}
+// implementation of InSet command for search in an list
+template < typename ValueType, class Cont >
+bool InSet(const ValueType& val, const Cont& con)
+{ 
+  for ( typename Cont::const_iterator it = con.begin(); it != con.end(); ++it )
+    if ( val == *it ) return true;
+  return false;
 }
 
 #include "utilities.cpp"

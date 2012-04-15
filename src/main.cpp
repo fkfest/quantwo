@@ -81,10 +81,17 @@ int main(int argc, char **argv) {
     ofstream fout;
     fout.open(outputfile.c_str());
     Output myfout(fout);
-    // set current ouput to fout
+//    myfout.nlines = Input::iPars["output"]["emptylines"];
+//    // set current ouput to fout
+//    CurOut * pCurOut = CurOut::Create(&myfout);
+//    pCurOut->pOut->beq();
+//    pCurOut->pOut->buf <<sum_final << endl;
+//    pCurOut->pOut->eeq();
+    
+//    // set current ouput to fout
     MyOut::pcurout = &myfout;
     // "save" 15 lines for titel
-    MyOut::pcurout->nlines=15;
+    MyOut::pcurout->nlines=15;//Input::iPars["output"]["emptylines"];
     MyOut::pcurout->beq();
     MyOut::pcurout->buf <<sum_final << endl;
     MyOut::pcurout->eeq();
