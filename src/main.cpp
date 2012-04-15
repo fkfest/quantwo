@@ -64,7 +64,6 @@ int main(int argc, char **argv) {
   else
     error("Bad input file!");
   fin.close();
-  
   if (finput.sumterms().size()==0)
     say("No equation in input file!");
   else

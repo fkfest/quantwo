@@ -94,45 +94,4 @@ std::ostream & operator << (std::ostream & o, Sum<Object,Field> const & p)
   }
   return o;
 }
-/*
-template <class Object, class Field>
-std::ostream & operator << (std::ostream & o, Sum<Object,Field> const & p)
-{
-  std::streampos ipos0=o.tellp();
-  int len_line,n_lines,n_pages;
-  for ( typename Sum<Object,Field>::const_iterator i=p.begin();i!=p.end(); ++i)
-  {
-    if (Output::lenline != 0 && Output::lenline > Output::maxlenline)
-    {// new line
-      if (Output::nlines>Output::maxnlines)
-        Output::newpageeqn(o);
-      else
-        Output::newlineeqn(o);
-    }
-
-    if ( i->second<0 )
-    {
-      if ( i!=p.begin() )
-        o << " - ";
-      else
-        o << "-";
-    }
-    else
-    {
-      if ( i!=p.begin() )
-        o << " + ";
-    }
-    if ( std::abs(i->second)!=1 )
-      o << std::abs(i->second) << "*";
-    len_line=Output::lenline;
-    n_lines=Output::nlines;
-    n_pages=Output::npages;
-    o << i->first ;
-    if (n_lines==Output::nlines && n_pages==Output::npages) //same line
-      Output::lenline += o.tellp()-ipos0;
-    ipos0=o.tellp();
-  }
-  return o;
-}
-*/
 

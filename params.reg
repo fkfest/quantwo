@@ -19,4 +19,8 @@ set="hamilton",type=s,name="fock",value="F"
 set="hamilton",type=s,name="flucpot",value="W",desc="fluctuation potential"
 set="hamilton",type=s,name="perturbation",value="X",desc="one-electron perturbation"
 set="prog",type=i,name="spinintegr",value=1
+set="output",type=i,name="maxlenline",value=80,desc="max length of line"
+set="output",type=i,name="maxnlines",value=42,desc="max number of lines on page"
+set="output",type=i,name="widthsubidx",value=1,desc="how many super and subscript indices one needs to fill a position"
+set="output",type=f,name="sumheight",value=1.8,desc="height of \sum"
 set="output",type=i,name="emptylines",value=15,desc="write n lines less on the first page"

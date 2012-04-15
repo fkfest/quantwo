@@ -2,21 +2,35 @@
 
 Output::Output()
 {
-  lenline=nlines=npages=0; 
-  hline=hbufline=1.0;
-  inequation=false;
+  maxlenline = 0;
+  maxnlines = 0;
+  wsi = 0;
+  hsum = 0.0;
   pout = &std::cout;
-  small = std::pow(10,-pout->precision());
+  setvals();
 }
 
 Output::Output(std::ostream& o)
 { 
+  maxlenline = Input::iPars["output"]["maxlenline"];
+  maxnlines = Input::iPars["output"]["maxnlines"];
+  wsi = Input::iPars["output"]["widthsubidx"];
+  hsum = Input::fPars["output"]["sumheight"];
+  pout=&o;
+  setvals();
+}
+void Output::setvals()
+{
+  if (maxlenline == 0) maxlenline = 80;
+  if (maxnlines == 0) maxnlines = 42;
+  if (wsi == 0) wsi = 1;
+  if (hsum < Numbers::small) hsum = 1.8;
   lenline=lenbuf=nlines=npages=0; 
   hline=hbufline=1.0;
   inequation=false;
-  pout=&o;
   small = std::pow(10,-pout->precision());
 }
+
 void Output::flushbuf()
 {
   *pout << buf.str();

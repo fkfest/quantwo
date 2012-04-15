@@ -31,6 +31,7 @@ class Output
   public:
   Output();
   Output(std::ostream & o);
+  void setvals();
   // 1+small == 1 in output
   double small;
   // length of current line
@@ -50,13 +51,13 @@ class Output
   // buffer, will be flushed after newline or newpage
   std::ostringstream buf;
   // max length of line
-  static const int maxlenline=80;
+  int maxlenline;
   // max number of lines on page
-  static const int maxnlines=42;
+  int maxnlines;
   // how many super and subscript indices one needs to fill a position
-  static const int wsi=1;
+  int wsi;
   // height of \sum
-  static const double hsum=1.8;
+  double hsum;
   // start new page of equations
   void newpageeqn();
   // new line of equations
