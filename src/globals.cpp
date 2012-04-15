@@ -3,7 +3,7 @@
 Output::Output()
 {
   lenline=nlines=npages=0; 
-  hbufline=1.0;
+  hline=hbufline=1.0;
   inequation=false;
   pout = &std::cout;
   small = std::pow(10,-pout->precision());
@@ -12,7 +12,7 @@ Output::Output()
 Output::Output(std::ostream& o)
 { 
   lenline=lenbuf=nlines=npages=0; 
-  hbufline=1.0;
+  hline=hbufline=1.0;
   inequation=false;
   pout=&o;
   small = std::pow(10,-pout->precision());
@@ -69,23 +69,6 @@ bool Output::breaklongline()
       return true;
     }
   return false;
-}
-
-CurOut* CurOut::pInstance(0);
-CurOut* CurOut::Create(Output* pOut_)
-{
-  if ( pInstance ){ //destroy the previous instance
-//    if (delout) delete pOut;
-    delete pInstance;
-  }
-  pInstance = new CurOut(pOut_);
-  return pInstance;
-}
-CurOut* CurOut::Instance()
-{
-  if (pInstance == 0)
-    pInstance = new CurOut();
-  return pInstance;
 }
 
 Output MyOut::defout;

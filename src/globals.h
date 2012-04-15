@@ -77,22 +77,6 @@ namespace MyOut
   extern Output defout;
   extern Output * pcurout;
 }
-// singleton class which saves the current output
-class CurOut
-{
-  public:
-  static CurOut* Create(Output* pOut_);
-  static CurOut* Instance();
-  Output* pOut;
-  protected:
-  CurOut(Output* pOut_) : pOut(pOut_) { delout=false;};
-  CurOut() { pOut = new Output(); delout=true;};
-  CurOut(const CurOut&);
-  CurOut& operator= (const CurOut&);
-  private:
-  static CurOut* pInstance;
-  bool delout;
-};
 
 // global variables and functions from input
 namespace Input
