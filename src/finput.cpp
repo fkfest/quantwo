@@ -51,12 +51,41 @@ TParArray IL::parray(const std::string& str)
   }
   return res;
 }
+lui IL::addnewcom(const std::string& str, lui ipos)
+{
+  if ( str[ipos] != '{' )
+    error("bad \\newcommand "+str);
+  lui ipend = closbrack(str,ipos);
+  ++ipos;
+  ipos=skip(str,ipos," \\"); //we don't have backslash in command-names
+  if ( ipos == ipend )
+    error("empty name in \\newcommand "+str);
+  std::string name(str.substr(ipos,skipr(str,ipend," ")-ipos));
+  ipos = ipend+1;
+  if ( ipos >= str.size() || str[ipos] != '{' )
+    error("bad \\newcommand "+str);
+  ipend = closbrack(str,ipos);
+  ++ipos;
+  ipos=skip(str,ipos," ");
+  if ( ipos == ipend )
+    error("empty value in \\newcommand "+str);
+  std::string value(str.substr(ipos,skipr(str,ipend," ")-ipos));
+  Input::sPars["newcommand"][name] = value;
+  return ipend+1;
+}
 
 lui IL::skip(const std::string& str, const lui& ipos, const std::string& what)
 {
   lui ires=ipos;
   while (ires<str.size()&& what.find(str[ires])!=std::string::npos )
     ++ires;
+  return ires;
+}
+lui IL::skipr(const std::string& str, const lui& ipos, const std::string& what)
+{
+  lui ires = std::min(ipos,str.size());
+  while (ires > 0 && what.find(str[ires-1])!=std::string::npos )
+    --ires;
   return ires;
 }
 lui IL::endword(const std::string& line, lui& ipos)
@@ -82,15 +111,12 @@ lui IL::closbrack(const std::string& str, lui ipos)
     error(str[ipos]+"is not a bracket!","IL::closbrack"); 
   char lk(brackets[i]), rk(brackets[i+1]); // left and right brackets
   int nk=1;
-  for ( i=ipos+1;i<str.size();++i)
-  {
+  for ( i=ipos+1;i<str.size();++i) {
     if (str[i]==lk) 
       ++nk; // count number of "("
-    else if (str[i]==rk) 
-    {
+    else if (str[i]==rk) {
       --nk; // count number of ")"
-      if (nk==0) 
-      {
+      if (nk==0) {
         ipos1=i;
         break;
       }
@@ -107,6 +133,7 @@ lui IL::nextwordpos(const std::string& str, lui& ipos, bool glue, bool greedy)
   const std::string& gluer = Input::sPars["syntax"]["gluer"];
   lui nwpos;
   ipos=IL::skip(str,ipos," "); // remove spaces
+  if ( ipos < str.size() && str[ipos] == '%' ) return ipos+1; // comment sign is one word
   // e.g. from ab_{cd}ef
   if ( greedy && glue ){
     // ab_{cd}
@@ -196,31 +223,38 @@ Finput& Finput::operator+=(const std::string& line)
 {
   const TParArray& beqs = Input::aPars["syntax"]["beq"];
   const TParArray& eeqs = Input::aPars["syntax"]["eeq"];
+  const TParArray& newcs = Input::aPars["syntax"]["newcommand"];
   const TParArray& comments = Input::aPars["syntax"]["comment"];
-  unsigned long int ipos=0;
-  ipos=IL::skip(line,ipos," "); // skip space characters
-  if (InSet(line.substr(ipos), beqs))
-  {// begin equation
+ 
+  lui ipos=0, ipend;
+  // and skip " " on begin
+  ipos = IL::skip(line,ipos," ");
+  ipend = IL::nextwordpos(line,ipos,false);
+  std::string 
+    // line without front-spaces
+    linesp = line.substr(ipos),
+    // first word
+    first = line.substr(ipos,ipend-ipos);
+  if (InSet(linesp, beqs)) {// begin equation
     _input="";
     _eq=true;
-  }
-  else if (InSet(line.substr(ipos), eeqs))
-  {// end equation
+  } else if (InSet(linesp, eeqs)) {// end equation
     _eq=false;
     analyzeit();
     extractit();
     do_sumterms(true);
     do_sumterms();
     _input="";
-  }
-  else
-    for (unsigned long int i=ipos; i<line.size(); i++)
-    {
+  } else if (InSet(first, newcs)) {// newcommand
+    ipos = IL::addnewcom(line,ipend);
+  } else {
+    for (unsigned long int i=ipos; i<line.size(); i++) {
       if(InSet(line.substr(i,1),comments)) // comment
         break;
       _input+=line[i];
     }
-  _input+=" "; // add space for separation
+    _input+=" "; // add space for separation
+  }
   return *this;
 }
 std::string Finput::input() const

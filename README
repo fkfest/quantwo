@@ -51,12 +51,18 @@ The comments can be done using %.
 
 At this stage the following mathematical operators and latex commands will be recognized:
 (, [, ), ], {, }, +, -, <number>, \frac{<number>}{<number>}, \half, < <bra> |, | <ket> >, \op <operator>, \mu_<integer>,
-\dagger, \dg, \prm <parameter>, \sum_{<excitation>[,<excitation>[,...]]} 
+\dagger, \dg, \prm <parameter>, \sum_{<excitation>[,<excitation>[,...]]}, \newcommand{}{} 
 
 Following latex commands will be ignored:
 \left, \right, \lk, \rk, &, \\
 
 All not recognized symbols will be ignored and a warning will be written.
+
+NEWCOMMAND:
+
+a simple version of \newcommand is implemented, which can be used from input file (one per line):
+\newcommand{}{}
+e.g. \newcommand{\U}{(\op T_1 + \op T_2)} -> all \U will be replaced by (\op T_1 + \op T_2)
 
 OPERATORS:
 
