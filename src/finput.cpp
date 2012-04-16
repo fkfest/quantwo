@@ -28,14 +28,14 @@ std::string IL::key(const std::string& line, const std::string& keyword)
     if ( ipos != std::string::npos ){
       ipos += keyword.size();
       ipos = skip(line,ipos," ");
-      if ( line[ipos] == '=' )
-        break;
-    } else
-      error(keyword+" not found");
+      if ( line[ipos] == '=' ){
+        ++ipos;
+        lui ipend = endword(line,ipos);
+        return line.substr(ipos,ipend-ipos);
+      }
+    }
   } while (ipos != std::string::npos);
-  ++ipos;
-  lui ipend = endword(line,ipos);
-  return line.substr(ipos,ipend-ipos);
+  return std::string();
 }
 TParArray IL::parray(const std::string& str)
 {
@@ -160,9 +160,10 @@ void Finput::InitInpars(std::string paramspath)
     while (finp.good()) {
       std::getline (finp,line);
       if ( !line.empty()){
-        std::cout << line << std::endl;
-        type = IL::key(line,"type");
+        _xout3(line << std::endl);
         set = IL::key(line,"set");
+        if ( set.size() == 0 ) continue;
+        type = IL::key(line,"type");
         name = IL::key(line,"name");
         if ( type.size() == 0 )
           error("no type is given");
@@ -170,11 +171,13 @@ void Finput::InitInpars(std::string paramspath)
           Input::sPars[set][name] = IL::key(line,"value");
         } else if ( type[0] == 'i' ){
           int x;
-          str2num<int>(x,IL::key(line,"value"),std::dec);
+          if (!str2num<int>(x,IL::key(line,"value"),std::dec))
+            error("integer parameter is not integer :"+line);
           Input::iPars[set][name] = x;
         } else if ( type[0] == 'f' ){
           double x; 
-          str2num<double>(x,IL::key(line,"value"),std::dec); 
+          if (!str2num<double>(x,IL::key(line,"value"),std::dec))
+            error("float parameter is not float :"+line); 
           Input::fPars[set][name] = x;
         } else if ( type[0] == 'a' ){
           Input::aPars[set][name] = IL::parray(IL::key(line,"value"));
@@ -451,7 +454,7 @@ bool Finput::extractit()
         --j;
       }
   for (unsigned int k = 0; k<_connections.size();k++)
-    std::cout << "final Connection " << k << ": " << _connections[k] << std::endl;
+    _xout2("final Connection " << k << ": " << _connections[k] << std::endl);
   return true;
 }
 Product<Lelem> Finput::expandH(Product<Lelem> const & eqn)
@@ -746,7 +749,8 @@ bool Finput::do_sumterms(bool excopsonly )
 void Finput::addterm(Term& term, bool plus, long unsigned int beg, long unsigned int end, 
                      Product<long int > const & indxoperterm, unsigned long int & nterm, bool excopsonly)
 {
-  if(excopsonly || term.term_is_0())
+  double minfac = Input::fPars["prog"]["minfac"];
+  if(excopsonly || term.term_is_0(minfac))
   {
     //reset parameter-info
     handle_parameters(term,true);
@@ -772,7 +776,7 @@ void Finput::addterm(Term& term, bool plus, long unsigned int beg, long unsigned
         else
           connect*=-ipos-1;
       }
-      std::cout << "Connections in Term #" << nterm << ": " <<connect<<std::endl;
+      _xout2("Connections in Term #" << nterm << ": " <<connect<<std::endl);
       term.addconnection(connect);
       connect=Product<long int>();
     }

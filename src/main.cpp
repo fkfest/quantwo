@@ -11,8 +11,6 @@
 using namespace std;
 
 int main(int argc, char **argv) {
-  // version of the program
-  string version("1.0");
   // handle input and output
   string inputfile, outputfile,
     exePath = exepath(), outPath;
@@ -24,16 +22,15 @@ int main(int argc, char **argv) {
       ifstream readme;
       readme.open((exePath+"README").c_str());
       if (readme.is_open()) {
-	string line;
+        string line;
         while (readme.good()) {
-	  getline (readme,line);
+          getline (readme,line);
           cout << line << endl;
         }
       }
       return 0;
-    } else if (strcmp(argv[i],"-v")==0 || strcmp(argv[i],"--version")==0) {
-      cout << "Quantwo, Version " << version << endl;
-      return 0;
+    } else if (strcmp(argv[i],"-v")==0 || strcmp(argv[i],"--verbose")==0) {
+      Input::verbose = 1;
     }
     ++i;
   }
@@ -57,7 +54,7 @@ int main(int argc, char **argv) {
     while (fin.good())
     {
       getline (fin,line);
-      cout << line << endl;
+      _xout1(line << endl);
       finput+=line;
     }
   }
@@ -72,10 +69,10 @@ int main(int argc, char **argv) {
 //    Sum<Term,double> sum_NO(Q2::normalOrderPH(sum_finp));
     Sum<Term,double> sum_NO(Q2::wick(sum_finp));
     Sum<Term,double> sum_final(Q2::reduceSum(sum_NO));
-    cout << finput << endl;
-//    cout << " = " << sum_finp << endl;
-//    cout << " = " << sum_NO << endl;
-    cout << " = " << sum_final << endl;
+    _xout1(finput << endl);
+    _xout2(" = " << sum_finp << endl);
+    _xout2(" = " << sum_NO << endl);
+    _xout1(" = " << sum_final << endl);
     // write to a file
     ofstream fout;
     fout.open(outputfile.c_str());

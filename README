@@ -35,7 +35,7 @@ in definitions.tex)
 COMMAND-LINE PARAMETERS
 
 --help (-h) print this README
---version (-v) print program version 
+--verbose (-v) be chatty - print more 
 
 INPUT FILE
 ----------

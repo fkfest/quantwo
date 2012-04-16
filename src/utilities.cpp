@@ -2,15 +2,15 @@
 inline void error(std::string what, std::string where)
 {
   std::cerr << "  ERROR: " << what << std::endl;
-  if (where!="")
+  if (where.size() > 0)
     std::cerr << "  in " << where << std::endl;
   exit(1);
 }
 inline void say(std::string what, std::string where)
 {
-  std::cout << what << std::endl;
-  if (where!="")
-    std::cout << "  in " << where << std::endl;
+  _xout0(what << std::endl);
+  if (where.size() > 0)
+    _xout0("  in " << where << std::endl);
 }
 inline std::string exepath(){
   std::string path;

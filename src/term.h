@@ -87,7 +87,7 @@ class Term {
     std::vector< Product<long int> > connections() const;
     
     //! return true if term is zero
-    bool term_is_0() const;
+    bool term_is_0(double minfac) const;
 
     //! artificial ordering
     bool operator < (Term const & t) const;

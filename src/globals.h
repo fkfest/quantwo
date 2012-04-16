@@ -82,8 +82,8 @@ namespace MyOut
 // global variables and functions from input
 namespace Input
 {
-  // terms with prefactor smaller than this will be neglected
-  extern double minfac;
+  // verbosity
+  extern int verbose;
   // input-parameters
   //string parameters
   extern TsParSet sPars;
@@ -94,6 +94,21 @@ namespace Input
   //array of string parameters
   extern TaParSet aPars;
 }
+
+#define xout std::cout
+#define _xout(level,x) \
+    { \
+       if ( Input::verbose >= (level) ) \
+       { xout << x; } \
+    }
+// output unless Input::verbose is below 0
+#define _xout0(x) _xout(0,x)
+// output unless Input::verbose is below 1
+#define _xout1(x) _xout(1,x)
+// output unless Input::verbose is below 2
+#define _xout2(x) _xout(2,x)
+// output unless Input::verbose is below 3
+#define _xout3(x) _xout(3,x)
 
 // class Inpars
 // {

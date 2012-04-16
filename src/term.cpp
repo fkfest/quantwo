@@ -115,13 +115,13 @@ Sum< Permut, double > Term::perm() const
 std::vector< Product< long int > > Term::connections() const
 { return _connections; }
 
-bool Term::term_is_0() const
+bool Term::term_is_0(double minfac) const
 { 
   bool 
-    is0 = (_opProd.size()==0 && _kProd.size()==0 && _mat.size()==0) || std::abs(_prefac)<Input::minfac,
+    is0 = (_opProd.size()==0 && _kProd.size()==0 && _mat.size()==0) || std::abs(_prefac)<minfac,
     loop = !is0;
   for ( Sum<Permut,double>::const_iterator it = _perm.begin(); loop && it != _perm.end(); ++it )
-    loop = is0 = std::abs(it->second) < Input::minfac;
+    loop = is0 = std::abs(it->second) < minfac;
   return is0;
 }
 bool Term::term_is_valid()
@@ -967,6 +967,7 @@ void Term::set_lastorb(Orbital orb, bool onlylarger)
 
 Sum<Term,double> Q2::reduceSum(Sum<Term,double> s)
 {
+  double minfac = Input::fPars["prog"]["minfac"];
   Sum<Term,double> sum,sum1;
   Term term,term1;
   bool added;
@@ -1011,14 +1012,14 @@ Sum<Term,double> Q2::reduceSum(Sum<Term,double> s)
         sum.erase(k);
         term1+=std::make_pair<Permut,double>(perm,prefac);
         //std::cout<<"term old" << term1 <<std::endl;
-        if ( !term1.term_is_0() ) sum+=term1;
+        if ( !term1.term_is_0(minfac) ) sum+=term1;
         added=true;
         break;
       }
     }
     if (!added) {
       term+=std::make_pair<Permut,double>(Permut(),prefac);
-      if ( !term.term_is_0() ) sum+=term;
+      if ( !term.term_is_0(minfac) ) sum+=term;
       //std::cout<<"term new" << term <<std::endl;
     }
   } 
@@ -1026,13 +1027,13 @@ Sum<Term,double> Q2::reduceSum(Sum<Term,double> s)
   // now remove everything with small prefactor
   sum1 = Sum<Term,double>();
   for ( Sum<Term,double>::const_iterator j=sum.begin(); j!=sum.end(); ++j) {
-    if ( std::abs(j->second) < Input::minfac ) continue;
+    if ( std::abs(j->second) < minfac ) continue;
     term1 = term = j->first;
-    if ( std::abs(term.prefac()) < Input::minfac ) continue;
+    if ( std::abs(term.prefac()) < minfac ) continue;
     term1.reset_prefac();
     const Sum<Permut,double>& perms = term.perm();
     for ( Sum<Permut,double>::const_iterator it = perms.begin(); it != perms.end(); ++it ){
-      if ( std::abs(it->second) < Input::minfac ) continue;
+      if ( std::abs(it->second) < minfac ) continue;
       term1 += *it; //std::make_pair<Permut,double>(it->first,it->second);
     }
     sum1 += term1;

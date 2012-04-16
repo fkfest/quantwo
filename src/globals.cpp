@@ -2,25 +2,21 @@
 
 Output::Output()
 {
-  maxlenline = 0;
-  maxnlines = 0;
-  wsi = 0;
-  hsum = 0.0;
   pout = &std::cout;
   setvals();
 }
 
 Output::Output(std::ostream& o)
 { 
-  maxlenline = Input::iPars["output"]["maxlenline"];
-  maxnlines = Input::iPars["output"]["maxnlines"];
-  wsi = Input::iPars["output"]["widthsubidx"];
-  hsum = Input::fPars["output"]["sumheight"];
   pout=&o;
   setvals();
 }
 void Output::setvals()
 {
+  maxlenline = Input::iPars["output"]["maxlenline"];
+  maxnlines = Input::iPars["output"]["maxnlines"];
+  wsi = Input::iPars["output"]["widthsubidx"];
+  hsum = Input::fPars["output"]["sumheight"];
   if (maxlenline == 0) maxlenline = 80;
   if (maxnlines == 0) maxnlines = 42;
   if (wsi == 0) wsi = 1;
@@ -84,11 +80,10 @@ bool Output::breaklongline()
     }
   return false;
 }
-
-Output MyOut::defout;
-Output * MyOut::pcurout = &MyOut::defout;
-double Input::minfac=1e-10;
+int Input::verbose = 0;
 TsParSet Input::sPars;
 TiParSet Input::iPars;
 TfParSet Input::fPars;
 TaParSet Input::aPars;
+Output MyOut::defout;
+Output * MyOut::pcurout = &MyOut::defout;

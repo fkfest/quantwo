@@ -12,6 +12,7 @@
 #include <mach-o/dyld.h>	/* _NSGetExecutablePath */
 #endif
 
+#include "globals.h"
 /*! 
     Implements utilities (e.g. error function)
 */
