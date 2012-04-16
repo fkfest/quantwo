@@ -458,7 +458,7 @@ std::ostream & operator << (std::ostream & o, Term const & t)
     printed = true;
   }
   
-  if ( t.perm().size() > 1 ){
+  if ( t.perm().size() > 1 || t.perm().begin()->second < 0 ){
     MyOut::pcurout->lenbuf++ ; // for "("
     o << "(" << t.perm() << ")";
     MyOut::pcurout->lenbuf++ ; // for ")"
