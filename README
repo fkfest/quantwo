@@ -37,6 +37,11 @@ COMMAND-LINE PARAMETERS
 --help (-h) print this README
 --verbose (-v) be chatty - print more 
 
+OPTIONS
+-------
+
+Various options can be changed in a config file "params.reg" (including a definition of simple new commands (set="newcommand"))
+
 INPUT FILE
 ----------
 
@@ -46,7 +51,7 @@ The comments can be done using %.
 
 At this stage the following mathematical operators and latex commands will be recognized:
 (, [, ), ], {, }, +, -, <number>, \frac{<number>}{<number>}, \half, < <bra> |, | <ket> >, \op <operator>, \mu_<integer>,
-\dagger, \dg, \prm <parameter>, \sum_{<excitation>[,<excitation>[,...]]}
+\dagger, \dg, \prm <parameter>, \sum_{<excitation>[,<excitation>[,...]]} 
 
 Following latex commands will be ignored:
 \left, \right, \lk, \rk, &, \\

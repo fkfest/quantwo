@@ -1,3 +1,10 @@
+%OUTPUT PARAMETERS
+set="output",type=i,name="maxlenline",value=80,desc="max length of line"
+set="output",type=i,name="maxnlines",value=42,desc="max number of lines on page"
+set="output",type=i,name="widthsubidx",value=1,desc="how many super and subscript indices one needs to fill a position"
+set="output",type=f,name="sumheight",value=1.8,desc="height of \sum"
+set="output",type=i,name="emptylines",value=15,desc="write n lines less on the first page"
+
 %SYNTAX
 set="syntax",type=s,name="brackets",value="(){}[]<>",desc="brackets"
 set="syntax",type=s,name="separator",value=" \\{}()[]+-*/&<>|",desc="word separators"
@@ -5,7 +12,7 @@ set="syntax",type=s,name="gluer",value="^_",desc="neglect word separator after t
 set="syntax",type=a,name="beq",value={"\beq","\begin(equation)"}
 set="syntax",type=a,name="eeq",value={"\eeq","\end(equation)"}
 set="syntax",type=a,name="comment",value={"%","\comment"}
-set="syntax",type=a,name="skipop",value={"left","right","lk","rk","\\"},desc="operators to skip"
+set="syntax",type=a,name="skipop",value={"left","right","lk","rk","\"},desc="operators to skip"
 set="syntax",type=a,name="ref",value={"0","\Phi_0", "HF"},desc="reference determinant"
 set="syntax",type=a,name="csf",value={"\Phi", "\phi"},desc="determinant"
 set="syntax",type=a,name="dg",value={"\dg","\dagger"},desc="conjugate transpose"
@@ -16,7 +23,6 @@ set="command",type=s,name="operator",value="op",desc="command for operator"
 set="command",type=s,name="parameter",value="prm",desc="command for parameter"
 set="command",type=s,name="sum",value="sum",desc="command for sum"
 set="command",type=s,name="fraction",value="frac",desc="command for fraction"
-set="command",type=s,name="half",value="half",desc="command for 1/2"
 
 %HAMILTONIAN PARTS
 set="hamilton",type=s,name="hamiltonian",value="H"
@@ -24,13 +30,11 @@ set="hamilton",type=s,name="fock",value="F"
 set="hamilton",type=s,name="flucpot",value="W",desc="fluctuation potential"
 set="hamilton",type=s,name="perturbation",value="X",desc="one-electron perturbation"
 
+%CUSTOM COMMANDS
+set="newcommand",type=s,name="half",value="\frac{1}{2}",desc="command for 1/2"
+set="newcommand",type=s,name="quart",value="\frac{1}{4}",desc="command for 1/4"
+set="newcommand",type=s,name="brac2",value="(\frac{2}{3}<\Phi^{ab}_{ij}|+\frac{1}{3}<\Phi^{ba}_{ij}|)",desc="contravariant bra for doubles"
+
 %PROGRAM RELEVANT
 set="prog",type=i,name="spinintegr",value=1,desc="if > 0 : do spin-integration"
 set="prog",type=f,name="minfac",value=1e-10,desc="terms with smaller prefactors will be neglected"
-
-%OUTPUT PARAMETERS
-set="output",type=i,name="maxlenline",value=80,desc="max length of line"
-set="output",type=i,name="maxnlines",value=42,desc="max number of lines on page"
-set="output",type=i,name="widthsubidx",value=1,desc="how many super and subscript indices one needs to fill a position"
-set="output",type=f,name="sumheight",value=1.8,desc="height of \sum"
-set="output",type=i,name="emptylines",value=15,desc="write n lines less on the first page"

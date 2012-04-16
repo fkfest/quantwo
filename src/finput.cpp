@@ -325,36 +325,35 @@ lui Finput::analyzecommand(const std::string& str, lui ipos)
 {
   const TParArray& skipops = Input::aPars["syntax"]["skipop"];
   TsPar& commands = Input::sPars["command"];
+  // custom commands
+  TsPar& newcom = Input::sPars["newcommand"];
   lui 
     ipos1=ipos, 
     ipos2, ipos3;
-  if (str==commands["operator"])//"op")
-  { // operators
+  if (str==commands["operator"]) { // operators
     ipos1=IL::nextwordpos(_input,ipos);
     _eqn*=Lelem(_input.substr(ipos,ipos1-ipos),Lelem::Oper);
-  }
-  else if (str==commands["parameter"])//"prm")
-  { // parameters
+  } else if (str==commands["parameter"]) { // parameters
     ipos1=IL::nextwordpos(_input,ipos);
     _eqn*=Lelem(_input.substr(ipos,ipos1-ipos),Lelem::Par);
-  }
-  else if (str==commands["fraction"])//"frac")
-  { // fraction
+  } else if (str==commands["fraction"]) { // fraction
     ipos1=IL::nextwordpos(_input,ipos);
     ipos2=ipos1;
     ipos3=IL::nextwordpos(_input,ipos2);
     _eqn*=Lelem(_input.substr(ipos,ipos1-ipos)+"/"+_input.substr(ipos2,ipos3-ipos2),Lelem::Frac);
     ipos1=ipos3;
-  }
-  else if (str==commands["half"])//"half")
-  { // a half
-    _eqn*=Lelem("0.5",Lelem::Num);
-  }
-  else if (str.substr(0,commands["sum"].size())==commands["sum"])//"sum")
-  { // sum
+//  } else if (str==commands["half"]) { // a half
+//    _eqn*=Lelem("0.5",Lelem::Num);
+  } else if (str.substr(0,commands["sum"].size())==commands["sum"]) { // sum
     _eqn*=Lelem(str.substr(commands["sum"].size()),Lelem::Sum);
-  }
-  else if (!InSet(str, skipops))//,"left","right","lk","rk","\\"))
+  } else if (InSet(str, skipops)){//,"left","right","lk","rk","\\"))
+  } else if (newcom.count(str)){// custom command
+    // replace and go back
+    assert( ipos > str.size() );
+    ipos1 = _input.rfind('\\',ipos-str.size());
+    assert( ipos1 != std::string::npos );
+    _input.replace(ipos1,ipos-ipos1,newcom[str]);
+  } else 
     error("Unknown command in equation! "+str,"Finput::analyzecommand");
   return ipos1;
 }
