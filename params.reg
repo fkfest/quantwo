@@ -38,4 +38,5 @@ set="newcommand",type=s,name="brac2",value="(\frac{2}{3}<\Phi^{ab}_{ij}|+\frac{1
 
 %PROGRAM RELEVANT
 set="prog",type=i,name="spinintegr",value=1,desc="if > 0 : do spin-integration"
+set="prog",type=i,name="wick",value=1,desc="if > 0 : do wicks theorem and normal ordering otherwise"
 set="prog",type=f,name="minfac",value=1e-10,desc="terms with smaller prefactors will be neglected"

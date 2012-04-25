@@ -65,9 +65,13 @@ int main(int argc, char **argv) {
     say("No equation in input file!");
   else
   {
+//    Input::verbose = 2;
     Sum<Term,double> sum_finp(finput.sumterms());
-//    Sum<Term,double> sum_NO(Q2::normalOrderPH(sum_finp));
-    Sum<Term,double> sum_NO(Q2::wick(sum_finp));
+    Sum<Term,double> sum_NO;
+    if ( Input::iPars["prog"]["wick"] == 0 )
+      sum_NO = Q2::normalOrderPH(sum_finp);
+    else 
+      sum_NO = Q2::wick(sum_finp);
     Sum<Term,double> sum_final(Q2::reduceSum(sum_NO));
     _xout1(finput << endl);
     _xout2(" = " << sum_finp << endl);
