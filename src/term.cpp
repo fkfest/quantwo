@@ -800,8 +800,8 @@ Sum< Term, double > Term::expand_antisym(bool spinintegr)
 void Term::spinintegration(bool notfake)
 {
   // generate Product of all orbitals and external-lines orbitals
-  Product<Orbital> peo(extindx());
-  Product<Orbital> po(peo); // start with external lines!
+  List<Orbital> peo(extindx());
+  List<Orbital> po(peo); // start with external lines!
   po*=_realsumindx; // internal indices
   _nocc=_nintloops=_nloops=0;
   
@@ -809,39 +809,33 @@ void Term::spinintegration(bool notfake)
   Matrices::Spinsym spinsym=Matrices::Singlet;
   unsigned int ithis=0;
   long int ipos;
+  List<Orbital>::iterator it;
   bool first, samespinsym,internalloop;
   while (po.size()>0)
   {
-    orb=po[0];
+    orb=po.front();
     orb1=orb;
     first=true;
     samespinsym=true;
     internalloop=true;
-    do
-    {
+    do {
       // remove orb1 from product of orbitals (we dont need to handle this orbital again!)
-      ipos=po.find(orb1);
+      it = std::find(po.begin(),po.end(),orb1);
+      assert( it != po.end() );
+      po.erase(it);
       // count number of occupied orbitals (for comparison)
       if (orb1.type()== Orbital::Occ) ++_nocc;
-      if (ipos<0)
-        error("Something strange with orbitals","Term::spinintegration");
-      else
-        po.erase(po.begin()+ipos);
       // find orbital which corresponds to the same electron
-      for (unsigned int j=0; j<_mat.size(); j++)
-      {
+      for (unsigned int j=0; j<_mat.size(); j++) {
         if(!first && j==ithis) continue; // dont search in the same matrix
         ipos=_mat[j].orbitals().find(orb1);
-        if (ipos>=0)
-        {
+        if (ipos>=0) {
           orb1=_mat[j].orbel(orb1);
           ithis=j;
-          if (first) 
-          {
+          if (first) {
             first=false;
             spinsym=_mat[j].spinsym(ipos);
-          }
-          else 
+          } else 
             samespinsym = samespinsym&&(spinsym==_mat[j].spinsym(ipos));
           break;
         }
