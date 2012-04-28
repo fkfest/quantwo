@@ -29,12 +29,25 @@ std::string exepath();
 // string to number transformation
 // call: str2num<double>(x,"3.14",std::dec), number will be in x
 template <class T>
-bool str2num(T& t, const std::string& s,std::ios_base& (*f)(std::ios_base&));
+inline
+bool str2num(T& t, const std::string& s,
+             std::ios_base& (*f)(std::ios_base&))
+{
+  std::istringstream iss(s);
+  return !(iss >> f >> t).fail();
+}
 
 // number to string transformation
 // call: num2str(3.14,std::dec), string will be returned
 template <class T>
-std::string num2str(const T& t,std::ios_base& (*f)(std::ios_base&));
+inline
+std::string num2str(const T& t,
+             std::ios_base& (*f)(std::ios_base&))
+{
+  std::ostringstream oss;
+  oss << f << t;
+  return oss.str();
+}
 
 template<typename string_t>
 string_t DirName(string_t source)
@@ -100,8 +113,6 @@ bool InSet(const ValueType& val, const Cont& con)
     if ( val == *it ) return true;
   return false;
 }
-
-#include "utilities.cpp"
 
 #endif
 

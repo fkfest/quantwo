@@ -1,18 +1,18 @@
 #include "utilities.h"
-inline void error(std::string what, std::string where)
+void error(std::string what, std::string where)
 {
   std::cerr << "  ERROR: " << what << std::endl;
   if (where.size() > 0)
     std::cerr << "  in " << where << std::endl;
   exit(1);
 }
-inline void say(std::string what, std::string where)
+void say(std::string what, std::string where)
 {
   _xout0(what << std::endl);
   if (where.size() > 0)
     _xout0("  in " << where << std::endl);
 }
-inline std::string exepath(){
+std::string exepath(){
   std::string path;
   char buff[1024];
 #ifdef __linux__
@@ -36,24 +36,4 @@ inline std::string exepath(){
   }
   return DirName(path);
 }
-
-template <class T>
-inline
-bool str2num(T& t, const std::string& s,
-             std::ios_base& (*f)(std::ios_base&))
-{
-  std::istringstream iss(s);
-  return !(iss >> f >> t).fail();
-}
-
-template <class T>
-inline
-std::string num2str(const T& t,
-             std::ios_base& (*f)(std::ios_base&))
-{
-  std::ostringstream oss;
-  oss << f << t;
-  return oss.str();
-}
-
 
