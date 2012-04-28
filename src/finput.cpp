@@ -20,9 +20,8 @@ Lelem Lelem::braexpanded() const
 bool Lelem::operator==(const Lelem& lel) const
 { return _lex==lel._lex && _name==lel._name; }
 
-std::string IL::key(const std::string& line, const std::string& keyword)
+std::string IL::key(const std::string& line, lui& ipos, const std::string& keyword)
 {
-  lui ipos; 
   do {
     ipos = line.find(keyword);
     if ( ipos != std::string::npos ){
@@ -30,13 +29,22 @@ std::string IL::key(const std::string& line, const std::string& keyword)
       ipos = skip(line,ipos," ");
       if ( line[ipos] == '=' ){
         ++ipos;
-        lui ipend = endword(line,ipos);
-        return line.substr(ipos,ipend-ipos);
+        lui 
+          ipend = endword(line,ipos),
+          ipbeg = ipos;
+        ipos = skip(line,ipend," \"},");
+        return line.substr(ipbeg,ipend-ipbeg);
       }
     }
   } while (ipos != std::string::npos);
   return std::string();
 }
+std::string IL::key(const std::string& line, const std::string& keyword)
+{
+  lui ipos = 0;
+  return IL::key(line,ipos,keyword);
+}
+
 TParArray IL::parray(const std::string& str)
 {
   TParArray res;
@@ -72,6 +80,52 @@ lui IL::addnewcom(const std::string& str, lui ipos)
   std::string value(str.substr(ipos,skipr(str,ipend," ")-ipos));
   Input::sPars["newcommand"][name] = value;
   return ipend+1;
+}
+void IL::changePars(const std::string& str, lui ipos)
+{
+  bool stype, itype, ftype, atype;
+  stype = itype = ftype = atype = false;
+  lui ipend = IL::nextwordpos(str,ipos);
+  if ( ipend == ipos ) return; // empty line
+  std::string set = str.substr(ipos,ipend-ipos);
+  // search set in parameters
+  if ( Input::sPars.count(set) )
+    stype = true;
+  if ( Input::iPars.count(set) )
+    itype = true;
+  if ( Input::fPars.count(set) )
+    ftype = true;
+  if ( Input::aPars.count(set) )
+    atype = true;
+  if ( !(stype || itype || ftype || atype) ) {
+    // print a warning and return
+    _xout0("Unrecognized set: " << str << std::endl);
+    return;
+  }
+  ipos = IL::skip(str,ipend," :,");
+  // go through all names in the line
+  while( (ipend = IL::nextwordpos(str,ipos)) != ipos ){
+    // search name in parameter-set
+    std::string name = str.substr(ipos,ipend-ipos);
+    if ( stype && Input::sPars[set].count(name) ){
+      Input::sPars[set][name] = IL::key(str,ipos,name);
+    } else if ( itype && Input::iPars[set].count(name)){ // change the parameter
+      int x;
+      if (!str2num<int>(x,IL::key(str,ipos,name),std::dec))
+        error("integer input parameter is not integer in"+set+":"+name);
+      Input::iPars[set][name] = x;
+    } else if ( ftype && Input::fPars[set].count(name)){ // change the parameter
+      double x;
+      if (!str2num<double>(x,IL::key(str,ipos,name),std::dec))
+        error("float input parameter is not float in "+set+":"+name);
+      Input::fPars[set][name] = x;
+    } else if ( atype && Input::aPars[set].count(name)){
+      Input::aPars[set][name] = IL::parray(IL::key(str,ipos,name));
+    } else {
+      _xout0(str.substr(ipos) << std::endl);
+      error(set+":"+name+" : unrecognized name");
+    }
+  }
 }
 
 lui IL::skip(const std::string& str, const lui& ipos, const std::string& what)
@@ -229,13 +283,21 @@ Finput& Finput::operator+=(const std::string& line)
   lui ipos=0, ipend;
   // and skip " " on begin
   ipos = IL::skip(line,ipos," ");
-  ipend = IL::nextwordpos(line,ipos,false);
-  std::string 
-    // line without front-spaces
-    linesp = line.substr(ipos),
-    // first word
-    first = line.substr(ipos,ipend-ipos);
-  if (InSet(linesp, beqs)) {// begin equation
+  // line without front-spaces and comments
+  std::string linesp;
+  // remove comments
+  for (unsigned long int i=ipos; i<line.size(); i++) {
+    if(InSet(line.substr(i,1),comments)) // comment
+      break;
+    linesp += line[i];
+  }
+  // remove spaces at the end
+  ipend = IL::skipr(linesp,linesp.size()," ");
+  linesp = linesp.substr(0,ipend);
+  ipos = 0;
+  ipend = IL::nextwordpos(linesp,ipos,false);
+  if (ipos == ipend){ // empty line
+  } else if (InSet(linesp, beqs)) {// begin equation
     _input="";
     _eq=true;
   } else if (InSet(linesp, eeqs)) {// end equation
@@ -245,15 +307,13 @@ Finput& Finput::operator+=(const std::string& line)
     do_sumterms(true);
     do_sumterms();
     _input="";
-  } else if (InSet(first, newcs)) {// newcommand
-    ipos = IL::addnewcom(line,ipend);
+  } else if (InSet(linesp.substr(ipos,ipend-ipos), newcs)) {// newcommand
+    ipos = IL::addnewcom(linesp,ipend);
+  } else if (!_eq){
+    IL::changePars(linesp,ipos);
   } else {
-    for (unsigned long int i=ipos; i<line.size(); i++) {
-      if(InSet(line.substr(i,1),comments)) // comment
-        break;
-      _input+=line[i];
-    }
-    _input+=" "; // add space for separation
+    _input += linesp;
+    _input += " "; // add space for separation
   }
   return *this;
 }

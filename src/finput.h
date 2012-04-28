@@ -42,11 +42,15 @@ std::ostream & operator << (std::ostream & o, Lelem const & lel);
 //! functions to analyze input line
 namespace IL{
   // get key which corresponds to keyword in parameter registry
+  std::string key(const std::string& line, lui& ipos, const std::string& keyword);
+  // get key which corresponds to keyword in parameter registry
   std::string key(const std::string& line, const std::string& keyword);
   // generate TParArray from string of parameters (e.g. "\dg","\dagger" -> \dg and \dagger )
   TParArray parray(const std::string& str);
   // add new command from newcommand
   lui addnewcom(const std::string& str, lui ipos);
+  // change default parameters (set:name=value)
+  void changePars(const std::string& str, lui ipos);
   // skip all characters in str beginning from ipos, which are present in what
   lui skip(const std::string& str, const lui& ipos, const std::string& what);
   // skip all characters in str to the left from ipos, which are present in what
