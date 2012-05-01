@@ -64,6 +64,12 @@ a simple version of \newcommand is implemented, which can be used from input fil
 \newcommand{}{}
 e.g. \newcommand{\U}{(\op T_1 + \op T_2)} -> all \U will be replaced by (\op T_1 + \op T_2)
 
+NEWOPERATOR:
+
+with \newoperator (or \newop) command one can define custom operators: \newop{}{}
+e.g. \newop{H}{\op F + \op W} -> hamiltonian
+     \newop{T}{\op T_1 + \op T_2} 
+
 OPERATORS:
 
 1) Parts of Hamiltonian: \op H, \op F, \op W and \op X (1-electron perturbation)

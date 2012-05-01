@@ -59,26 +59,26 @@ TParArray IL::parray(const std::string& str)
   }
   return res;
 }
-lui IL::addnewcom(const std::string& str, lui ipos)
+lui IL::addnewcom(const std::string& str, lui ipos, std::string what)
 {
   if ( str[ipos] != '{' )
-    error("bad \\newcommand "+str);
+    error("bad \\"+what+" "+str);
   lui ipend = closbrack(str,ipos);
   ++ipos;
   ipos=skip(str,ipos," \\"); //we don't have backslash in command-names
   if ( ipos == ipend )
-    error("empty name in \\newcommand "+str);
+    error("empty name in \\"+what+" "+str);
   std::string name(str.substr(ipos,skipr(str,ipend," ")-ipos));
   ipos = ipend+1;
   if ( ipos >= str.size() || str[ipos] != '{' )
-    error("bad \\newcommand "+str);
+    error("bad \\"+what+" "+str);
   ipend = closbrack(str,ipos);
   ++ipos;
   ipos=skip(str,ipos," ");
   if ( ipos == ipend )
-    error("empty value in \\newcommand "+str);
+    error("empty value in \\"+what+" "+str);
   std::string value(str.substr(ipos,skipr(str,ipend," ")-ipos));
-  Input::sPars["newcommand"][name] = value;
+  Input::sPars[what][name] = value;
   return ipend+1;
 }
 void IL::changePars(const std::string& str, lui ipos)
@@ -278,6 +278,7 @@ Finput& Finput::operator+=(const std::string& line)
   const TParArray& beqs = Input::aPars["syntax"]["beq"];
   const TParArray& eeqs = Input::aPars["syntax"]["eeq"];
   const TParArray& newcs = Input::aPars["syntax"]["newcommand"];
+  const TParArray& newops = Input::aPars["syntax"]["newoperator"];
   const TParArray& comments = Input::aPars["syntax"]["comment"];
  
   lui ipos=0, ipend;
@@ -300,6 +301,7 @@ Finput& Finput::operator+=(const std::string& line)
   } else if (InSet(linesp, beqs)) {// begin equation
     _input="";
     _eq=true;
+    analyzenewops();
   } else if (InSet(linesp, eeqs)) {// end equation
     _eq=false;
     analyzeit();
@@ -309,6 +311,8 @@ Finput& Finput::operator+=(const std::string& line)
     _input="";
   } else if (InSet(linesp.substr(ipos,ipend-ipos), newcs)) {// newcommand
     ipos = IL::addnewcom(linesp,ipend);
+  } else if (InSet(linesp.substr(ipos,ipend-ipos), newops)) {// newoperator
+    ipos = IL::addnewcom(linesp,ipend,"newoperator");
   } else if (!_eq){
     IL::changePars(linesp,ipos);
   } else {
@@ -326,31 +330,25 @@ Sum< Term, double > Finput::sumterms() const
 bool Finput::analyzeit()
 {
   char ch;
-  unsigned long int i=0, ipos, ipos1;
+  lui i=0, ipos, ipos1;
   Lelem::Conn conn=Lelem::Normal;
-  while (i<_input.size())
-  {
+  while (i<_input.size()) {
     ch=_input[i];
-    if (ch=='<')
-    { // bra
+    if (ch=='<') { // bra
       ipos=_input.find('|',i);
       if (ipos==std::string::npos)
         error("Can not find bra","Finput::analyzeit");
-      else
-      {
+      else {
         ++i;
         ipos1=IL::nextwordpos(_input,i);
         _eqn += Lelem(_input.substr(i,ipos1-i),Lelem::Bra);
       }
       i=ipos;
-    }
-    else if (ch=='|')
-    { // ket
+    } else if (ch=='|') { // ket
       ipos=_input.find('>',i);
       if (ipos==std::string::npos)
         error("Can not find ket","Finput::analyzeit");
-      else
-      {
+      else {
         ++i;
         ipos1=IL::nextwordpos(_input,i);
         //connections
@@ -362,36 +360,22 @@ bool Finput::analyzeit()
           ipos+=2;
       }
       i=ipos;
-    }
-    else if (ch=='\\')
-    { // command
+    } else if (ch=='\\') { // command
       ++i;
       ipos=IL::nextwordpos(_input,i);
       ipos=analyzecommand(_input.substr(i,ipos-i),ipos);
       i=ipos-1;
-    }
-    else if (ch=='+')
-    { // plus
+    } else if (ch=='+') { // plus
       _eqn += Lelem("",Lelem::Plus);
-    }
-    else if (ch=='-')
-    { // minus
+    } else if (ch=='-') { // minus
       _eqn += Lelem("",Lelem::Minus);
-    }
-    else if (ch=='/')
-    { // Division
+    } else if (ch=='/') { // Division
       _eqn += Lelem("",Lelem::Div);
-    }
-    else if (ch=='*')
-    { // times
+    } else if (ch=='*') { // times
       _eqn += Lelem("",Lelem::Times);
-    }
-    else if (InSet(ch, '(','['))
-    { // left parenthesis
+    } else if (InSet(ch, '(','[')) { // left parenthesis
       _eqn += Lelem("",Lelem::LPar);
-    }
-    else if (InSet(ch, ')',']'))
-    { // right parenthesis
+    } else if (InSet(ch, ')',']')) { // right parenthesis
       //connections
       if (_input.substr(i+1,2)=="_C") conn=Lelem::Connect;
       else if (_input.substr(i+1,2)=="_D") conn=Lelem::Disconnect;
@@ -399,16 +383,12 @@ bool Finput::analyzeit()
       _eqn += Lelem("",Lelem::RPar,conn);
       if (InSet(conn, Lelem::Connect,Lelem::Disconnect))
         i+=2;
-    }    
-    else if (isdigit(ch))
-    { // number
+    } else if (isdigit(ch)) { // number
       ipos=IL::nextwordpos(_input,i);
       _eqn += Lelem(_input.substr(i,ipos-i),Lelem::Num);
       i=ipos-1;
-    }  
-    else if (InSet(ch, '&',' '))
-      ; // do nothing
-    else
+    } else if (InSet(ch, '&',' ')) { // do nothing
+    } else
     //  std::cout << "Character " << ch << " is ignored" << std::endl;
       say("Character "+std::string(1,ch)+" is ignored");
     ++i;
@@ -448,6 +428,21 @@ lui Finput::analyzecommand(const std::string& str, lui ipos)
   } else 
     error("Unknown command in equation! "+str,"Finput::analyzecommand");
   return ipos1;
+}
+void Finput::analyzenewops()
+{
+  assert( _input.size() == 0 );
+  TsPar& newops = Input::sPars["newoperator"];
+  _eqn = Equation();
+  for ( TsPar::iterator iop = newops.begin(); iop != newops.end(); ++iop ){
+    _input = iop->second;
+    _eqn +=  Lelem("",Lelem::LPar);
+    analyzeit();
+    _eqn +=  Lelem("",Lelem::RPar);
+    _eqn.addnewop(iop->first,_eqn.eqn());
+    _eqn.reseteq();
+  }
+  _input = "";
 }
 
 lui Equation::closbrack(const Product< Lelem >& eqn, lui ipos)
@@ -522,8 +517,8 @@ Product< long int > Equation::addconnections(const Product< Lelem >& aterm, lui 
 
 bool Equation::extractit()
 {
-  // expand Hamiltonians
-  _eqn=expandH(_eqn);
+  // expand custom operators
+  _eqn = expandnewops(_eqn);
   // expand parentheses
   _eqn=expandeqn(_eqn,_connections);
   // remove redundant connections
@@ -546,23 +541,22 @@ bool Equation::extractit()
     _xout2("final Connection " << k << ": " << _connections[k] << std::endl);
   return true;
 }
-Product<Lelem> Equation::expandH(Product<Lelem> const & eqn)
+Product< Lelem > Equation::expandnewops(const Product< Lelem >& eqn)
 {
-  TsPar& hms = Input::sPars["hamilton"];
-  const std::string& hamilt = hms["hamiltonian"];
   Product<Lelem> result;
-  for (lui i=0; i<eqn.size(); i++ )
-  {
-    if (eqn[i].lex()==Lelem::Oper && eqn[i].name().substr(0,hamilt.size())==hamilt)//H
-    {// (\op F + \op W)
-      result *= Lelem("",Lelem::LPar);
-      result *= Lelem(hms["fock"]+eqn[i].name().substr(1),Lelem::Oper);//F
-      result *= Lelem("",Lelem::Plus);
-      result *= Lelem(hms["flucpot"]+eqn[i].name().substr(1),Lelem::Oper);//W
-      result *= Lelem("",Lelem::RPar);
-    }
-    else  
-      result *= eqn[i];
+  for (lui i = 0; i < eqn.size(); ++i ){
+    result *= eqn[i];
+    lui j = result.size()-1;
+    do { 
+      if ( result[j].lex() == Lelem::Oper && _newops.count(result[j].name()) ) {
+        const Product<Lelem>& nop = _newops[result[j].name()];
+        result.erase(result.begin()+j);
+        result.insert(result.begin()+j,nop.begin(),nop.end());
+      }
+      ++j;
+    } while( j < result.size() && result.size() < lui(Input::iPars["prog"]["maxlels"]) );
+    if ( result.size() >= lui(Input::iPars["prog"]["maxlels"]) )
+      error("Equation is too long. Cyclic dependencies in \\newoperator?");
   }
   return result;
 }

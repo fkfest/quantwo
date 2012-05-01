@@ -47,8 +47,8 @@ namespace IL{
   std::string key(const std::string& line, const std::string& keyword);
   // generate TParArray from string of parameters (e.g. "\dg","\dagger" -> \dg and \dagger )
   TParArray parray(const std::string& str);
-  // add new command from newcommand
-  lui addnewcom(const std::string& str, lui ipos);
+  // add new command from newcommand or new operator from newoperator
+  lui addnewcom(const std::string& str, lui ipos, std::string what = "newcommand");
   // change default parameters (set:name=value)
   void changePars(const std::string& str, lui ipos);
   // skip all characters in str beginning from ipos, which are present in what
@@ -74,10 +74,14 @@ class Equation {
 public:
   // add string
   Equation & operator += (const Lelem & lel) { _eqn *= lel; return *this; };
+  // clear _eqn
+  void reseteq() { _eqn = Product<Lelem>();};
   // extract expression (remove parentheses and sums)
   bool extractit();
   // transform Product<Lelem> to Sum<Term>, if excopsonly: do only pure excitation operators (and bra/ket)
   bool do_sumterms(bool excopsonly=false);
+  // add new operator
+  void addnewop(const std::string& name, const Product<Lelem>& oper){ _newops[name] = oper; };
   Product<Lelem> eqn() const { return _eqn;};
   // get sum of terms
   Sum<Term,double> sumterms() const { return _sumterms;};
@@ -88,8 +92,8 @@ private:
   unsigned long int openbrack(Product<Lelem> const & eqn, unsigned long int ipos);
   // add connections: beg and end are positions of opening and closing parantheses in aterm
   Product<long int> addconnections(const Product< Lelem >& aterm, long unsigned int beg, long unsigned int end);
-  // expand all Hamiltonians (\op H) to (\op F + \op W)
-  Product<Lelem> expandH(Product<Lelem> const & eqn);
+  // expand all newops
+  Product<Lelem> expandnewops(Product<Lelem> const & eqn);
   // find the end position of current element in aterm, if bk==true: bra and ket are treated as brackets
   unsigned long int elem(Product<Lelem> const & aterm, unsigned long int beg, bool bk=false);
   // find the end position of current term
@@ -138,15 +142,17 @@ private:
   // connections "map" in _eqn (starts from 1)
   // positive: connected; negative: disconnected
   // the earlier the connection comes the more important it is:
-  // e.g. ((-2,-3),(2,3,4)) --> element 2 and 3 are disconnected, and element 4 is connected to 2 and/or 3
+  // e.g. ((-2,-3),(2,3,4)) --> elements 2 and 3 are disconnected, and element 4 is connected to 2 and/or 3
   std::vector< Product<long int> > _connections;
+  //custom operators from \newop
+  std::map< std::string, Product<Lelem> > _newops;
 };
 
 /*!
     Input analyzer 
 */
 class Finput {
-  public:
+public:
   // constructor
   Finput ();
   // constructor + init input-parameters
@@ -161,11 +167,13 @@ class Finput {
   // analyze input
   bool analyzeit();
   
-  private:
+private:
   // initialyse default input-parameters 
   void InitInpars(std::string paramspath);
+  // analyse all \newop's and save as a map in _eqn.newops
+  void analyzenewops();
   // analyze command coming after backslash
-  unsigned long int analyzecommand(std::string const & str, unsigned long int ipos);
+  lui analyzecommand(std::string const & str, lui ipos);
   // variables
   std::string _input;
   bool _eq;
