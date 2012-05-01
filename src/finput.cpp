@@ -303,9 +303,9 @@ Finput& Finput::operator+=(const std::string& line)
   } else if (InSet(linesp, eeqs)) {// end equation
     _eq=false;
     analyzeit();
-    extractit();
-    do_sumterms(true);
-    do_sumterms();
+    _eqn.extractit();
+    _eqn.do_sumterms(true);
+    _eqn.do_sumterms();
     _input="";
   } else if (InSet(linesp.substr(ipos,ipend-ipos), newcs)) {// newcommand
     ipos = IL::addnewcom(linesp,ipend);
@@ -320,9 +320,9 @@ Finput& Finput::operator+=(const std::string& line)
 std::string Finput::input() const
 { return _input; }
 Product< Lelem > Finput::eqn() const
-{ return _eqn; }
+{ return _eqn.eqn(); }
 Sum< Term, double > Finput::sumterms() const
-{ return _sumterms; }
+{ return _eqn.sumterms(); }
 bool Finput::analyzeit()
 {
   char ch;
@@ -340,7 +340,7 @@ bool Finput::analyzeit()
       {
         ++i;
         ipos1=IL::nextwordpos(_input,i);
-        _eqn*=Lelem(_input.substr(i,ipos1-i),Lelem::Bra);
+        _eqn += Lelem(_input.substr(i,ipos1-i),Lelem::Bra);
       }
       i=ipos;
     }
@@ -357,7 +357,7 @@ bool Finput::analyzeit()
         if (_input.substr(ipos+1,2)=="_C") conn=Lelem::Connect;
         else if (_input.substr(ipos+1,2)=="_D") conn=Lelem::Disconnect;
         else conn=Lelem::Normal;
-        _eqn*=Lelem(_input.substr(i,ipos1-i),Lelem::Ket,conn);
+        _eqn += Lelem(_input.substr(i,ipos1-i),Lelem::Ket,conn);
         if (InSet(conn, Lelem::Connect,Lelem::Disconnect))
           ipos+=2;
       }
@@ -372,23 +372,23 @@ bool Finput::analyzeit()
     }
     else if (ch=='+')
     { // plus
-      _eqn*=Lelem("",Lelem::Plus);
+      _eqn += Lelem("",Lelem::Plus);
     }
     else if (ch=='-')
     { // minus
-      _eqn*=Lelem("",Lelem::Minus);
+      _eqn += Lelem("",Lelem::Minus);
     }
     else if (ch=='/')
     { // Division
-      _eqn*=Lelem("",Lelem::Div);
+      _eqn += Lelem("",Lelem::Div);
     }
     else if (ch=='*')
     { // times
-      _eqn*=Lelem("",Lelem::Times);
+      _eqn += Lelem("",Lelem::Times);
     }
     else if (InSet(ch, '(','['))
     { // left parenthesis
-      _eqn*=Lelem("",Lelem::LPar);
+      _eqn += Lelem("",Lelem::LPar);
     }
     else if (InSet(ch, ')',']'))
     { // right parenthesis
@@ -396,14 +396,14 @@ bool Finput::analyzeit()
       if (_input.substr(i+1,2)=="_C") conn=Lelem::Connect;
       else if (_input.substr(i+1,2)=="_D") conn=Lelem::Disconnect;
       else conn=Lelem::Normal;
-      _eqn*=Lelem("",Lelem::RPar,conn);
+      _eqn += Lelem("",Lelem::RPar,conn);
       if (InSet(conn, Lelem::Connect,Lelem::Disconnect))
         i+=2;
     }    
     else if (isdigit(ch))
     { // number
       ipos=IL::nextwordpos(_input,i);
-      _eqn*=Lelem(_input.substr(i,ipos-i),Lelem::Num);
+      _eqn += Lelem(_input.substr(i,ipos-i),Lelem::Num);
       i=ipos-1;
     }  
     else if (InSet(ch, '&',' '))
@@ -426,20 +426,18 @@ lui Finput::analyzecommand(const std::string& str, lui ipos)
     ipos2, ipos3;
   if (str==commands["operator"]) { // operators
     ipos1=IL::nextwordpos(_input,ipos);
-    _eqn*=Lelem(_input.substr(ipos,ipos1-ipos),Lelem::Oper);
+    _eqn += Lelem(_input.substr(ipos,ipos1-ipos),Lelem::Oper);
   } else if (str==commands["parameter"]) { // parameters
     ipos1=IL::nextwordpos(_input,ipos);
-    _eqn*=Lelem(_input.substr(ipos,ipos1-ipos),Lelem::Par);
+    _eqn += Lelem(_input.substr(ipos,ipos1-ipos),Lelem::Par);
   } else if (str==commands["fraction"]) { // fraction
     ipos1=IL::nextwordpos(_input,ipos);
     ipos2=ipos1;
     ipos3=IL::nextwordpos(_input,ipos2);
-    _eqn*=Lelem(_input.substr(ipos,ipos1-ipos)+"/"+_input.substr(ipos2,ipos3-ipos2),Lelem::Frac);
+    _eqn += Lelem(_input.substr(ipos,ipos1-ipos)+"/"+_input.substr(ipos2,ipos3-ipos2),Lelem::Frac);
     ipos1=ipos3;
-//  } else if (str==commands["half"]) { // a half
-//    _eqn*=Lelem("0.5",Lelem::Num);
   } else if (str.substr(0,commands["sum"].size())==commands["sum"]) { // sum
-    _eqn*=Lelem(str.substr(commands["sum"].size()),Lelem::Sum);
+    _eqn += Lelem(str.substr(commands["sum"].size()),Lelem::Sum);
   } else if (InSet(str, skipops)){//,"left","right","lk","rk","\\"))
   } else if (newcom.count(str)){// custom command
     // replace and go back
@@ -451,9 +449,10 @@ lui Finput::analyzecommand(const std::string& str, lui ipos)
     error("Unknown command in equation! "+str,"Finput::analyzecommand");
   return ipos1;
 }
-long unsigned int Finput::closbrack(const Product< Lelem >& eqn, long unsigned int ipos)
+
+lui Equation::closbrack(const Product< Lelem >& eqn, lui ipos)
 {
-  unsigned long int i,ipos1=ipos;
+  lui i,ipos1=ipos;
   Lelem::Lex rk=Lelem::RPar,lk=eqn[ipos].lex();
   if (lk==Lelem::Bra)
     rk=Lelem::Ket;
@@ -480,9 +479,9 @@ long unsigned int Finput::closbrack(const Product< Lelem >& eqn, long unsigned i
     error("Number of brackets is incosistent: "+nk,"Finput::closbrack"); 
   return ipos1;
 }
-long unsigned int Finput::openbrack(const Product< Lelem >& eqn, long unsigned int ipos)
+lui Equation::openbrack(const Product< Lelem >& eqn, lui ipos)
 {
-  unsigned long int ipos1=ipos;
+  lui ipos1=ipos;
   Lelem::Lex lk=Lelem::LPar,rk=eqn[ipos].lex();
   if (rk==Lelem::Ket)
     lk=Lelem::Bra;
@@ -491,13 +490,10 @@ long unsigned int Finput::openbrack(const Product< Lelem >& eqn, long unsigned i
   else
     error("Not a bracket!","Finput::openbrack"); 
   int nk=-1;
-  for ( long int i=ipos-1;i>=0;--i)
-  {
-    if (eqn[i].lex()==lk) 
-    {
+  for ( long int i=ipos-1;i>=0;--i) {
+    if (eqn[i].lex()==lk) {
       ++nk; // count number of "("
-      if (nk==0) 
-      {
+      if (nk==0) {
         ipos1=i;
         break;
       }
@@ -509,11 +505,11 @@ long unsigned int Finput::openbrack(const Product< Lelem >& eqn, long unsigned i
     error("Number of brackets is incosistent: "+nk,"Finput::openbrack"); 
   return ipos1;
 }
-Product< long int > Finput::addconnections(const Product< Lelem >& aterm,long unsigned int beg, unsigned long int end)
+Product< long int > Equation::addconnections(const Product< Lelem >& aterm, lui beg, lui end)
 {
   Product<long int> connection;
   if (aterm[end].conn()==Lelem::Normal) return connection;
-  for (unsigned long int i=beg+1; i<end; i++)
+  for (lui i=beg+1; i<end; i++)
     if (aterm[i].lex()==Lelem::Oper)
     {
       if(aterm[end].conn()==Lelem::Connect)
@@ -524,38 +520,38 @@ Product< long int > Finput::addconnections(const Product< Lelem >& aterm,long un
   return connection;
 }
 
-bool Finput::extractit()
+bool Equation::extractit()
 {
   // expand Hamiltonians
   _eqn=expandH(_eqn);
   // expand parentheses
   _eqn=expandeqn(_eqn,_connections);
   // remove redundant connections
-  for (unsigned long int i=0; i<_connections.size();i++)
-    for (unsigned long int j=0; j<_connections[i].size();j++)
+  for (lui i=0; i<_connections.size();i++)
+    for (lui j=0; j<_connections[i].size();j++)
       if (InSet(_eqn[abs(_connections[i][j])-1].lex(), Lelem::Num,Lelem::Frac)) //connection to a number
         _connections[i].erase(_connections[i].begin()+j);
-  for (unsigned long int i=0; i<_connections.size();i++)
+  for (lui i=0; i<_connections.size();i++)
     if (_connections[i].size()<2) //smaller than two elements "connected"
       _connections.erase(_connections.begin()+i);
   if (_connections.size()==0) return true;
-  for (unsigned long int i=0; i<_connections.size()-1;i++)
-    for (unsigned long int j=i+1; j<_connections.size();j++)
+  for (lui i=0; i<_connections.size()-1;i++)
+    for (lui j=i+1; j<_connections.size();j++)
       if (_connections[i]==_connections[j]) //same connection
       {
         _connections.erase(_connections.begin()+j);
         --j;
       }
-  for (unsigned int k = 0; k<_connections.size();k++)
+  for (lui k = 0; k<_connections.size();k++)
     _xout2("final Connection " << k << ": " << _connections[k] << std::endl);
   return true;
 }
-Product<Lelem> Finput::expandH(Product<Lelem> const & eqn)
+Product<Lelem> Equation::expandH(Product<Lelem> const & eqn)
 {
   TsPar& hms = Input::sPars["hamilton"];
   const std::string& hamilt = hms["hamiltonian"];
   Product<Lelem> result;
-  for (unsigned long int i=0; i<eqn.size(); i++ )
+  for (lui i=0; i<eqn.size(); i++ )
   {
     if (eqn[i].lex()==Lelem::Oper && eqn[i].name().substr(0,hamilt.size())==hamilt)//H
     {// (\op F + \op W)
@@ -571,9 +567,9 @@ Product<Lelem> Finput::expandH(Product<Lelem> const & eqn)
   return result;
 }
 
-long unsigned int Finput::elem(const Product< Lelem >& aterm, long unsigned int beg, bool bk)
+lui Equation::elem(const Product< Lelem >& aterm, lui beg, bool bk)
 {
-  unsigned long int i, end, nk=0;
+  lui i, end, nk=0;
   bool braket=false;
   
   for ( i=beg; i<aterm.size() ; i++ )
@@ -596,30 +592,27 @@ long unsigned int Finput::elem(const Product< Lelem >& aterm, long unsigned int 
   return end;
 }
 
-long unsigned int Finput::term(const Product< Lelem >& eqn, long unsigned int beg)
+lui Equation::term(const Product< Lelem >& eqn, lui beg)
 { return elem(eqn,beg,true); }
 
-Product< Lelem > Finput::expandeqn(const Product< Lelem >& eqn, std::vector< Product<long int> > & connections)
+Product< Lelem > Equation::expandeqn(const Product< Lelem >& eqn, std::vector< Product<long int> > & connections)
 {
   Product<Lelem> result=eqn, res;
   Product<long int>  connect;
   std::vector< Product<long int> > con,con1;
-  unsigned long int beg=0, end, i,j,conbeg,lastpos;
+  lui beg=0, end, i,j,conbeg,lastpos;
   
-  while (!expanded(result))
-  {
+  while (!expanded(result)) {
     res=result;
     result=Product<Lelem>();
     beg=0;
     conbeg=0;
     con=connections;
     connections=std::vector< Product<long int> >();
-    while ((end=term(res,beg))!=0)
-    {
+    while ((end=term(res,beg))!=0) {
       std::vector< Product<long int> > con1;
       // shift connections
-      for (i=conbeg;i<con.size();i++)
-      {
+      for (i=conbeg;i<con.size();i++) {
         if (abs(con[i].front())>(long int)beg && abs(con[i].back())-2<(long int)end)
           for (j=0;j<con[i].size();j++)
             if (con[i][j]>0)
@@ -636,8 +629,7 @@ Product< Lelem > Finput::expandeqn(const Product< Lelem >& eqn, std::vector< Pro
       lastpos=result.size();
       result*=expandterm(res.subprod(beg,end),con1);
       // shift connections back
-      for (i=0;i<con1.size();i++)
-      {
+      for (i=0;i<con1.size();i++) {
         for (j=0;j<con1[i].size();j++)
           if (con1[i][j]>0)
             connect*=con1[i][j]+lastpos;
@@ -652,9 +644,9 @@ Product< Lelem > Finput::expandeqn(const Product< Lelem >& eqn, std::vector< Pro
   return result;
 }
 
-Product< Lelem > Finput::expandterm(const Product< Lelem >& aterm, std::vector< Product<long int> > & connections)
+Product< Lelem > Equation::expandterm(const Product< Lelem >& aterm, std::vector< Product<long int> > & connections)
 {
-  unsigned long int i;
+  lui i;
 //  std::cout << "Term: " << aterm << std::endl;
 //  for (unsigned int k = 0; k<connections.size();k++)
 //    std::cout << "in connection " << k << ": " << connections[k] << std::endl;
@@ -663,10 +655,10 @@ Product< Lelem > Finput::expandterm(const Product< Lelem >& aterm, std::vector< 
       return expandpar(aterm,i,connections);
   return aterm;
 }
-Product< Lelem > Finput::expandpar(const Product< Lelem >& aterm, long unsigned int beg, 
+Product< Lelem > Equation::expandpar(const Product< Lelem >& aterm, lui beg, 
                                    std::vector< Product< long int > >& connections)
 { // e.g., aterm=-a(b+c)d
-  unsigned long int i=0, end,ipos,start=0,ijcon,iposres,lenb,ipar;//lena,
+  lui i=0, end,ipos,start=0,ijcon,iposres,lenb,ipar;//lena,
   end=closbrack(aterm,beg);
   Product<Lelem> result, inpar=aterm.subprod(beg+1,end-1);
   std::vector< Product<long int> > con(connections);
@@ -680,28 +672,22 @@ Product< Lelem > Finput::expandpar(const Product< Lelem >& aterm, long unsigned 
     ipar=0;
   // start of term (without sign)
   if (InSet(aterm[0].lex(), Lelem::Plus,Lelem::Minus)) start=1;
-  while (i<inpar.size())
-  {
+  while (i<inpar.size()) {
     ipos=elem(inpar,i);
     //add sign
-    if (inpar[i].lex()==Lelem::Minus) // minus in parenthesis
-    {
+    if (inpar[i].lex()==Lelem::Minus) {// minus in parenthesis
       if (aterm[0].lex()==Lelem::Minus) 
         result *= Lelem("",Lelem::Plus); // -1*-1 == +1
       else
         result *= inpar[i]; // +1*-1 == -1
       ++i;
-    }
-    else if (inpar[i].lex()==Lelem::Plus) // plus in parenthesis
-    {
+    } else if (inpar[i].lex()==Lelem::Plus) {// plus in parenthesis
       if (aterm[0].lex()==Lelem::Minus) 
         result *= aterm[0]; // -1*+1 == -1
       else
         result *= inpar[i]; // +1*+1 == +1
       ++i;
-    }
-    else if (start>0) // term has a sign, but no sign by expression in parenthesis
-    {
+    } else if (start>0) {// term has a sign, but no sign by expression in parenthesis
       result *= aterm[0];
     }
     iposres=result.size()-start;
@@ -714,18 +700,14 @@ Product< Lelem > Finput::expandpar(const Product< Lelem >& aterm, long unsigned 
     if (aterm[end].lex()==Lelem::Ket) result *= aterm[end];
     if (end<aterm.size()-1) result *= aterm.subprod(end+1,aterm.size());
     // handle connections
-//    lena=beg-start;
     lenb=ipos-i+1;
-    for (unsigned long int k=0;k<con.size();k++)
-    {
-      for (unsigned long int j=0;j<con[k].size();j++)
-      {
+    for (lui k=0;k<con.size();k++) {
+      for (lui j=0;j<con[k].size();j++) {
         ijcon=abs(con[k][j]);
         coninterm=(ijcon<=beg)||(ijcon>end+1);// connection in a or d
         coninpar=((ijcon>i+beg+1)&&(ijcon<ipos+beg+3));// connection in b (or c)
         coninterm=coninterm||coninpar;
-        if (coninterm)
-        { // change ijcon
+        if (coninterm) { // change ijcon
           if (coninpar)
             ijcon+=iposres-i-1+ipar;
           else if (ijcon<=beg)
@@ -738,8 +720,7 @@ Product< Lelem > Finput::expandpar(const Product< Lelem >& aterm, long unsigned 
             connect*=-ijcon;
         }
       }
-      if (connect.size()>0)
-      {
+      if (connect.size()>0) {
         connections.push_back(connect);
         connect=Product<long int>();
       }
@@ -748,10 +729,9 @@ Product< Lelem > Finput::expandpar(const Product< Lelem >& aterm, long unsigned 
   }
   return result;
 }
-bool Finput::expanded(const Product< Lelem >& eqn)
+bool Equation::expanded(const Product< Lelem >& eqn)
 { 
-  for (unsigned long int i=0; i<eqn.size(); i++)
-  {
+  for (lui i=0; i<eqn.size(); i++) {
     if (eqn[i].lex()==Lelem::Bra && !eqn[i].expandedbra())
       return false;
     if (eqn[i].lex()==Lelem::LPar)
@@ -759,79 +739,58 @@ bool Finput::expanded(const Product< Lelem >& eqn)
   }
   return true;
 }
-bool Finput::do_sumterms(bool excopsonly )
+bool Equation::do_sumterms(bool excopsonly )
 {
-  unsigned long int i,beg=0,nterm=0;
+  lui i,beg=0,nterm=0;
   bool plus=true, ok=true, bra=false, ket=false;
   if (!expanded(_eqn))
     error("Expand finput first!","Finput::do_sumterms");
   Term term;
-  if (_excops.size()>0)
-  { // set last orbital of the term to the last orbital of pure excitation operators (has to be set before)
+  if (_excops.size()>0) { // set last orbital of the term to the last orbital of pure excitation operators (has to be set before)
     term.set_lastorb(_occexcops.back());
     term.set_lastorb(_virexcops.back());
   }
   Product<long int> indxoperterm;
-  for (i=0; i<_eqn.size(); i++)
-  {
-    if(InSet(_eqn[i].lex(), Lelem::Bra,Lelem::Ket))
-    { // handle bra/ket
-      if (_eqn[i].lex()==Lelem::Bra)
-      {
+  for (i=0; i<_eqn.size(); i++) {
+    if(InSet(_eqn[i].lex(), Lelem::Bra,Lelem::Ket)) { // handle bra/ket
+      if (_eqn[i].lex()==Lelem::Bra) {
         if (bra) 
           error("Can not handle two BRAs in one term yet...");
         else
           bra=true;
-      }
-      else if (ket)
+      } else if (ket)
         error("Can not handle two KETs in one term yet...");
       else
         ket=true;
       term*=handle_braket(_eqn[i],term);
       indxoperterm *= i+1;
-    }
-    else if (InSet(_eqn[i].lex(), Lelem::Minus,Lelem::Plus))
-    { // add current term and save the sign of the next term
+    } else if (InSet(_eqn[i].lex(), Lelem::Minus,Lelem::Plus)) { // add current term and save the sign of the next term
       bra=ket=false; // reset bra and ket variables
-      if (!excopsonly)
-      {
+      if (!excopsonly) {
         if(i>0) addterm(term,plus,beg,i-1,indxoperterm,nterm,excopsonly);
         plus=(_eqn[i].lex()==Lelem::Plus);
         beg=i+1;
         term=Term();
-        if (_excops.size()>0)
-        {
+        if (_excops.size()>0) {
           term.set_lastorb(_occexcops.back());
           term.set_lastorb(_virexcops.back());
         }
         indxoperterm=Product<long int>();
       }
-    }
-    else if (InSet(_eqn[i].lex(), Lelem::Frac,Lelem::Num))
-    { // add prefactor
+    } else if (InSet(_eqn[i].lex(), Lelem::Frac,Lelem::Num)) { // add prefactor
       term*=handle_factor(_eqn[i]);
-    }
-    else if (_eqn[i].lex()==Lelem::Oper)
-    { // handle Operator
+    } else if (_eqn[i].lex()==Lelem::Oper) { // handle Operator
       term*=handle_operator(_eqn[i],term,excopsonly);
       indxoperterm *= i+1;
-    }
-    else if (_eqn[i].lex()==Lelem::Sum)
-    { // handle \sum
+    } else if (_eqn[i].lex()==Lelem::Sum) { // handle \sum
       if (!excopsonly)
         handle_sum(_eqn[i],term);
-    }
-    else if (_eqn[i].lex()==Lelem::Par)
-    { // handle Parameter
+    } else if (_eqn[i].lex()==Lelem::Par) { // handle Parameter
       if (!excopsonly)
         _paramterm*=_eqn[i];
-    }
-    else if (_eqn[i].lex()==Lelem::Div)
-    { // handle Division
+    } else if (_eqn[i].lex()==Lelem::Div) { // handle Division
       error("Sorry, cannot handle Division!","Finput::do_sumterms");
-    }
-    else
-    {
+    } else {
       error(_eqn[i].name()+" is not implemented yet...","Finput::do_sumterms");
     }
   }
@@ -839,12 +798,11 @@ bool Finput::do_sumterms(bool excopsonly )
   if(_eqn.size()>0) addterm(term,plus,beg,_eqn.size()-1,indxoperterm,nterm,excopsonly);
   return ok;
 }
-void Finput::addterm(Term& term, bool plus, long unsigned int beg, long unsigned int end, 
-                     Product<long int > const & indxoperterm, unsigned long int & nterm, bool excopsonly)
+void Equation::addterm(Term& term, bool plus, lui beg, lui end, 
+                     Product<long int > const & indxoperterm, lui & nterm, bool excopsonly)
 {
   double minfac = Input::fPars["prog"]["minfac"];
-  if(excopsonly || term.term_is_0(minfac))
-  {
+  if(excopsonly || term.term_is_0(minfac)) {
     //reset parameter-info
     handle_parameters(term,true);
     return; // dont add zero term
@@ -855,12 +813,9 @@ void Finput::addterm(Term& term, bool plus, long unsigned int beg, long unsigned
   //add connections to term
   Product<long int> connect;
   long int ipos;
-  for (unsigned long int i=0;i<_connections.size();i++)
-  {
-    if (abs(_connections[i].front())>(long int)beg && abs(_connections[i].back())-2<(long int)end)
-    {
-      for (unsigned long int j=0;j<_connections[i].size();j++)
-      {
+  for (unsigned long int i=0;i<_connections.size();i++) {
+    if (abs(_connections[i].front())>(long int)beg && abs(_connections[i].back())-2<(long int)end) {
+      for (unsigned long int j=0;j<_connections[i].size();j++) {
         ipos=indxoperterm.find(abs(_connections[i][j]));
         if (ipos<0)
           error("Connected operator is not in indxoperterm","Finput::addterm");
@@ -883,7 +838,7 @@ void Finput::addterm(Term& term, bool plus, long unsigned int beg, long unsigned
     _sumterms -= term;
 }
 
-Oper Finput::handle_braket(const Lelem& lel, Term& term)
+Oper Equation::handle_braket(const Lelem& lel, Term& term)
 {
   const TParArray& refs = Input::aPars["syntax"]["ref"];
   const TParArray& csfs = Input::aPars["syntax"]["csf"];
@@ -899,7 +854,7 @@ Oper Finput::handle_braket(const Lelem& lel, Term& term)
   } else
     return handle_excitation(lelnam,(lel.lex()==Lelem::Bra),term);
 }
-Oper Finput::handle_explexcitation(const std::string& name, bool dg, Term& term)
+Oper Equation::handle_explexcitation(const std::string& name, bool dg, Term& term)
 {
   lui ipos, ipos1;
   long int ipos2;
@@ -949,21 +904,16 @@ Oper Finput::handle_explexcitation(const std::string& name, bool dg, Term& term)
     return Oper(Ops::Exc0,excl,occs,virts);
 }
 
-Oper Finput::handle_excitation(const std::string& name, bool dg, Term& term)
+Oper Equation::handle_excitation(const std::string& name, bool dg, Term& term)
 {
-  unsigned long int ipos,ipos1;
+  lui ipos,ipos1;
   long int ipos2;
   short excl;
-//  if (name.compare(0,3,"\\mu") != 0
-//      && name.compare(0,3,"\\nu") != 0
-//      && name.compare(0,4,"\\rho") != 0)
-//    error("Unknown excitation "+name,"Finput::handle_excitation");
   // find excitation class
   ipos=name.find("_");
   if (ipos==std::string::npos || ipos==name.size()-1)
     error("No excitation class in excitation "+name,"Finput::handle_excitation");
-  else
-  {
+  else {
     ++ipos;
     ipos=IL::skip(name,ipos,"{} ");
     ipos1=IL::nextwordpos(name,ipos);
@@ -993,18 +943,15 @@ Oper Finput::handle_excitation(const std::string& name, bool dg, Term& term)
     return Oper(Ops::Exc0,excl,occ,virt);
 }
 
-double Finput::handle_factor(const Lelem& lel)
+double Equation::handle_factor(const Lelem& lel)
 {
   double fac,fac1;
-  unsigned long int ipos=0, ipos1;
+  lui ipos=0, ipos1;
   std::string lelnam=lel.name();
-  if (lel.lex()==Lelem::Num)
-  {
+  if (lel.lex()==Lelem::Num) {
     if(!str2num<double>(fac,lelnam,std::dec))
       error("Factor is not a number "+lelnam,"Finput::handle_factor");
-  }
-  else
-  {
+  } else {
     ipos=IL::skip(lelnam,ipos,"{} ");
     ipos1=IL::nextwordpos(lelnam,ipos);
     if(!str2num<double>(fac,lelnam.substr(ipos,ipos1-ipos),std::dec))
@@ -1021,12 +968,12 @@ double Finput::handle_factor(const Lelem& lel)
   }
   return fac;
 }
-Oper Finput::handle_operator(const Lelem& lel, Term& term, bool excopsonly)
+Oper Equation::handle_operator(const Lelem& lel, Term& term, bool excopsonly)
 {
   const TParArray& dgs = Input::aPars["syntax"]["dg"];
   const TParArray& bexcops = Input::aPars["syntax"]["bexcop"];
   TsPar& hms = Input::sPars["hamilton"];
-  unsigned long int ipos, ipos1, iposnam, up, down;
+  lui ipos, ipos1, iposnam, up, down;
   std::string lelnam=lel.name(),name,nameadd;
   short excl;
   bool dg=false;
@@ -1037,8 +984,7 @@ Oper Finput::handle_operator(const Lelem& lel, Term& term, bool excopsonly)
   iposnam=std::min(iposnam,lelnam.size()-1);
   name=lelnam.substr(0,iposnam+1);
   // parts of Hamilton operator
-  if ( InSet(name, hms))
-  {
+  if ( InSet(name, hms)) {
     if (excopsonly) return Oper();
     if (up!=std::string::npos || down!=std::string::npos)
       say("Sub- and superscripts in Hamiltonian will be ignored: "+lelnam);
@@ -1049,16 +995,13 @@ Oper Finput::handle_operator(const Lelem& lel, Term& term, bool excopsonly)
   // excitation class
   if (down==std::string::npos || down==lelnam.size()-1)
     error("No excitation class in operator "+lelnam,"Finput::handle_operator");
-  if (up==std::string::npos || up==lelnam.size()-1)
-    ; // no dagger
-  else
-  {
+  if (up==std::string::npos || up==lelnam.size()-1){
+     // no dagger
+  } else {
     ipos=up+1;
     ipos=IL::skip(lelnam,ipos,"{} ");
-    while((ipos1=IL::nextwordpos(lelnam,ipos))!=ipos)
-    {
-      if(InSet(lelnam.substr(ipos,ipos1-ipos), dgs))
-      {
+    while((ipos1=IL::nextwordpos(lelnam,ipos))!=ipos) {
+      if(InSet(lelnam.substr(ipos,ipos1-ipos), dgs)) {
         dg=true;
         nameadd+=dgs.front();
       }
@@ -1071,8 +1014,7 @@ Oper Finput::handle_operator(const Lelem& lel, Term& term, bool excopsonly)
   ipos=down+1;
   ipos=IL::skip(lelnam,ipos,"{} ");
   ipos1=IL::nextwordpos(lelnam,ipos);
-  if (InSet(name.substr(0,4), bexcops))
-  { // bare excitation operator
+  if (InSet(name.substr(0,4), bexcops)) { // bare excitation operator
     return handle_excitation(lelnam.substr(ipos,ipos1-ipos),dg,term);
   }
   if (excopsonly) return Oper();
@@ -1083,9 +1025,9 @@ Oper Finput::handle_operator(const Lelem& lel, Term& term, bool excopsonly)
   else
     return Oper(Ops::Exc,excl,(void*) &term, Term::getfreeorbname,name);
 }
-void Finput::handle_sum(const Lelem& lel, Term& term)
+void Equation::handle_sum(const Lelem& lel, Term& term)
 {
-  unsigned long int ipos, ipos1, up, down;
+  lui ipos, ipos1, up, down;
   long int iposnam;
   std::string lelnam=lel.name(),name;
   down=lelnam.find("_");
@@ -1095,15 +1037,13 @@ void Finput::handle_sum(const Lelem& lel, Term& term)
   if (down==std::string::npos)
     error("Sum without summation indices: "+lelnam);
   ipos=down+1;
-  while (ipos<lelnam.size())
-  {
+  while (ipos<lelnam.size()) {
     ipos=IL::skip(lelnam,ipos,"{}, ");
     if (ipos==lelnam.size()) break;
     ipos1=IL::nextwordpos(lelnam,ipos);
     name=lelnam.substr(ipos,ipos1-ipos);
     iposnam=_excops.find(name);
-    if (iposnam >= 0)
-    {
+    if (iposnam >= 0) {
       term.addsummation(_occexcops[iposnam],_exccls[iposnam]);
       term.addsummation(_virexcops[iposnam],_exccls[iposnam]);
     }
@@ -1112,29 +1052,25 @@ void Finput::handle_sum(const Lelem& lel, Term& term)
     ipos=ipos1;
   }
 }
-void Finput::handle_parameters(Term& term, bool excopsonly)
+void Equation::handle_parameters(Term& term, bool excopsonly)
 {
-  if (!excopsonly)
-  {// handle saved parameters
-    unsigned long int ipos, ipos1, iposnam, up, down;
+  if (!excopsonly) {// handle saved parameters
+    lui ipos, ipos1, iposnam, up, down;
     int iposexcn,indxexcn;
     std::string lelnam,name,nameadd,excn;
-    for (unsigned int i=0; i<_paramterm.size(); i++)
-    {
+    for (unsigned int i=0; i<_paramterm.size(); i++) {
       lelnam=_paramterm[i].name();
       down=lelnam.find("_");
       up=lelnam.find("^");
       // last position of name of parameter
       iposnam=std::min(up,down)-1;
       name=lelnam.substr(0,iposnam+1);
-      if (up==std::string::npos || up==lelnam.size()-1)
-        ; // no superscript
-      else
-      {
+      if (up==std::string::npos || up==lelnam.size()-1) {
+        // no superscript
+      } else {
         ipos=up+1;
         ipos=IL::skip(lelnam,ipos,"{} ");
-        while((ipos1=IL::nextwordpos(lelnam,ipos))!=ipos)
-        {
+        while((ipos1=IL::nextwordpos(lelnam,ipos))!=ipos) {
           if (lelnam[ipos]!='}')
             nameadd+=lelnam.substr(ipos,ipos1-ipos);
           ipos=ipos1;
@@ -1142,31 +1078,24 @@ void Finput::handle_parameters(Term& term, bool excopsonly)
       } 
       add2name(name,nameadd); // add nameadd to name (as superscript)
       // handle subscript
-      if (down==std::string::npos || down==lelnam.size()-1)
-      { // no subscript, parameter is a "number"
+      if (down==std::string::npos || down==lelnam.size()-1) { // no subscript, parameter is a "number"
         term.addmatrix(Matrices(Ops::Number,Product<Orbital>(),name));
-      }
-      else
-      {
+      } else {
         ipos=down+1;
         ipos=IL::skip(lelnam,ipos,"{} ");
         ipos1=IL::nextwordpos(lelnam,ipos);
         excn=lelnam.substr(ipos,ipos1-ipos);
         indxexcn=_excops.find(excn);
-        if (indxexcn>=0)
-        {
+        if (indxexcn>=0) {
           iposexcn=_posexcopsterm[indxexcn];
-          if (iposexcn>=0)
-          {
+          if (iposexcn>=0) {
             Matrices mat(Ops::Interm,
                          Ops::genprodorb(_exccls[indxexcn],_occexcops[indxexcn],_virexcops[indxexcn]),
                          name,_spinsymexcs[indxexcn]);
             term.replacematrix(mat,iposexcn);
-          }
-          else
+          } else
             say("Parameter is not present in this term: "+lelnam);
-        }
-        else
+        } else
           error("Unknown excitation in parameter"+excn);
       }
     }
@@ -1175,21 +1104,17 @@ void Finput::handle_parameters(Term& term, bool excopsonly)
   _posexcopsterm.assign(_excops.size(),-1);
   _paramterm=Product<Lelem>();
 }
-void Finput::add2name(std::string& name, const std::string& nameadd)
+void Equation::add2name(std::string& name, const std::string& nameadd)
 {
   unsigned long int ipos,ipos1;
-  if (nameadd.size()>0)
-  { // add nameadd to name (as superscript)
+  if (nameadd.size()>0) { // add nameadd to name (as superscript)
     ipos=name.rfind("^");
-    if (ipos!=std::string::npos)
-    { // there is already a superscript
+    if (ipos!=std::string::npos) { // there is already a superscript
       ++ipos;
       ipos1=IL::nextwordpos(name,ipos);
       name.insert(ipos,"{");
       name.insert(ipos1,nameadd+"}");
-    }
-    else
-    { // no superscript yet
+    } else { // no superscript yet
       name += "^{"+nameadd+"}";
     }
   }
