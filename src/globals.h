@@ -24,7 +24,7 @@ typedef std::map< std::string, TfPar > TfParSet;
 typedef std::map< std::string, TaPar > TaParSet;
 
 #ifdef _RATIONAL
-// copy from boost, 
+// something like a strong typedef... 
 class TFactor : public boost::rational<long int>
 {
 public:
