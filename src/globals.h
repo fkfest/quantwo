@@ -6,6 +6,9 @@
 #include <map>
 #include <list>
 #include <cmath>
+#ifdef _RATIONAL
+#include <boost/rational.hpp>
+#endif
 #include "utilities.h"
 
 typedef long unsigned int lui;
@@ -20,6 +23,29 @@ typedef std::map< std::string, TiPar > TiParSet;
 typedef std::map< std::string, TfPar > TfParSet;
 typedef std::map< std::string, TaPar > TaParSet;
 
+#ifdef _RATIONAL
+// copy from boost, 
+class TFactor : public boost::rational<long int>
+{
+public:
+  TFactor() : boost::rational<long int>(){};
+  TFactor(long int n) : boost::rational<long int>(n){};
+  TFactor(long int n,long int d) : boost::rational<long int>(n,d){};
+  TFactor(const boost::rational<long int>& f) : boost::rational<long int>(f){};
+  TFactor & operator=(const long int& n){ *this = TFactor(n); return *this;};
+  TFactor & operator=(const boost::rational<long int>& f){ *this = TFactor(f); return *this;};
+};
+namespace dboost{
+TFactor abs(const TFactor& f);
+}
+std::ostream & operator << (std::ostream & o, TFactor const & p);
+#define _abs dboost::abs
+#define _todouble boost::rational_cast<double>
+#else
+typedef double TFactor;
+#define _abs std::abs
+#define _todouble
+#endif
 
 namespace Numbers
 {
@@ -110,21 +136,4 @@ namespace Input
 // output unless Input::verbose is below 3
 #define _xout3(x) _xout(3,x)
 
-// class Inpars
-// {
-// public:
-//   static Inpars * getInpars();
-//   static void setInparsFileName(std::string filename){ m_filename = filename; };
-// private:
-//   Inpars();
-//   static std::string m_filename;
-//   static Inpars * m_configInstance;
-//   // input-parameters
-//   typedef std::map< std::string, std::string > TsInpars;
-//   typedef std::map< std::string, int > TiInpars;
-//   typedef std::map< std::string, double > TfInpars;
-//   TsInpars sInpars;
-//   TiInpars iInpars;
-//   TfInpars fInpars;
-// };
 #endif

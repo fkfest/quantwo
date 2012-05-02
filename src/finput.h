@@ -5,6 +5,7 @@
 #include <iostream>
 #include <fstream>
 #include <assert.h>
+#include <typeinfo>
 #include "utilities.h"
 #include "product.h"
 #include "term.h"
@@ -84,31 +85,31 @@ public:
   void addnewop(const std::string& name, const Product<Lelem>& oper){ _newops[name] = oper; };
   Product<Lelem> eqn() const { return _eqn;};
   // get sum of terms
-  Sum<Term,double> sumterms() const { return _sumterms;};
+  Sum<Term,TFactor> sumterms() const { return _sumterms;};
 private:
   // get position of the closing bracket in vector<Lelem> (which corresponds to the bracket on ipos)
-  unsigned long int closbrack(Product<Lelem> const & eqn, unsigned long int ipos);
+  lui closbrack(Product<Lelem> const & eqn, lui ipos);
   // get position of the opening bracket in vector<Lelem> (which corresponds to the bracket on ipos)
-  unsigned long int openbrack(Product<Lelem> const & eqn, unsigned long int ipos);
+  lui openbrack(Product<Lelem> const & eqn, lui ipos);
   // add connections: beg and end are positions of opening and closing parantheses in aterm
-  Product<long int> addconnections(const Product< Lelem >& aterm, long unsigned int beg, long unsigned int end);
+  Product<long int> addconnections(const Product< Lelem >& aterm, lui beg, lui end);
   // expand all newops
   Product<Lelem> expandnewops(Product<Lelem> const & eqn);
   // find the end position of current element in aterm, if bk==true: bra and ket are treated as brackets
-  unsigned long int elem(Product<Lelem> const & aterm, unsigned long int beg, bool bk=false);
+  lui elem(Product<Lelem> const & aterm, lui beg, bool bk=false);
   // find the end position of current term
-  unsigned long int term(Product<Lelem> const & eqn, unsigned long int beg);
+  lui term(Product<Lelem> const & eqn, lui beg);
   // expand equation
   Product<Lelem> expandeqn(Product<Lelem> const & eqn, std::vector< Product<long int> > & connections);
   // expand a term
   Product<Lelem> expandterm(Product<Lelem> const & aterm, std::vector< Product<long int> > & connections);
   // expand parantheses pair
-  Product<Lelem>  expandpar(Product<Lelem> const & aterm, unsigned long int beg, std::vector< Product<long int> > & connections);
+  Product<Lelem>  expandpar(Product<Lelem> const & aterm, lui beg, std::vector< Product<long int> > & connections);
   // test if eqn is completely expanded
   bool expanded(Product<Lelem> const & eqn);
   // add connections to term, and term to _sumterms
-  void addterm(Term& term, bool plus, long unsigned int beg, long unsigned int end, 
-               Product< long int > const & indxoperterm, unsigned long int & nterm,bool excopsonly);
+  void addterm(Term& term, bool plus, lui beg, lui end, 
+               Product< long int > const & indxoperterm, lui & nterm,bool excopsonly);
   // handle bra/ket
   Oper handle_braket(Lelem const & lel, Term & term);
   // handle explicit excitation index (like ^{ab}_{ij})
@@ -116,7 +117,7 @@ private:
   // handle excitation index
   Oper handle_excitation(std::string const & name, bool dg, Term & term);
   // handle factor
-  double handle_factor(Lelem const & lel);
+  TFactor handle_factor(Lelem const & lel);
   // handle operator
   Oper handle_operator(Lelem const & lel, Term & term, bool excopsonly=false);
   // handle sum
@@ -126,7 +127,7 @@ private:
   // add nameadd to name (as superscript)
   void add2name(std::string & name, std::string const & nameadd);
   Product<Lelem> _eqn;
-  Sum<Term, double> _sumterms;
+  Sum<Term, TFactor> _sumterms;
   // save names of pure excitation and deexciation operators
   Product<std::string> _excops;
   // save indices which the excitation (and deexcitation) operators have got.
@@ -163,7 +164,7 @@ public:
   std::string input() const;
   Product<Lelem> eqn() const;
   // get sum of terms
-  Sum<Term,double> sumterms() const;
+  Sum<Term,TFactor> sumterms() const;
   // analyze input
   bool analyzeit();
   

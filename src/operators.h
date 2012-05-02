@@ -67,7 +67,7 @@ class Oper {
   //return operator
   Product<SQOp> SQprod() const;
   //return prefactor
-  double prefac() const;
+  TFactor prefac() const;
   // return summation indices
   Product<Orbital> sumindx() const;
   // return real summation indices (without summations over bare excitations)
@@ -82,7 +82,7 @@ class Oper {
   Ops::Type _type;
   Product<SQOp> _SQprod;
   Matrices _mat;
-  double _prefac;
+  TFactor _prefac;
   Product <Orbital> _sumindx, _fakesumindx;
 };
 

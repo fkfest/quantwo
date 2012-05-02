@@ -1,16 +1,16 @@
 #include "term.h"
 
-Term::Term() : _prefac(1.0){_nloops=_nintloops=_nocc=0;_perm+=Permut();}
+Term::Term() : _prefac(1){_nloops=_nintloops=_nocc=0;_perm+=Permut();}
 
 Term::Term(Product<SQOp> const & opProd) :
-    _opProd(opProd), _prefac(1.0) {_nloops=_nintloops=_nocc=0;_perm+=Permut();}
+    _opProd(opProd), _prefac(1) {_nloops=_nintloops=_nocc=0;_perm+=Permut();}
 
 Term::Term(Product<SQOp> const & opProd, Product<Kronecker> const & kProd) :
-    _opProd(opProd), _kProd(kProd), _prefac(1.0) {_nloops=_nintloops=_nocc=0;_perm+=Permut();}
+    _opProd(opProd), _kProd(kProd), _prefac(1) {_nloops=_nintloops=_nocc=0;_perm+=Permut();}
     
 Term::Term(const Product< SQOp >& opProd, const Product< Kronecker >& kProd, 
            const Product< Matrices >& mat, const Product< Orbital >& sumindx, const Product< Orbital >& realsumindx, 
-           const double& prefac, const std::vector< Product<long int> >& connections) :
+           const TFactor& prefac, const std::vector< Product<long int> >& connections) :
     _opProd(opProd), _kProd(kProd), _mat(mat), _sumindx(sumindx), _realsumindx(realsumindx), 
     _prefac(prefac), _connections(connections) {_nloops=_nintloops=_nocc=0;_perm+=Permut();}
 
@@ -23,7 +23,7 @@ Term& Term::operator*=(const Oper& op)
   _prefac *= op.prefac();
   return *this;
 }
-Term& Term::operator*=(const double& fac)
+Term& Term::operator*=(const TFactor& fac)
 {
   _prefac*=fac;
   return *this;
@@ -33,14 +33,14 @@ Term& Term::operator+=(const Permut& perm)
   _perm+=perm;
   return *this;
 }
-Term& Term::operator+=(const std::pair< Permut, double >& p)
+Term& Term::operator+=(const std::pair< Permut, TFactor >& p)
 {
   _perm+=p;
   return *this;
 }
 void Term::addconnection(const Product< long int >& connections)
 {
-  for (unsigned long int i=0; i<connections.size(); i++)
+  for (lui i=0; i<connections.size(); i++)
   { // Test
     if (connections[i]==0) 
       error("Zero in connections-map","Term::addconnection");
@@ -66,7 +66,7 @@ void Term::addmatrix(const Matrices& mat)
 {
   _mat *= mat;
 }
-void Term::replacematrix(const Matrices& mat, long unsigned int ipos)
+void Term::replacematrix(const Matrices& mat, lui ipos)
 {
   if (ipos >= _mat.size())
     error("The position is outside of this term: "+ipos,"Term::replacematrix");
@@ -79,12 +79,12 @@ Product<SQOp> Term::opProd() const
 
 Product<Kronecker>  Term::kProd() const
 {   return _kProd;  }
-double Term::prefac() const
+TFactor Term::prefac() const
 { return _prefac; }
 void Term::reset_prefac()
 { 
-  _prefac=1.0;
-  _perm=Sum<Permut,double>();
+  _prefac=1;
+  _perm=Sum<Permut,TFactor>();
 }
 Product<Matrices> Term::mat() const
 { return _mat; }
@@ -110,7 +110,7 @@ Product< Orbital > Term::extindx() const
   peo.resort();
   return peo;
 }
-Sum< Permut, double > Term::perm() const
+Sum< Permut, TFactor > Term::perm() const
 { return _perm; }
 std::vector< Product< long int > > Term::connections() const
 { return _connections; }
@@ -118,15 +118,15 @@ std::vector< Product< long int > > Term::connections() const
 bool Term::term_is_0(double minfac) const
 { 
   bool 
-    is0 = (_opProd.size()==0 && _kProd.size()==0 && _mat.size()==0) || std::abs(_prefac)<minfac,
+    is0 = (_opProd.size()==0 && _kProd.size()==0 && _mat.size()==0) || _todouble(_abs(_prefac))<minfac,
     loop = !is0;
-  for ( Sum<Permut,double>::const_iterator it = _perm.begin(); loop && it != _perm.end(); ++it )
-    loop = is0 = std::abs(it->second) < minfac;
+  for ( Sum<Permut,TFactor>::const_iterator it = _perm.begin(); loop && it != _perm.end(); ++it )
+    loop = is0 = _todouble(_abs(it->second)) < minfac;
   return is0;
 }
 bool Term::term_is_valid()
 {
-  for (unsigned long int i=0; i<_realsumindx.size(); i++)
+  for (lui i=0; i<_realsumindx.size(); i++)
   {
     if(_sumindx.find(_realsumindx[i])<0)
     {
@@ -452,7 +452,7 @@ std::ostream & operator << (std::ostream & o, Term const & t)
  //   o << t.connections().at(i)<<":";
   std::streampos ipos0=o.tellp();
   bool printed = false;
-  if ( std::abs(std::abs(t.prefac()) - 1.0) > MyOut::pcurout->small){
+  if ( _todouble(_abs(_abs(t.prefac()) - 1)) > MyOut::pcurout->small){
     o << t.prefac();
     MyOut::pcurout->lenbuf += o.tellp()-ipos0;
     printed = true;
@@ -462,7 +462,7 @@ std::ostream & operator << (std::ostream & o, Term const & t)
     MyOut::pcurout->lenbuf++ ; // for "("
     o << "(" << t.perm() << ")";
     MyOut::pcurout->lenbuf++ ; // for ")"
-  } else if ( std::abs(std::abs(t.perm().begin()->second) - 1.0) > MyOut::pcurout->small ||
+  } else if ( _todouble(_abs(_abs(t.perm().begin()->second) - 1)) > MyOut::pcurout->small ||
               !t.perm().begin()->first.is1() ){ // don't print permutation 1
     if ( printed ) o << "*";
     o << t.perm();
@@ -483,41 +483,39 @@ std::ostream & operator << (std::ostream & o, Term const & t)
 return o;
 }
 
-Sum<Term, double> Term::normalOrder() const
+Sum< Term, TFactor > Term::normalOrder() const
 {   return normalOrder(false);  }
 
-Sum<Term, double> Term::normalOrder_fullyContractedOnly() const
+Sum< Term, TFactor > Term::normalOrder_fullyContractedOnly() const
 {   return normalOrder(true);   }
 
 
-Sum<Term, double> Term::normalOrder(bool fullyContractedOnly) const
+Sum< Term, TFactor > Term::normalOrder(bool fullyContractedOnly) const
 {
-Sum<Term, double>  sum;
+    Sum<Term, TFactor>  sum;
     for ( unsigned int i=0 ; i+1<_opProd.size() ; ++i ) // iterate over Product<SQOp> but the last
     {
         // check if two consecutive operators need reordering
-        if ( _opProd[i].gender()==SQOp::Annihilator  &&  _opProd[i+1].gender()==SQOp::Creator )
-        {   // yes
-        
-            // handle 1st term
-        Product<SQOp> p(_opProd); // copy Product<SQOp>
-            std::swap(p[i], p[i+1]); // swap operators
-            // check if we need downward recursion
-            if ( !fullyContractedOnly || p[_opProd.size()-1].gender()==SQOp::Creator )
-                sum -= Term(p, _kProd, _mat, _sumindx, _realsumindx, _prefac, _connections).normalOrder(fullyContractedOnly);
+        if ( _opProd[i].gender()==SQOp::Annihilator  &&  _opProd[i+1].gender()==SQOp::Creator ) {   // yes
+          // handle 1st term
+          Product<SQOp> p(_opProd); // copy Product<SQOp>
+          std::swap(p[i], p[i+1]); // swap operators
+          // check if we need downward recursion
+          if ( !fullyContractedOnly || p[_opProd.size()-1].gender()==SQOp::Creator )
+            sum -= Term(p, _kProd, _mat, _sumindx, _realsumindx, _prefac, _connections).normalOrder(fullyContractedOnly);
 
             // handle 2nd term 
-        Product<SQOp> q(p);   // copy Product<SQOp>
+          Product<SQOp> q(p);   // copy Product<SQOp>
           q.erase(q.begin()+i,q.begin()+i+2);
-        // q.erase(std::find(q.begin(), q.end(), p[i]));        // remove
-        // q.erase(std::find(q.begin(), q.end(), p[i+1]));      // operators
+          // q.erase(std::find(q.begin(), q.end(), p[i]));        // remove
+          // q.erase(std::find(q.begin(), q.end(), p[i+1]));      // operators
         
-        Product<Kronecker>  d(_kProd);
-            d *= Kronecker(p[i].orb(), p[i+1].orb());           // and add kronecker
-            // check if we need downward recursion
-            if ( !fullyContractedOnly || q.size()==0 || q[q.size()-1].gender()==SQOp::Creator )
-                sum += Term(q, d, _mat, _sumindx, _realsumindx, _prefac, _connections).normalOrder(fullyContractedOnly);
-            return sum;
+          Product<Kronecker>  d(_kProd);
+          d *= Kronecker(p[i].orb(), p[i+1].orb());           // and add kronecker
+          // check if we need downward recursion
+          if ( !fullyContractedOnly || q.size()==0 || q[q.size()-1].gender()==SQOp::Creator )
+            sum += Term(q, d, _mat, _sumindx, _realsumindx, _prefac, _connections).normalOrder(fullyContractedOnly);
+          return sum;
         }
     }
 
@@ -525,75 +523,68 @@ Sum<Term, double>  sum;
     return sum;
 }
 
-Sum<Term, double> Term::normalOrderPH() const
+Sum< Term, TFactor > Term::normalOrderPH() const
 {   return normalOrderPH(false);  }
 
-Sum<Term, double> Term::normalOrderPH_fullyContractedOnly() const
+Sum< Term, TFactor > Term::normalOrderPH_fullyContractedOnly() const
 {   return normalOrderPH(true);   }
 
 
-Sum<Term, double> Term::normalOrderPH(bool fullyContractedOnly) const
+Sum< Term, TFactor > Term::normalOrderPH(bool fullyContractedOnly) const
 {
-Sum<Term, double>  sum;
-bool creat2, annih1;
-    for ( unsigned int i=0 ; i+1<_opProd.size() ; ++i ) // iterate over Product<SQOp> but the last
-    {
-        // check if two consecutive operators need reordering
-        creat2=(( _opProd[i].genderPH()==SQOp::Annihilator || _opProd[i].genderPH()==SQOp::Gen )
+  Sum<Term, TFactor>  sum;
+  bool creat2, annih1;
+  for ( unsigned int i=0 ; i+1<_opProd.size() ; ++i ) {// iterate over Product<SQOp> but the last
+    // check if two consecutive operators need reordering
+    creat2=(( _opProd[i].genderPH()==SQOp::Annihilator || _opProd[i].genderPH()==SQOp::Gen )
               &&  _opProd[i+1].genderPH()==SQOp::Creator );
-        annih1=(_opProd[i].genderPH()==SQOp::Annihilator 
+    annih1=(_opProd[i].genderPH()==SQOp::Annihilator 
               && ( _opProd[i+1].genderPH()==SQOp::Creator || _opProd[i+1].genderPH()==SQOp::Gen));
-        if ( creat2 || annih1 )
-        {   // yes
-            // handle 1st term
-          Product<SQOp> p(_opProd); // copy Product<SQOp>
-          std::swap(p[i], p[i+1]); // swap operators
-          // check if we need downward recursion
-          if ( !fullyContractedOnly || (p[_opProd.size()-1].genderPH()==SQOp::Creator)
+    if ( creat2 || annih1 ) {   // yes
+      // handle 1st term
+      Product<SQOp> p(_opProd); // copy Product<SQOp>
+      std::swap(p[i], p[i+1]); // swap operators
+      // check if we need downward recursion
+      if ( !fullyContractedOnly || (p[_opProd.size()-1].genderPH()==SQOp::Creator)
                 || (p[0].genderPH()==SQOp::Annihilator))
-            sum -= Term(p, _kProd, _mat, _sumindx, _realsumindx, _prefac, _connections).normalOrderPH(fullyContractedOnly); 
+        sum -= Term(p, _kProd, _mat, _sumindx, _realsumindx, _prefac, _connections).normalOrderPH(fullyContractedOnly); 
           
-          if ( _opProd[i].orb().type()==_opProd[i+1].orb().type() || 
+      if ( _opProd[i].orb().type()==_opProd[i+1].orb().type() || 
                ( ( _opProd[i].orb().type()==Orbital::GenT || _opProd[i+1].orb().type()==Orbital::GenT ) 
-                 && _opProd[i].gender()!=_opProd[i+1].gender() ))
-          {
-            // handle 2nd term 
-            Product<SQOp> q(p);   // copy Product<SQOp>
-            q.erase(q.begin()+i,q.begin()+i+2);
+                 && _opProd[i].gender()!=_opProd[i+1].gender() )) {
+        // handle 2nd term 
+        Product<SQOp> q(p);   // copy Product<SQOp>
+        q.erase(q.begin()+i,q.begin()+i+2);
         
-            Product<Kronecker>  d(_kProd);
-            d *= Kronecker(p[i].orb(), p[i+1].orb());           // and add kronecker
-            // check if we need downward recursion
-            if ( !fullyContractedOnly || q.size()==0 || q[q.size()-1].genderPH()==SQOp::Creator 
+        Product<Kronecker>  d(_kProd);
+        d *= Kronecker(p[i].orb(), p[i+1].orb());           // and add kronecker
+        // check if we need downward recursion
+        if ( !fullyContractedOnly || q.size()==0 || q[q.size()-1].genderPH()==SQOp::Creator 
                 || q[0].genderPH()==SQOp::Annihilator)
               sum += Term(q, d, _mat, _sumindx, _realsumindx, _prefac, _connections).normalOrderPH(fullyContractedOnly);
-          }
-          return sum;
-        }
+      }
+      return sum;
     }
-    if ( !fullyContractedOnly || _opProd.size()==0 ) 
-      sum += *this;   // add current term to the intermediate sum
-    return sum;
+  }
+  if ( !fullyContractedOnly || _opProd.size()==0 ) 
+    sum += *this;   // add current term to the intermediate sum
+  return sum;
 }
-Sum< Term, double > Term::wickstheorem() const
+Sum< Term, TFactor > Term::wickstheorem() const
 {
   // generate "matrix" of indices to SQops
   std::vector< std::vector< long int > > opers;
   std::vector< long int > opermat;
   unsigned int m=0;
-  for (unsigned int i=0; i<_opProd.size(); i++)
-  {
-    if (m==_mat.size())
-    { // all SQops, which are not in Matrices have to be added as individual vectors
+  for (unsigned int i=0; i<_opProd.size(); i++) {
+    if (m==_mat.size()) { // all SQops, which are not in Matrices have to be added as individual vectors
       opermat.push_back(i);
       opers.push_back(opermat);
       opermat=std::vector< long int >();
       m=0; // search from begin
-    }   
-    else if (_mat[m].orbitals().find(_opProd[i].orb())>=0)
+    } else if (_mat[m].orbitals().find(_opProd[i].orb())>=0)
       opermat.push_back(i);
-    else 
-    {
+    else {
       m++;
       i--;
       if (opermat.size()>0) opers.push_back(opermat);
@@ -612,11 +603,10 @@ Sum< Term, double > Term::wickstheorem() const
   return wick(opers,opermat);
 }
 
-Sum<Term, double> Term::wick(std::vector< std::vector< long int > >& opers, std::vector< long int >& krons) const
+Sum< Term, TFactor > Term::wick(std::vector< std::vector< long int > >& opers, std::vector< long int >& krons) const
 {
-  Sum<Term, double>  sum;
-  if (opers.size()==0)
-  { // no SQoperators left
+  Sum<Term, TFactor>  sum;
+  if (opers.size()==0) { // no SQoperators left
     Product<SQOp> p;
     // generate Kroneckers
     Product<Kronecker> d;
@@ -625,38 +615,32 @@ Sum<Term, double> Term::wick(std::vector< std::vector< long int > >& opers, std:
     sum += Term(p,d,_mat, _sumindx, _realsumindx, _prefac, _connections);
     return sum;
   }
-  unsigned long int istart,sign;
+  lui istart,sign;
   long int curr=opers[0][0];
   SQOp::Gender gencurr=_opProd[curr].gender();
   Orbital::Type orbtypecurr=_opProd[curr].orb().type();
   // remove first SQop-index
-  if (opers[0].size()<2)
-  {
+  if (opers[0].size()<2) {
     opers.erase(opers.begin());
     istart=0;
-  }
-  else
-  {
+  } else {
     opers[0].erase(opers[0].begin());
     istart=1;
   }
   // add first index to krons1
   krons.push_back(curr);
   sign=0;
-  for ( unsigned int i=0 ; i<opers.size() ; ++i ) // iterate over all Operators 
-  {
-    if (i<istart) //but the first
-    { //count SQops for sign
+  for ( unsigned int i=0 ; i<opers.size() ; ++i ) { // iterate over all Operators 
+    if (i<istart) { //but the first
+      //count SQops for sign
       sign+=opers[i].size();
       continue;
     }
-    for ( unsigned int j=0 ; j<opers[i].size() ; ++j ) // iterate over all SQop in Operator i
-    {
+    for ( unsigned int j=0 ; j<opers[i].size() ; ++j ) {// iterate over all SQop in Operator i
       // check if the first operator and operator i would yield a Kronecker
       if (_opProd[opers[i][j]].gender()!=gencurr && 
           (_opProd[opers[i][j]].orb().type()==orbtypecurr||
-           orbtypecurr==Orbital::GenT || _opProd[opers[i][j]].orb().type()==Orbital::GenT))
-      {
+           orbtypecurr==Orbital::GenT || _opProd[opers[i][j]].orb().type()==Orbital::GenT)) {
         // copy opers and krons
         std::vector< std::vector< long int > > opers1(opers);
         std::vector< long int > krons1(krons);
@@ -699,7 +683,7 @@ void Term::reduceTerm()
     if (_kProd[i].orb1().type()!=_kProd[i].orb2().type() 
         && _kProd[i].orb2().type()!=Orbital::GenT && _kProd[i].orb1().type()!=Orbital::GenT )
     {
-      _prefac=0.0; // Kronecker between two orbitals of different type
+      _prefac=0; // Kronecker between two orbitals of different type
       return; 
     }
     // search for orbitals in (real) summations
@@ -773,9 +757,9 @@ bool Term::antisymmetrized()
   }
   return false;
 }
-Sum< Term, double > Term::expand_antisym(bool spinintegr)
+Sum< Term, TFactor > Term::expand_antisym(bool spinintegr)
 {
-  Sum< Term, double > sum;
+  Sum< Term, TFactor > sum;
   bool expand;
   Term term(*this); // copy term
   if (term.expandintegral(true))
@@ -844,14 +828,14 @@ void Term::spinintegration(bool notfake)
     }while (orb1!=orb && _sumindx.find(orb1)>=0);
     if (samespinsym)
     {
-      if (notfake) _prefac*=2.0;
+      if (notfake) _prefac*=2;
       // count number of loops
       ++_nloops;
       // count number of internal loops
       if (internalloop) ++_nintloops;
     }
     else
-      _prefac=0.0;
+      _prefac=0;
   }
   if (notfake)
   {// set no spin
@@ -860,7 +844,7 @@ void Term::spinintegration(bool notfake)
       _mat[i].set_no_spin();
       if (InSet(_mat[i].type(),Ops::Exc, Ops::Deexc, Ops::Exc0, Ops::Deexc0, Ops::Interm ))
         for (unsigned int j=0; j<_mat[i].orbitals().size()/2; j++)
-          _prefac *= double(j+1); // the symmetry of closed shell cluster operators is lower 
+          _prefac *= j+1; // the symmetry of closed shell cluster operators is lower 
     }
     for (unsigned int i=0; i< _sumindx.size(); i++)
       _sumindx[i].setspin(Orbital::No);
@@ -959,17 +943,17 @@ void Term::set_lastorb(Orbital orb, bool onlylarger)
 }
 
 
-Sum<Term,double> Q2::reduceSum(Sum<Term,double> s)
+Sum< Term, TFactor > Q2::reduceSum(Sum< Term, TFactor > s)
 {
   double minfac = Input::fPars["prog"]["minfac"];
-  Sum<Term,double> sum,sum1;
+  Sum<Term,TFactor> sum,sum1;
   Term term,term1;
   bool added;
-  double prefac;
+  TFactor prefac;
   say("Reduce sum of terms");
   say("Kroneckers, Connections, and Spin-integration...");
   bool spinintegr = Input::iPars["prog"]["spinintegr"];
-  for ( Sum<Term,double>::const_iterator i=s.begin();i!=s.end(); ++i)
+  for ( Sum<Term,TFactor>::const_iterator i=s.begin();i!=s.end(); ++i)
   {
     term=i->first;
     // remove Kroneckers
@@ -991,20 +975,20 @@ Sum<Term,double> Q2::reduceSum(Sum<Term,double> s)
   }
   say("Equal terms and permutations...");
   //std::cout << "SUM:" << sum1 << std::endl;
-  sum=Sum<Term,double>();
+  sum=Sum<Term,TFactor>();
   // sum up all equal terms
-  for ( Sum<Term,double>::const_iterator j=sum1.begin();j!=sum1.end(); ++j) {
+  for ( Sum<Term,TFactor>::const_iterator j=sum1.begin();j!=sum1.end(); ++j) {
     term=j->first;
     prefac=j->second*term.prefac();
     // remove prefactors in terms
     term.reset_prefac();
     added=false;
-    for ( Sum<Term,double>::iterator k=sum.begin();k!=sum.end(); ++k) {
+    for ( Sum<Term,TFactor>::iterator k=sum.begin();k!=sum.end(); ++k) {
       Permut perm;
       term1=k->first;
       if (term.equal(term1,perm)) {
         sum.erase(k);
-        term1+=std::make_pair<Permut,double>(perm,prefac);
+        term1+=std::make_pair<Permut,TFactor>(perm,prefac);
         //std::cout<<"term old" << term1 <<std::endl;
         if ( !term1.term_is_0(minfac) ) sum+=term1;
         added=true;
@@ -1012,56 +996,56 @@ Sum<Term,double> Q2::reduceSum(Sum<Term,double> s)
       }
     }
     if (!added) {
-      term+=std::make_pair<Permut,double>(Permut(),prefac);
+      term+=std::make_pair<Permut,TFactor>(Permut(),prefac);
       if ( !term.term_is_0(minfac) ) sum+=term;
       //std::cout<<"term new" << term <<std::endl;
     }
   } 
   say("Remove terms with small prefactors...");
   // now remove everything with small prefactor
-  sum1 = Sum<Term,double>();
-  for ( Sum<Term,double>::const_iterator j=sum.begin(); j!=sum.end(); ++j) {
-    if ( std::abs(j->second) < minfac ) continue;
+  sum1 = Sum<Term,TFactor>();
+  for ( Sum<Term,TFactor>::const_iterator j=sum.begin(); j!=sum.end(); ++j) {
+    if ( _todouble(_abs(j->second)) < minfac ) continue;
     term1 = term = j->first;
-    if ( std::abs(term.prefac()) < minfac ) continue;
+    if ( _todouble(_abs(term.prefac())) < minfac ) continue;
     term1.reset_prefac();
-    const Sum<Permut,double>& perms = term.perm();
-    for ( Sum<Permut,double>::const_iterator it = perms.begin(); it != perms.end(); ++it ){
-      if ( std::abs(it->second) < minfac ) continue;
-      term1 += *it; //std::make_pair<Permut,double>(it->first,it->second);
+    const Sum<Permut,TFactor>& perms = term.perm();
+    for ( Sum<Permut,TFactor>::const_iterator it = perms.begin(); it != perms.end(); ++it ){
+      if ( _todouble(_abs(it->second)) < minfac ) continue;
+      term1 += *it; 
     }
     sum1 += term1;
   }
   
   return sum1;
 }
-Sum< Term, double > Q2::normalOrderPH(Sum< Term, double > s)
+Sum< Term, TFactor > Q2::normalOrderPH(Sum< Term, TFactor > s)
 {
-  Sum<Term,double> sum,sum0;
+  Sum<Term,TFactor> sum,sum0;
   Term term;
   say("Normal ordering");
-  for ( Sum<Term,double>::const_iterator i=s.begin();i!=s.end(); ++i)
+  for ( Sum<Term,TFactor>::const_iterator i=s.begin();i!=s.end(); ++i)
   {
     term=i->first;
     sum0 += term.normalOrderPH_fullyContractedOnly();
     sum0 *= i->second;
     sum += sum0;
-    sum0=Sum<Term,double>();
+    sum0=Sum<Term,TFactor>();
   }
   return sum;
 }
-Sum< Term, double > Q2::wick(Sum< Term, double > s)
+Sum< Term, TFactor > Q2::wick(Sum< Term, TFactor > s)
 {
-  Sum<Term,double> sum,sum0;
+  Sum<Term,TFactor> sum,sum0;
   Term term;
   say("Wick's theorem");
-  for ( Sum<Term,double>::const_iterator i=s.begin();i!=s.end(); ++i)
+  for ( Sum<Term,TFactor>::const_iterator i=s.begin();i!=s.end(); ++i)
   {
     term=i->first;
     sum0 += term.wickstheorem();
     sum0 *= i->second;
     sum += sum0;
-    sum0=Sum<Term,double>();
+    sum0=Sum<Term,TFactor>();
   }
   return sum;
 }

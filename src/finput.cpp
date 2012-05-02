@@ -325,7 +325,7 @@ std::string Finput::input() const
 { return _input; }
 Product< Lelem > Finput::eqn() const
 { return _eqn.eqn(); }
-Sum< Term, double > Finput::sumterms() const
+Sum< Term, TFactor > Finput::sumterms() const
 { return _eqn.sumterms(); }
 bool Finput::analyzeit()
 {
@@ -937,28 +937,58 @@ Oper Equation::handle_excitation(const std::string& name, bool dg, Term& term)
     return Oper(Ops::Exc0,excl,occ,virt);
 }
 
-double Equation::handle_factor(const Lelem& lel)
+TFactor Equation::handle_factor(const Lelem& lel)
 {
-  double fac,fac1;
+  TFactor fac;
   lui ipos=0, ipos1;
   std::string lelnam=lel.name();
   if (lel.lex()==Lelem::Num) {
-    if(!str2num<double>(fac,lelnam,std::dec))
-      error("Factor is not a number "+lelnam,"Finput::handle_factor");
+    double facd;
+    if(!str2num<double>(facd,lelnam,std::dec))
+        error("Factor is not a number "+lelnam,"Finput::handle_factor");
+    if ( typeid(TFactor) != typeid(double) ){
+      // try to bring it to integer over integer form
+      // NOTE: won't work for 1e-2 etc.
+      long int 
+        denom = std::pow(10,lelnam.size()),
+        nom = facd*denom;
+      fac = nom;
+      fac /= denom;
+    } else 
+      fac = facd;
   } else {
     ipos=IL::skip(lelnam,ipos,"{} ");
     ipos1=IL::nextwordpos(lelnam,ipos);
-    if(!str2num<double>(fac,lelnam.substr(ipos,ipos1-ipos),std::dec))
+    if ( typeid(TFactor) == typeid(double) ){
+      double facd;
+      if(!str2num<double>(facd,lelnam.substr(ipos,ipos1-ipos),std::dec))
         error("Numerator is not a number "+lelnam.substr(ipos,ipos1-ipos),"Finput::handle_factor");
+      fac = facd;
+    } else {
+      // NOTE: won't work for non-integer nominators or denominators 
+      long int nom;
+      if(!str2num<long int>(nom,lelnam.substr(ipos,ipos1-ipos),std::dec))
+        error("Numerator is not an integer "+lelnam.substr(ipos,ipos1-ipos),"Finput::handle_factor");
+      fac = nom;
+    }
     ipos=lelnam.find("/");
     if(ipos==std::string::npos)
       error("Something wrong with frac "+lelnam,"Finput::handle_factor");
     ++ipos;
     ipos=IL::skip(lelnam,ipos,"{} ");
     ipos1=IL::nextwordpos(lelnam,ipos);
-    if(!str2num<double>(fac1,lelnam.substr(ipos,ipos1-ipos),std::dec))
+    if ( typeid(TFactor) == typeid(double) ){
+      double fac1;
+      if(!str2num<double>(fac1,lelnam.substr(ipos,ipos1-ipos),std::dec))
         error("Denominator is not a number "+lelnam.substr(ipos,ipos1-ipos),"Finput::handle_factor");
-    fac=fac/fac1;
+      fac /= fac1;
+    } else {
+      // NOTE: won't work for non-integer nominators or denominators 
+      long int denom;
+      if(!str2num<long int>(denom,lelnam.substr(ipos,ipos1-ipos),std::dec))
+        error("Denominator is not an integer "+lelnam.substr(ipos,ipos1-ipos),"Finput::handle_factor");
+      fac /= denom;
+    }
   }
   return fac;
 }

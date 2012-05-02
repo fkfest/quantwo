@@ -84,8 +84,8 @@ std::ostream & operator << (std::ostream & o, Sum<Object,Field> const & p)
       if ( i!=p.begin() )
         o << " + ";
     }
-    if ( std::abs( std::abs(i->second) - 1.0 ) > MyOut::pcurout->small )
-      o << std::abs(i->second) << "*";
+    if ( _todouble(_abs( _abs(i->second) - 1 )) > MyOut::pcurout->small )
+      o << _abs(i->second) << "*";
     MyOut::pcurout->lenbuf += o.tellp()-ipos0;
     
     o << i->first ; // lenline should be handled in other routines

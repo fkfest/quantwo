@@ -80,6 +80,19 @@ bool Output::breaklongline()
     }
   return false;
 }
+
+#ifdef _RATIONAL
+std::ostream & operator << (std::ostream & o, TFactor const & p){
+  if ( p.denominator() != 1 )
+    o << "\\frac{" << p.numerator() << "}{" << p.denominator() << "}" ;
+  else
+    o << p.numerator();
+  return o;
+}
+namespace dboost{
+TFactor abs(const TFactor& f){return boost::abs(f);}
+}
+#endif
 int Input::verbose = 0;
 TsParSet Input::sPars;
 TiParSet Input::iPars;

@@ -46,7 +46,7 @@ std::ostream & operator << (std::ostream & o, SQOp const & op)
 
 Oper::Oper()
 {  
-  _prefac=1.0; 
+  _prefac=1; 
   _type=Ops::None;
 }
 
@@ -108,9 +108,9 @@ void Oper::create_Oper(const std::string& name)
   orb=Orbital(std::string("Q"));
   porbs*=orb;
   _sumindx*=orb;
+  _prefac=1;
   if ( InSet(_type, Ops::Fock,Ops::XPert) ) {
     _SQprod*=SQOp(SQOp::Annihilator,orb);
-    _prefac=1.0;
   } else {
    // we use chemical notation (PQ|RS) P^\dg R^\dg S Q
     orb=Orbital(std::string("R"));
@@ -123,7 +123,7 @@ void Oper::create_Oper(const std::string& name)
     _sumindx*=orb;
     orb=Orbital(std::string("Q"));
     _SQprod*=SQOp(SQOp::Annihilator,orb);
-    _prefac=1.0/4.0;
+    _prefac /= 4;
   }
   _mat=Matrices(_type,porbs,name);
 }
@@ -149,7 +149,7 @@ void Oper::create_Oper(const Product< Orbital >& occs, const Product< Orbital >&
     * p_orb0 = &virts,
     * p_orb1 = &occs;
   if (InSet(_type, Ops::Deexc,Ops::Deexc0)) std::swap(p_orb0,p_orb1);
-  _prefac = 1.0;
+  _prefac = 1;
   for (unsigned short i = 0; i < p_orb0->size(); ++i) {  
     _SQprod*=SQOp(SQOp::Creator, (*p_orb0)[i]);
     porbs *= (*p_orb0)[i];
@@ -161,9 +161,9 @@ void Oper::create_Oper(const Product< Orbital >& occs, const Product< Orbital >&
     _sumindx *= (*p_orb1)[i];
     if (InSet(_type, Ops::Exc0,Ops::Deexc0)) 
       _fakesumindx *= (*p_orb1)[i];
-    _prefac = _prefac/double(i+1);
+    _prefac /= i+1;
   }
-  _prefac=_prefac*_prefac;
+  _prefac *= _prefac;
   _mat=Matrices(_type,porbs,name);
 }
 
@@ -171,7 +171,7 @@ Matrices Oper::mat() const
 { return _mat;}
 Product< SQOp > Oper::SQprod() const
 { return _SQprod;}
-double Oper::prefac() const
+TFactor Oper::prefac() const
 { return _prefac;}
 Product< Orbital > Oper::sumindx() const
 { return _sumindx;}
@@ -188,7 +188,7 @@ Product< Orbital > Oper::realsumindx() const
 
 std::ostream & operator << (std::ostream & o, Oper const & op)
 {
-  if ( std::abs(std::abs(op.prefac()) - 1.0) > Numbers::small) o << op.prefac();
+  if ( _todouble(_abs(_abs(op.prefac()) - 1)) > Numbers::small) o << op.prefac();
   if (op.realsumindx().size()>0) o <<"\\sum_{"<<op.realsumindx()<<"}";
   o <<op.mat() << op.SQprod();
   return o;
