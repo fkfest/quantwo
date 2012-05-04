@@ -273,7 +273,7 @@ void Finput::InitInpars(std::string paramspath)
   finp.close();
 }
 
-Finput& Finput::operator+=(const std::string& line)
+bool Finput::addline(const std::string& line)
 {
   const TParArray& beqs = Input::aPars["syntax"]["beq"];
   const TParArray& eeqs = Input::aPars["syntax"]["eeq"];
@@ -281,6 +281,7 @@ Finput& Finput::operator+=(const std::string& line)
   const TParArray& newops = Input::aPars["syntax"]["newoperator"];
   const TParArray& comments = Input::aPars["syntax"]["comment"];
  
+  bool neweq = false;
   lui ipos=0, ipend;
   // and skip " " on begin
   ipos = IL::skip(line,ipos," ");
@@ -309,6 +310,7 @@ Finput& Finput::operator+=(const std::string& line)
     _eqn.do_sumterms(true);
     _eqn.do_sumterms();
     _input="";
+    neweq = true;
   } else if (InSet(linesp.substr(ipos,ipend-ipos), newcs)) {// newcommand
     ipos = IL::addnewcom(linesp,ipend);
   } else if (InSet(linesp.substr(ipos,ipend-ipos), newops)) {// newoperator
@@ -319,7 +321,7 @@ Finput& Finput::operator+=(const std::string& line)
     _input += linesp;
     _input += " "; // add space for separation
   }
-  return *this;
+  return neweq;
 }
 std::string Finput::input() const
 { return _input; }
@@ -566,12 +568,10 @@ lui Equation::elem(const Product< Lelem >& aterm, lui beg, bool bk)
   lui i, end, nk=0;
   bool braket=false;
   
-  for ( i=beg; i<aterm.size() ; i++ )
-  {
+  for ( i=beg; i<aterm.size() ; i++ ) {
     if (aterm[i].lex()==Lelem::LPar) ++nk;
     if (aterm[i].lex()==Lelem::RPar) --nk;
-    if (bk)
-    {
+    if (bk) {
       if (aterm[i].lex()==Lelem::Bra) braket=true;
       if (aterm[i].lex()==Lelem::Ket) braket=false;
     }

@@ -48,49 +48,57 @@ int main(int argc, char **argv) {
   Finput finput(exePath);
   ifstream fin;
   fin.open(inputfile.c_str());
+  // save input file
+  std::vector< std::string > inp;
   if (fin.is_open())
   {
     string line;
-    while (fin.good())
-    {
+    while (fin.good()) {
       getline (fin,line);
       _xout1(line << endl);
-      finput+=line;
+      inp.push_back(line);
     }
   }
   else
     error("Bad input file!");
   fin.close();
-  if (finput.sumterms().size()==0)
-    say("No equation in input file!");
-  else
-  {
-//    Input::verbose = 2;
-    Sum<Term,TFactor> sum_finp(finput.sumterms());
-    Sum<Term,TFactor> sum_NO;
-    if ( Input::iPars["prog"]["wick"] == 0 )
-      sum_NO = Q2::normalOrderPH(sum_finp);
-    else 
-      sum_NO = Q2::wick(sum_finp);
-    Sum<Term,TFactor> sum_final(Q2::reduceSum(sum_NO));
-    _xout1(finput << endl);
-    _xout2(" = " << sum_finp << endl);
-    _xout2(" = " << sum_NO << endl);
-    _xout1(" = " << sum_final << endl);
-    // write to a file
-    ofstream fout;
-    fout.open(outputfile.c_str());
-    Output myfout(fout);
-//    // set current ouput to fout
-    MyOut::pcurout = &myfout;
-    MyOut::pcurout->nlines += Input::iPars["output"]["emptylines"];
-    MyOut::pcurout->beq();
-    MyOut::pcurout->buf <<sum_final << endl;
-    MyOut::pcurout->eeq();
-    // set current ouput back to default
-    MyOut::pcurout = &MyOut::defout;
-    fout.close();
+  ofstream fout;
+  fout.open(outputfile.c_str());
+  Output myfout(fout);
+  // set current ouput to fout
+  MyOut::pcurout = &myfout;
+  MyOut::pcurout->nlines += Input::iPars["output"]["emptylines"];
+  if ( inp.size() == 0 ){
+    say("Empty input file!");
+    return 1;
   }
+  for ( lui il = 0; il < inp.size(); ++il ){
+    if ( finput.addline(inp[il]) ){
+      if ( finput.sumterms().size() == 0 ){
+        say("Empty equation!");
+        continue;
+      }
+//    Input::verbose = 2;
+      Sum<Term,TFactor> sum_finp(finput.sumterms());
+      Sum<Term,TFactor> sum_NO;
+      if ( Input::iPars["prog"]["wick"] == 0 )
+        sum_NO = Q2::normalOrderPH(sum_finp);
+      else 
+        sum_NO = Q2::wick(sum_finp);
+      Sum<Term,TFactor> sum_final(Q2::reduceSum(sum_NO));
+      _xout1(finput << endl);
+      _xout2(" = " << sum_finp << endl);
+      _xout2(" = " << sum_NO << endl);
+      _xout1(" = " << sum_final << endl);
+      // write to a file
+      MyOut::pcurout->beq();
+      MyOut::pcurout->buf <<sum_final << endl;
+      MyOut::pcurout->eeq();
+    }
+  }
+  // set current ouput back to default
+  MyOut::pcurout = &MyOut::defout;
+  fout.close();
   return 0;
 }
 

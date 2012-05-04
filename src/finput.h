@@ -159,7 +159,7 @@ public:
   // constructor + init input-parameters
   Finput( std::string paramspath );
   // add string
-  Finput & operator += (std::string const & line);
+  bool addline( const std::string& line );
   // get input
   std::string input() const;
   Product<Lelem> eqn() const;

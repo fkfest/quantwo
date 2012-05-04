@@ -42,8 +42,6 @@ void Output::newpageeqn()
   eeq(false);
   beq();
   nlines=0;
-  lenline=0;
-  hline=1.0;
   ++npages;
   flushbuf();
 }
@@ -66,6 +64,8 @@ void Output::eeq(bool doflush)
   if (doflush) flushbuf();
   *pout << "\\eeq" << std::endl; 
   inequation=false;
+  lenline=0;
+  hline=1.0;
 }
 bool Output::breaklongline()
 {
