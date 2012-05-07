@@ -83,10 +83,14 @@ bool Output::breaklongline()
 
 #ifdef _RATIONAL
 std::ostream & operator << (std::ostream & o, TFactor const & p){
+  int digits = 0, number = std::max(std::abs(p.numerator()),std::abs(p.denominator())); 
+  if ( p.numerator() < 0 || p.denominator() < 0 ) ++digits;
+  do { number /= 10; ++digits; } while(number);
   if ( p.denominator() != 1 )
     o << "\\frac{" << p.numerator() << "}{" << p.denominator() << "}" ;
   else
     o << p.numerator();
+  MyOut::pcurout->lenbuf += digits;
   return o;
 }
 namespace dboost{

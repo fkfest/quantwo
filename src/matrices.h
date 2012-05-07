@@ -92,7 +92,9 @@ class Permut {
     // construct from orbitals
     Permut(Orbital o1,Orbital o2);
     // append permutator
-    Permut & operator *= (Permut p);
+    Permut & operator += (const Permut& p);
+    // multiply permutation from RIGHT (e.g. P_this(i,j) P_p(j,k) => P_this(ij,jk); P_this(j,i) P_p(k,j) => P_this(k,i))
+    Permut & operator *= (const Permut& p);
     // return orbitals "from"
     Product<Orbital> orbsfrom() const;
     // return orbitals "to"
@@ -101,9 +103,11 @@ class Permut {
     bool operator < (Permut const & p) const;
     // equality of permutators
     bool operator == (Permut const & p) const;
-    bool is1() const { return _orbsfrom.size() == 0; };
+    bool is1() const { return _orbs.size() == 0; };
   private: 
-    Product<Orbital> _orbsfrom, _orbsto;
+    typedef std::map<Orbital,Orbital> TPerMap;
+    // map _orbs[from] = to
+    TPerMap _orbs;
 };
 
 std::ostream & operator << (std::ostream & o, Permut const & p);

@@ -14,9 +14,9 @@ int main(int argc, char **argv) {
   // handle input and output
   string inputfile, outputfile,
     exePath = exepath(), outPath;
-  int i=1;
-  while ( i<argc && argv[i][0]=='-') {// handle options
-    if (strcmp(argv[i],"-h")==0 || strcmp(argv[i],"--help")==0) {
+  int iarg=1;
+  while ( iarg<argc && argv[iarg][0]=='-') {// handle options
+    if (strcmp(argv[iarg],"-h")==0 || strcmp(argv[iarg],"--help")==0) {
       cout << "quantwo <input-file> [<output-file>]" << endl;
       // print README file if exists
       ifstream readme;
@@ -29,15 +29,15 @@ int main(int argc, char **argv) {
         }
       }
       return 0;
-    } else if (strcmp(argv[i],"-v")==0 || strcmp(argv[i],"--verbose")==0) {
+    } else if (strcmp(argv[iarg],"-v")==0 || strcmp(argv[iarg],"--verbose")==0) {
       Input::verbose = 1;
     }
-    ++i;
+    ++iarg;
   }
-  if (i<argc) {
-    inputfile=argv[i];
-    if (argc>i+1)
-      outputfile=argv[i+1];
+  if (iarg<argc) {
+    inputfile=argv[iarg];
+    if (argc>iarg+1)
+      outputfile=argv[iarg+1];
     else
       outputfile=inputfile+".tex";
   } else {
@@ -99,6 +99,17 @@ int main(int argc, char **argv) {
   // set current ouput back to default
   MyOut::pcurout = &MyOut::defout;
   fout.close();
+//  // test permutation multiplication
+//  Orbital i("i"),j("j"),k("k");
+//  Permut p1,p2;
+//  p1 += Permut(j,k);
+//  p1 += Permut(k,j);
+//  p2 += Permut(i,j);
+//  p2 += Permut(j,i);
+//  xout << "P1, P2" << std::endl;
+//  xout << p1 << p2 << std::endl;
+//  p1 *= p2;
+//  xout << p1 << std::endl;
   return 0;
 }
 

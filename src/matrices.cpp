@@ -206,66 +206,88 @@ std::ostream & operator << (std::ostream & o, Matrices const & mat)
 
 Permut::Permut()
 {}
-Permut::Permut(Product< Orbital > p1, Product< Orbital > p2) :
-_orbsfrom(p1), _orbsto(p2) {}
+Permut::Permut(Product< Orbital > p1, Product< Orbital > p2) 
+{
+  assert( p1.size() == p2.size() );
+  for ( lui io = 0; io < p1.size(); ++io ){
+    assert( p1[io].type() == p2[io].type() );
+    _orbs[ p1[io] ] = p2[io];
+  }
+}
 Permut::Permut(Orbital o1, Orbital o2)
 {
-  _orbsfrom *= o1;
-  _orbsto *= o2;
+  assert( o1.type() == o2.type() );
+  _orbs[o1] = o2;
 }
-Permut& Permut::operator*=(Permut p)
+Permut& Permut::operator+=(const Permut& p)
 {
-  int ipos;
-  for (unsigned int i=0; i<p._orbsfrom.size(); i++)
-  {
-    ipos=_orbsfrom.find(p._orbsfrom.at(i));
-    if (ipos>=0)
-    {
-      if(_orbsto[ipos]!=p._orbsto.at(i))
-        error("Permutations of same orbital!","Permut::operator*=");
-      else 
-        return *this;
+  for ( TPerMap::const_iterator pit = p._orbs.begin(); pit != p._orbs.end(); ++pit ){
+    TPerMap::iterator it = _orbs.find(pit->first);
+    if ( it == _orbs.end()){
+      // the orbital not there yet
+      _orbs[pit->first] = pit->second;
+    } else { 
+      // have to be completely the same
+      assert( it->second == pit->second );
     }
-    /*
-    ipos=_orbsto.find(p._orbsfrom.at(i));
-    if (ipos>=0)
-    {
-      if(_orbsfrom[ipos]!=p._orbsto.at(i))
-        error("Permutations of same orbital!","Permut::operator*=");
-      else
-        return *this; // dont add "back permutation"
-    }
-    */
   }
-  _orbsfrom *= p._orbsfrom;
-  _orbsto *= p._orbsto;
   return *this;
 }
+Permut& Permut::operator*=(const Permut& p)
+{
+  TPerMap orbs = _orbs;
+  _orbs.clear();
+  for ( TPerMap::const_iterator pit = p._orbs.begin(); pit != p._orbs.end(); ++pit ){
+    TPerMap::iterator it = orbs.find(pit->second);
+    if ( it == orbs.end()){
+      // the orbital not there yet
+      _orbs[pit->first] = pit->second;
+    } else { 
+      // replace it
+      if ( pit->first != it->second ) // don't add permutation P(p,p)
+        _orbs[pit->first] = it->second;
+      orbs.erase(it);
+    }
+  }
+  // add the rest
+  _orbs.insert(orbs.begin(),orbs.end());
+  return *this;
+}
+
 Product< Orbital > Permut::orbsfrom() const
-{ return _orbsfrom; }
+{ 
+  Product< Orbital > orbs;
+  for ( TPerMap::const_iterator it = _orbs.begin(); it != _orbs.end(); ++it )
+    orbs.push_back(it->first);
+  return orbs; 
+  
+}
 Product< Orbital > Permut::orbsto() const
-{ return _orbsto; }
+{ 
+  Product< Orbital > orbs;
+  for ( TPerMap::const_iterator it = _orbs.begin(); it != _orbs.end(); ++it )
+    orbs.push_back(it->second);
+  return orbs;
+}
 bool Permut::operator<(const Permut& p) const
 {
-  if (_orbsfrom.size()<p._orbsfrom.size()) return true;
-  if (p._orbsfrom.size()<_orbsfrom.size()) return false;
-  if ((*this)==p) return false;
-  if (_orbsfrom < p._orbsfrom) return true;
-  if (p._orbsfrom < _orbsfrom) return false;
-  return (_orbsto < p._orbsto);
+  if (_orbs.size()<p._orbs.size()) return true;
+  if (p._orbs.size()<_orbs.size()) return false;
+//  if ((*this)==p) return false;
+  TPerMap::const_iterator pit = p._orbs.begin();
+  for ( TPerMap::const_iterator it = _orbs.begin(); it != _orbs.end(); ++it, ++pit ){
+    if ( it->first < pit->first ) return true;
+    if ( pit->first < it->first ) return false;
+    if ( it->second < pit->second ) return true;
+    if ( pit->second < it->second ) return false;
+  }
+  return false;
 }
 bool Permut::operator==(const Permut& p) const
 {
-  int ipos;
-  if (_orbsfrom.size()!=p._orbsfrom.size()) return false;
-  for (unsigned int i=0; i<_orbsfrom.size(); i++)
-  {
-    ipos=p._orbsfrom.find(_orbsfrom[i]);
-    if (ipos>=0 && (_orbsto[i]==p._orbsto[ipos])) continue;
-    //ipos=p._orbsto.find(_orbsfrom[i]);
-    //if (ipos>=0 && (_orbsto[i]==p._orbsfrom[ipos])) continue;
-    return false;
-  }
+  TPerMap::const_iterator pit = p._orbs.begin();
+  for ( TPerMap::const_iterator it = _orbs.begin(); it != _orbs.end(); ++it, ++pit )
+    if ( it->first != pit->first || it->second != pit->second ) return false;
   return true;
 }
 
