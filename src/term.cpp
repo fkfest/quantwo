@@ -9,7 +9,7 @@ Term::Term(Product<SQOp> const & opProd, Product<Kronecker> const & kProd) :
     _opProd(opProd), _kProd(kProd), _prefac(1) {_nloops=_nintloops=_nocc=0;_perm+=Permut();}
     
 Term::Term(const Product< SQOp >& opProd, const Product< Kronecker >& kProd, 
-           const Product< Matrices >& mat, const Product< Orbital >& sumindx, const Product< Orbital >& realsumindx, 
+           const Product< Matrices >& mat, const TOrbSet& sumindx, const TOrbSet& realsumindx, 
            const TFactor& prefac, const std::vector< Product<long int> >& connections) :
     _opProd(opProd), _kProd(kProd), _mat(mat), _sumindx(sumindx), _realsumindx(realsumindx), 
     _prefac(prefac), _connections(connections) {_nloops=_nintloops=_nocc=0;_perm+=Permut();}
@@ -53,13 +53,13 @@ void Term::addsummation(const Orbital& orb, short int excl)
 {
   Orbital orb1;
   std::string excls;
-  for (short i=0; i<excl ; ++i)
-  {  
+  std::pair<TOrbSet::iterator,bool> ret;
+  for (short i=0; i<excl ; ++i) {  
     if (i>0) excls=num2str(i,std::dec);
     orb1=Orbital(orb.name()+excls,orb.spin());
-    if (_realsumindx.find(orb1)>=0)
+    ret = _realsumindx.insert(orb1);
+    if (!ret.second)
       say("Strange, real summation runs already over "+orb1.name());
-    _realsumindx*=orb1;
   }
 }
 void Term::addmatrix(const Matrices& mat)
@@ -88,26 +88,21 @@ void Term::reset_prefac()
 }
 Product<Matrices> Term::mat() const
 { return _mat; }
-Product< Orbital > Term::sumindx() const
+TOrbSet Term::sumindx() const
 { return _sumindx; }
-Product< Orbital > Term::realsumindx() const
+TOrbSet Term::realsumindx() const
 { return _realsumindx; }
-Product< Orbital > Term::extindx() const
+TOrbSet Term::extindx() const
 {
   // generate Product of external-lines orbitals
-  Product<Orbital> peo;
-  long int ipos;
-  for (unsigned int i=0; i<_mat.size(); i++) {
-    for (unsigned int j=0; j<_mat[i].orbitals().size(); j++) {
+  TOrbSet peo;
+  for ( lui i = 0; i < _mat.size(); ++i ) {
+    for ( lui j = 0; j < _mat[i].orbitals().size(); ++j) {
       const Orbital & orb = _mat[i].orbitals()[j];
-      ipos=_realsumindx.find(orb);
-      if ( ipos < 0 ){
-        if (peo.find(orb) < 0) // new external line
-          peo *= orb;
-      }
+      if ( _realsumindx.count(orb) == 0 )
+        peo.insert(orb);
     }
   }
-  peo.resort();
   return peo;
 }
 Sum< Permut, TFactor > Term::perm() const
@@ -126,10 +121,8 @@ bool Term::term_is_0(double minfac) const
 }
 bool Term::term_is_valid()
 {
-  for (lui i=0; i<_realsumindx.size(); i++)
-  {
-    if(_sumindx.find(_realsumindx[i])<0)
-    {
+  for ( TOrbSet::const_iterator it = _realsumindx.begin(); it != _realsumindx.end(); ++it ) {
+    if(_sumindx.count(*it) == 0) {
       std::cout << *this << std::endl;
       error("Problem with summation index! May be a summation over excitations in a term without this excitaions?");
     }
@@ -528,6 +521,7 @@ void Term::setmatconnections()
 void Term::reduceTerm()
 {
   int ipos1,ipos2,ikpr;
+  TOrbSet::iterator it1, it2;
   Product<Kronecker> kpr(_kProd); // copy _kProd
   ikpr=0;
   for ( unsigned int i=0 ; i<_kProd.size() ; ++i ) // iterate over Product<Kronecker>
@@ -539,28 +533,25 @@ void Term::reduceTerm()
       return; 
     }
     // search for orbitals in (real) summations
-    ipos1=_realsumindx.find(_kProd[i].orb1());
-    ipos2=_realsumindx.find(_kProd[i].orb2());
-    if ( ipos2>=0 ) // found orb2
-    {
-      _realsumindx.erase(_realsumindx.begin()+ipos2); // delete summation over orb2
-      ipos2=_sumindx.find(_kProd[i].orb2());
-      if ( ipos2<0)
+    it1 = _realsumindx.find(_kProd[i].orb1());
+    it2 = _realsumindx.find(_kProd[i].orb2());
+    if ( it2 != _realsumindx.end() ) { // found orb2
+      _realsumindx.erase(it2); // delete summation over orb2
+      it2 = _sumindx.find(_kProd[i].orb2());
+      if ( it2 == _sumindx.end() )
         error("Strange, orbital not found in _sumindx","Term::reduceTerm");
-      _sumindx.erase(_sumindx.begin()+ipos2);
+      _sumindx.erase(it2);
       Q2::replace(_opProd,_kProd[i].orb2(),_kProd[i].orb1());
       Q2::replace(_mat,_kProd[i].orb2(),_kProd[i].orb1());
       kpr.erase(kpr.begin()+ikpr); // delete the Kronecker
       Q2::replace(kpr,_kProd[i].orb2(),_kProd[i].orb1());
       ikpr--;
-    }
-    else if ( ipos1>=0 ) // found orb1
-    {
-      _realsumindx.erase(_realsumindx.begin()+ipos1); // delete summation over orb2
-      ipos1=_sumindx.find(_kProd[i].orb1());
-      if ( ipos1<0)
+    } else if ( it1 != _realsumindx.end() ) { // found orb1
+      _realsumindx.erase(it1); // delete summation over orb2
+      it1 = _sumindx.find(_kProd[i].orb1());
+      if ( it1 == _sumindx.end() )
         error("Strange, orbital not found in _sumindx","Term::reduceTerm");
-      _sumindx.erase(_sumindx.begin()+ipos1);
+      _sumindx.erase(it1);
       Q2::replace(_opProd,_kProd[i].orb1(),_kProd[i].orb2());
       Q2::replace(_mat,_kProd[i].orb1(),_kProd[i].orb2());
       kpr.erase(kpr.begin()+ikpr); // delete the Kronecker
@@ -574,19 +565,15 @@ void Term::reduceTerm()
 void Term::matrixkind()
 {
   short exccl,intlines=0,intvirt=0;
-  int ipos;
   for (unsigned int i=0; i<_mat.size(); i++)
   {
     // excitation class of operator (= #electrons = #orbitals/2)
     exccl=_mat[i].orbitals().size()/2;
-    for (unsigned int j=0; j<_mat[i].orbitals().size(); j++)
-    {
+    for (unsigned int j=0; j<_mat[i].orbitals().size(); j++) {
       // internal lines (have to be sumed up - search in _sumindx)
-      ipos=_sumindx.find(_mat[i].orbitals().at(j));
-      if (ipos>=0) 
-      {
+      if ( _sumindx.count(_mat[i].orbitals()[j])) {
         ++intlines;
-        if (_mat[i].orbitals().at(j).type()==Orbital::Virt)
+        if (_mat[i].orbitals()[j].type()==Orbital::Virt)
           ++intvirt; // internal particle line
       }
     }
@@ -667,7 +654,7 @@ void Term::spinintegration(bool notfake)
       iorb = _mat[ithis].iorbel(ipos);
       orb1 = _mat[ithis].orbitals()[iorb];
       samespinsym = samespinsym && (spinsym == _mat[ithis].spinsym(ipos));
-    } while (orb1!=orb && _sumindx.find(orb1)>=0);
+    } while (orb1!=orb && _sumindx.count(orb1));
     if (samespinsym) {
       if (notfake) _prefac*=2;
       // count number of loops
@@ -684,10 +671,20 @@ void Term::spinintegration(bool notfake)
         for (unsigned int j=0; j<_mat[i].orbitals().size()/2; j++)
           _prefac *= j+1; // the symmetry of closed shell cluster operators is lower 
     }
-    for (unsigned int i=0; i< _sumindx.size(); i++)
-      _sumindx[i].setspin(Orbital::No);
-    for (unsigned int i=0; i< _realsumindx.size(); i++)
-      _realsumindx[i].setspin(Orbital::No);
+    TOrbSet sumindx;
+    for ( TOrbSet::iterator it = _sumindx.begin(); it != _sumindx.end(); ++it ){
+      orb = *it;
+      orb.setspin(Orbital::No);
+      sumindx.insert(orb);
+    }
+    _sumindx = sumindx;
+    sumindx.clear();
+    for ( TOrbSet::iterator it =_realsumindx.begin(); it != _realsumindx.end(); ++it ){
+      orb = *it;
+      orb.setspin(Orbital::No);
+      sumindx.insert(orb);
+    }
+    _realsumindx = sumindx;
   }
 }
 

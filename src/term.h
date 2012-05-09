@@ -30,7 +30,7 @@ class Term {
     
     //! construct from Product<SQOp>, Product<Kronecker>, Product<Matrices>, summation indices and prefactor
     Term(Product<SQOp> const & opProd, Product<Kronecker> const & kProd, 
-         Product<Matrices> const & mat, Product<Orbital> const & sumindx, const Product< Orbital >& realsumindx, 
+         Product<Matrices> const & mat, const TOrbSet & sumindx, const TOrbSet & realsumindx, 
          const TFactor& prefac, const std::vector< Product<long int> >& connections);
     
     //! validate term
@@ -72,13 +72,13 @@ class Term {
     Product<Matrices> mat() const;
     
     //! return summation indices
-    Product<Orbital> sumindx() const;
+    TOrbSet sumindx() const;
     
     //! return real summation indices
-    Product<Orbital> realsumindx() const;
+    TOrbSet realsumindx() const;
     
-    //! generate Product of external-lines orbitals
-    Product<Orbital> extindx() const;
+    //! generate set of external-lines orbitals
+    TOrbSet extindx() const;
     
     //! return Sum of Permutators
     Sum<Permut,TFactor> perm() const;
@@ -159,7 +159,7 @@ class Term {
     Product<SQOp> _opProd;
     Product<Kronecker>  _kProd;
     Product<Matrices> _mat;
-    Product <Orbital> _sumindx,_realsumindx;
+    TOrbSet _sumindx,_realsumindx;
     TFactor _prefac;
     // connections of matrices in term
     // (abs(value)-1) gives the index of the corresponding matrix in _mat

@@ -2,6 +2,7 @@
 #define Product_H
 #include <vector>
 #include <list>
+#include <set>
 #include <algorithm>
 #include <iostream>
 #include "utilities.h"
@@ -30,16 +31,20 @@ class Product : public std::vector<T> {
 template <class T>
 std::ostream & operator << (std::ostream & o, Product<T> const & p);
 
+template <class T>
+class Set;
 /*
-    Implements a non-commutative product of Ts  (M. Hanrath)
+    Implements a non-commutative list of Ts  
 */
 template <class T>
 class List : public std::list<T> {
   public:
     List<T> () : std::list<T>(){};
-    List<T> ( typename Product<T>::const_iterator beg, typename Product<T>::const_iterator end)
+    List<T> ( typename List<T>::const_iterator beg, typename List<T>::const_iterator end)
      : std::list<T>(beg,end){};
     List<T> ( const Product<T>& p)
+     : std::list<T>(p.begin(),p.end()){};
+    List<T> ( const Set<T>& p)
      : std::list<T>(p.begin(),p.end()){};
     // append t to list
     List<T> & operator *= (T const & t);
@@ -47,6 +52,7 @@ class List : public std::list<T> {
     List<T> & operator *= (Product<T> const & p);
     // append list to list
     List<T> & operator *= (List<T> const & p);
+    List<T> & operator *= (Set<T> const & p);
     // get sub product
     List<T> subprod(unsigned long int beg, unsigned long int end) const;
     // search, if not found -> -1
@@ -56,6 +62,27 @@ class List : public std::list<T> {
 };
 template <class T>
 std::ostream & operator << (std::ostream & o, List<T> const & p);
+
+/*
+    Implements a set of Ts (commutative and unique)
+*/
+template <class T>
+class Set : public std::set<T> {
+  public:
+    Set<T> () : std::set<T>(){};
+    Set<T> ( typename Set<T>::const_iterator beg, typename Set<T>::const_iterator end)
+     : std::set<T>(beg,end){};
+    Set<T> ( const Product<T>& p)
+     : std::set<T>(p.begin(),p.end()){};
+    // add t to set
+    Set<T> & operator *= (T const & t);
+    // add product to set
+    Set<T> & operator *= (Product<T> const & p);
+    // add set to set
+    Set<T> & operator *= (Set<T> const & p);
+};
+template <class T>
+std::ostream & operator << (std::ostream & o, Set<T> const & p);
 #include "product.cpp"
 
 #endif

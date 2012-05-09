@@ -13,6 +13,7 @@
 #include "product.h"
 #include "assert.h"
 
+typedef Set<Orbital> TOrbSet;
 
 /*!
     Implements a second quantized creation (\op a_i^\dagger)
@@ -69,9 +70,9 @@ class Oper {
   //return prefactor
   TFactor prefac() const;
   // return summation indices
-  Product<Orbital> sumindx() const;
+  const TOrbSet & sumindx() const;
   // return real summation indices (without summations over bare excitations)
-  Product<Orbital> realsumindx() const;
+  TOrbSet realsumindx() const;
 
   private:
   // for hamiltonian-parts
@@ -83,7 +84,8 @@ class Oper {
   Product<SQOp> _SQprod;
   Matrices _mat;
   TFactor _prefac;
-  Product <Orbital> _sumindx, _fakesumindx;
+  TOrbSet _sumindx, _fakesumindx;
+//   Product <Orbital> _sumindx, _fakesumindx;
 };
 
 std::ostream & operator << (std::ostream & o, Oper const & op);

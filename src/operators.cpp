@@ -104,10 +104,10 @@ void Oper::create_Oper(const std::string& name)
   Orbital orb(std::string("P"));
   _SQprod*=SQOp(SQOp::Creator,orb);
   porbs*=orb;
-  _sumindx*=orb;
+  _sumindx.insert(orb);
   orb=Orbital(std::string("Q"));
   porbs*=orb;
-  _sumindx*=orb;
+  _sumindx.insert(orb);
   _prefac=1;
   if ( InSet(_type, Ops::Fock,Ops::XPert) ) {
     _SQprod*=SQOp(SQOp::Annihilator,orb);
@@ -116,11 +116,11 @@ void Oper::create_Oper(const std::string& name)
     orb=Orbital(std::string("R"));
     _SQprod*=SQOp(SQOp::Creator,orb);
     porbs*=orb;
-    _sumindx*=orb;
+    _sumindx.insert(orb);
     orb=Orbital(std::string("S"));
     _SQprod*=SQOp(SQOp::Annihilator,orb);
     porbs*=orb;
-    _sumindx*=orb;
+    _sumindx.insert(orb);
     orb=Orbital(std::string("Q"));
     _SQprod*=SQOp(SQOp::Annihilator,orb);
     _prefac /= 4;
@@ -153,14 +153,14 @@ void Oper::create_Oper(const Product< Orbital >& occs, const Product< Orbital >&
   for (unsigned short i = 0; i < p_orb0->size(); ++i) {  
     _SQprod*=SQOp(SQOp::Creator, (*p_orb0)[i]);
     porbs *= (*p_orb0)[i];
-    _sumindx *= (*p_orb0)[i];
+    _sumindx.insert((*p_orb0)[i]);
     if (InSet(_type, Ops::Exc0,Ops::Deexc0)) 
-      _fakesumindx *= (*p_orb0)[i];
+      _fakesumindx.insert((*p_orb0)[i]);
     _SQprod *= SQOp(SQOp::Annihilator, (*p_orb1)[i]);
     porbs *= (*p_orb1)[i];
-    _sumindx *= (*p_orb1)[i];
+    _sumindx.insert((*p_orb1)[i]);
     if (InSet(_type, Ops::Exc0,Ops::Deexc0)) 
-      _fakesumindx *= (*p_orb1)[i];
+      _fakesumindx.insert((*p_orb1)[i]);
     _prefac /= i+1;
   }
   _prefac *= _prefac;
@@ -173,14 +173,14 @@ Product< SQOp > Oper::SQprod() const
 { return _SQprod;}
 TFactor Oper::prefac() const
 { return _prefac;}
-Product< Orbital > Oper::sumindx() const
+const TOrbSet & Oper::sumindx() const
 { return _sumindx;}
-Product< Orbital > Oper::realsumindx() const
+TOrbSet Oper::realsumindx() const
 {
-  Product< Orbital > realsum;
-  for (unsigned int i=0; i<_sumindx.size(); i++ )  
-    if (_fakesumindx.find(_sumindx[i])<0)
-      realsum*=_sumindx[i];
+  TOrbSet realsum;
+  for (TOrbSet::const_iterator it = _sumindx.begin(); it != _sumindx.end(); ++it )  
+    if (_fakesumindx.count(*it) == 0)
+      realsum.insert(*it);
   return realsum;
 }
 

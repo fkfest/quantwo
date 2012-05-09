@@ -71,6 +71,14 @@ List< T >& List<T>::operator*=(const List<T>& p)
 }
 template <class T>
 inline
+List< T >& List<T>::operator*=(const Set<T>& p)
+{
+  for ( typename Set<T>::const_iterator i=p.begin(); i!=p.end(); ++i )
+    push_back(*i);
+  return *this;
+}
+template <class T>
+inline
 List<T> List<T>::subprod(unsigned long int beg, unsigned long int end) const
 {
   unsigned long int end1=(end < this->size() ? end + 1 : this->size());
@@ -97,6 +105,37 @@ inline
 std::ostream & operator << (std::ostream & o, List<T> const & p)
 {
   for ( typename List<T>::const_iterator i=p.begin(); i!=p.end(); ++i )
+    o << *i;
+  return o;
+}
+
+template <class T>
+inline
+Set< T > & Set<T>::operator *= (T const & t) 
+{
+  insert(t);
+  return *this;
+}
+template <class T>
+inline
+Set< T >& Set<T>::operator*=(const Product<T>& p)
+{
+  insert(p.begin(),p.end());
+  return *this;
+}
+template <class T>
+inline
+Set< T >& Set<T>::operator*=(const Set<T>& p)
+{
+  insert(p.begin(),p.end());
+  return *this;
+}
+
+template <class T>
+inline
+std::ostream & operator << (std::ostream & o, Set<T> const & p)
+{
+  for ( typename Set<T>::const_iterator i=p.begin(); i!=p.end(); ++i )
     o << *i;
   return o;
 }
