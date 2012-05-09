@@ -123,11 +123,11 @@ bool Matrices::vertices(long int ipos, Matrices& mat, long int ipos1, unsigned i
   if (_indx < 0) _indx=mat._indx=indx;
   return true;
 }
-void Matrices::set_connect(Product< long int > connected2 )
+void Matrices::set_connect(TCon2 connected2 )
 { _connected2=connected2; }
 void Matrices::add_connect(long int con)
-{ if(_connected2.find(con)<0) _connected2 *= con; }
-Product< long int > Matrices::connected2() const
+{ _connected2.insert(con); }
+TCon2 Matrices::connected2() const
 { return _connected2; }
 
 void Matrices::setkind(short int exccl, short int intlines, short int intvirt)

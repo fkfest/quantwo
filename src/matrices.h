@@ -2,6 +2,7 @@
 #define Matrices_H
 
 #include <string>
+#include <set>
 #include <iostream>
 #include <assert.h>
 #include "product.h"
@@ -15,6 +16,7 @@ namespace Ops {
   Product<Orbital> genprodorb(short exccl,Orbital const & occ, Orbital const & virt);
 };
 
+typedef std::set<long int> TCon2;
 /*! 
     Implements class matrices (e.g. amplitudes, integrals etc)
 */
@@ -58,11 +60,11 @@ class Matrices {
   // compare vertices
   bool vertices(long int ipos, Matrices & mat, long int ipos1, unsigned int indx);
   // set connections
-  void set_connect(Product<long int> connected2);
+  void set_connect(TCon2 connected2);
   // add connection
   void add_connect(long int con);
   // return connections
-  Product<long int> connected2() const;
+  TCon2 connected2() const;
   
   private:
   Ops::Type _type;
@@ -73,7 +75,7 @@ class Matrices {
   // needed for comparison of terms:
   long int _indx;
   // connected to (index of matrix in term (start from 1!!!)):
-  Product<long int> _connected2;
+  TCon2 _connected2;
   // following variables will be set by Term::matrixkind (according to Kallay and Surjan, JCP, 115 (2001), 2945)
   short _exccl, _intlines, _intvirt;
     

@@ -699,40 +699,33 @@ void Term::spinintegration(bool notfake)
       _realsumindx[i].setspin(Orbital::No);
   }
 }
+
 bool Term::properconnect() const
 {
-  long int imat,ipos;
-  unsigned int i,j,k;
-  Product<long int> notfound,found;
-  for (i=0; i<_connections.size(); i++)
-  { 
-    notfound=Product<long int> ();
-    for (j=0; j<_connections[i].size(); j++)
-      notfound*=abs(_connections[i][j]);
-    j=0;
-    found=Product<long int> ();
-    found*=notfound[0];
+  long int imat;
+  for (lui i=0; i<_connections.size(); i++) { 
+    TCon2 notfound;
+    Product<long int> found;
+    for (lui j=0; j<_connections[i].size(); j++)
+      notfound.insert(abs(_connections[i][j]));
+    found.push_back(*notfound.begin());
     notfound.erase(notfound.begin());
-    while (notfound.size()>0 && j<found.size())
-    {
-      imat=found[j]-1;
-      for (k=0; k<_mat[imat].connected2().size(); k++)
-      {
-        ipos=notfound.find(_mat[imat].connected2().at(k));
-        if (ipos>=0)
-        {
-          found*=_mat[imat].connected2().at(k);
-          notfound.erase(notfound.begin()+ipos);
+    lui j = 0;
+    while (notfound.size() > 0 && j < found.size()) {
+      imat = found[j] - 1;
+      const TCon2 & icon2 = _mat[imat].connected2();
+      for ( TCon2::const_iterator kt = icon2.begin(); kt != icon2.end(); ++kt) {
+        TCon2::iterator ipos = notfound.find(*kt);
+        if (ipos != notfound.end()) {
+          found.push_back(*kt);
+          notfound.erase(ipos);
         }
       }
       ++j;
     }
-    if (_connections[i][0]>0)
-    {// have to be connected
+    if (_connections[i][0] > 0) {// have to be connected
       if (notfound.size()>0) return false;
-    }
-    else
-    {// have to be disconnected
+    } else {// have to be disconnected
       if (notfound.size()==0) return false;
     }
   }
