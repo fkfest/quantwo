@@ -17,6 +17,13 @@ namespace Ops {
 };
 
 typedef std::set<long int> TCon2;
+// represents connecting line, i.e. tells to which index in which matrix it is connected
+struct ConLine {
+  ConLine() : imat(0),idx(0){};
+  ConLine(lui imat_, lui idx_) : imat(imat_),idx(idx_){};
+  lui imat;
+  lui idx;
+};
 /*! 
     Implements class matrices (e.g. amplitudes, integrals etc)
 */
@@ -29,8 +36,8 @@ class Matrices {
   Matrices(Ops::Type t, Product<Orbital> p, std::string name="T", Spinsym matspinsym=Singlet);
   // return Type
   Ops::Type type() const;
-  // return Product of orbitals
-  Product<Orbital> orbitals() const;
+  // return const reference to Product of orbitals
+  const Product<Orbital>& orbitals() const;
   // return name
   std::string name() const;
   // return true if antisymmetrized form
@@ -47,10 +54,13 @@ class Matrices {
   bool operator == (Matrices const & t) const;
   // set "kind" of matrix (_exccl, _intlines, _intvirt)
   void setkind(short exccl, short intlines, short intvirt);
+  // get the position of second orbital for the same electron (from position) 
+  lui iorbel(lui ipos){ assert( ipos < _orbs.size() );
+                       return (ipos%2==0?ipos+1:ipos-1); };
   // get the second orbital for the same electron (if not found return blank orbital)
   Orbital orbel(Orbital const & orb);
-  // get the second orbital for the same electron (from position) (if not found return blank orbital)
-  Orbital orbel(long int const & ipos);
+  // get the second orbital for the same electron (from position) 
+  Orbital orbel(long int const & ipos){ return _orbs[iorbel(ipos)]; };
   // get the spin symmetry of the electron, which corresponds to the orbital on position ipos
   Spinsym spinsym(long int ipos);
   // set no spin for all orbitals
@@ -65,6 +75,16 @@ class Matrices {
   void add_connect(long int con);
   // return connections
   TCon2 connected2() const;
+  // set connections
+  void set_conlines(Product<ConLine> conlines);
+  // set connection
+  void set_conline(lui iorb, lui imat, lui idx);
+  // add connection
+  void add_conline(lui imat, lui idx);
+  // return connections
+  const Product<ConLine>& conlines() const;
+  // return ConLine for an orbital
+  const ConLine& conline(lui iorb) const;
   
   private:
   Ops::Type _type;
@@ -76,6 +96,8 @@ class Matrices {
   long int _indx;
   // connected to (index of matrix in term (start from 1!!!)):
   TCon2 _connected2;
+  // connection lines (in the order of indices)
+  Product<ConLine> _conlines;
   // following variables will be set by Term::matrixkind (according to Kallay and Surjan, JCP, 115 (2001), 2945)
   short _exccl, _intlines, _intvirt;
     

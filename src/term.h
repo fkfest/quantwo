@@ -130,8 +130,8 @@ class Term {
     //! check if we have any antisymmetrized matrices in term
     bool antisymmetrized();
     
-    //! expand all antisymmetrical matrices in term, if spinintegr true: do spin integration
-    Sum<Term,TFactor> expand_antisym(bool spinintegr);
+    //! expand all antisymmetrical matrices in term 
+    Sum<Term,TFactor> expand_antisym();
     
     //! Spin integration (if notfake false: calculate only _nloops, _nintloops, _nocc)
     void spinintegration(bool notfake);

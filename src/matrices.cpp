@@ -39,8 +39,9 @@ Matrices::Matrices(Ops::Type t, Product< Orbital > p, std::string name, Matrices
 }
 Ops::Type Matrices::type() const
 { return _type; }
-Product< Orbital > Matrices::orbitals() const
+const Product< Orbital >& Matrices::orbitals() const
 { return _orbs; }
+
 std::string Matrices::name() const
 { return _name; }
 bool Matrices::antisymform() const
@@ -55,15 +56,13 @@ void Matrices::replace(Orbital orb1, Orbital orb2)
 }
 bool Matrices::expandantisym(bool firstpart)
 {
-  if (_antisymform)
-  {
+  if (_antisymform) {
     if (_type!=Ops::FluctP)
       error("Can not expand antisymmetrical non-integral","Matrices::expandantisym");
     if (_orbs[0].spin()==Orbital::No)
       error("Can not expand antisymmetrical integral in space orbitals","Matrices::expandantisym");
     _antisymform=false;
-    if (!firstpart)
-    { // (PQ|RS) -> (PS|RQ)
+    if (!firstpart) { // (PQ|RS) -> (PS|RQ)
       std::swap(_orbs[1],_orbs[3]);
     }
   }
@@ -130,6 +129,25 @@ void Matrices::add_connect(long int con)
 TCon2 Matrices::connected2() const
 { return _connected2; }
 
+void Matrices::set_conlines(Product< ConLine > conlines)
+{ _conlines = conlines; }
+void Matrices::set_conline(lui iorb, lui imat, lui idx)
+{
+  assert( iorb < _orbs.size() );
+  if ( _conlines.size() == 0 )// first resize _conlines
+    _conlines.resize(_orbs.size());
+  _conlines[iorb] = ConLine(imat,idx);
+}
+void Matrices::add_conline(lui imat, lui idx)
+{ _conlines.push_back(ConLine(imat,idx)); }
+const Product< ConLine >& Matrices::conlines() const
+{ return _conlines; }
+const ConLine& Matrices::conline(lui iorb) const
+{
+  assert( iorb < _conlines.size() );
+  return _conlines[iorb]; 
+}
+
 void Matrices::setkind(short int exccl, short int intlines, short int intvirt)
 {
   _exccl=exccl;
@@ -138,27 +156,11 @@ void Matrices::setkind(short int exccl, short int intlines, short int intvirt)
 }
 Orbital Matrices::orbel(const Orbital& orb)
 {
-  Orbital orb1;
-  bool next=true;
-  for (unsigned int i=0; i<_orbs.size(); ++i)
-  {
-    if (_orbs[i]==orb) 
-    {
-      if(next)
-        orb1=_orbs[i+1];
-      else
-        orb1=_orbs[i-1];
-      break;
-    }
-    next=!next;
-  }
-  return orb1;
-}
-Orbital Matrices::orbel(const long int& ipos)
-{
-  assert( 0 <= ipos && unsigned(ipos) < _orbs.size() );
-//  if (ipos<0 || unsigned(ipos)>=_orbs.size()) return Orbital();
-  return (ipos%2==0?_orbs[ipos+1]:_orbs[ipos-1]);
+  long int ipos = _orbs.find(orb);
+  if ( ipos >= 0 )
+    return orbel(ipos);
+  else
+    return Orbital();
 }
 
 Matrices::Spinsym Matrices::spinsym(long int ipos)

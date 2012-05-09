@@ -96,15 +96,15 @@ Product< Orbital > Term::extindx() const
 {
   // generate Product of external-lines orbitals
   Product<Orbital> peo;
-  long int ipos,ipos1;
-  for (unsigned int i=0; i<_mat.size(); i++)
-  {
-    for (unsigned int j=0; j<_mat[i].orbitals().size(); j++)
-    {
-      ipos=_realsumindx.find(_mat[i].orbitals().at(j));
-      ipos1=peo.find(_mat[i].orbitals().at(j));
-      if (ipos<0 && ipos1<0) // new external line
-        peo*=_mat[i].orbitals().at(j);
+  long int ipos;
+  for (unsigned int i=0; i<_mat.size(); i++) {
+    for (unsigned int j=0; j<_mat[i].orbitals().size(); j++) {
+      const Orbital & orb = _mat[i].orbitals()[j];
+      ipos=_realsumindx.find(orb);
+      if ( ipos < 0 ){
+        if (peo.find(orb) < 0) // new external line
+          peo *= orb;
+      }
     }
   }
   peo.resort();
@@ -509,16 +509,21 @@ Sum< Term, TFactor > Term::wick(std::vector< std::vector< long int > >& opers, s
   }
   return sum;
 }
+
 void Term::setmatconnections()
 {
-  for (unsigned int i=0; i<_mat.size(); i++)
-    for (unsigned int j=0; j<_mat[i].orbitals().size(); j++)
-      for(unsigned int k=i+1; k<_mat.size();k++)
-        if (_mat[k].orbitals().find(_mat[i].orbitals().at(j))>=0)
-        {
+  long int kj;
+  for (lui i=0; i<_mat.size(); ++i)
+    for (lui j=0; j<_mat[i].orbitals().size(); ++j){
+      const Orbital& ijorb = _mat[i].orbitals()[j];
+      for(lui k=i+1; k<_mat.size(); ++k)
+        if ( (kj = _mat[k].orbitals().find(ijorb)) >= 0) {
           _mat[i].add_connect(k+1);
           _mat[k].add_connect(i+1);
+          _mat[i].set_conline(j,k,kj);
+          _mat[k].set_conline(kj,i,j);
         }
+    }
 }
 void Term::reduceTerm()
 {
@@ -591,38 +596,30 @@ void Term::matrixkind()
 bool Term::expandintegral(bool firstpart)
 {
   for (unsigned int i=0; i<_mat.size(); i++)
-  {
     if (_mat[i].expandantisym(firstpart)) return true;
-  }
   return false;
 }
 bool Term::antisymmetrized()
 {
   for (unsigned int i=0; i<_mat.size(); i++)
-  {
     if( _mat[i].antisymform()) return true;
-  }
   return false;
 }
-Sum< Term, TFactor > Term::expand_antisym(bool spinintegr)
+Sum< Term, TFactor > Term::expand_antisym()
 {
   Sum< Term, TFactor > sum;
   bool expand;
   Term term(*this); // copy term
-  if (term.expandintegral(true))
-  {
+  if (term.expandintegral(true)) {
     // handle (PQ|RS) part
-    sum+=term.expand_antisym(spinintegr);
+    sum+=term.expand_antisym();
     //handle (PS|RQ) part
     term=*this;
     expand=term.expandintegral(false);
     if(!expand)
       error("strange second expansion!","Term::expand_antisym");
-    sum-=term.expand_antisym(spinintegr);
-  }
-  else
-  {
-    term.spinintegration(spinintegr);
+    sum-=term.expand_antisym();
+  } else {
     sum+=term;
   }
   return sum;
@@ -638,17 +635,24 @@ void Term::spinintegration(bool notfake)
   
   Orbital orb,orb1;
   Matrices::Spinsym spinsym=Matrices::Singlet;
-  unsigned int ithis=0;
+  lui ithis = 0, iorb = 0;
   long int ipos;
   List<Orbital>::iterator it;
-  bool first, samespinsym,internalloop;
-  while (po.size()>0)
-  {
+  bool samespinsym;
+  while (po.size()>0) {
     orb=po.front();
-    orb1=orb;
-    first=true;
-    samespinsym=true;
-    internalloop=true;
+    // find the orbital
+    for (unsigned int j=0; j<_mat.size(); j++) {
+      ipos=_mat[j].orbitals().find(orb);
+      if (ipos >= 0) {
+        iorb = ipos;
+        ithis=j;
+        spinsym=_mat[j].spinsym(ipos);
+        break;
+      }
+    } 
+    orb1 = orb;
+    samespinsym = true;
     do {
       // remove orb1 from product of orbitals (we dont need to handle this orbital again!)
       it = std::find(po.begin(),po.end(),orb1);
@@ -657,37 +661,24 @@ void Term::spinintegration(bool notfake)
       // count number of occupied orbitals (for comparison)
       if (orb1.type()== Orbital::Occ) ++_nocc;
       // find orbital which corresponds to the same electron
-      for (unsigned int j=0; j<_mat.size(); j++) {
-        if(!first && j==ithis) continue; // dont search in the same matrix
-        ipos=_mat[j].orbitals().find(orb1);
-        if (ipos>=0) {
-          orb1=_mat[j].orbel(orb1);
-          ithis=j;
-          if (first) {
-            first=false;
-            spinsym=_mat[j].spinsym(ipos);
-          } else 
-            samespinsym = samespinsym&&(spinsym==_mat[j].spinsym(ipos));
-          break;
-        }
-      }
-      internalloop=internalloop && (peo.find(orb1)<0);
-    }while (orb1!=orb && _sumindx.find(orb1)>=0);
-    if (samespinsym)
-    {
+      const ConLine& cl = _mat[ithis].conline(iorb);
+      ithis = cl.imat;
+      ipos = cl.idx;
+      iorb = _mat[ithis].iorbel(ipos);
+      orb1 = _mat[ithis].orbitals()[iorb];
+      samespinsym = samespinsym && (spinsym == _mat[ithis].spinsym(ipos));
+    } while (orb1!=orb && _sumindx.find(orb1)>=0);
+    if (samespinsym) {
       if (notfake) _prefac*=2;
       // count number of loops
       ++_nloops;
       // count number of internal loops
-      if (internalloop) ++_nintloops;
-    }
-    else
+      if ( peo.find(orb) < 0 ) ++_nintloops;
+    } else
       _prefac=0;
   }
-  if (notfake)
-  {// set no spin
-    for (unsigned int i=0; i<_mat.size(); i++)
-    {
+  if (notfake) {// set no spin
+    for (unsigned int i=0; i<_mat.size(); i++) {
       _mat[i].set_no_spin();
       if (InSet(_mat[i].type(),Ops::Exc, Ops::Deexc, Ops::Exc0, Ops::Deexc0, Ops::Interm ))
         for (unsigned int j=0; j<_mat[i].orbitals().size()/2; j++)
@@ -791,7 +782,7 @@ Sum< Term, TFactor > Q2::reduceSum(Sum< Term, TFactor > s)
   bool added;
   TFactor prefac;
   say("Reduce sum of terms");
-  say("Kroneckers, Connections, and Spin-integration...");
+  say("Kroneckers, Connections and Antisymmetry...");
   bool spinintegr = Input::iPars["prog"]["spinintegr"];
   for ( Sum<Term,TFactor>::const_iterator i=s.begin();i!=s.end(); ++i)
   {
@@ -805,17 +796,23 @@ Sum< Term, TFactor > Q2::reduceSum(Sum< Term, TFactor > s)
     // set connections "map" of matrices
     term.setmatconnections();
     // is the term properly connected?
-    if (!term.properconnect())
-      continue;
+    if (!term.properconnect()) continue;
     // expand antisymmetrized integrals and do spin integration
-    sum=term.expand_antisym(spinintegr);
-//    sum=term.expand_antisym(false);
-    sum*=i->second;
-    sum1+=sum;
+    sum1 = term.expand_antisym();
+    sum1 *= i->second;
+    sum += sum1;
+  }
+  say("Diagrams and Spin-integration...");
+  sum1.clear();
+  for ( Sum<Term,TFactor>::const_iterator i=sum.begin();i!=sum.end(); ++i) {
+    term=i->first;
+    term.setmatconnections();
+    term.spinintegration(spinintegr);
+    sum1 += std::make_pair(term,i->second);
   }
   say("Equal terms and permutations...");
   //std::cout << "SUM:" << sum1 << std::endl;
-  sum=Sum<Term,TFactor>();
+  sum.clear();
   // sum up all equal terms
   for ( Sum<Term,TFactor>::const_iterator j=sum1.begin();j!=sum1.end(); ++j) {
     term=j->first;
@@ -843,7 +840,7 @@ Sum< Term, TFactor > Q2::reduceSum(Sum< Term, TFactor > s)
   } 
   say("Remove terms with small prefactors...");
   // now remove everything with small prefactor
-  sum1 = Sum<Term,TFactor>();
+  sum1.clear();
   for ( Sum<Term,TFactor>::const_iterator j=sum.begin(); j!=sum.end(); ++j) {
     if ( _todouble(_abs(j->second)) < minfac ) continue;
     term1 = term = j->first;
