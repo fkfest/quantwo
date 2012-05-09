@@ -520,7 +520,7 @@ void Term::setmatconnections()
 }
 void Term::reduceTerm()
 {
-  int ipos1,ipos2,ikpr;
+  int ikpr;
   TOrbSet::iterator it1, it2;
   Product<Kronecker> kpr(_kProd); // copy _kProd
   ikpr=0;
@@ -615,19 +615,23 @@ Sum< Term, TFactor > Term::expand_antisym()
 void Term::spinintegration(bool notfake)
 {
   // generate Product of all orbitals and external-lines orbitals
-  List<Orbital> peo(extindx());
-  List<Orbital> po(peo); // start with external lines!
-  po*=_realsumindx; // internal indices
+  TOrbSet peo(extindx()), peo1(peo);
+  // internal indices
+  TOrbSet po(_realsumindx); 
   _nocc=_nintloops=_nloops=0;
   
   Orbital orb,orb1;
   Matrices::Spinsym spinsym=Matrices::Singlet;
   lui ithis = 0, iorb = 0;
   long int ipos;
-  List<Orbital>::iterator it;
+  TOrbSet::iterator it;
   bool samespinsym;
-  while (po.size()>0) {
-    orb=po.front();
+  while ( po.size() > 0 || peo.size() > 0 ) {
+    // start with external lines!
+    if ( peo.size() > 0 )
+      orb = *peo.begin();
+    else
+      orb = *po.begin();
     // find the orbital
     for (unsigned int j=0; j<_mat.size(); j++) {
       ipos=_mat[j].orbitals().find(orb);
@@ -642,9 +646,13 @@ void Term::spinintegration(bool notfake)
     samespinsym = true;
     do {
       // remove orb1 from product of orbitals (we dont need to handle this orbital again!)
-      it = std::find(po.begin(),po.end(),orb1);
-      assert( it != po.end() );
-      po.erase(it);
+      it = peo.find(orb1);
+      if ( it != peo.end() )
+        peo.erase(it);
+      else if ( (it = po.find(orb1)) != po.end() )
+        po.erase(it);
+      else
+        assert( false );
       // count number of occupied orbitals (for comparison)
       if (orb1.type()== Orbital::Occ) ++_nocc;
       // find orbital which corresponds to the same electron
@@ -660,7 +668,7 @@ void Term::spinintegration(bool notfake)
       // count number of loops
       ++_nloops;
       // count number of internal loops
-      if ( peo.find(orb) < 0 ) ++_nintloops;
+      if ( peo1.find(orb) == peo1.end() ) ++_nintloops;
     } else
       _prefac=0;
   }
