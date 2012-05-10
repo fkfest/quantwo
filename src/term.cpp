@@ -157,54 +157,52 @@ bool Term::equal(Term& t, Permut& perm)
       _realsumindx.size() != t._realsumindx.size() ||
       _nintloops != t._nintloops || _nocc != t._nocc) return false;
   // generate Product of all orbitals and external-lines orbitals
-  List<Orbital> peo(extindx()), peot(t.extindx());
+  TOrbSet peo(extindx()), peot(t.extindx());
   List<Orbital> po(peo),pot(peot); // start with external lines!
   po*=_realsumindx; // internal indices
   pot*=t._realsumindx; // internal indices
   if (po.size() != pot.size()) return false;
 
-  //std::cout <<"term " << *this << "   " << t << std::endl;
-  //std::cout <<"po,pot " << po << "   " << pot << std::endl;
-  //std::cout <<"nocc,nintloops " << _nocc << "   " << t._nocc <<" and "<< _nintloops << "   " << t._nintloops << std::endl;
   Product<Matrices> mat, tmat;
-  List<Orbital> por, port;
+  Product<Orbital> por, port;
   Permut perm1;
   Orbital orb,orb1,orbt,orb1t;
   long int ipos=0,ipost=0;
-  List<Orbital>::iterator it, jt;
+  List<Orbital>::iterator it;
+  Product<Orbital>::iterator jt;
   unsigned int ithis=0,ithist=0,i;
-  bool equal=false,first,exter,extert,exter1,extert1;
+  bool equal=false,exter,extert,exter1,extert1,loop,loopt;
   for (i=0; i<_mat.size(); i++) {
     _mat[i].reset_vertices();
     t._mat[i].reset_vertices();
   }
+  loop = false;
   while (po.size()>0) {
     orb=po.front();
-    exter=(peo.find(orb)>=0); //external orbital
-    i=0;
+    exter=(peo.count(orb)); //external orbital
+    it = pot.begin();
+    i = 0;
     equal=false;
-    while (i<pot.size() && pot.size()>0 && !equal) {
-      it = pot.begin();
-      for ( unsigned int j = 0; j < i; ++j, ++it ){}
+    while (it != pot.end() && pot.size()>0 && !equal) {
       orbt = *it;
+      ++it;
       ++i;
       if (orb.type()!=orbt.type()) {
         equal=false;
         continue;
       }
-      extert=(peot.find(orbt)>=0);
+      extert=(peot.count(orbt));
       if (exter!=extert) {// one is external orbital and the other not
         equal=false;
         continue;
       }
       orb1=orb;
       orb1t=orbt;
-      port=por=List<Orbital>();
+      port = por = Product<Orbital>();
       mat=_mat;
       tmat=t._mat;
       perm1=perm;
       equal=true;
-      first=true;
       exter1=extert1=false;
       if (exter) { //add orbitals to the product for removing
         por*=orb1;
@@ -213,53 +211,57 @@ bool Term::equal(Term& t, Permut& perm)
           perm1 += Permut(orb1,orb1t);
         }
       }
+      for (unsigned int j=0; j<mat.size(); j++) {
+          ipos = mat[j].orbitals().find(orb1);
+          if (ipos >= 0) {
+            ithis=j;
+            break;
+          }
+      }
+      for (unsigned int j=0; j<tmat.size(); j++) {
+          ipost = tmat[j].orbitals().find(orb1t);
+          if (ipost >= 0) {
+            ithist=j;
+            break;
+          }
+      }
       do {
         // find orbital which corresponds to the same electron
-        for (unsigned int j=0; j<mat.size(); j++) {
-          // dont search in the same matrix and in "external" matrices
-          if((first || j!=ithis)&&(mat[j].type()!=Ops::Deexc0 && mat[j].type()!=Ops::Exc0)) {
-            ipos=mat[j].orbitals().find(orb1);
-            if (ipos>=0) {
-              orb1=mat[j].orbel(ipos);
-              ithis=j;
-              break;
-            }
-          }
-        }
-        for (unsigned int j=0; j<tmat.size(); j++) {
-          // dont search in the same matrix
-          if((first || j!=ithist)&&(tmat[j].type()!=Ops::Deexc0 && tmat[j].type()!=Ops::Exc0)) {
-            ipost=tmat[j].orbitals().find(orb1t);
-            if (ipost>=0) {
-              orb1t=tmat[j].orbel(ipost);
-              ithist=j;
-              break;
-            }
-          }
-        }
-
+        const ConLine& cl = mat[ithis].conline(ipos);
+        ithis = cl.imat;
+        ipos = cl.idx;
+        ipos = mat[ithis].iorbel(ipos);
+        orb1 = mat[ithis].orbitals()[ipos];
+       
+        const ConLine& clt = tmat[ithist].conline(ipost);
+        ithist = clt.imat;
+        ipost = clt.idx;
+        ipost = tmat[ithist].iorbel(ipost);
+        orb1t = tmat[ithist].orbitals()[ipost];
+        
         if (orb1.type() != orb1t.type() || !mat[ithis].vertices(ipos,tmat[ithist],ipost,ithis))
           equal=false;
         else { 
-          exter1= (peo.find(orb1)>=0);
-          extert1= (peot.find(orb1t)>=0);
+          exter1= (peo.count(orb1));
+          extert1= (peot.count(orb1t));
           if (exter1!=extert1) { // if one of indices is external and the other not
             equal=false;
             break;
           }
-          if (((orb1==orb) != (orb1t==orbt))&&!exter1) { // in one of matrices we have a loop and in the other not, and the index is not external!
+          loop = (orb1==orb);
+          loopt = (orb1t==orbt);
+          if ((loop != loopt)&&!exter1) { // in one of matrices we have a loop and in the other not, and the index is not external!
               equal=false;
               break;
           }
           // add orbitals to the product for removing
           por*=orb1;
           port*=orb1t;
-          first=false;
           if (exter1 && orb1 != orb1t) { // external orbitals not match -> add permutation
             perm1 += Permut(orb1,orb1t);
           }
         }
-      }while (orb1!=orb && equal && !exter1);
+      } while (equal && !loop && !exter1);
       if(equal) {
         // set _mat and t._mat to mat and tmat
         _mat=mat;
