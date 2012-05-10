@@ -188,7 +188,7 @@ TOrbSet Oper::realsumindx() const
 
 std::ostream & operator << (std::ostream & o, Oper const & op)
 {
-  if ( _todouble(_abs(_abs(op.prefac()) - 1)) > Numbers::small) o << op.prefac();
+  if ( _todouble(_abs(_abs(op.prefac()) - 1)) > MyOut::pcurout->small) o << op.prefac();
   if (op.realsumindx().size()>0) o <<"\\sum_{"<<op.realsumindx()<<"}";
   o <<op.mat() << op.SQprod();
   return o;

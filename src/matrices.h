@@ -11,7 +11,7 @@
 
 namespace Ops {
   // enumerate operator types 
-  enum Type {None, Fock, FluctP, XPert, Exc, Deexc, Exc0, Deexc0, Interm, Number};
+  enum Type {None, Exc, Exc0, Fock, FluctP, XPert, Deexc, Deexc0, Interm, Number};
   // generate Product<Orbital> from occupied and virtual orbitals and excitation class 
   Product<Orbital> genprodorb(short exccl,Orbital const & occ, Orbital const & virt);
 };
@@ -54,6 +54,8 @@ class Matrices {
   bool operator == (Matrices const & t) const;
   // set "kind" of matrix (_exccl, _intlines, _intvirt)
   void setkind(short exccl, short intlines, short intvirt);
+  // return excitation class (has to be set previously!)
+  short exccl() const {return _exccl;};
   // get the position of second orbital for the same electron (from position) 
   lui iorbel(lui ipos){ assert( ipos < _orbs.size() );
                        return (ipos%2==0?ipos+1:ipos-1); };

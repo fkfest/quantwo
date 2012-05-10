@@ -76,8 +76,7 @@ bool Matrices::operator<(const Matrices& t) const
   if ( t._type < _type ) return false;
   if ( _name < t._name ) return true;
   if ( t._name < _name ) return false;
-  if (_type == Ops::FluctP)
-  { // electron-symmetry
+  if (_type == Ops::FluctP) { // electron-symmetry
     if ( *this == t ) return false; // the Matrices are the same
   }
   return _orbs < t._orbs;
@@ -87,24 +86,16 @@ bool Matrices::operator==(const Matrices& t) const
   if ( _type != t._type || _name != t._name ) return false;
   if ( _orbs.size() != t._orbs.size() ) return false;
   if ( _orbs == t._orbs ) return true;
-  if (_type == Ops::FluctP)
-  { // electron-symmetry
+  if (_type == Ops::FluctP) { // electron-symmetry
     if (_orbs.subprod(0,1) == t._orbs.subprod(2,3) && _orbs.subprod(2,3) == t._orbs.subprod(0,1) ) return true;
-  }
-//  else if (_type == Ops::Exc || _type == Ops::Deexc)
-  else if (InSet(_type, Ops::Exc,Ops::Deexc))
-  { // electron-symmetry
+  }// else if (InSet(_type, Ops::Exc,Ops::Deexc)) { // electron-symmetry
  
-   // for (unsigned int i=0; i<_orbs.size()/2; i++)
-   // {
-   //   
-   //   for (unsigned int j=i; j<t._orbs.size()/2; j++)
-   //   {
+   // for (unsigned int i=0; i<_orbs.size()/2; i++) {
+   //   for (unsigned int j=i; j<t._orbs.size()/2; j++) {
    //     if (this->spinsym(i*2) != t.spinsym(j*2)) break;
-   //     
    //   }
    // }
-  }
+  //}
   return false;
 }
 void Matrices::reset_vertices()

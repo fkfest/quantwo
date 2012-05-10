@@ -43,8 +43,21 @@ set="newcommand",type=s,name="brac2",value="(\frac{2}{3}<\Phi^{ab}_{ij}|+\frac{1
 %CUSTOM OPERATORS
 set="newoperator",type=s,name="H",value="\op F + \op W"
 
+%DIAGRAMS (CCDIAG)
+set="diag",type=s,name="bdiag",value="\bdiags",desc="begin of diagram"
+set="diag",type=s,name="ediag",value="\ediag",desc="end of diagram"
+set="diag",type=s,name="fock",value="\dFs",desc="fock line"
+set="diag",type=s,name="flucpot",value="\dWs",desc="fluctuation potential line"
+set="diag",type=s,name="exop",value="\dAmp",desc="excitation operator line"
+set="diag",type=s,name="dexop",value="\dAmpD",desc="deexcitation operator line"
+set="diag",type=s,name="bexop",value="\dTv",desc="bare excitation operator line"
+set="diag",type=s,name="bdexop",value="\dTdv",desc="bare deexcitation operator line"
+set="diag",type=s,name="conline",value="\dcurve",desc="connection line"
+set="diag",type=s,name="text",value="\dtext",desc="text"
+
 %PROGRAM RELEVANT
+set="prog",type=f,name="minfac",value=1e-10,desc="terms with smaller prefactors will be neglected"
+set="prog",type=i,name="maxlels",value=100000,desc="max number of lexic elements in the equation"
 set="prog",type=i,name="spinintegr",value=1,desc="if > 0 : do spin-integration"
 set="prog",type=i,name="wick",value=1,desc="if > 0 : do wicks theorem and normal ordering otherwise"
-set="prog",type=f,name="minfac",value=1e-10,desc="terms with smaller prefactors will be neglected"
-set="prog",type=i,name="maxlels",value=10000,desc="max number of lexic elements in the equation"
+set="prog",type=i,name="diagrams",value=0,desc="if > 0 : print diagrams (with ccdiag)"

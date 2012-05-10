@@ -9,7 +9,6 @@
 #ifdef _RATIONAL
 #include <boost/rational.hpp>
 #endif
-#include "utilities.h"
 
 typedef long unsigned int lui;
 typedef std::list< std::string > TParArray;
@@ -49,6 +48,7 @@ typedef double TFactor;
 
 namespace Numbers
 {
+  // "zero"
   static const double small=1.e-16;
 }
 // global variables and functions for output

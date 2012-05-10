@@ -94,6 +94,8 @@ int main(int argc, char **argv) {
       MyOut::pcurout->beq();
       MyOut::pcurout->buf <<sum_final << endl;
       MyOut::pcurout->eeq();
+      if ( Input::iPars["prog"]["diagrams"] > 0 )
+        Q2::printdiags(MyOut::pcurout ,sum_final);
     }
   }
   // set current ouput back to default

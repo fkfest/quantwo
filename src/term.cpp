@@ -564,6 +564,11 @@ void Term::reduceTerm()
   }
   _kProd=kpr;
 }
+static bool matisnone(const Matrices& mat)
+{ return (mat.type() == Ops::None); };
+void Term::deleteNoneMats()
+{ _mat.erase(std::remove_if(_mat.begin(),_mat.end(),matisnone),_mat.end()); }
+
 void Term::matrixkind()
 {
   short exccl,intlines=0,intvirt=0;
@@ -729,6 +734,73 @@ bool Term::properconnect() const
   }
   return true;
 }
+void Term::printdiag(Output* pout, TFactor fac) const
+{
+  TsPar & diag = Input::sPars["diag"];
+  
+  *(pout->pout) << diag["bdiag"] << std::endl;
+  
+// "numbers"
+  Product<Matrices> nums;
+  for ( Product<Matrices>::const_iterator it = _mat.begin(); it != _mat.end(); ++it)
+    if ( it->type() == Ops::Number ){
+      nums.push_back(*it);
+    }
+  bool printperm = ( _perm.size() > 1 || _perm.begin()->second < 0 || 
+                    _todouble(_abs(_abs(_perm.begin()->second) - 1)) > MyOut::pcurout->small ||
+                    !_perm.begin()->first.is1());
+  if ( printperm || nums.size() > 0){
+    *(pout->pout) << diag["text"] << "{0}{$";
+    *(pout->pout) << nums;
+    if ( printperm )
+      *(pout->pout) << "(" << _perm << ")";
+    *(pout->pout) << "$}" << std::endl;
+  }
+  
+  // put tensors
+  lui im = 0;
+  for ( Product<Matrices>::const_iterator it = _mat.begin(); it != _mat.end(); ++it, ++im ){
+    if ( it->type() == Ops::Fock ){
+      *(pout->pout) << diag["fock"] << "{t" << im << "}" << std::endl;
+    } else if ( it->type() == Ops::FluctP ){
+      *(pout->pout) << diag["flucpot"] << "{t" << im << "1}{t" << im << "2}" << std::endl;
+    } else if ( it->type() == Ops::Deexc ){
+      *(pout->pout) << diag["dexop"] << "[$" << it->name() << "$]" << "{}{" << it->exccl() << "}{t" << im << "}" << std::endl;
+    } else if ( it->type() == Ops::Exc ){
+      *(pout->pout) << diag["exop"] << "[$" << it->name() << "$]" << "{}{" << it->exccl() << "}{t" << im << "}" << std::endl;
+    } else if ( it->type() == Ops::Deexc0 ){
+      *(pout->pout) << diag["bdexop"] << "{" << it->exccl() << "}{t" << im << "}" << std::endl;
+    } else if ( it->type() == Ops::Exc0 ){
+      *(pout->pout) << diag["bexop"] << "{" << it->exccl() << "}{t" << im << "}" << std::endl;
+    } else {
+      xout << *it << std::endl;
+      error("Diagram for this matrix is not possible yet!");
+    }
+  }
+  // put connection lines
+  TOrbSet orbs;
+  im = 0;
+  for ( Product<Matrices>::const_iterator it = _mat.begin(); it != _mat.end(); ++it, ++im ){
+    assert( it->conlines().size() == it->orbitals().size() );
+    for ( lui iorb = 0; iorb < it->conlines().size(); ++iorb ){
+      if (orbs.insert(it->orbitals()[iorb]).second) {// is new
+        const ConLine & cl = it->conline(iorb);
+        if ( iorb%2 == 0 ){
+          assert( (it->type() < _mat[cl.imat].type() && it->orbitals()[iorb].type() == Orbital::Virt) ||
+                  (it->type() > _mat[cl.imat].type() && it->orbitals()[iorb].type() == Orbital::Occ) );
+          assert( cl.idx%2 == 1 );
+          *(pout->pout) << diag["conline"] << "{t" << im << int(iorb/2+1) << "}{t" << cl.imat << int(cl.idx/2+1) << "}" << std::endl;
+        } else {
+          assert( (it->type() > _mat[cl.imat].type() && it->orbitals()[iorb].type() == Orbital::Virt) ||
+                  (it->type() < _mat[cl.imat].type() && it->orbitals()[iorb].type() == Orbital::Occ) );
+          assert( cl.idx%2 == 0 );
+          *(pout->pout) << diag["conline"] << "{t" << cl.imat << int(cl.idx/2+1) << "}{t" << im << int(iorb/2+1) << "}" << std::endl;
+        }
+      }
+    }
+  }
+  *(pout->pout) << diag["ediag"] << std::endl;
+}
 
 Orbital Term::freeorbname(Orbital::Type type)
 {
@@ -814,6 +886,8 @@ Sum< Term, TFactor > Q2::reduceSum(Sum< Term, TFactor > s)
   sum1.clear();
   for ( Sum<Term,TFactor>::const_iterator i=sum.begin();i!=sum.end(); ++i) {
     term=i->first;
+    // remove "None" matrices
+    term.deleteNoneMats();
     term.setmatconnections();
     term.spinintegration(spinintegr);
     sum1 += std::make_pair(term,i->second);
@@ -893,6 +967,16 @@ Sum< Term, TFactor > Q2::wick(Sum< Term, TFactor > s)
     sum0=Sum<Term,TFactor>();
   }
   return sum;
+}
+
+void Q2::printdiags(Output* pout, Sum< Term, TFactor > s)
+{
+  say("Diagrams...");
+  *(pout->pout) << " Diagrams: " << std::endl;
+    *(pout->pout) << std::endl;
+  for ( Sum<Term,TFactor>::const_iterator it = s.begin(); it != s.end(); ++it){
+    it->first.printdiag(pout,it->second);
+  }
 }
 
 template <class T>
