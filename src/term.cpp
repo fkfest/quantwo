@@ -732,16 +732,17 @@ bool Term::properconnect() const
 
 Orbital Term::freeorbname(Orbital::Type type)
 {
+  TsPar& orbs = Input::sPars["syntax"];
   Orbital::Spin spin=Orbital::GenS;
   const std::string * ip_orbs;
   std::string lastorb=_lastorb[type].name();
   unsigned long int indx;
   if (type==Orbital::Occ)
-    ip_orbs=&Orbital::occ_def;
+    ip_orbs = & orbs["occorb"];
   else if (type==Orbital::Virt)
-    ip_orbs=&Orbital::virt_def;
+    ip_orbs = & orbs["virorb"];
   else
-    ip_orbs=&Orbital::gen_def;
+    ip_orbs = & orbs["genorb"];
   if (lastorb.size()==0) 
   {
     lastorb=ip_orbs->at(0);

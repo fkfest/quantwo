@@ -1,18 +1,15 @@
 #include "orbital.h"
 
-const std::string Orbital::virt_def="abcdefgh";
-const std::string Orbital::occ_def="ijklmno";
-const std::string Orbital::gen_def="pqrstuvwxyz";
-
 Orbital::Orbital() {}
 
 Orbital::Orbital(std::string name)
 {
+  TsPar& orbs = Input::sPars["syntax"];
   _spin=(isupper((char)name[0]) ? GenS : No);
   name[0] = std::tolower(name[0]);
-  if (virt_def.find(name[0])!=std::string::npos) {_type=Virt;}
-  else if (occ_def.find(name[0])!=std::string::npos) {_type=Occ;}
-  else if (gen_def.find(name[0])!=std::string::npos) {_type=GenT;}
+  if (orbs["virorb"].find(name[0])!=std::string::npos) {_type=Virt;}
+  else if (orbs["occorb"].find(name[0])!=std::string::npos) {_type=Occ;}
+  else if (orbs["genorb"].find(name[0])!=std::string::npos) {_type=GenT;}
   else 
     error("Unknown type of orbital! "+name,"Orbital::Orbital"); 
   _name=name;
@@ -28,11 +25,12 @@ Orbital::Orbital(std::string name, Orbital::Type type)
 
 Orbital::Orbital(std::string name, Orbital::Spin spin)
 {
+  TsPar& orbs = Input::sPars["syntax"];
   _spin=spin;
   name[0] = std::tolower(name[0]);
-  if (virt_def.find(name[0])!=std::string::npos) {_type=Virt;}
-  else if (occ_def.find(name[0])!=std::string::npos) {_type=Occ;}
-  else if (gen_def.find(name[0])!=std::string::npos) {_type=GenT;}
+  if (orbs["virorb"].find(name[0])!=std::string::npos) {_type=Virt;}
+  else if (orbs["occorb"].find(name[0])!=std::string::npos) {_type=Occ;}
+  else if (orbs["genorb"].find(name[0])!=std::string::npos) {_type=GenT;}
   else 
     error("Unknown type of orbital! "+name,"Orbital::Orbital"); 
   _name=name;

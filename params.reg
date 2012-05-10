@@ -19,6 +19,9 @@ set="syntax",type=a,name="ref",value={"0","\Phi_0", "HF"},desc="reference determ
 set="syntax",type=a,name="csf",value={"\Phi", "\phi"},desc="determinant"
 set="syntax",type=a,name="dg",value={"\dg","\dagger"},desc="conjugate transpose"
 set="syntax",type=a,name="bexcop",value={"\tau","\Tau"},desc="bare excitation operators"
+set="syntax",type=s,name="occorb",value="ijklmno",desc="occupied orbitals"
+set="syntax",type=s,name="virorb",value="abcdefgh",desc="virtual orbitals"
+set="syntax",type=s,name="genorb",value="pqrstuvwxyz",desc="general orbitals"
 
 %COMMANDS
 set="command",type=s,name="operator",value="op",desc="command for operator"

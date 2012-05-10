@@ -4,11 +4,11 @@ Transforms an operator expression into an expression in terms of integrals and a
 COMPILATION
 ------------
 
-tar -xvf quant2.tgz
-cd quant2
+tar -xvf quantwo.tgz
+cd quantwo
 make
 
-Generates an executable "quant2"
+Generates an executable "quantwo"
 
 MAKE COMMANDS:
 
@@ -22,7 +22,7 @@ EXECUTION
 ---------
 
 To run the program:
-"quant2 <input-file> [<output-file>]"
+"quantwo <input-file> [<output-file>]"
 
 If an <output-file> was not given, the output will be written in <input-file>.tex
 

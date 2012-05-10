@@ -1,7 +1,7 @@
 CC = g++ 
 PROFILE =
 #PROFILE = -pg
-CFLAGS := -c -Wall -O2 $(PROFILE)
+CFLAGS := -c -Wall -O3 $(PROFILE)
 LDFLAGS = $(PROFILE)
 #use rational numbers from boost
 CFLAGS := $(CFLAGS) -D _RATIONAL

@@ -17,10 +17,6 @@ class Orbital {
   enum Type { Occ, Virt, GenT };
   // enumerate Spin
   enum Spin { No, Up, Down, GenS };
-  // define default occ, virt and general indices:
-  static const std::string virt_def;
-  static const std::string occ_def;
-  static const std::string gen_def;
   Orbital ();
   // constructor from name (a-h: virt, i-o: occ, p-z: general; lower case: no Spin, upper case: general)
   Orbital (std::string name);
