@@ -168,30 +168,33 @@ void Matrices::set_no_spin()
 
 std::ostream & operator << (std::ostream & o, Matrices const & mat)
 {
-  if (mat.type()==Ops::Fock)
-  {
-    o << "f_{" << mat.orbitals() << "}";
-    MyOut::pcurout->lenbuf += 1+mat.orbitals().size()/MyOut::pcurout->wsi;
-  }
-  else if (mat.type()==Ops::FluctP)
-  {
-    o << "(" << mat.orbitals().subprod(0,1) << "|" << mat.orbitals().subprod(2,3) << ")";
-    MyOut::pcurout->lenbuf += 7;
-  }
-  else if (mat.type()==Ops::XPert)
-  {
-    o << "x_{" << mat.orbitals() << "}";
-    MyOut::pcurout->lenbuf += 1+mat.orbitals().size()/MyOut::pcurout->wsi;
-  }
-  else if (InSet(mat.type(), Ops::Exc,Ops::Deexc,Ops::Interm))
-  {
-    o <<mat.name() <<"_{" << mat.orbitals() << "}";
-    MyOut::pcurout->lenbuf += 1+mat.orbitals().size()/MyOut::pcurout->wsi;
-  }
-  else if (mat.type()==Ops::Number)
-  {
-    o <<mat.name();
-    MyOut::pcurout->lenbuf += 2;
+  switch ( mat.type() ){
+    case Ops::Fock:
+      o << "f_{" << mat.orbitals() << "}";
+      MyOut::pcurout->lenbuf += 1+mat.orbitals().size()/MyOut::pcurout->wsi;
+      break;
+    case Ops::FluctP:
+      o << "(" << mat.orbitals().subprod(0,1) << "|" << mat.orbitals().subprod(2,3) << ")";
+      MyOut::pcurout->lenbuf += 7;
+      break;
+    case Ops::XPert:
+      o << "x_{" << mat.orbitals() << "}";
+      MyOut::pcurout->lenbuf += 1+mat.orbitals().size()/MyOut::pcurout->wsi;
+      break;
+    case Ops::Exc:
+    case Ops::Deexc:
+    case Ops::Interm:
+      o <<mat.name() <<"_{" << mat.orbitals() << "}";
+      MyOut::pcurout->lenbuf += 1+mat.orbitals().size()/MyOut::pcurout->wsi;
+      break;
+    case Ops::Number:
+      o <<mat.name();
+      MyOut::pcurout->lenbuf += 2;
+      break;
+    case Ops::None:
+    case Ops::Exc0:
+    case Ops::Deexc0:
+      break;
   }
   //o <<"["<<mat.connected2()<<"]" ;
   return o;

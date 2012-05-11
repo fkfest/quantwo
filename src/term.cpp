@@ -737,6 +737,7 @@ bool Term::properconnect() const
 void Term::printdiag(Output* pout, TFactor fac) const
 {
   TsPar & diag = Input::sPars["diag"];
+  short verb = Input::iPars["diag"]["printnames"]; // print names of operators and indices...
   
   *(pout->pout) << diag["bdiag"] << std::endl;
   
@@ -760,21 +761,40 @@ void Term::printdiag(Output* pout, TFactor fac) const
   // put tensors
   lui im = 0;
   for ( Product<Matrices>::const_iterator it = _mat.begin(); it != _mat.end(); ++it, ++im ){
-    if ( it->type() == Ops::Fock ){
-      *(pout->pout) << diag["fock"] << "{t" << im << "}" << std::endl;
-    } else if ( it->type() == Ops::FluctP ){
-      *(pout->pout) << diag["flucpot"] << "{t" << im << "1}{t" << im << "2}" << std::endl;
-    } else if ( it->type() == Ops::Deexc ){
-      *(pout->pout) << diag["dexop"] << "[$" << it->name() << "$]" << "{}{" << it->exccl() << "}{t" << im << "}" << std::endl;
-    } else if ( it->type() == Ops::Exc ){
-      *(pout->pout) << diag["exop"] << "[$" << it->name() << "$]" << "{}{" << it->exccl() << "}{t" << im << "}" << std::endl;
-    } else if ( it->type() == Ops::Deexc0 ){
-      *(pout->pout) << diag["bdexop"] << "{" << it->exccl() << "}{t" << im << "}" << std::endl;
-    } else if ( it->type() == Ops::Exc0 ){
-      *(pout->pout) << diag["bexop"] << "{" << it->exccl() << "}{t" << im << "}" << std::endl;
-    } else {
-      xout << *it << std::endl;
-      error("Diagram for this matrix is not possible yet!");
+    switch ( it->type() ){
+      case Ops::Fock:
+        if ( verb > 1 )
+          *(pout->pout) << diag["fockn"] << "{t" << im << "}" << std::endl;
+        else
+          *(pout->pout) << diag["fock"] << "{t" << im << "}" << std::endl;
+        break;
+      case Ops::FluctP:
+        if ( verb > 1 )
+          *(pout->pout) << diag["flucpotn"] << "{t" << im << "1}{t" << im << "2}" << std::endl;
+        else
+          *(pout->pout) << diag["flucpot"] << "{t" << im << "1}{t" << im << "2}" << std::endl;
+        break;
+      case Ops::Deexc:
+        if ( verb > 0 )
+          *(pout->pout) << diag["dexop"] << "[$" << it->name() << "$]{}{" << it->exccl() << "}{t" << im << "}" << std::endl;
+        else
+          *(pout->pout) << diag["dexop"] << "{}{" << it->exccl() << "}{t" << im << "}" << std::endl;
+        break;
+      case Ops::Exc:
+        if ( verb > 0 )
+          *(pout->pout) << diag["exop"] << "[$" << it->name() << "$]{}{" << it->exccl() << "}{t" << im << "}" << std::endl;
+        else
+          *(pout->pout) << diag["exop"] << "{}{" << it->exccl() << "}{t" << im << "}" << std::endl;
+        break;
+      case Ops::Deexc0:
+        *(pout->pout) << diag["bdexop"] << "{" << it->exccl() << "}{t" << im << "}" << std::endl;
+        break;
+      case Ops::Exc0:
+        *(pout->pout) << diag["bexop"] << "{" << it->exccl() << "}{t" << im << "}" << std::endl;
+        break;
+      default:
+        xout << *it << std::endl;
+        error("Diagram for this matrix is not possible yet!");
     }
   }
   // put connection lines
@@ -789,12 +809,18 @@ void Term::printdiag(Output* pout, TFactor fac) const
           assert( (it->type() < _mat[cl.imat].type() && it->orbitals()[iorb].type() == Orbital::Virt) ||
                   (it->type() > _mat[cl.imat].type() && it->orbitals()[iorb].type() == Orbital::Occ) );
           assert( cl.idx%2 == 1 );
-          *(pout->pout) << diag["conline"] << "{t" << im << int(iorb/2+1) << "}{t" << cl.imat << int(cl.idx/2+1) << "}" << std::endl;
+          if ( verb > 2 )
+            *(pout->pout) << diag["conline"]  << "[$" << it->orbitals()[iorb] << "$]{t" << im << int(iorb/2+1) << "}{t" << cl.imat << int(cl.idx/2+1) << "}" << std::endl;
+          else
+            *(pout->pout) << diag["conline"] << "{t" << im << int(iorb/2+1) << "}{t" << cl.imat << int(cl.idx/2+1) << "}" << std::endl;
         } else {
           assert( (it->type() > _mat[cl.imat].type() && it->orbitals()[iorb].type() == Orbital::Virt) ||
                   (it->type() < _mat[cl.imat].type() && it->orbitals()[iorb].type() == Orbital::Occ) );
           assert( cl.idx%2 == 0 );
-          *(pout->pout) << diag["conline"] << "{t" << cl.imat << int(cl.idx/2+1) << "}{t" << im << int(iorb/2+1) << "}" << std::endl;
+          if ( verb > 2 )
+            *(pout->pout) << diag["conline"] << "[$" << it->orbitals()[iorb] << "$]{t" << cl.imat << int(cl.idx/2+1) << "}{t" << im << int(iorb/2+1) << "}" << std::endl;
+          else
+            *(pout->pout) << diag["conline"] << "{t" << cl.imat << int(cl.idx/2+1) << "}{t" << im << int(iorb/2+1) << "}" << std::endl;
         }
       }
     }
