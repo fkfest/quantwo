@@ -92,6 +92,8 @@ class Term {
     void reduceTerm();
     // delete "None" matrices (caution, the order of matrices can be important, so do it AFTER connection stuff!)
     void deleteNoneMats();
+    // brilloin condition (return true for terms with occ-virt fock)
+    bool brilloin() const;
     //! Determine connections (in reduced term!)
     void matrixkind();
     //! expand integral ( from antisymmetrized form < AB || CD > to the normal form < AB | CD > - < AB | DC > )

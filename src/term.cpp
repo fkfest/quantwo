@@ -568,6 +568,13 @@ static bool matisnone(const Matrices& mat)
 { return (mat.type() == Ops::None); };
 void Term::deleteNoneMats()
 { _mat.erase(std::remove_if(_mat.begin(),_mat.end(),matisnone),_mat.end()); }
+bool Term::brilloin() const
+{
+  for ( Product<Matrices>::const_iterator it = _mat.begin(); it != _mat.end(); ++it )
+    if ( it->type() == Ops::Fock && it->orbitals()[0].type() != it->orbitals()[1].type() )
+      return true;
+  return false;
+}
 
 void Term::matrixkind()
 {
@@ -883,6 +890,7 @@ void Term::set_lastorb(Orbital orb, bool onlylarger)
 Sum< Term, TFactor > Q2::reduceSum(Sum< Term, TFactor > s)
 {
   double minfac = Input::fPars["prog"]["minfac"];
+  bool brill = ( Input::iPars["prog"]["brill"] > 0 );
   Sum<Term,TFactor> sum,sum1;
   Term term,term1;
   bool added;
@@ -912,6 +920,8 @@ Sum< Term, TFactor > Q2::reduceSum(Sum< Term, TFactor > s)
   sum1.clear();
   for ( Sum<Term,TFactor>::const_iterator i=sum.begin();i!=sum.end(); ++i) {
     term=i->first;
+    // use Brilloin condition 
+    if ( brill && term.brilloin() ) continue;
     // remove "None" matrices
     term.deleteNoneMats();
     term.setmatconnections();

@@ -64,3 +64,4 @@ set="prog",type=i,name="maxlels",value=100000,desc="max number of lexic elements
 set="prog",type=i,name="spinintegr",value=1,desc="if > 0 : do spin-integration"
 set="prog",type=i,name="wick",value=1,desc="if > 0 : do wicks theorem and normal ordering otherwise"
 set="prog",type=i,name="diagrams",value=0,desc="if > 0 : print diagrams (with ccdiag)"
+set="prog",type=i,name="brill",value=0,desc="if > 0 : remove occ-virt fock"
