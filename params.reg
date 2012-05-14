@@ -4,6 +4,7 @@ set="output",type=i,name="maxnlines",value=42,desc="max number of lines on page"
 set="output",type=i,name="widthsubidx",value=1,desc="how many super and subscript indices one needs to fill a position"
 set="output",type=f,name="sumheight",value=1.8,desc="height of \sum"
 set="output",type=i,name="emptylines",value=15,desc="write n lines less on the first page"
+set="output",type=i,name="clean",value=0,desc="if > 0: clean output (without prm), if > 1: integrals as (pq|rs)"
 
 %SYNTAX
 set="syntax",type=s,name="brackets",value="(){}[]<>",desc="brackets"
@@ -26,6 +27,8 @@ set="syntax",type=s,name="genorb",value="pqrstuvwxyz",desc="general orbitals"
 %COMMANDS
 set="command",type=s,name="operator",value="op",desc="command for operator"
 set="command",type=s,name="parameter",value="prm",desc="command for parameter"
+set="command",type=s,name="permutation",value="Perm",desc="command for permutation"
+set="command",type=s,name="integral",value="intg",desc="command for integral"
 set="command",type=s,name="sum",value="sum",desc="command for sum"
 set="command",type=s,name="fraction",value="frac",desc="command for fraction"
 

@@ -312,7 +312,7 @@ std::ostream & operator << (std::ostream & o, Term const & t)
                                     
   if (t.realsumindx().size()>0) 
   {
-    o <<"\\sum_{"<<t.realsumindx()<<"}";
+    o <<"\\" << Input::sPars["command"]["sum"] <<"_{"<<t.realsumindx()<<"}";
     MyOut::pcurout->lenbuf += std::max(3,int(t.realsumindx().size())/MyOut::pcurout->wsi);
     MyOut::pcurout->hbufline = MyOut::pcurout->hsum;// set height of line to the height of \sum
   }

@@ -168,27 +168,34 @@ void Matrices::set_no_spin()
 
 std::ostream & operator << (std::ostream & o, Matrices const & mat)
 {
+  short clean = Input::iPars["output"]["clean"];
+  std::string param("");
+  if ( clean <= 0 ) param = "\\"+Input::sPars["command"]["parameter"] + " ";
   switch ( mat.type() ){
     case Ops::Fock:
-      o << "f_{" << mat.orbitals() << "}";
+      o << param << "f_{" << mat.orbitals() << "}";
       MyOut::pcurout->lenbuf += 1+mat.orbitals().size()/MyOut::pcurout->wsi;
       break;
     case Ops::FluctP:
-      o << "(" << mat.orbitals().subprod(0,1) << "|" << mat.orbitals().subprod(2,3) << ")";
+      if ( clean > 1 )
+        o << "(" << mat.orbitals().subprod(0,1) << "|" << mat.orbitals().subprod(2,3) << ")";
+      else 
+        o << param << "\\" << Input::sPars["command"]["integral"] << "{" 
+                   << mat.orbitals().subprod(0,1) << "}{" << mat.orbitals().subprod(2,3) << "}";
       MyOut::pcurout->lenbuf += 7;
       break;
     case Ops::XPert:
-      o << "x_{" << mat.orbitals() << "}";
+      o << param << "X_{" << mat.orbitals() << "}";
       MyOut::pcurout->lenbuf += 1+mat.orbitals().size()/MyOut::pcurout->wsi;
       break;
     case Ops::Exc:
     case Ops::Deexc:
     case Ops::Interm:
-      o <<mat.name() <<"_{" << mat.orbitals() << "}";
+      o << param << mat.name() <<"_{" << mat.orbitals() << "}";
       MyOut::pcurout->lenbuf += 1+mat.orbitals().size()/MyOut::pcurout->wsi;
       break;
     case Ops::Number:
-      o <<mat.name();
+      o << param << mat.name();
       MyOut::pcurout->lenbuf += 2;
       break;
     case Ops::None:
@@ -291,7 +298,7 @@ bool Permut::operator==(const Permut& p) const
 std::ostream & operator << (std::ostream & o, Permut const & p)
 {
   if (p.orbsfrom().size()>0) {
-    o << "\\Perm{" << p.orbsfrom() << "," << p.orbsto() << "}";
+    o << "\\" << Input::sPars["command"]["permutation"] << "{" << p.orbsfrom() << "}{" << p.orbsto() << "}";
     MyOut::pcurout->lenbuf += 3+(p.orbsfrom().size()+p.orbsto().size())/MyOut::pcurout->wsi;
     //o << "[" << MyOut::pcurout->lenbuf << "]";
   } else 
