@@ -56,8 +56,8 @@ OPTIONS
 
 Various options can be changed in a config file "params.reg" (including a definition of simple new commands (set="newcommand"))
 
-CHANGING OPTIONS IN INPUT:
-------------------------
+CHANGING OPTIONS IN INPUT
+
 one can change options in input-file using <set>:<name>=<value>[,<name>=<value>[,...]]
 e.g., syntax:beq="\beqa",eeq="\eeqa" 
 
