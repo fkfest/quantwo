@@ -167,6 +167,11 @@ public:
   Sum<Term,TFactor> sumterms() const;
   // analyze input
   bool analyzeit();
+  // clear all arrays
+  void clear() {_inlines.clear(); _ineq.clear(); _input.clear(); _eqn = Equation(); _eq = false;};
+  // return input lines
+  const std::vector<std::string> & inlines() const { return _inlines;};
+  const std::vector<std::string> & ineq() const { return _ineq;};
   
 private:
   // initialyse default input-parameters 
@@ -179,6 +184,8 @@ private:
   std::string _input;
   bool _eq;
   Equation _eqn;
+  std::vector<std::string> _inlines;
+  std::vector<std::string> _ineq;
 };
 
 std::ostream & operator << (std::ostream & o, Finput const & inp);

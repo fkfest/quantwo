@@ -5,6 +5,7 @@ set="output",type=i,name="widthsubidx",value=1,desc="how many super and subscrip
 set="output",type=f,name="sumheight",value=1.8,desc="height of \sum"
 set="output",type=i,name="emptylines",value=15,desc="write n lines less on the first page"
 set="output",type=i,name="clean",value=0,desc="if > 0: clean output (without prm), if > 1: integrals as (pq|rs)"
+set="output",type=i,name="level",value=0,desc="if > 0: print input equation too, if > 1: print the whole input file"
 
 %SYNTAX
 set="syntax",type=s,name="brackets",value="(){}[]<>",desc="brackets"

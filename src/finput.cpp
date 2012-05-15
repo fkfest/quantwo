@@ -280,7 +280,11 @@ bool Finput::addline(const std::string& line)
   const TParArray& newcs = Input::aPars["syntax"]["newcommand"];
   const TParArray& newops = Input::aPars["syntax"]["newoperator"];
   const TParArray& comments = Input::aPars["syntax"]["comment"];
- 
+  short iprint = Input::iPars["output"]["level"];
+  if ( iprint > 0 && _eq )
+    _ineq.push_back(line);
+  if ( iprint > 1 && !_eq )
+    _inlines.push_back(line);
   bool neweq = false;
   lui ipos=0, ipend;
   // and skip " " on begin
@@ -301,9 +305,13 @@ bool Finput::addline(const std::string& line)
   if (ipos == ipend){ // empty line
   } else if (InSet(linesp, beqs)) {// begin equation
     _input="";
+    if ( iprint > 1 && !_eq )
+      _inlines.pop_back();
     _eq=true;
     analyzenewops();
   } else if (InSet(linesp, eeqs)) {// end equation
+    if ( iprint > 0 && _eq )
+      _ineq.pop_back();
     _eq=false;
     analyzeit();
     _eqn.extractit();

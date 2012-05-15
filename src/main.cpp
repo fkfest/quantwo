@@ -90,12 +90,19 @@ int main(int argc, char **argv) {
       _xout2(" = " << sum_finp << endl);
       _xout2(" = " << sum_NO << endl);
       _xout1(" = " << sum_final << endl);
+      const std::vector<std::string> & finlines = finput.inlines();
+      for ( unsigned int i = 0; i < finlines.size(); ++i )
+        MyOut::pcurout->buf << finlines[i] << endl;
       // write to a file
       MyOut::pcurout->beq();
+      const std::vector<std::string> & fineq = finput.ineq();
+      for ( unsigned int i = 0; i < fineq.size(); ++i )
+        MyOut::pcurout->buf << fineq[i] << endl;
       MyOut::pcurout->buf <<sum_final << endl;
       MyOut::pcurout->eeq();
       if ( Input::iPars["prog"]["diagrams"] > 0 )
         Q2::printdiags(MyOut::pcurout ,sum_final);
+      finput.clear();
     }
   }
   // set current ouput back to default
