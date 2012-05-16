@@ -41,8 +41,8 @@ set="hamilton",type=s,name="perturbation",value="X",desc="one-electron perturbat
 %CUSTOM COMMANDS
 set="newcommand",type=s,name="half",value="\frac{1}{2}",desc="command for 1/2"
 set="newcommand",type=s,name="quart",value="\frac{1}{4}",desc="command for 1/4"
-set="newcommand",type=s,name="brac1",value="\frac{1}{2}<\Phi^{a}_{i}|",desc="contravariant bra for singles"
-set="newcommand",type=s,name="brac2",value="(\frac{2}{3}<\Phi^{ab}_{ij}|+\frac{1}{3}<\Phi^{ba}_{ij}|)",desc="contravariant bra for doubles"
+set="newcommand",type=s,name="bracs",value="\frac{1}{2}<\Phi^{a}_{i}|",desc="contravariant bra for singles"
+set="newcommand",type=s,name="bracd",value="(\frac{2}{3}<\Phi^{ab}_{ij}|+\frac{1}{3}<\Phi^{ba}_{ij}|)",desc="contravariant bra for doubles"
 
 %CUSTOM OPERATORS
 set="newoperator",type=s,name="H",value="\op F + \op W"

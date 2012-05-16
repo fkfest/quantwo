@@ -90,14 +90,24 @@ int main(int argc, char **argv) {
       _xout2(" = " << sum_finp << endl);
       _xout2(" = " << sum_NO << endl);
       _xout1(" = " << sum_final << endl);
+      // input 
       const std::vector<std::string> & finlines = finput.inlines();
-      for ( unsigned int i = 0; i < finlines.size(); ++i )
+      for ( unsigned int i = 0; i < finlines.size(); ++i ){
         MyOut::pcurout->buf << finlines[i] << endl;
+        MyOut::pcurout->flushbuf();
+      }
       // write to a file
       MyOut::pcurout->beq();
+      // input-equation
       const std::vector<std::string> & fineq = finput.ineq();
-      for ( unsigned int i = 0; i < fineq.size(); ++i )
+      for ( unsigned int i = 0; i < fineq.size(); ++i ){
         MyOut::pcurout->buf << fineq[i] << endl;
+        if ( i + 1 == fineq.size() ) {
+          MyOut::pcurout->buf << "=";
+          MyOut::pcurout->flushbuf();
+          MyOut::pcurout->newlineeqn();
+        }
+      }
       MyOut::pcurout->buf <<sum_final << endl;
       MyOut::pcurout->eeq();
       if ( Input::iPars["prog"]["diagrams"] > 0 )
