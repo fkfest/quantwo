@@ -15,7 +15,7 @@ MAKE COMMANDS:
 1) make : compiles the program
 2) make clean : removes all object files and executables
 3) make veryclean : removes all object files, executables, *.pdf, *.aux, *.dvi, *.ps, *.log, *~
-4) make equation : generates "equation.pdf" from "input"
+4) make equation : generates "equation.pdf" from "input.q2"
 5) make depend : analyzes dependencies in src
 6) make base : creates working environment (see the next paragraph)
 
@@ -29,7 +29,7 @@ EXECUTION
 To run the program:
 "quantwo <input-file> [<output-file>]"
 
-If an <output-file> was not given, the output will be written in <input-file>.tex
+If an <output-file> was not given, the output will be written in <input-file without extension>.tex
 
 The output file can be transformed to PDF using latex:
 "pdflatex equation.tex"
@@ -44,7 +44,7 @@ ln -s PATH_TO_Q2_DIR/Makefile .
 make base
 
 It creates symbolic links to all needed files from quantwo directory. 
-With "make equation" you can create then equation.pdf from "input"-file
+With "make equation" you can create then equation.pdf from "input.q2"-file
 
 COMMAND-LINE PARAMETERS
 

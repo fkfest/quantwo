@@ -56,6 +56,18 @@ string_t DirName(string_t source)
     return source;
 }
 
+template<typename string_t>
+string_t FileName(string_t source, bool remove_ext = false)
+{
+    source.erase(source.begin(), std::find(source.rbegin(), source.rend(), '/').base());
+    if ( remove_ext ) {
+      size_t ix = source.rfind('.');
+      if ( ix != std::string::npos )
+        source.erase(source.begin() + ix, source.end());
+    }
+    return source;
+}
+
 // implementation of InSet commands (comparing one value with up to 10 other values)
 template <typename T>
 bool InSet(const T & item, const T & i1, const T & i2) 

@@ -13,7 +13,7 @@ using namespace std;
 int main(int argc, char **argv) {
   // handle input and output
   string inputfile, outputfile,
-    exePath = exepath(), outPath;
+    exePath = exepath();
   int iarg=1;
   while ( iarg<argc && argv[iarg][0]=='-') {// handle options
     if (strcmp(argv[iarg],"-h")==0 || strcmp(argv[iarg],"--help")==0) {
@@ -34,16 +34,12 @@ int main(int argc, char **argv) {
     }
     ++iarg;
   }
-  if (iarg<argc) {
-    inputfile=argv[iarg];
-    if (argc>iarg+1)
-      outputfile=argv[iarg+1];
-    else
-      outputfile=inputfile+".tex";
-  } else {
-    error("Please provide an input file!");
-  }
-  outPath = DirName(outputfile);
+  if (iarg >= argc) error("Please provide an input file!");
+  inputfile=argv[iarg];
+  if (argc>iarg+1)
+    outputfile=argv[iarg+1];
+  else 
+    outputfile = FileName(inputfile,true)+".tex";
   // read input
   Finput finput(exePath);
   ifstream fin;

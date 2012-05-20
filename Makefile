@@ -30,7 +30,7 @@ clean :
 veryclean :
 	rm -rf $(MAIN) $(OBJ) *.pdf *.aux *.bib *.dvi *.ps *.log *~ $(DIR)/*~  
 equation :
-	 $(MAIN) input
+	 $(MAIN) input.q2
 	 pdflatex equation.tex
 
 base : $(FILIN)
