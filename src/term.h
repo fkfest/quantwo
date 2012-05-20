@@ -36,6 +36,8 @@ class Term {
     Term & operator *= (Oper const & t);
     //! multiply by a factor
     Term & operator *= (const TFactor& fac);
+    //! multiply by a permutation
+    Term & operator *= (Permut const & perm);
     //! add permutator
     Term & operator += (Permut const & perm);
     //! add permutator with a factor

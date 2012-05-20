@@ -428,6 +428,12 @@ lui Finput::analyzecommand(const std::string& str, lui ipos)
     ipos1=ipos3;
   } else if (str.substr(0,commands["sum"].size())==commands["sum"]) { // sum
     _eqn += Lelem(str.substr(commands["sum"].size()),Lelem::Sum);
+  } else if (str==commands["permutation"]) { // permutation
+    ipos1=IL::nextwordpos(_input,ipos);
+    ipos2=ipos1;
+    ipos3=IL::nextwordpos(_input,ipos2);
+    _eqn += Lelem(_input.substr(ipos,ipos1-ipos)+"/"+_input.substr(ipos2,ipos3-ipos2),Lelem::Perm);
+    ipos1=ipos3;
   } else if (InSet(str, skipops)){//,"left","right","lk","rk","\\"))
   } else if (newcom.count(str)){// custom command
     // replace and go back
@@ -757,11 +763,11 @@ bool Equation::do_sumterms(bool excopsonly )
     if(InSet(_eqn[i].lex(), Lelem::Bra,Lelem::Ket)) { // handle bra/ket
       if (_eqn[i].lex()==Lelem::Bra) {
         if (bra) 
-          error("Can not handle two BRAs in one term yet...");
+          error("Cannot handle two BRAs in one term yet...");
         else
           bra=true;
       } else if (ket)
-        error("Can not handle two KETs in one term yet...");
+        error("Cannot handle two KETs in one term yet...");
       else
         ket=true;
       term*=handle_braket(_eqn[i],term);
@@ -790,9 +796,15 @@ bool Equation::do_sumterms(bool excopsonly )
     } else if (_eqn[i].lex()==Lelem::Par) { // handle Parameter
       if (!excopsonly)
         _paramterm*=_eqn[i];
+    } else if (_eqn[i].lex()==Lelem::Perm) { // handle Permutation
+      if (!excopsonly)
+        term *= handle_permutation(_eqn[i]);
+    } else if (_eqn[i].lex()==Lelem::Times) { // handle Multiplication
+      // don't do anything
     } else if (_eqn[i].lex()==Lelem::Div) { // handle Division
       error("Sorry, cannot handle Division!","Finput::do_sumterms");
     } else {
+      xout << _eqn[i] << std::endl;
       error(_eqn[i].name()+" is not implemented yet...","Finput::do_sumterms");
     }
   }
@@ -804,14 +816,19 @@ void Equation::addterm(Term& term, bool plus, lui beg, lui end,
                      Product<long int > const & indxoperterm, lui & nterm, bool excopsonly)
 {
   double minfac = Input::fPars["prog"]["minfac"];
-  if(excopsonly || term.term_is_0(minfac)) {
+  if( excopsonly ) {
+    //reset parameter-info
+    handle_parameters(term,true);
+    return; // dont add zero term
+  }
+  // handle parameters
+  handle_parameters(term);
+  if( term.term_is_0(minfac) ) {
     //reset parameter-info
     handle_parameters(term,true);
     return; // dont add zero term
   }
   ++nterm;
-  // handle parameters
-  handle_parameters(term);
   //add connections to term
   Product<long int> connect;
   long int ipos;
@@ -1084,6 +1101,34 @@ void Equation::handle_sum(const Lelem& lel, Term& term)
     ipos=ipos1;
   }
 }
+Permut Equation::handle_permutation(const Lelem& lel)
+{
+  Product<Orbital> orbs1, orbs2;
+  lui ipos=0, ipos1;
+  std::string name, lelnam=lel.name();
+  ipos=IL::skip(lelnam,ipos,"{} ");
+  ipos1=IL::nextwordpos(lelnam,ipos);
+  name = lelnam.substr(ipos,ipos1);
+  ipos = 0;
+  while ( (ipos1 = IL::nextwordpos(name,ipos,true,false)) != ipos ){//non greedy
+    orbs1 *= Orbital(IL::plainname(name.substr(ipos,ipos1-ipos)));
+    ipos = IL::skip(name,ipos1,"{}_^ ");
+  }
+  ipos=lelnam.find("/");
+  if(ipos==std::string::npos)
+    error("Something wrong with frac "+lelnam,"Finput::handle_factor");
+  ++ipos;
+  ipos=IL::skip(lelnam,ipos,"{} ");
+  ipos1=IL::nextwordpos(lelnam,ipos);
+  name = lelnam.substr(ipos,ipos1);
+  ipos = 0;
+  while ( (ipos1 = IL::nextwordpos(name,ipos,true,false)) != ipos ){//non greedy
+    orbs2 *= Orbital(IL::plainname(name.substr(ipos,ipos1-ipos)));
+    ipos = IL::skip(name,ipos1,"{}_^ ");
+  }
+  return Permut(orbs1,orbs2);
+}
+
 void Equation::handle_parameters(Term& term, bool excopsonly)
 {
   if (!excopsonly) {// handle saved parameters
@@ -1128,6 +1173,7 @@ void Equation::handle_parameters(Term& term, bool excopsonly)
           } else
             say("Parameter is not present in this term: "+lelnam);
         } else
+        // TODO : add parameters with explicit excitations
           error("Unknown excitation in parameter"+excn);
       }
     }
@@ -1168,6 +1214,8 @@ std::ostream& operator<<(std::ostream& o, const Lelem& lel)
     o << "\\"<< commands["operator"]<<" ";
   else if (lel.lex()==Lelem::Par)
     o << "\\"<< commands["parameter"]<<" ";
+  else if (lel.lex()==Lelem::Perm)
+    o << "\\"<< commands["permutation"];
   else if (lel.lex()==Lelem::Plus)
     o << "+";
   else if (lel.lex()==Lelem::Minus)

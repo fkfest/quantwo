@@ -17,7 +17,7 @@
 class Lelem {
   public:
   // enumerate lexic
-  enum Lex {Bra, Ket, LPar, RPar, Oper, Par, Num, Frac, Plus, Minus, Times, Div, Sum };
+  enum Lex {Bra, Ket, LPar, RPar, Oper, Par, Num, Frac, Plus, Minus, Times, Div, Sum, Perm };
   // enumerate types expressions in parantheses (Normal, Connected, Disconnected, ...)
   enum Conn {Normal, Connect, Disconnect }; 
   // constructor from name and Lex
@@ -124,6 +124,8 @@ private:
   void handle_sum(Lelem const & lel, Term & term);
   // handle parameter
   void handle_parameters(Term& term, bool excopsonly = false);
+  // handle permutation
+  Permut handle_permutation(Lelem const & lel);
   // add nameadd to name (as superscript)
   void add2name(std::string & name, std::string const & nameadd);
   Product<Lelem> _eqn;

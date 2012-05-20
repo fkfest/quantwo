@@ -28,6 +28,22 @@ Term& Term::operator*=(const TFactor& fac)
   _prefac*=fac;
   return *this;
 }
+Term& Term::operator*=(const Permut& perm)
+{
+  if ( _perm.size() == 0 )
+    _perm += perm;
+  else {
+    Sum<Permut,TFactor> perms;
+    Permut perm1;
+    for ( Sum<Permut,TFactor>::iterator ip = _perm.begin(); ip != _perm.end(); ++ip ){
+      perm1 = ip->first;
+      perm1 *= perm;
+      perms += std::pair< Permut, TFactor >(perm1,ip->second);
+    }
+    _perm = perms;
+  }
+  return *this;
+}
 Term& Term::operator+=(const Permut& perm)
 {
   _perm+=perm;
