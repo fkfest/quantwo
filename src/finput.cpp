@@ -797,8 +797,8 @@ bool Equation::do_sumterms(bool excopsonly )
       if (!excopsonly)
         _paramterm*=_eqn[i];
     } else if (_eqn[i].lex()==Lelem::Perm) { // handle Permutation
-      if (!excopsonly)
-        term *= handle_permutation(_eqn[i]);
+//      if (!excopsonly)
+//        term *= handle_permutation(_eqn[i]);
     } else if (_eqn[i].lex()==Lelem::Times) { // handle Multiplication
       // don't do anything
     } else if (_eqn[i].lex()==Lelem::Div) { // handle Division
@@ -816,19 +816,19 @@ void Equation::addterm(Term& term, bool plus, lui beg, lui end,
                      Product<long int > const & indxoperterm, lui & nterm, bool excopsonly)
 {
   double minfac = Input::fPars["prog"]["minfac"];
-  if( excopsonly ) {
-    //reset parameter-info
-    handle_parameters(term,true);
-    return; // dont add zero term
-  }
-  // handle parameters
-  handle_parameters(term);
-  if( term.term_is_0(minfac) ) {
+  if( excopsonly || term.term_is_0(minfac)) {
     //reset parameter-info
     handle_parameters(term,true);
     return; // dont add zero term
   }
   ++nterm;
+  // handle parameters
+  handle_parameters(term);
+//   if( term.term_is_0(minfac) ) {
+//     //reset parameter-info
+//     handle_parameters(term,true);
+//     return; // dont add zero term
+//   }
   //add connections to term
   Product<long int> connect;
   long int ipos;

@@ -815,6 +815,16 @@ void Term::printdiag(Output* pout, TFactor fac) const
       case Ops::Exc0:
         *(pout->pout) << diag["bexop"] << "{" << it->exccl() << "}{t" << im << "}" << std::endl;
         break;
+      case Ops::XPert:
+        error("Diagram for external perturbations is not possible yet!");
+        break;
+      case Ops::Interm:
+        error("Diagram for Intermediates is not possible yet!");
+        break;
+      case Ops::Number:
+        break;
+      case Ops::None:
+        error("Why is Ops::None still there??");
       default:
         xout << *it << std::endl;
         error("Diagram for this matrix is not possible yet!");
