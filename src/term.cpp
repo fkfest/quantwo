@@ -188,10 +188,24 @@ bool Term::equal(Term& t, Permut& perm)
   Product<Orbital>::iterator jt;
   unsigned int ithis=0,ithist=0,i;
   bool equal=false,exter,extert,exter1,extert1,loop,loopt;
+  std::vector< unsigned int > ordmat, ordmatt, oordmat, oordmatt;
   for (i=0; i<_mat.size(); i++) {
     _mat[i].reset_vertices();
     t._mat[i].reset_vertices();
+    if ( InSet(_mat[i].type(),Ops::Deexc0,Ops::Exc0) )
+      ordmat.push_back(i);
+    else
+      oordmat.push_back(i);
+    if ( InSet(t._mat[i].type(),Ops::Deexc0,Ops::Exc0) )
+      ordmatt.push_back(i);
+    else
+      oordmatt.push_back(i);
   }
+  // put external matrices first
+  for (i=0; i<oordmat.size(); i++) 
+    ordmat.push_back(oordmat[i]);
+  for (i=0; i<oordmatt.size(); i++) 
+    ordmatt.push_back(oordmatt[i]);
   loop = false;
   while (po.size()>0) {
     orb=po.front();
@@ -227,19 +241,23 @@ bool Term::equal(Term& t, Permut& perm)
           perm1 += Permut(orb1,orb1t);
         }
       }
-      for (unsigned int j=0; j<mat.size(); j++) {
-          ipos = mat[j].orbitals().find(orb1);
-          if (ipos >= 0) {
-            ithis=j;
-            break;
-          }
+      assert(ordmat.size() == mat.size());
+      for (unsigned int jo=0; jo<ordmat.size(); jo++) {
+        unsigned int j = ordmat[jo];
+        ipos = mat[j].orbitals().find(orb1);
+        if (ipos >= 0) {
+          ithis=j;
+          break;
+        }
       }
-      for (unsigned int j=0; j<tmat.size(); j++) {
-          ipost = tmat[j].orbitals().find(orb1t);
-          if (ipost >= 0) {
-            ithist=j;
-            break;
-          }
+      assert(ordmatt.size() == tmat.size());
+      for (unsigned int jo=0; jo<ordmatt.size(); jo++) {
+        unsigned int j = ordmatt[jo];
+        ipost = tmat[j].orbitals().find(orb1t);
+        if (ipost >= 0) {
+          ithist=j;
+          break;
+        }
       }
       do {
         // find orbital which corresponds to the same electron

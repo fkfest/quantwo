@@ -85,6 +85,7 @@ Oper::Oper(Ops::Type type, short int exccl, Orbital occ, Orbital virt, std::stri
   assert( !InSet(type, Ops::FluctP,Ops::Fock,Ops::XPert) );
   _type=type;
   create_Oper(exccl,occ,virt,name);
+//   xout << *this << std::endl;
 }
 Oper::Oper(Ops::Type type, short int exccl, const Product< Orbital >& occs, const Product< Orbital >& virts, 
            std::string name)

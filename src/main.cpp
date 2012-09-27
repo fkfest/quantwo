@@ -74,7 +74,7 @@ int main(int argc, char **argv) {
         say("Empty equation!");
         continue;
       }
-//    Input::verbose = 2;
+//       Input::verbose = 2;
       Sum<Term,TFactor> sum_finp(finput.sumterms());
       Sum<Term,TFactor> sum_NO;
       if ( Input::iPars["prog"]["wick"] == 0 )

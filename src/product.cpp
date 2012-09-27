@@ -3,7 +3,7 @@ template <class T>
 inline
 Product< T > & Product<T>::operator *= (T const & t) // append t to product
 {
-  push_back(t);
+  this->push_back(t);
   return *this;
 }
 template <class T>
@@ -11,7 +11,7 @@ inline
 Product< T >& Product<T>::operator*=(const Product<T>& p)
 {
   for ( typename Product<T>::const_iterator i=p.begin(); i!=p.end(); ++i )
-    push_back(*i);
+    this->push_back(*i);
   return *this;
 }
 template <class T>
@@ -50,7 +50,7 @@ template <class T>
 inline
 List< T > & List<T>::operator *= (T const & t) // append t to product
 {
-  push_back(t);
+  this->push_back(t);
   return *this;
 }
 template <class T>
@@ -58,7 +58,7 @@ inline
 List< T >& List<T>::operator*=(const Product<T>& p)
 {
   for ( typename Product<T>::const_iterator i=p.begin(); i!=p.end(); ++i )
-    push_back(*i);
+    this->push_back(*i);
   return *this;
 }
 template <class T>
@@ -66,7 +66,7 @@ inline
 List< T >& List<T>::operator*=(const List<T>& p)
 {
   for ( typename List<T>::const_iterator i=p.begin(); i!=p.end(); ++i )
-    push_back(*i);
+    this->push_back(*i);
   return *this;
 }
 template <class T>
@@ -74,7 +74,7 @@ inline
 List< T >& List<T>::operator*=(const Set<T>& p)
 {
   for ( typename Set<T>::const_iterator i=p.begin(); i!=p.end(); ++i )
-    push_back(*i);
+    this->push_back(*i);
   return *this;
 }
 template <class T>
@@ -113,21 +113,21 @@ template <class T>
 inline
 Set< T > & Set<T>::operator *= (T const & t) 
 {
-  insert(t);
+  this->insert(t);
   return *this;
 }
 template <class T>
 inline
 Set< T >& Set<T>::operator*=(const Product<T>& p)
 {
-  insert(p.begin(),p.end());
+  this->insert(p.begin(),p.end());
   return *this;
 }
 template <class T>
 inline
 Set< T >& Set<T>::operator*=(const Set<T>& p)
 {
-  insert(p.begin(),p.end());
+  this->insert(p.begin(),p.end());
   return *this;
 }
 
