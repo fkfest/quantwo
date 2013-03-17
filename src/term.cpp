@@ -454,6 +454,17 @@ Sum< Term, TFactor > Term::wickstheorem() const
   std::vector< std::vector< long int > > opers;
   std::vector< long int > opermat;
   unsigned int m=0;
+  int cran = 0;
+  for (unsigned int i=0; i<_opProd.size(); i++) {
+    // calculate #creators - #annihilators
+    if ( _opProd[i].gender() == SQOp::Creator ){
+      ++cran;
+    } else if ( _opProd[i].gender() == SQOp::Annihilator ){
+      --cran;
+    } else
+      assert(false);
+  }
+  if ( cran != 0 ) return Sum< Term, TFactor>();
   for (unsigned int i=0; i<_opProd.size(); i++) {
     if (m==_mat.size()) { // all SQops, which are not in Matrices have to be added as individual vectors
       opermat.push_back(i);
