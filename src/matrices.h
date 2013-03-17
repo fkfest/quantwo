@@ -33,7 +33,7 @@ class Matrices {
   enum Spinsym {Singlet, Triplet};
   Matrices();
   // construct from type and orbitals and name
-  Matrices(Ops::Type t, Product<Orbital> p, std::string name="T", Spinsym matspinsym=Singlet);
+  Matrices(Ops::Type t, Product<Orbital> p, short npairs, std::string name="T", Spinsym matspinsym=Singlet);
   // return Type
   Ops::Type type() const;
   // return const reference to Product of orbitals
@@ -57,12 +57,11 @@ class Matrices {
   // return excitation class (has to be set previously!)
   short exccl() const {return _exccl;};
   // get the position of second orbital for the same electron (from position) 
-  lui iorbel(lui ipos){ assert( ipos < _orbs.size() );
-                       return (ipos%2==0?ipos+1:ipos-1); };
+  long iorbel(lui ipos);
   // get the second orbital for the same electron (if not found return blank orbital)
   Orbital orbel(Orbital const & orb);
   // get the second orbital for the same electron (from position) 
-  Orbital orbel(long int const & ipos){ return _orbs[iorbel(ipos)]; };
+  Orbital orbel(long int const & ipos);
   // get the spin symmetry of the electron, which corresponds to the orbital on position ipos
   Spinsym spinsym(long int ipos);
   // set no spin for all orbitals
@@ -94,6 +93,8 @@ class Matrices {
   std::string _name;
   Spinsym _matspinsym;
   bool _antisymform; // W is constructed in antisymmetrized form, but can be expanded later.
+  // number of orbital pairs (== electrons for number-conserving operators and otherwise == conserved particles)
+  short _npairs;
   // needed for comparison of terms:
   long int _indx;
   // connected to (index of matrix in term (start from 1!!!)):

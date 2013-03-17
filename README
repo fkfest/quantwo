@@ -97,6 +97,8 @@ OPERATORS:
                                         \op T_2, \op U_3, \op S_4^{X}, \op Z^{bla}_1
    <name of operator> must not match name of a part of Hamiltonian (1)!
 Deexcitation operators have to be marked with ^\dagger (or ^\dg), e.g., \op T_2^\dg, \op T_4^{X\dagger}
+4) Non-conserving operators: \op <name of operator>_<excitation class>^<addition to name and/or \dagger and change in particle number>, e.g., 
+    \op T_2^{+1} (2 occ.orbs and 3 virt.orbs), \op T_1^{-1} (1 occ.orbs and 0 virt. orbs)
 
 BRA/KET:
 

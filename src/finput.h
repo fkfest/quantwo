@@ -113,13 +113,17 @@ private:
   // handle bra/ket
   Oper handle_braket(Lelem const & lel, Term & term);
   // handle explicit excitation index (like ^{ab}_{ij})
-  Oper handle_explexcitation(std::string const & name, bool dg, Term & term);
+  Oper handle_explexcitation(Term& term, std::string const & name, bool dg);
   // handle excitation index
-  Oper handle_excitation(std::string const & name, bool dg, Term & term);
+  Oper handle_excitation( Term& term, std::string const & name, bool dg, int lmel = 0 );
   // handle factor
   TFactor handle_factor(Lelem const & lel);
   // handle operator
   Oper handle_operator(Lelem const & lel, Term & term, bool excopsonly=false);
+  // handle name, ups and downs of operators (name, excitation class, name additions, dagger, non-conserving character...)
+  // returns true if found up or down
+  bool handle_namupdown(std::string& name, short& excl, std::string& nameup, std::string& namedown, bool& dg, int& lmel, 
+                        const std::string& lelnam );
   // handle sum
   void handle_sum(Lelem const & lel, Term & term);
   // handle parameter

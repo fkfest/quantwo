@@ -869,11 +869,12 @@ Oper Equation::handle_braket(const Lelem& lel, Term& term)
     ibeg = 0,
     iend = IL::nextwordpos(lelnam,ibeg,false);
   if (InSet(lelnam.substr(ibeg,iend-ibeg), csfs)){
-    return handle_explexcitation(lelnam.substr(iend),(lel.lex()==Lelem::Bra),term);
-  } else
-    return handle_excitation(lelnam,(lel.lex()==Lelem::Bra),term);
+    return handle_explexcitation(term,lelnam.substr(iend),(lel.lex()==Lelem::Bra));
+  } else {
+    return handle_excitation(term,lelnam,(lel.lex()==Lelem::Bra));
+  }
 }
-Oper Equation::handle_explexcitation(const std::string& name, bool dg, Term& term)
+Oper Equation::handle_explexcitation(Term& term, const std::string& name, bool dg)
 {
   lui ipos, ipos1;
   long int ipos2;
@@ -893,8 +894,8 @@ Oper Equation::handle_explexcitation(const std::string& name, bool dg, Term& ter
       error("general orbitals in excitation operators are not supported! "+name);
     ipos = IL::skip(name,ipos1,"{}_^ ");
   }
-  if ( occs.size() != virts.size() )
-    error("can handle particle-number conserving operators only! "+name);
+//   if ( occs.size() != virts.size() )
+//     error("can handle particle-number conserving operators only! "+name);
   excl = occs.size();
   // set lastorb (if smaller)
   for ( uint i = 0; i < occs.size(); ++i )
@@ -916,29 +917,29 @@ Oper Equation::handle_explexcitation(const std::string& name, bool dg, Term& ter
         _virexcops[ipos2] = term.freeorbname(Orbital::Virt);
     }
   }
+  int lmelec = virts.size()-occs.size();
   // create \tau_{excl}
   if (dg)
-    return Oper(Ops::Deexc0,excl,occs,virts);  
+    return Oper(Ops::Deexc0,excl,occs,virts,"",lmelec);  
   else
-    return Oper(Ops::Exc0,excl,occs,virts);
+    return Oper(Ops::Exc0,excl,occs,virts,"",lmelec);
 }
 
-Oper Equation::handle_excitation(const std::string& name, bool dg, Term& term)
+Oper Equation::handle_excitation(Term& term, const std::string& name, bool dg, int lmel)
 {
-  lui ipos,ipos1;
   long int ipos2;
+  std::string newname, nameadd,namedown;
   short excl;
+  bool newdg;
+  int lmelec;
+  bool updown=handle_namupdown(newname,excl,nameadd,namedown,newdg,lmelec,name);
+  dg = (dg != newdg);
+  if (lmelec != 0 && lmel != 0 && lmelec != lmel )
+    error("Mismatch in non-conserving class in "+name,"Equation::handle_excitation");
+  if (lmelec == 0 ) lmelec = lmel;
   // find excitation class
-  ipos=name.find("_");
-  if (ipos==std::string::npos || ipos==name.size()-1)
-    error("No excitation class in excitation "+name,"Finput::handle_excitation");
-  else {
-    ++ipos;
-    ipos=IL::skip(name,ipos,"{} ");
-    ipos1=IL::nextwordpos(name,ipos);
-    if(!str2num<short>(excl,name.substr(ipos,ipos1-ipos),std::dec))
-      error("Excitation class "+name.substr(ipos,ipos1-ipos),"Finput::handle_excitation");
-  }
+  if (!updown && excl == 0 && lmelec <= 0)
+    error("No excitation class in "+name,"Equation::handle_excitation");
   ipos2=_excops.find(name);
   Orbital occ,virt;
   if (ipos2<0) {// first run (don't distinguish terms)
@@ -957,9 +958,9 @@ Oper Equation::handle_excitation(const std::string& name, bool dg, Term& term)
   }
   // create \tau_{excl}
   if (dg)
-    return Oper(Ops::Deexc0,excl,occ,virt);  
+    return Oper(Ops::Deexc0,excl,occ,virt,"",lmelec);  
   else
-    return Oper(Ops::Exc0,excl,occ,virt);
+    return Oper(Ops::Exc0,excl,occ,virt,"",lmelec);
 }
 
 TFactor Equation::handle_factor(const Lelem& lel)
@@ -1019,60 +1020,95 @@ TFactor Equation::handle_factor(const Lelem& lel)
 }
 Oper Equation::handle_operator(const Lelem& lel, Term& term, bool excopsonly)
 {
-  const TParArray& dgs = Input::aPars["syntax"]["dg"];
   const TParArray& bexcops = Input::aPars["syntax"]["bexcop"];
   TsPar& hms = Input::sPars["hamilton"];
-  lui ipos, ipos1, iposnam, up, down;
-  std::string lelnam=lel.name(),name,nameadd;
+  std::string lelnam=lel.name(),name,nameadd,namedown;
   short excl;
-  bool dg=false;
-  down=lelnam.find("_");
-  up=lelnam.find("^");
-  // last position of name of operator
-  iposnam=std::min(up,down)-1;
-  iposnam=std::min(iposnam,lelnam.size()-1);
-  name=lelnam.substr(0,iposnam+1);
+  bool dg;
+  int lmelec;
+  bool updown=handle_namupdown(name,excl,nameadd,namedown,dg,lmelec,lelnam);
   // parts of Hamilton operator
   if ( InSet(name, hms)) {
     if (excopsonly) return Oper();
-    if (up!=std::string::npos || down!=std::string::npos)
+    if (updown)
       say("Sub- and superscripts in Hamiltonian will be ignored: "+lelnam);
     if ( name==hms["fock"] ) return Oper(Ops::Fock);
     if ( name==hms["flucpot"] ) return Oper(Ops::FluctP);
     if ( name==hms["perturbation"] ) return Oper(Ops::XPert);
   }
   // excitation class
-  if (down==std::string::npos || down==lelnam.size()-1)
-    error("No excitation class in operator "+lelnam,"Finput::handle_operator");
-  if (up==std::string::npos || up==lelnam.size()-1){
-     // no dagger
-  } else {
+  if (namedown=="")
+    error("No excitation class in operator "+lelnam,"Equation::handle_operator");
+  add2name(name,nameadd); // add nameadd to name (as superscript)
+  if (InSet(name.substr(0,4), bexcops)) { // bare excitation operator
+    return handle_excitation(term,namedown,dg,lmelec);
+  }
+  if (excopsonly) return Oper();
+  if (excl == 0 && lmelec <= 0)
+    error("Excitation class in "+lelnam,"Equation::handle_operator");
+  if(dg)
+    return Oper(Ops::Deexc,excl,(void*) &term, Term::getfreeorbname,name,lmelec);
+  else
+    return Oper(Ops::Exc,excl,(void*) &term, Term::getfreeorbname,name,lmelec);
+}
+bool Equation::handle_namupdown(std::string& name, short int& excl, std::string& nameup, std::string& namedown, 
+                                bool& dg, int& lmel, const std::string& lelnam)
+{ 
+  const TParArray& dgs = Input::aPars["syntax"]["dg"];
+  const TParArray& lessmore = Input::aPars["syntax"]["lessmore"];
+  bool foundupdown = false;
+  lui up, down, iposnam, ipos, ipos1;
+  down=lelnam.find("_");
+  up=lelnam.find("^");
+  // last position of name of operator
+  iposnam=std::min(up,down)-1;
+  iposnam=std::min(iposnam,lelnam.size()-1);
+  name=lelnam.substr(0,iposnam+1);
+  excl=0;
+  nameup="";
+  namedown="";
+  dg=false;
+  lmel=0;
+  // less (negative number) or more (positive) electrons after the operator
+  uint lmsize = 0;
+  for ( TParArray::const_iterator itlm = lessmore.begin(); itlm != lessmore.end(); ++itlm ){
+    assert( itlm == lessmore.begin() || lmsize == itlm->size() );
+    lmsize = itlm->size();
+  }
+  if (up!=std::string::npos && up!=lelnam.size()-1){
+    // handle superscript
+    foundupdown = true;
     ipos=up+1;
     ipos=IL::skip(lelnam,ipos,"{} ");
     while((ipos1=IL::nextwordpos(lelnam,ipos))!=ipos) {
-      if(InSet(lelnam.substr(ipos,ipos1-ipos), dgs)) {
+      std::string nampart(lelnam.substr(ipos,ipos1-ipos));
+      if(InSet(nampart, dgs)) {
         dg=true;
-        nameadd+=dgs.front();
+        nameup += dgs.front();
+      } else if (lelnam[ipos]!='}') {
+        nameup += nampart;
+        if (nampart.size() > lmsize ){
+          // is it less/more?
+          std::string lmstr(nampart.substr(0,lmsize));
+          if ( InSet(lmstr,lessmore) && str2num<int>(lmel,nampart.substr(lmsize),std::dec)){
+            // it is a non-conserving operator
+            if ( lmstr == lessmore.front() ) lmel = -lmel;
+          }
+        }
       }
-      else if (lelnam[ipos]!='}')
-        nameadd+=lelnam.substr(ipos,ipos1-ipos);
       ipos=ipos1;
     }
-  } 
-  add2name(name,nameadd); // add nameadd to name (as superscript)
-  ipos=down+1;
-  ipos=IL::skip(lelnam,ipos,"{} ");
-  ipos1=IL::nextwordpos(lelnam,ipos);
-  if (InSet(name.substr(0,4), bexcops)) { // bare excitation operator
-    return handle_excitation(lelnam.substr(ipos,ipos1-ipos),dg,term);
   }
-  if (excopsonly) return Oper();
-  if(!str2num<short>(excl,lelnam.substr(ipos,ipos1-ipos),std::dec))
-    error("Excitation class "+lelnam.substr(ipos,ipos1-ipos),"Finput::handle_operator");
-  if(dg)
-    return Oper(Ops::Deexc,excl,(void*) &term, Term::getfreeorbname,name);
-  else
-    return Oper(Ops::Exc,excl,(void*) &term, Term::getfreeorbname,name);
+  if (down!=std::string::npos && down!=lelnam.size()-1){
+    // handle subscript
+    foundupdown = true;
+    ipos=down+1;
+    ipos=IL::skip(lelnam,ipos,"{} ");
+    ipos1=IL::nextwordpos(lelnam,ipos);
+    namedown = lelnam.substr(ipos,ipos1-ipos);
+    str2num<short>(excl,namedown,std::dec);
+  }
+  return foundupdown;
 }
 void Equation::handle_sum(const Lelem& lel, Term& term)
 {
@@ -1156,7 +1192,7 @@ void Equation::handle_parameters(Term& term, bool excopsonly)
       add2name(name,nameadd); // add nameadd to name (as superscript)
       // handle subscript
       if (down==std::string::npos || down==lelnam.size()-1) { // no subscript, parameter is a "number"
-        term.addmatrix(Matrices(Ops::Number,Product<Orbital>(),name));
+        term.addmatrix(Matrices(Ops::Number,Product<Orbital>(),0,name));
       } else {
         ipos=down+1;
         ipos=IL::skip(lelnam,ipos,"{} ");
@@ -1168,7 +1204,7 @@ void Equation::handle_parameters(Term& term, bool excopsonly)
           if (iposexcn>=0) {
             Matrices mat(Ops::Interm,
                          Ops::genprodorb(_exccls[indxexcn],_occexcops[indxexcn],_virexcops[indxexcn]),
-                         name,_spinsymexcs[indxexcn]);
+                         _exccls[indxexcn], name,_spinsymexcs[indxexcn]);
             term.replacematrix(mat,iposexcn);
           } else
             say("Parameter is not present in this term: "+lelnam);

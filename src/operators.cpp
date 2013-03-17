@@ -63,34 +63,34 @@ Oper::Oper(Ops::Type type)
     name="X";
   create_Oper(name);
 }
-Oper::Oper(Ops::Type type, short int exccl, std::string name)
+Oper::Oper(Ops::Type type, short int exccl, std::string name, int lm)
 {
   assert( !InSet(type, Ops::FluctP,Ops::Fock,Ops::XPert) );
   _type=type;
   Orbital orb0(std::string("A"));
   Orbital orb1(std::string("I"));
-  create_Oper(exccl,orb1,orb0,name);
+  create_Oper(exccl,orb1,orb0,name,lm);
 }
 Oper::Oper(Ops::Type type, short int exccl, 
-           void * term, Orbital (*freeorb)(void * term, Orbital::Type type), std::string name)
+           void * term, Orbital (*freeorb)(void * term, Orbital::Type type), std::string name, int lm)
 {
   assert( !InSet(type, Ops::FluctP,Ops::Fock,Ops::XPert) );
   _type=type;
   Orbital orb0(freeorb(term,Orbital::Virt));
   Orbital orb1(freeorb(term,Orbital::Occ));
-  create_Oper(exccl,orb1,orb0,name);
+  create_Oper(exccl,orb1,orb0,name,lm);
 }
-Oper::Oper(Ops::Type type, short int exccl, Orbital occ, Orbital virt, std::string name)
+Oper::Oper(Ops::Type type, short int exccl, Orbital occ, Orbital virt, std::string name, int lm)
 {
   assert( !InSet(type, Ops::FluctP,Ops::Fock,Ops::XPert) );
   _type=type;
-  create_Oper(exccl,occ,virt,name);
+  create_Oper(exccl,occ,virt,name,lm);
 //   xout << *this << std::endl;
 }
 Oper::Oper(Ops::Type type, short int exccl, const Product< Orbital >& occs, const Product< Orbital >& virts, 
-           std::string name)
+           std::string name, int lm)
 {
-  assert( occs.size() == virts.size() );
+  assert( occs.size() + lm == virts.size() );
   assert( occs.size() == uint(exccl) );
   assert( !InSet(type, Ops::FluctP,Ops::Fock,Ops::XPert) );
   _type=type;
@@ -126,46 +126,62 @@ void Oper::create_Oper(const std::string& name)
     _SQprod*=SQOp(SQOp::Annihilator,orb);
     _prefac /= 4;
   }
-  _mat=Matrices(_type,porbs,name);
+  short npairs = porbs.size()/2;
+  _mat=Matrices(_type,porbs,npairs,name);
 }
-void Oper::create_Oper(short int const & exccl,Orbital const & occ, Orbital const & virt, std::string const & name)
+void Oper::create_Oper(short int const & exccl,Orbital const & occ, Orbital const & virt, std::string const & name, int lm)
 {
   assert( !InSet(_type, Ops::FluctP,Ops::Fock,Ops::XPert) );
   std::string excl;
   Product<Orbital> occs, virts; 
-  for (short i=0; i<exccl ; ++i) {  
+  short 
+    nocc = exccl,
+    nvirt = exccl+lm,
+    nmax = std::max(nocc,nvirt);
+  for (short i=0; i<nmax ; ++i) {  
     if (i>0) excl=num2str(i,std::dec);
-    occs *= Orbital(occ.name()+excl,occ.spin());
-    virts *= Orbital(virt.name()+excl,virt.spin());
+    if ( i < nocc )
+      occs *= Orbital(occ.name()+excl,occ.spin());
+    if ( i < nvirt )
+      virts *= Orbital(virt.name()+excl,virt.spin());
   }
   create_Oper(occs,virts,name);
 }
 void Oper::create_Oper(const Product< Orbital >& occs, const Product< Orbital >& virts, const std::string& name)
 {
   assert( !InSet(_type, Ops::FluctP,Ops::Fock,Ops::XPert) );
-  assert( occs.size() == virts.size() );
+//  assert( occs.size() == virts.size() );
   Product<Orbital> porbs;
   // excitation and deexcitation operators
   const Product<Orbital> 
     * p_orb0 = &virts,
     * p_orb1 = &occs;
   if (InSet(_type, Ops::Deexc,Ops::Deexc0)) std::swap(p_orb0,p_orb1);
+  short 
+    ncrea = p_orb0->size(),
+    nanni = p_orb1->size(),
+    nmax = std::max(ncrea,nanni),
+    npairs = std::min(ncrea,nanni);
   _prefac = 1;
-  for (unsigned short i = 0; i < p_orb0->size(); ++i) {  
-    _SQprod*=SQOp(SQOp::Creator, (*p_orb0)[i]);
-    porbs *= (*p_orb0)[i];
-    _sumindx.insert((*p_orb0)[i]);
-    if (InSet(_type, Ops::Exc0,Ops::Deexc0)) 
-      _fakesumindx.insert((*p_orb0)[i]);
-    _SQprod *= SQOp(SQOp::Annihilator, (*p_orb1)[i]);
-    porbs *= (*p_orb1)[i];
-    _sumindx.insert((*p_orb1)[i]);
-    if (InSet(_type, Ops::Exc0,Ops::Deexc0)) 
-      _fakesumindx.insert((*p_orb1)[i]);
+  for (unsigned short i = 0; i < nmax; ++i) {  
+    if ( i < ncrea ) {
+      _SQprod*=SQOp(SQOp::Creator, (*p_orb0)[i]);
+      porbs *= (*p_orb0)[i];
+      _sumindx.insert((*p_orb0)[i]);
+      if (InSet(_type, Ops::Exc0,Ops::Deexc0)) 
+        _fakesumindx.insert((*p_orb0)[i]);
+    }
+    if ( i < nanni ) {
+      _SQprod *= SQOp(SQOp::Annihilator, (*p_orb1)[i]);
+      porbs *= (*p_orb1)[i];
+      _sumindx.insert((*p_orb1)[i]);
+      if (InSet(_type, Ops::Exc0,Ops::Deexc0)) 
+        _fakesumindx.insert((*p_orb1)[i]);
+    }
     _prefac /= i+1;
   }
   _prefac *= _prefac;
-  _mat=Matrices(_type,porbs,name);
+  _mat=Matrices(_type,porbs,npairs,name);
 }
 
 Matrices Oper::mat() const

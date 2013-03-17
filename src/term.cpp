@@ -265,12 +265,14 @@ bool Term::equal(Term& t, Permut& perm)
         ithis = cl.imat;
         ipos = cl.idx;
         ipos = mat[ithis].iorbel(ipos);
+        if ( ipos < 0 ) break;
         orb1 = mat[ithis].orbitals()[ipos];
        
         const ConLine& clt = tmat[ithist].conline(ipost);
         ithist = clt.imat;
         ipost = clt.idx;
         ipost = tmat[ithist].iorbel(ipost);
+        if ( ipost < 0 ) break;
         orb1t = tmat[ithist].orbitals()[ipost];
         
         if (orb1.type() != orb1t.type() || !mat[ithis].vertices(ipos,tmat[ithist],ipost,ithis))
@@ -668,10 +670,11 @@ void Term::spinintegration(bool notfake)
   TOrbSet po(_realsumindx); 
   _nocc=_nintloops=_nloops=0;
   
+  bool nonconserve = true, already_done = false;
   Orbital orb,orb1;
   Matrices::Spinsym spinsym=Matrices::Singlet;
-  lui ithis = 0, iorb = 0;
-  long int ipos;
+  lui ithis = 0;
+  long int ipos, iorb = 0;
   TOrbSet::iterator it;
   bool samespinsym;
   while ( po.size() > 0 || peo.size() > 0 ) {
@@ -699,18 +702,24 @@ void Term::spinintegration(bool notfake)
         peo.erase(it);
       else if ( (it = po.find(orb1)) != po.end() )
         po.erase(it);
-      else
+      else {
         assert( false );
+      }
       // count number of occupied orbitals (for comparison)
       if (orb1.type()== Orbital::Occ) ++_nocc;
       // find orbital which corresponds to the same electron
       const ConLine& cl = _mat[ithis].conline(iorb);
       ithis = cl.imat;
       ipos = cl.idx;
-      iorb = _mat[ithis].iorbel(ipos);
-      orb1 = _mat[ithis].orbitals()[iorb];
       samespinsym = samespinsym && (spinsym == _mat[ithis].spinsym(ipos));
-    } while (orb1!=orb && _sumindx.count(orb1));
+      iorb = _mat[ithis].iorbel(ipos);
+      if ( iorb < 0 ) break;
+      orb1 = _mat[ithis].orbitals()[iorb];
+      if (nonconserve){
+        // test whether still in sets
+        already_done = ( peo.count(orb1) == 0 && po.count(orb1) == 0 );
+      }
+    } while (orb1!=orb && !already_done && _sumindx.count(orb1));
     if (samespinsym) {
       if (notfake) _prefac*=2;
       // count number of loops
