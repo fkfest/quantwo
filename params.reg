@@ -37,6 +37,7 @@ set="command",type=s,name="fraction",value="frac",desc="command for fraction"
 %HAMILTONIAN PARTS
 set="hamilton",type=s,name="fock",value="F"
 set="hamilton",type=s,name="flucpot",value="W",desc="fluctuation potential"
+set="hamilton",type=s,name="dflucpot",value="\dW",desc="destinguishable fluctuation potential"
 set="hamilton",type=s,name="perturbation",value="X",desc="one-electron perturbation"
 
 %CUSTOM COMMANDS

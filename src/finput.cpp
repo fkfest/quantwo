@@ -1034,6 +1034,7 @@ Oper Equation::handle_operator(const Lelem& lel, Term& term, bool excopsonly)
       say("Sub- and superscripts in Hamiltonian will be ignored: "+lelnam);
     if ( name==hms["fock"] ) return Oper(Ops::Fock);
     if ( name==hms["flucpot"] ) return Oper(Ops::FluctP);
+    if ( name==hms["dflucpot"] ) return Oper(Ops::FluctP,false);
     if ( name==hms["perturbation"] ) return Oper(Ops::XPert);
   }
   // excitation class

@@ -50,7 +50,7 @@ Oper::Oper()
   _type=Ops::None;
 }
 
-Oper::Oper(Ops::Type type)
+Oper::Oper(Ops::Type type, bool antisym)
 {
   assert( InSet(type, Ops::FluctP,Ops::Fock,Ops::XPert) );
   std::string name;
@@ -61,7 +61,7 @@ Oper::Oper(Ops::Type type)
     name="W";
   else
     name="X";
-  create_Oper(name);
+  create_Oper(name,antisym);
 }
 Oper::Oper(Ops::Type type, short int exccl, std::string name, int lm)
 {
@@ -97,7 +97,7 @@ Oper::Oper(Ops::Type type, short int exccl, const Product< Orbital >& occs, cons
   create_Oper(occs,virts,name);
 }
 
-void Oper::create_Oper(const std::string& name)
+void Oper::create_Oper(const std::string& name, bool antisym)
 {
   assert( InSet(_type, Ops::FluctP,Ops::Fock,Ops::XPert) );
   Product<Orbital> porbs;
@@ -127,7 +127,7 @@ void Oper::create_Oper(const std::string& name)
     _prefac /= 4;
   }
   short npairs = porbs.size()/2;
-  _mat=Matrices(_type,porbs,npairs,name);
+  _mat=Matrices(_type,porbs,npairs,name,Matrices::Singlet,antisym);
 }
 void Oper::create_Oper(short int const & exccl,Orbital const & occ, Orbital const & virt, std::string const & name, int lm)
 {

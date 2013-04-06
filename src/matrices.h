@@ -33,7 +33,7 @@ class Matrices {
   enum Spinsym {Singlet, Triplet};
   Matrices();
   // construct from type and orbitals and name
-  Matrices(Ops::Type t, Product<Orbital> p, short npairs, std::string name="T", Spinsym matspinsym=Singlet);
+  Matrices(Ops::Type t, Product<Orbital> p, short npairs, std::string name="T", Spinsym matspinsym=Singlet, bool antisymW=true);
   // return Type
   Ops::Type type() const;
   // return const reference to Product of orbitals
