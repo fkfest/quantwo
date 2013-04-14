@@ -980,6 +980,9 @@ Sum< Term, TFactor > Q2::reduceSum(Sum< Term, TFactor > s)
     sum1 *= i->second;
     sum += sum1;
   }
+
+  _xout3(sum << std::endl);
+
   say("Diagrams and Spin-integration...");
   sum1.clear();
   for ( Sum<Term,TFactor>::const_iterator i=sum.begin();i!=sum.end(); ++i) {
@@ -992,6 +995,9 @@ Sum< Term, TFactor > Q2::reduceSum(Sum< Term, TFactor > s)
     term.spinintegration(spinintegr);
     sum1 += std::make_pair(term,i->second);
   }
+
+  _xout3(sum1 << std::endl);
+
   say("Equal terms and permutations...");
   //std::cout << "SUM:" << sum1 << std::endl;
   sum.clear();

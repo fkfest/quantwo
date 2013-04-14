@@ -49,7 +49,7 @@ With "make equation" you can create then equation.pdf from "input.q2"-file
 COMMAND-LINE PARAMETERS
 
 --help (-h) print this README
---verbose (-v) be chatty - print more 
+--verbose [level] (-v [level]) be chatty - print more 
 
 OPTIONS
 -------

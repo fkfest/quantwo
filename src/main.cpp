@@ -30,7 +30,11 @@ int main(int argc, char **argv) {
       }
       return 0;
     } else if (strcmp(argv[iarg],"-v")==0 || strcmp(argv[iarg],"--verbose")==0) {
-      Input::verbose = 1;
+      if ( iarg == argc-1 || !str2num<int>(Input::verbose,argv[iarg+1],std::dec)){
+        Input::verbose = 1;
+      } else {
+        ++iarg;
+      }
     }
     ++iarg;
   }
