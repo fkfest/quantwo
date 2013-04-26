@@ -51,5 +51,22 @@ class Orbital {
 };
 
 std::ostream & operator << (std::ostream & o, Orbital const & orb);
+
+/*
+    Electrons
+*/
+class Electron {
+public:
+  Electron() : _name(""){};
+  Electron(std::string name) : _name(name){};
+  std::string name() const {return _name;};
+  bool operator == (const Electron& el) const { return _name == el._name; };
+  bool operator != (const Electron& el) const { return _name != el._name; };
+  bool operator < (const Electron& el) const { return _name < el._name; };
+  
+private:
+  std::string _name;
+};
+std::ostream & operator << (std::ostream & o, const Electron& el);
 #endif
 

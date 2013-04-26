@@ -955,6 +955,7 @@ Sum< Term, TFactor > Q2::reduceSum(Sum< Term, TFactor > s)
 {
   double minfac = Input::fPars["prog"]["minfac"];
   bool brill = ( Input::iPars["prog"]["brill"] > 0 );
+  bool quan3 = ( Input::iPars["prog"]["quan3"] > 0 );
   Sum<Term,TFactor> sum,sum1;
   Term term,term1;
   bool added;
@@ -975,14 +976,52 @@ Sum< Term, TFactor > Q2::reduceSum(Sum< Term, TFactor > s)
     term.setmatconnections();
     // is the term properly connected?
     if (!term.properconnect()) continue;
-    // expand antisymmetrized integrals and do spin integration
+    // expand antisymmetrized integrals
     sum1 = term.expand_antisym();
     sum1 *= i->second;
     sum += sum1;
   }
 
   _xout3(sum << std::endl);
-
+  if (quan3) {
+    say("count electrons (a posteriori)...");
+    sum1.clear();
+    Sum< Term, TFactor > sum2(sum);
+    for ( Sum<Term,TFactor>::const_iterator i=sum2.begin();i!=sum2.end(); ++i) {
+      term=i->first;
+      term.deleteNoneMats();
+      term.setmatconnections();
+      
+      prefac=i->second*term.prefac();
+      // remove prefactors in terms
+      term.reset_prefac();
+      added=false;
+      for ( Sum<Term,TFactor>::iterator k=sum1.begin();k!=sum1.end(); ++k) {
+        Permut perm;
+        term1=k->first;
+        if (term.equal(term1,perm)) {
+          sum1.erase(k);
+          term1+=std::make_pair<Permut,TFactor>(perm,prefac);
+          //std::cout<<"term old" << term1 <<std::endl;
+          if ( !term1.term_is_0(minfac) ) sum1+=term1;
+          added=true;
+          break;
+        }
+      }
+      if (!added) {
+        term+=std::make_pair<Permut,TFactor>(Permut(),prefac);
+        if ( !term.term_is_0(minfac) ) sum1+=term;
+        //std::cout<<"term new" << term <<std::endl;
+      }
+      
+      
+//      Termel termel(term);
+//      sum1 += std::make_pair(term,i->second);
+    }
+//    _xout3(sum1 << std::endl);
+    return sum1;
+  }
+    
   say("Diagrams and Spin-integration...");
   sum1.clear();
   for ( Sum<Term,TFactor>::const_iterator i=sum.begin();i!=sum.end(); ++i) {

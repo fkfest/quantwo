@@ -14,6 +14,7 @@
 #include "assert.h"
 
 typedef Set<Orbital> TOrbSet;
+typedef Set<Electron> TElSet;
 
 /*!
     Implements a second quantized creation (\op a_i^\dagger)

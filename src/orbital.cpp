@@ -111,3 +111,10 @@ std::ostream & operator << (std::ostream & o, Orbital const & orb)
   return o;
 }
 
+std::ostream & operator << (std::ostream & o, const Electron& el)
+{
+  o << el.name().at(0);
+  if (el.name().size()>1)
+    o <<"_{" << el.name().substr(1) << "}";
+  return o;
+}

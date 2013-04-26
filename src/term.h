@@ -149,6 +149,14 @@ class Term {
 //! output operator for Term
 std::ostream & operator << (std::ostream & o, Term const & t);
 
+class Termel : public Term {
+public:
+    Termel(){};
+    Termel(const Term& term) : Term(term){};
+private:
+  TElSet _sumel, _realsumel;
+};
+
 namespace Q2
 {
   Sum<Term,TFactor> reduceSum(Sum<Term,TFactor> s);

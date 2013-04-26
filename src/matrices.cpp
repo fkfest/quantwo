@@ -36,7 +36,11 @@ Matrices::Matrices(Ops::Type t, Product< Orbital > p, short npairs, std::string 
   _matspinsym=matspinsym;
   if (t==Ops::FluctP)
     _antisymform=antisymW;
-  else
+  else if ( t==Ops::Exc && Input::iPars["prog"]["quan3"] > 0 ) {
+    // make amplitudes antisymmetrical (now works only for doubles!)
+    assert(_orbs.size() == 4);
+    _antisymform=true;
+  } else
     _antisymform=false;
 }
 Ops::Type Matrices::type() const
@@ -59,7 +63,9 @@ void Matrices::replace(Orbital orb1, Orbital orb2)
 bool Matrices::expandantisym(bool firstpart)
 {
   if (_antisymform) {
-    if (_type!=Ops::FluctP)
+    // works atm for doubles only!
+    assert(_orbs.size() == 4);
+    if (_type!=Ops::FluctP && !( _type==Ops::Exc && Input::iPars["prog"]["quan3"] > 0 ))
       error("Can not expand antisymmetrical non-integral","Matrices::expandantisym");
     if (_orbs[0].spin()==Orbital::No)
       error("Can not expand antisymmetrical integral in space orbitals","Matrices::expandantisym");
