@@ -50,7 +50,7 @@ set="newcommand",type=s,name="bracd",value="(\frac{2}{3}<\Phi^{ab}_{ij}|+\frac{1
 set="newoperator",type=s,name="H",value="\op F + \op W"
 
 %ACTIONS ON EXPRESSIONS
-set="act",type=s,name="divide",value="",desc="divide the whole expression by these terms (permutations!)"
+set="act",type=s,name="divide",value="1",desc="divide the whole expression by these terms (permutations!)"
 
 %DIAGRAMS (CCDIAG)
 set="diag",type=s,name="bdiag",value="\bdiags",desc="begin of diagram"

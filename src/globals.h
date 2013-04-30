@@ -11,6 +11,7 @@
 #endif
 
 typedef long unsigned int lui;
+typedef unsigned int uint;
 typedef std::list< std::string > TParArray;
 typedef std::map< std::string, std::string > TsPar;
 typedef std::map< std::string, int > TiPar;
@@ -49,6 +50,7 @@ typedef double TFactor;
 namespace Numbers
 {
   // "zero"
+  static const double verysmall=1.e-18;
   static const double small=1.e-16;
   static const int big=1000;
 }

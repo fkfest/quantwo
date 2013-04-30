@@ -88,9 +88,20 @@ Sum< Term, TFactor > Q2::reduceSum(Sum< Term, TFactor > s)
 
   say("Equal terms and permutations...");
   //std::cout << "SUM:" << sum1 << std::endl;
-  sum.clear();
-  // sum up all equal terms
-  for ( Sum<Term,TFactor>::const_iterator j=sum1.begin();j!=sum1.end(); ++j) {
+  sum = EqualTerms(sum1,minfac);
+  say("Remove terms with small prefactors...");
+  // now remove everything with small prefactor
+  sum1 = SmallTerms(sum,minfac);
+  
+  return sum1;
+}
+Sum< Term, TFactor > Q2::EqualTerms(Sum< Term, TFactor > s, double minfac)
+{
+  Sum<Term,TFactor> sum;
+  Term term,term1;
+  TFactor prefac;
+  bool added;
+  for ( Sum<Term,TFactor>::const_iterator j=s.begin();j!=s.end(); ++j) {
     term=j->first;
     prefac=j->second*term.prefac();
     // remove prefactors in terms
@@ -113,11 +124,14 @@ Sum< Term, TFactor > Q2::reduceSum(Sum< Term, TFactor > s)
       if ( !term.term_is_0(minfac) ) sum+=term;
       //std::cout<<"term new" << term <<std::endl;
     }
-  } 
-  say("Remove terms with small prefactors...");
-  // now remove everything with small prefactor
-  sum1.clear();
-  for ( Sum<Term,TFactor>::const_iterator j=sum.begin(); j!=sum.end(); ++j) {
+  }
+  return sum;
+}
+Sum< Term, TFactor > Q2::SmallTerms(Sum< Term, TFactor > s, double minfac)
+{
+  Sum<Term,TFactor> sum;
+  Term term,term1;
+  for ( Sum<Term,TFactor>::const_iterator j=s.begin(); j!=s.end(); ++j) {
     if ( _todouble(_abs(j->second)) < minfac ) continue;
     term1 = term = j->first;
     if ( _todouble(_abs(term.prefac())) < minfac ) continue;
@@ -127,19 +141,51 @@ Sum< Term, TFactor > Q2::reduceSum(Sum< Term, TFactor > s)
       if ( _todouble(_abs(it->second)) < minfac ) continue;
       term1 += *it; 
     }
-    sum1 += term1;
+    sum += term1;
   }
-  
-  return sum1;
+  return sum;
 }
+Sum< Term, TFactor > Q2::ResolvePermutaions(Sum< Term, TFactor > s)
+{
+  Sum<Term,TFactor> sum;
+  Term term,term1;
+  for ( Sum<Term,TFactor>::const_iterator j=s.begin(); j!=s.end(); ++j) {
+    term1 = term = j->first;
+    const Sum<Permut,TFactor>& perms = term.perm();
+    term.reset_prefac();
+    for ( Sum<Permut,TFactor>::const_iterator it = perms.begin(); it != perms.end(); ++it ){
+      term1 = term; 
+      term1.permute(it->first);
+      term1 *= it->second;
+      sum += term1;
+    }
+  }
+  return sum;
+}
+
 Sum< Term, TFactor > Q2::postaction(Sum< Term, TFactor > s)
 {
+  double minfac = Input::fPars["prog"]["minfac"];
   std::string divide = Input::sPars["act"]["divide"];
   Sum<Term,TFactor> sum = s;
-  if (divide != ""){
+  if ( divide != "" && divide != "1" ){
+    Finput div(true);
+    div.addline(divide);
+    div.analyzeq();
     Sum<Term,TFactor> sum1;
-    Sum<Permut,TFactor> divperm;
-    divperm += Permut();
+    Sum<Permut,TFactor> divperm, divpermadd;
+    sum1 = div.sumterms();
+    Matrices OneMat;
+    for ( Sum<Term,TFactor>::const_iterator it=sum1.begin();it!=sum1.end(); ++it) {
+      if ( it->first.mat().size() != 1 && !(it->first.mat().front() == OneMat) )
+        error("Not an One-Matrix in divide!");
+      divpermadd.clear();
+      divpermadd += it->first.perm();
+      divpermadd *= it->first.prefac();
+      divpermadd *= it->second;
+      divperm += divpermadd;
+    }
+    sum1.clear();
 //    xout << "permutations: " << divperm << std::endl;
     Term term;
     for ( Sum<Term,TFactor>::const_iterator i=sum.begin();i!=sum.end(); ++i) {
@@ -151,6 +197,11 @@ Sum< Term, TFactor > Q2::postaction(Sum< Term, TFactor > s)
     }
     sum = sum1;
     sum1.clear();
+    sum = ResolvePermutaions(sum);
+    say("Equal terms and permutations...");
+    sum = EqualTerms(sum,minfac);
+    say("Remove terms with small prefactors...");
+    sum = SmallTerms(sum,minfac);
   }
   return sum;
 }

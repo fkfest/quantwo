@@ -1,7 +1,7 @@
 CC = g++ 
 PROFILE =
 #PROFILE = -pg
-CFLAGS := -c -Wall -O2 $(PROFILE)
+CFLAGS := -c -Wall -O3 $(PROFILE)
 LDFLAGS = $(PROFILE)
 #use rational numbers from boost
 CFLAGS := $(CFLAGS) -D _RATIONAL
@@ -56,7 +56,7 @@ src/finput.o: src/product.cpp src/term.h src/operators.h src/orbital.h
 src/finput.o: src/matrices.h src/kronecker.h src/sum.h src/sum.cpp
 src/work.o: src/work.h src/utilities.h src/globals.h src/product.h
 src/work.o: src/product.cpp src/operators.h src/orbital.h src/matrices.h
-src/work.o: src/kronecker.h src/sum.h src/sum.cpp src/term.h
+src/work.o: src/kronecker.h src/sum.h src/sum.cpp src/term.h src/finput.h
 src/orbital.o: src/orbital.h src/utilities.h src/globals.h
 src/matrices.o: src/matrices.h src/product.h src/utilities.h src/globals.h
 src/matrices.o: src/product.cpp src/orbital.h

@@ -102,6 +102,14 @@ void Term::reset_prefac()
   _prefac=1;
   _perm=Sum<Permut,TFactor>();
 }
+void Term::permute(const Permut& p)
+{
+  assert(_opProd.size() == 0 && _kProd.size() == 0 );
+  for ( Product<Matrices>::iterator it = _mat.begin(); it != _mat.end(); ++it ){
+    it->permute(p);
+  }
+}
+
 Product<Matrices> Term::mat() const
 { return _mat; }
 TOrbSet Term::sumindx() const

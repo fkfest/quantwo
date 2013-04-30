@@ -191,6 +191,12 @@ void Matrices::set_no_spin()
   for (unsigned int i=0; i<_orbs.size(); ++i)
     _orbs[i].setspin(Orbital::No);
 }
+void Matrices::permute(const Permut& p)
+{
+  for (unsigned int i=0; i<_orbs.size(); ++i){
+    _orbs[i] = p.permutorb(_orbs[i]);
+  }
+}
 
 std::ostream & operator << (std::ostream & o, Matrices const & mat)
 {
@@ -326,6 +332,17 @@ Product< Orbital > Permut::orbsto() const
     orbs.push_back(it->second);
   return orbs;
 }
+Orbital Permut::permutorb(const Orbital& orb) const
+{
+  TPerMap::const_iterator it = _orbs.find(orb);
+  if ( it == _orbs.end()){
+    // the orbital is not there
+    return orb;
+  } else {
+    return it->second;
+  }
+}
+
 bool Permut::operator<(const Permut& p) const
 {
   if (_orbs.size()<p._orbs.size()) return true;

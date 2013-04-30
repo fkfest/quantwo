@@ -161,11 +161,13 @@ private:
 class Finput {
 public:
   // constructor
-  Finput ();
+  Finput ( bool eq = false );
   // constructor + init input-parameters
   Finput( std::string paramspath );
   // add string
   bool addline( const std::string& line );
+  // analyze equation
+  bool analyzeq();
   // get input
   std::string input() const;
   Product<Lelem> eqn() const;

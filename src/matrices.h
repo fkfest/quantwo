@@ -24,6 +24,7 @@ struct ConLine {
   lui imat;
   lui idx;
 };
+class Permut;
 /*! 
     Implements class matrices (e.g. amplitudes, integrals etc)
 */
@@ -86,6 +87,8 @@ class Matrices {
   const Product<ConLine>& conlines() const;
   // return ConLine for an orbital
   const ConLine& conline(lui iorb) const;
+  // permute with p
+  void permute(const Permut& p);
   
   private:
   Ops::Type _type;
@@ -128,6 +131,8 @@ class Permut {
     Product<Orbital> orbsfrom() const;
     // return orbitals "to"
     Product<Orbital> orbsto() const;
+    // permute orbital
+    Orbital permutorb(const Orbital& orb) const;
     // artificial ordering
     bool operator < (Permut const & p) const;
     // equality of permutators

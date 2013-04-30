@@ -112,6 +112,8 @@ class Term {
     void reset_prefac();
     // set permutations to p
     void setperm(const Sum<Permut,TFactor>& p){_perm = p;};
+    // permute the term according to p
+    void permute(const Permut& p);
     //! compare actual connections with the needed (in _connections)
     //! return true if the term is ok
     bool properconnect() const;

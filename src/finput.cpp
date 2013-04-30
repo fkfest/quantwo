@@ -221,8 +221,8 @@ inline std::string IL::plainname(std::string name)
 }
 
 
-Finput::Finput() : 
-_eq(false){}
+Finput::Finput(bool eq) : 
+_eq(eq){}
 
 Finput::Finput(std::string paramspath) :
 _eq(false)
@@ -313,10 +313,7 @@ bool Finput::addline(const std::string& line)
     if ( iprint > 0 && _eq )
       _ineq.pop_back();
     _eq=false;
-    analyzeit();
-    _eqn.extractit();
-    _eqn.do_sumterms(true);
-    _eqn.do_sumterms();
+    analyzeq();
     _input="";
     neweq = true;
   } else if (InSet(linesp.substr(ipos,ipend-ipos), newcs)) {// newcommand
@@ -337,6 +334,15 @@ Product< Lelem > Finput::eqn() const
 { return _eqn.eqn(); }
 Sum< Term, TFactor > Finput::sumterms() const
 { return _eqn.sumterms(); }
+
+bool Finput::analyzeq()
+{
+  analyzeit();
+  _eqn.extractit();
+  _eqn.do_sumterms(true);
+  _eqn.do_sumterms();
+  return true;
+}
 bool Finput::analyzeit()
 {
   char ch;
@@ -758,6 +764,7 @@ bool Equation::do_sumterms(bool excopsonly )
     term.set_lastorb(_occexcops.back());
     term.set_lastorb(_virexcops.back());
   }
+  term.addmatrix(Matrices());
   Product<long int> indxoperterm;
   for (i=0; i<_eqn.size(); i++) {
     if(InSet(_eqn[i].lex(), Lelem::Bra,Lelem::Ket)) { // handle bra/ket
@@ -779,6 +786,7 @@ bool Equation::do_sumterms(bool excopsonly )
         plus=(_eqn[i].lex()==Lelem::Plus);
         beg=i+1;
         term=Term();
+        term.addmatrix(Matrices());
         if (_excops.size()>0) {
           term.set_lastorb(_occexcops.back());
           term.set_lastorb(_virexcops.back());
@@ -797,8 +805,8 @@ bool Equation::do_sumterms(bool excopsonly )
       if (!excopsonly)
         _paramterm*=_eqn[i];
     } else if (_eqn[i].lex()==Lelem::Perm) { // handle Permutation
-//      if (!excopsonly)
-//        term *= handle_permutation(_eqn[i]);
+      if (!excopsonly)
+        term *= handle_permutation(_eqn[i]);
     } else if (_eqn[i].lex()==Lelem::Times) { // handle Multiplication
       // don't do anything
     } else if (_eqn[i].lex()==Lelem::Div) { // handle Division

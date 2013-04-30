@@ -8,6 +8,7 @@
 #include <iostream>
 #include <stdlib.h>
 #include <algorithm>
+#include <unistd.h>
 #ifdef TARGET_OS_MAC
 #include <mach-o/dyld.h>	/* _NSGetExecutablePath */
 #endif
