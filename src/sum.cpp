@@ -47,6 +47,57 @@ Sum<Object, Field> &  Sum<Object, Field>::operator *= (Field const & f)
 }
 template <class Object, class Field>
 inline
+Sum<Object, Field> &  Sum<Object, Field>::operator /= (const Sum<Object, Field> & s)
+{
+  if ( s.empty() ){
+    error("Can not divide by empty sum!");
+  }
+  Sum<Object, Field> rest,result;
+  typename Sum<Object,Field>::iterator it1;
+  typename Sum<Object,Field>::const_iterator its1;
+  Object o1,os;
+  Field f1,fs;
+  rest.clean();
+  int n = 0;
+  while( !rest.empty() && n < Numbers::big ){
+    it1 = rest.begin();
+    o1 = it1->first;
+    f1 = it1->second;
+    its1 = s.begin();
+    o1 /= its1->first;
+    f1 /= its1->second;
+    rest.erase(it1);
+    result[o1] = f1;
+    for ( ++its1 ; its1 != s.end(); ++its1 ){
+      os = its1->first;
+      fs = its1->second;
+      os *= o1;
+      fs *= f1;
+      rest += std::pair<Object,Field>(os,-fs);
+    }
+    rest.clean();
+    ++n;
+  }
+  if ( n == Numbers::big ){
+    error("Could not divide in 1000 iterations!");
+  }
+  result.clean();
+  *this = result;
+  return *this;
+}
+template <class Object, class Field>
+inline
+void  Sum<Object, Field>::clean()
+{
+  Sum<Object, Field> cleansum;
+  for ( typename Sum<Object,Field>::const_iterator i=this->begin();i!=this->end(); ++i) {
+    if ( i->second != 0 )
+      cleansum[i->first] = i->second;
+  }
+  *this = cleansum;
+}
+template <class Object, class Field>
+inline
 bool Sum<Object, Field>::operator<(const Sum< Object, Field >& s) const
 {
   if (this->size() < s.size())return true;

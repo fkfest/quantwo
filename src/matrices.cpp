@@ -234,9 +234,10 @@ std::ostream & operator << (std::ostream & o, Matrices const & mat)
 }
 
 Permut::Permut()
-{}
+{ dummy = 1;}
 Permut::Permut(Product< Orbital > p1, Product< Orbital > p2) 
 {
+  dummy = 1;
   assert( p1.size() == p2.size() );
   for ( lui io = 0; io < p1.size(); ++io ){
     assert( p1[io].type() == p2[io].type() );
@@ -245,6 +246,7 @@ Permut::Permut(Product< Orbital > p1, Product< Orbital > p2)
 }
 Permut::Permut(Orbital o1, Orbital o2)
 {
+  dummy = 1;
   assert( o1.type() == o2.type() );
   _orbs[o1] = o2;
 }
@@ -280,6 +282,32 @@ Permut& Permut::operator*=(const Permut& p)
   }
   // add the rest
   _orbs.insert(orbs.begin(),orbs.end());
+  return *this;
+}
+Permut& Permut::operator/=(const Permut& p)
+{
+  // generate a reverse map
+  TPerMap orbs;
+  for ( TPerMap::const_iterator it = _orbs.begin(); it != _orbs.end(); ++it ){
+    orbs[it->second] = it->first;
+  }
+  _orbs.clear();
+  for ( TPerMap::const_iterator pit = p._orbs.begin(); pit != p._orbs.end(); ++pit ){
+    TPerMap::iterator it = orbs.find(pit->second);
+    if ( it == orbs.end()){
+      // the orbital is not there
+      _orbs[pit->second] = pit->first;
+    } else {
+      if ( pit->first != it->second ) // don't add permutation P(p,p)
+        _orbs[it->second] = pit->first;
+      orbs.erase(it);
+    }
+  }
+  // add the rest
+  for ( TPerMap::const_iterator it = orbs.begin(); it != orbs.end(); ++it ){
+    if ( _orbs.find(it->second) != _orbs.end() ) error("Mismatch in permutaions!");
+    _orbs[it->second] = it->first;
+  }
   return *this;
 }
 

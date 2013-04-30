@@ -7,6 +7,7 @@
 #include "orbital.h"
 #include "finput.h"
 #include "globals.h"
+#include "work.h"
 
 using namespace std;
 
@@ -85,11 +86,13 @@ int main(int argc, char **argv) {
         sum_NO = Q2::normalOrderPH(sum_finp);
       else 
         sum_NO = Q2::wick(sum_finp);
-      Sum<Term,TFactor> sum_final(Q2::reduceSum(sum_NO));
+      Sum<Term,TFactor> sum_final1(Q2::reduceSum(sum_NO)),
+        sum_final(Q2::postaction(sum_final1));
       _xout1(finput << endl);
       _xout2(" = " << sum_finp << endl);
       _xout2(" = " << sum_NO << endl);
       _xout1(" = " << sum_final << endl);
+      
       // input 
       const std::vector<std::string> & finlines = finput.inlines();
       for ( unsigned int i = 0; i < finlines.size(); ++i ){

@@ -122,6 +122,8 @@ class Permut {
     Permut & operator += (const Permut& p);
     // multiply permutation from RIGHT (e.g. P_this(i,j) P_p(j,k) => P_this(ij,jk); P_this(j,i) P_p(k,j) => P_this(k,i))
     Permut & operator *= (const Permut& p);
+    // divide permutation from LEFT (e.g. P_this(ij,ji) / P_p(jk,kj) => P_this(ijk,kij))
+    Permut & operator /= (const Permut& p);
     // return orbitals "from"
     Product<Orbital> orbsfrom() const;
     // return orbitals "to"
@@ -135,6 +137,7 @@ class Permut {
     typedef std::map<Orbital,Orbital> TPerMap;
     // map _orbs[from] = to
     TPerMap _orbs;
+    uint dummy;
 };
 
 std::ostream & operator << (std::ostream & o, Permut const & p);

@@ -50,6 +50,7 @@ namespace Numbers
 {
   // "zero"
   static const double small=1.e-16;
+  static const int big=1000;
 }
 // global variables and functions for output
 class Output

@@ -27,10 +27,21 @@ class Sum : public std::map<Object, Field> {
     Sum<Object, Field> &  operator += (std::pair<Object,Field> const & p);
     // multiplication by a factor
     Sum<Object, Field> &  operator *= (Field const & f);
+    // divide by a sum
+    Sum<Object, Field> &  operator /= (const Sum<Object, Field>& s);
+    
     // erase
   //  void erase();
     // artificial ordering
     bool operator < (Sum<Object, Field> const & s) const;
+    // clean (remove all objects with zero-fields)
+    void clean();
+    
+  private:
+    // divide by a sum (recursive!)
+    // n will count the number of calls and stop after some large number (like 100 or so)
+    Sum<Object, Field>  divide_by(const Sum<Object, Field>& s, int& n );
+    
 };
 
 // output operator for Sums of Ts

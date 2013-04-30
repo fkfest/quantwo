@@ -110,6 +110,8 @@ class Term {
     void spinintegration(bool notfake);
     //! set prefactor of term to one
     void reset_prefac();
+    // set permutations to p
+    void setperm(const Sum<Permut,TFactor>& p){_perm = p;};
     //! compare actual connections with the needed (in _connections)
     //! return true if the term is ok
     bool properconnect() const;
@@ -159,10 +161,6 @@ private:
 
 namespace Q2
 {
-  Sum<Term,TFactor> reduceSum(Sum<Term,TFactor> s);
-  Sum<Term,TFactor> normalOrderPH(Sum<Term,TFactor> s);
-  Sum<Term,TFactor> wick(Sum<Term,TFactor> s);
-  void printdiags(Output* pout, Sum<Term,TFactor> s);
   template <class T>
   void replace(Product<T> &p, Orbital orb1, Orbital orb2);
   void replace(SQOp &op, Orbital orb1, Orbital orb2);
