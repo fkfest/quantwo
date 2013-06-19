@@ -847,9 +847,9 @@ void Equation::addterm(Term& term, bool plus, lui beg, lui end,
         if (ipos<0)
           error("Connected operator is not in indxoperterm","Finput::addterm");
         if (_connections[i][j]>0)
-          connect*=ipos+1;
+          connect*=ipos+2;
         else
-          connect*=-ipos-1;
+          connect*=-ipos-2;
       }
       _xout2("Connections in Term #" << nterm << ": " <<connect<<std::endl);
       term.addconnection(connect);

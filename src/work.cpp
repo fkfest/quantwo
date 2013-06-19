@@ -24,7 +24,9 @@ Sum< Term, TFactor > Q2::reduceSum(Sum< Term, TFactor > s)
     // set connections "map" of matrices
     term.setmatconnections();
     // is the term properly connected?
-    if (!term.properconnect()) continue;
+    if (!term.properconnect()) {
+      continue;
+    }
     // expand antisymmetrized integrals
     sum1 = term.expand_antisym();
     sum1 *= i->second;

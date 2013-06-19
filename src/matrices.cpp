@@ -18,7 +18,10 @@ Product< Orbital > Ops::genprodorb(short int exccl, const Orbital& occ, const Or
 }
 
 Matrices::Matrices() // : _type(Interm)
-{_antisymform=false;}
+{
+  _antisymform=false;
+  _type = Ops::None;
+}
 Matrices::Matrices(Ops::Type t, Product< Orbital > p, short npairs, std::string name, Matrices::Spinsym matspinsym, bool antisymW)
 {
   _type=t;
