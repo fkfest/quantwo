@@ -219,6 +219,31 @@ inline std::string IL::plainname(std::string name)
       pname += name[i];
   return pname;
 }
+lui IL::lexfind(const std::string& str, const std::string& sstr, const lui& ipos)
+{
+  lui ipos1, ires(ipos), icur(0);
+  int level = 0;
+  bool found(false);
+  for ( ipos1 = ipos; ipos1 < str.size() && !found; ++ipos1 ){
+    if ( level == 0 ){
+      // search on the current level only!
+      if ( str[ipos1] == sstr[icur] ){
+        if ( icur == 0 ) ires = ipos1;
+        ++icur;
+        if ( icur == sstr.size() ) found = true;
+      } else if ( icur > 0 ){
+        icur = 0;
+        ipos1 = ires;
+        continue;
+      }
+    }
+    if ( str[ipos1] == '{' ) ++level;
+    if ( str[ipos1] == '}' ) --level;
+  }
+  if (!found) 
+    ires = std::string::npos;
+  return ires;
+}
 
 
 Finput::Finput(bool eq) : 
@@ -935,12 +960,14 @@ Oper Equation::handle_explexcitation(Term& term, const std::string& name, bool d
 
 Oper Equation::handle_excitation(Term& term, const std::string& name, bool dg, int lmel)
 {
+  bool multiref = ( Input::iPars["prog"]["multiref"] > 0 );
   long int ipos2;
   std::string newname, nameadd,namedown;
   short excl;
   bool newdg;
   int lmelec;
-  bool updown=handle_namupdown(newname,excl,nameadd,namedown,newdg,lmelec,name);
+  std::vector< Product<Orbital::Type> > orbtypes;
+  bool updown=handle_namupdown(newname,excl,nameadd,namedown,newdg,lmelec,orbtypes,name);
   dg = (dg != newdg);
   if (lmelec != 0 && lmel != 0 && lmelec != lmel )
     error("Mismatch in non-conserving class in "+name,"Equation::handle_excitation");
@@ -949,19 +976,26 @@ Oper Equation::handle_excitation(Term& term, const std::string& name, bool dg, i
   if (!updown && excl == 0 && lmelec <= 0)
     error("No excitation class in "+name,"Equation::handle_excitation");
   ipos2=_excops.find(name);
-  Orbital occ,virt;
+  Orbital occ,virt,act;
   if (ipos2<0) {// first run (don't distinguish terms)
     _excops*=name;
     occ=term.freeorbname(Orbital::Occ);
     virt=term.freeorbname(Orbital::Virt);
     _occexcops*=occ;
     _virexcops*=virt;
+    if (multiref){
+      act=term.freeorbname(Orbital::Act);
+      _actexcops*=act;
+    }
     _exccls*=excl;
     _spinsymexcs*=Matrices::Singlet; //TODO: implement Triplet!
     _posexcopsterm*=-1; // initialize
   } else {// may be second run...
     occ=_occexcops[ipos2];
     virt=_virexcops[ipos2];
+    if (multiref){
+      act=_actexcops[ipos2];
+    }
     _posexcopsterm[ipos2]=term.mat().size(); //set position of this operator in the term
   }
   // create \tau_{excl}
@@ -1034,7 +1068,8 @@ Oper Equation::handle_operator(const Lelem& lel, Term& term, bool excopsonly)
   short excl;
   bool dg;
   int lmelec;
-  bool updown=handle_namupdown(name,excl,nameadd,namedown,dg,lmelec,lelnam);
+  std::vector< Product<Orbital::Type> > orbtypes;
+  bool updown=handle_namupdown(name,excl,nameadd,namedown,dg,lmelec,orbtypes,lelnam);
   // parts of Hamilton operator
   if ( InSet(name, hms)) {
     if (excopsonly) return Oper();
@@ -1060,15 +1095,15 @@ Oper Equation::handle_operator(const Lelem& lel, Term& term, bool excopsonly)
   else
     return Oper(Ops::Exc,excl,(void*) &term, Term::getfreeorbname,name,lmelec);
 }
-bool Equation::handle_namupdown(std::string& name, short int& excl, std::string& nameup, std::string& namedown, 
-                                bool& dg, int& lmel, const std::string& lelnam)
+bool Equation::handle_namupdown(std::string& name, short int& excl, std::string& nameup, std::string& namedown, bool& dg, 
+                                int& lmel, std::vector< Product< Orbital::Type > >& orbtypes, const std::string& lelnam)
 { 
   const TParArray& dgs = Input::aPars["syntax"]["dg"];
   const TParArray& lessmore = Input::aPars["syntax"]["lessmore"];
   bool foundupdown = false;
   lui up, down, iposnam, ipos, ipos1;
-  down=lelnam.find("_");
-  up=lelnam.find("^");
+  down=IL::lexfind(lelnam,"_");
+  up=IL::lexfind(lelnam,"^");
   // last position of name of operator
   iposnam=std::min(up,down)-1;
   iposnam=std::min(iposnam,lelnam.size()-1);
@@ -1113,19 +1148,53 @@ bool Equation::handle_namupdown(std::string& name, short int& excl, std::string&
     foundupdown = true;
     ipos=down+1;
     ipos=IL::skip(lelnam,ipos,"{} ");
-    ipos1=IL::nextwordpos(lelnam,ipos);
+    ipos1=IL::nextwordpos(lelnam,ipos,false);
     namedown = lelnam.substr(ipos,ipos1-ipos);
     str2num<short>(excl,namedown,std::dec);
+    
   }
   return foundupdown;
 }
+bool Equation::handle_orbtypes(std::vector< Product< Orbital::Type > >& orbtypes, const std::string& string)
+{
+  bool foundorbtypes = false;
+  lui up, down, ipos, ipos1;
+  down=IL::lexfind(string,"_");
+  up=IL::lexfind(string,"^");
+  if (down!=std::string::npos && down!=string.size()-1){
+    ipos = down;
+    ipos = IL::skip(string,ipos,"{}_^ ");
+    Product<Orbital::Type> occtypes;
+    while ( (ipos < up) == (down < up) && (ipos1 = IL::nextwordpos(string,ipos,true,false)) != ipos ){//non greedy
+      Orbital orb(IL::plainname(string.substr(ipos,ipos1-ipos)),Orbital::GenS);
+      occtypes *= orb.type();
+      ipos = IL::skip(string,ipos1,"{}_^ ");
+    }
+    if ( occtypes.size() > 0 ) foundorbtypes = true;
+    orbtypes.push_back(occtypes);
+  }
+  if (up!=std::string::npos && up!=string.size()-1){
+    ipos = up;
+    ipos = IL::skip(string,ipos,"{}_^ ");
+    Product<Orbital::Type> virtypes;
+    while ( (ipos < down) == (up < down) && (ipos1 = IL::nextwordpos(string,ipos,true,false)) != ipos ){//non greedy
+      Orbital orb(IL::plainname(string.substr(ipos,ipos1-ipos)),Orbital::GenS);
+      virtypes *= orb.type();
+      ipos = IL::skip(string,ipos1,"{}_^ ");
+    }
+    if ( virtypes.size() > 0 ) foundorbtypes = true;
+    orbtypes.push_back(virtypes);
+  }
+  return foundorbtypes;
+}
+
 void Equation::handle_sum(const Lelem& lel, Term& term)
 {
   lui ipos, ipos1, up, down;
   long int iposnam;
   std::string lelnam=lel.name(),name;
-  down=lelnam.find("_");
-  up=lelnam.find("^");
+  down=IL::lexfind(lelnam,"_");
+  up=IL::lexfind(lelnam,"^");
   if (up!=std::string::npos)
     error("Sum from-to is not implemented yet: "+lelnam);
   if (down==std::string::npos)
@@ -1182,8 +1251,8 @@ void Equation::handle_parameters(Term& term, bool excopsonly)
     std::string lelnam,name,nameadd,excn;
     for (unsigned int i=0; i<_paramterm.size(); i++) {
       lelnam=_paramterm[i].name();
-      down=lelnam.find("_");
-      up=lelnam.find("^");
+      down=IL::lexfind(lelnam,"_");
+      up=IL::lexfind(lelnam,"^");
       // last position of name of parameter
       iposnam=std::min(up,down)-1;
       name=lelnam.substr(0,iposnam+1);

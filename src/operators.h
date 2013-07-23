@@ -60,6 +60,10 @@ class Oper {
   // constructor from excitation class and Type, lm: difference in number of electrons (#virts-#occs), exccl == #occs
   Oper (Ops::Type type, short exccl, std::string name="T", int lm=0);
   Oper (Ops::Type type, short exccl, void * term, Orbital (*freeorb)(void * , Orbital::Type), std::string name="T", int lm=0);
+  // constructor from excitation class, Type and orbital-types (for occ. orbs: [0] and virts.: [1] -- for multireference).
+  // lm: difference in number of electrons (#virts-#occs), exccl == #occs
+  Oper (Ops::Type type, short exccl, void * term, Orbital (*freeorb)(void * , Orbital::Type),
+        const std::vector< Product<Orbital::Type> >& orbtypes, std::string name="T", int lm=0);
   // constructor from excitation class, Type and orbitals
   Oper (Ops::Type type, short exccl,Orbital occ, Orbital virt ,std::string name="T", int lm=0);
   // constructor from excitation class, Type and product of orbitals (virts.size - occs.size  == lm; occs.size = exccl)
@@ -80,6 +84,8 @@ class Oper {
   void create_Oper(const std::string& name, bool antisym);
   // for excitation operators
   void create_Oper(const short int& exccl, const Orbital& occ, const Orbital& virt, const std::string& name, int lm);
+  void create_Oper(const short int& exccl, const std::map<Orbital::Type,Orbital>& orbnames, 
+                   const std::vector< Product<Orbital::Type> >& orbtypes, const std::string& name, int lm);
   void create_Oper(const Product< Orbital >& occs, const Product< Orbital >& virts, const std::string& name);
   Ops::Type _type;
   Product<SQOp> _SQprod;

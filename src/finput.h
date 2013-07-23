@@ -67,6 +67,8 @@ namespace IL{
   lui closbrack(const std::string& str, lui ipos);
   // generate plain name out of latex name, i.e. skip "^_{}" (e.g., a_{15}^2 -> a152)
   std::string plainname(std::string name);
+  // find position of a substring sstr on the current level of the string str (i.e. don't search inside of {})
+  lui lexfind(const std::string& str, const std::string& sstr, const lui& ipos = 0);
 };
 /*!
     Equation
@@ -120,10 +122,12 @@ private:
   TFactor handle_factor(Lelem const & lel);
   // handle operator
   Oper handle_operator(Lelem const & lel, Term & term, bool excopsonly=false);
-  // handle name, ups and downs of operators (name, excitation class, name additions, dagger, non-conserving character...)
+  // handle name, ups and downs of operators (name, excitation class, name additions, dagger, non-conserving character, orbital types...)
   // returns true if found up or down
   bool handle_namupdown(std::string& name, short& excl, std::string& nameup, std::string& namedown, bool& dg, int& lmel, 
-                        const std::string& lelnam );
+                        std::vector< Product<Orbital::Type> >& orbtypes, const std::string& lelnam );
+  // returns true if explicit given orbtypes found
+  bool handle_orbtypes(std::vector< Product<Orbital::Type> >& orbtypes, const std::string& string);
   // handle sum
   void handle_sum(Lelem const & lel, Term & term);
   // handle parameter
@@ -136,8 +140,9 @@ private:
   Sum<Term, TFactor> _sumterms;
   // save names of pure excitation and deexciation operators
   Product<std::string> _excops;
-  // save indices which the excitation (and deexcitation) operators have got.
-  Product<Orbital> _occexcops, _virexcops;
+  // save indices that the excitation (and deexcitation) operators have got.
+  Product<Orbital> _occexcops, _virexcops,
+                   _actexcops;
   // save excclass
   Product<short> _exccls;
   // save spinsymmetry

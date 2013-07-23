@@ -24,7 +24,8 @@ set="syntax",type=a,name="lessmore",value={"-","+"},desc="less or more electrons
 set="syntax",type=a,name="bexcop",value={"\tau","\Tau"},desc="bare excitation operators"
 set="syntax",type=s,name="occorb",value="ijklmno",desc="occupied orbitals"
 set="syntax",type=s,name="virorb",value="abcdefgh",desc="virtual orbitals"
-set="syntax",type=s,name="genorb",value="pqrstuvwxyz",desc="general orbitals"
+set="syntax",type=s,name="genorb",value="pqrs",desc="general orbitals"
+set="syntax",type=s,name="actorb",value="tuvwxyz",desc="active orbitals"
 
 %COMMANDS
 set="command",type=s,name="operator",value="op",desc="command for operator"
@@ -75,3 +76,5 @@ set="prog",type=i,name="wick",value=1,desc="if > 0 : do wicks theorem and normal
 set="prog",type=i,name="diagrams",value=0,desc="if > 0 : print diagrams (with ccdiag)"
 set="prog",type=i,name="brill",value=0,desc="if > 0 : remove occ-virt fock"
 set="prog",type=i,name="quan3",value=0,desc="if > 0 : count electrons (third quantization)"
+set="prog",type=i,name="multiref",value=0,desc="if > 0 : multi-reference, add active space in excitation operators"
+

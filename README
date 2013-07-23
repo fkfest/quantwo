@@ -99,6 +99,9 @@ OPERATORS:
 Deexcitation operators have to be marked with ^\dagger (or ^\dg), e.g., \op T_2^\dg, \op T_4^{X\dagger}
 4) Non-conserving operators: \op <name of operator>_<excitation class>^<addition to name and/or \dagger and change in particle number>, e.g., 
     \op T_2^{+1} (2 occ.orbs and 3 virt.orbs), \op T_1^{-1} (1 occ.orbs and 0 virt. orbs)
+5) (De)Excitation operators with explicitly given types of orbitals: 
+        \op <name of operator>_<excitation class_<orbitals to annihilate>^<orbitals to create>>^<addition to name and/or \dagger>, e.g.,
+    \op T_{2_{ii}^{aa}} (usual excitation operator), \op T_{2_{iu}^{ua}} (annihilate electrons in closed-shell and active space and create in active and virtual space)
 
 BRA/KET:
 

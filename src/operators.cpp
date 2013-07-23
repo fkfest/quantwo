@@ -16,7 +16,7 @@ SQOp::Gender SQOp::gender() const
 SQOp::Gender SQOp::genderPH() const
 { if (_orb.type()==Orbital::Occ && _gender==Creator) return Annihilator;
   if (_orb.type()==Orbital::Occ && _gender==Annihilator) return Creator;
-  if (_orb.type()==Orbital::GenT) return Gen;
+  if (_orb.type()==Orbital::GenT || _orb.type()==Orbital::Act) return Gen;
   return _gender; }
 Orbital SQOp::orb() const
 { return _orb; }
@@ -96,6 +96,28 @@ Oper::Oper(Ops::Type type, short int exccl, const Product< Orbital >& occs, cons
   _type=type;
   create_Oper(occs,virts,name);
 }
+Oper::Oper(Ops::Type type, short int exccl, 
+           void * term, Orbital (*freeorb)(void * term, Orbital::Type type), 
+           const std::vector< Product< Orbital::Type > >& orbtypes, std::string name, int lm)
+{
+  assert( !InSet(type, Ops::FluctP,Ops::Fock,Ops::XPert) );
+  assert( orbtypes.size() == 2 );
+  assert( int(orbtypes[1].size()) == exccl );
+  assert( int(orbtypes[2].size()) == exccl+lm );
+  
+  _type=type;
+  std::map<Orbital::Type,Orbital> orbnames;
+  for ( uint i=0; i<orbtypes.size(); ++i ){
+    Product<Orbital::Type>::const_iterator iot;
+    _foreach(iot,orbtypes[i]){
+      if ( orbnames.count(*iot) == 0 ){
+        // new orb type
+        orbnames[*iot] = freeorb(term,*iot);
+      }
+    }
+  }
+  create_Oper(exccl,orbnames,orbtypes,name,lm);
+}
 
 void Oper::create_Oper(const std::string& name, bool antisym)
 {
@@ -147,6 +169,32 @@ void Oper::create_Oper(short int const & exccl,Orbital const & occ, Orbital cons
   }
   create_Oper(occs,virts,name);
 }
+void Oper::create_Oper(const short int& exccl, const std::map< Orbital::Type, Orbital >& orbnames, 
+                       const std::vector< Product< Orbital::Type > >& orbtypes, const std::string& name, int lm)
+{
+  assert( !InSet(_type, Ops::FluctP,Ops::Fock,Ops::XPert) );
+  std::string excl;
+  Product<Orbital> occs, virts; 
+  short 
+    nocc = exccl,
+    nvirt = exccl+lm,
+    nmax = std::max(nocc,nvirt);
+  const Product<Orbital::Type> & occtype(orbtypes[0]);
+  const Product<Orbital::Type> & virtype(orbtypes[1]);
+  for (short i=0; i<nmax ; ++i) {  
+    if (i>0) excl=num2str(i,std::dec);
+    if ( i < nocc ){
+      const Orbital& occ(orbnames.at(occtype[i]));
+      occs *= Orbital(occ.name()+excl,occ.spin());
+    }
+    if ( i < nvirt ){
+      const Orbital& virt(orbnames.at(virtype[i]));
+      virts *= Orbital(virt.name()+excl,virt.spin());
+    }
+  }
+  create_Oper(occs,virts,name);
+}
+
 void Oper::create_Oper(const Product< Orbital >& occs, const Product< Orbital >& virts, const std::string& name)
 {
   assert( !InSet(_type, Ops::FluctP,Ops::Fock,Ops::XPert) );

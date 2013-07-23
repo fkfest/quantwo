@@ -918,6 +918,8 @@ Orbital Term::freeorbname(Orbital::Type type)
     ip_orbs = & orbs["occorb"];
   else if (type==Orbital::Virt)
     ip_orbs = & orbs["virorb"];
+  else if (type==Orbital::Act)
+    ip_orbs = & orbs["actorb"];
   else
     ip_orbs = & orbs["genorb"];
   if (lastorb.size()==0) 

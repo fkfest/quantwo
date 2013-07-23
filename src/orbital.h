@@ -14,7 +14,12 @@
 class Orbital {
   public:
   // enumerate orbital types
-  enum Type { Occ, Virt, GenT };
+  enum Type { 
+    Occ,  // occupied (i)
+    Virt, // virtual (a)
+    GenT, // general (p)
+    Act   // active (v)
+  };
   // enumerate Spin
   enum Spin { No, Up, Down, GenS };
   Orbital ();

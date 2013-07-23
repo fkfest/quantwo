@@ -10,6 +10,7 @@ Orbital::Orbital(std::string name)
   if (orbs["virorb"].find(name[0])!=std::string::npos) {_type=Virt;}
   else if (orbs["occorb"].find(name[0])!=std::string::npos) {_type=Occ;}
   else if (orbs["genorb"].find(name[0])!=std::string::npos) {_type=GenT;}
+  else if (orbs["actorb"].find(name[0])!=std::string::npos) {_type=Act;}
   else 
     error("Unknown type of orbital! "+name,"Orbital::Orbital"); 
   _name=name;
@@ -31,6 +32,7 @@ Orbital::Orbital(std::string name, Orbital::Spin spin)
   if (orbs["virorb"].find(name[0])!=std::string::npos) {_type=Virt;}
   else if (orbs["occorb"].find(name[0])!=std::string::npos) {_type=Occ;}
   else if (orbs["genorb"].find(name[0])!=std::string::npos) {_type=GenT;}
+  else if (orbs["actorb"].find(name[0])!=std::string::npos) {_type=Act;}
   else 
     error("Unknown type of orbital! "+name,"Orbital::Orbital"); 
   _name=name;

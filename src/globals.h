@@ -139,4 +139,6 @@ namespace Input
 // output unless Input::verbose is below 3
 #define _xout3(x) _xout(3,x)
 
+#define _foreach(It,Array) \
+  for ( (It) = (Array).begin(); (It) != (Array).end(); ++(It) )
 #endif
