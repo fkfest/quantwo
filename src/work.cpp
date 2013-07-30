@@ -10,6 +10,7 @@ Sum< Term, TFactor > Q2::reduceSum(Sum< Term, TFactor > s)
   bool added;
   TFactor prefac;
   say("Reduce sum of terms");
+  _xout3(s << std::endl);
   say("Kroneckers, Connections and Antisymmetry...");
   bool spinintegr = Input::iPars["prog"]["spinintegr"];
   for ( Sum<Term,TFactor>::const_iterator i=s.begin();i!=s.end(); ++i)

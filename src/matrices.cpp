@@ -225,10 +225,36 @@ std::ostream & operator << (std::ostream & o, Matrices const & mat)
       break;
     case Ops::Exc:
     case Ops::Deexc:
-    case Ops::Interm:
-      o << param << mat.name() <<"_{" << mat.orbitals() << "}";
+    case Ops::Interm: {
+      Product<Orbital> orbs(mat.orbitals());
+      std::string name(mat.name());
+      std::ostringstream oss;
+      // occ.indices
+      for ( uint i = 1; i < orbs.size(); i += 2 ){
+        oss << orbs[i];
+      }
+      IL::add2name(name,oss.str(),true);
+      oss.str("");
+      //virt. indices
+      for ( uint i = 0; i < orbs.size(); i += 2 ){
+        oss << orbs[i];
+      }
+      IL::add2name(name,oss.str(),false);
+      o << param << name;
+//       o << param << mat.name();
+// //      o <<"^{" << mat.orbitals() << "}";
+//       o <<"^{";
+//       for ( uint i = 0; i < orbs.size(); i += 2 ){
+//         o << orbs[i];
+//       }
+//       o << "}_{";
+//       for ( uint i = 1; i < orbs.size(); i += 2 ){
+//         o << orbs[i];
+//       }
+//       o << "}";
       MyOut::pcurout->lenbuf += 1+mat.orbitals().size()/MyOut::pcurout->wsi;
       break;
+    }
     case Ops::Number:
       o << param << mat.name();
       MyOut::pcurout->lenbuf += 2;

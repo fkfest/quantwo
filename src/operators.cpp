@@ -87,6 +87,21 @@ Oper::Oper(Ops::Type type, short int exccl, Orbital occ, Orbital virt, std::stri
   create_Oper(exccl,occ,virt,name,lm);
 //   xout << *this << std::endl;
 }
+Oper::Oper(Ops::Type type, short int exccl, Orbital occ, Orbital virt, Orbital act, 
+           const std::vector< Product< Orbital::Type > >& orbtypes, std::string name, int lm)
+{
+  assert( !InSet(type, Ops::FluctP,Ops::Fock,Ops::XPert) );
+  assert( orbtypes.size() == 2 );
+  assert( int(orbtypes[0].size()) == exccl );
+  assert( int(orbtypes[1].size()) == exccl+lm );
+  _type=type;
+  std::map<Orbital::Type,Orbital> orbnames;
+  orbnames[Orbital::Occ] = occ;
+  orbnames[Orbital::Virt] = virt;
+  orbnames[Orbital::Act] = act;
+  create_Oper(exccl,orbnames,orbtypes,name,lm);
+}
+
 Oper::Oper(Ops::Type type, short int exccl, const Product< Orbital >& occs, const Product< Orbital >& virts, 
            std::string name, int lm)
 {
@@ -102,8 +117,8 @@ Oper::Oper(Ops::Type type, short int exccl,
 {
   assert( !InSet(type, Ops::FluctP,Ops::Fock,Ops::XPert) );
   assert( orbtypes.size() == 2 );
-  assert( int(orbtypes[1].size()) == exccl );
-  assert( int(orbtypes[2].size()) == exccl+lm );
+  assert( int(orbtypes[0].size()) == exccl );
+  assert( int(orbtypes[1].size()) == exccl+lm );
   
   _type=type;
   std::map<Orbital::Type,Orbital> orbnames;

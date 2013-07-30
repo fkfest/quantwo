@@ -8,6 +8,7 @@
 #include "product.h"
 #include "orbital.h"
 #include "globals.h"
+#include "inpline.h" // for name-handling
 
 namespace Ops {
   // enumerate operator types 
