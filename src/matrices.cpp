@@ -28,14 +28,22 @@ Matrices::Matrices(Ops::Type t, Product< Orbital > p, short npairs, std::string 
   _orbs=p;
   _npairs=npairs;
   assert(_npairs <= int(_orbs.size()/2));
-  if (t==Ops::Fock)
-    _name="Fock";
-  else if (t==Ops::FluctP)
-    _name="FluctP";
-  else if (t==Ops::XPert)
-    _name="XPert";
-  else
-    _name=name;
+  switch (t) {
+    case Ops::Fock:
+      _name = "Fock";
+      break;
+    case Ops::FluctP:
+      _name = "FluctP";
+      break;
+    case Ops::XPert:
+      _name = "XPert";
+      break;
+    case Ops::DensM:
+      _name = "Gamma";
+      break;
+    default:
+      _name=name;
+  }
   _matspinsym=matspinsym;
   if (t==Ops::FluctP)
     _antisymform=antisymW;
@@ -223,6 +231,25 @@ std::ostream & operator << (std::ostream & o, Matrices const & mat)
       o << param << "X_{" << mat.orbitals() << "}";
       MyOut::pcurout->lenbuf += 1+mat.orbitals().size()/MyOut::pcurout->wsi;
       break;
+    case Ops::DensM: {
+      Product<Orbital> orbs(mat.orbitals());
+      std::string name("\\"+Input::sPars["command"]["densmat"]);
+      std::ostringstream oss;
+      // occ.indices
+      for ( uint i = 1; i < orbs.size(); i += 2 ){
+        oss << orbs[i];
+      }
+      IL::add2name(name,oss.str(),true);
+      oss.str("");
+      //virt. indices
+      for ( uint i = 0; i < orbs.size(); i += 2 ){
+        oss << orbs[i];
+      }
+      IL::add2name(name,oss.str(),false);
+      o << param << name;
+      MyOut::pcurout->lenbuf += 1+mat.orbitals().size()/MyOut::pcurout->wsi;
+      break;
+    }
     case Ops::Exc:
     case Ops::Deexc:
     case Ops::Interm: {

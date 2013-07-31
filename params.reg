@@ -32,6 +32,7 @@ set="command",type=s,name="operator",value="op",desc="command for operator"
 set="command",type=s,name="parameter",value="prm",desc="command for parameter"
 set="command",type=s,name="permutation",value="Perm",desc="command for permutation"
 set="command",type=s,name="integral",value="intg",desc="command for integral"
+set="command",type=s,name="densmat",value="gamma",desc="command for density matrix"
 set="command",type=s,name="sum",value="sum",desc="command for sum"
 set="command",type=s,name="fraction",value="frac",desc="command for fraction"
 

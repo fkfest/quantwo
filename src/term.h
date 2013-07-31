@@ -86,9 +86,12 @@ class Term {
     typedef std::list<int> TWMats;
     typedef std::list<TWMats> TWOps;
     //! Wick's theorem: call recursive routine wick
-    Sum<Term, TFactor>  wickstheorem() const;
+    // if genw == true: use the generalized Wick's theorem
+    Sum<Term, TFactor>  wickstheorem(bool genw = false) const;
     //! Wick's theorem, recursive: opers contains index of SQop in _opProd (divided into individual operators)
     Sum<Term, TFactor>  wick(TWOps& opers, TWMats& krons) const;
+    //! generalized Wick's theorem, recursive: opers contains index of SQop in _opProd (divided into individual operators)
+    Sum<Term, TFactor>  genwick(TWOps& opers, TWMats& krons, TWMats& densmat) const;
     //! set connections for each matrix
     void setmatconnections();
     //! reduce equation (delete Kroneckers and summation indices)

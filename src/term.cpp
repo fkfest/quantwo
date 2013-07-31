@@ -457,7 +457,7 @@ Sum< Term, TFactor > Term::normalOrderPH(bool fullyContractedOnly) const
   return sum;
 }
 
-Sum< Term, TFactor > Term::wickstheorem() const
+Sum< Term, TFactor > Term::wickstheorem(bool genw) const
 {
   // generate "matrix" of indices to SQops
   TWOps opers;
@@ -497,7 +497,12 @@ Sum< Term, TFactor > Term::wickstheorem() const
 //       std::cout << *ijop << " " ;
 //     std::cout << std::endl;
 //   }
-  return wick(opers,opermat);
+  if (genw){
+    TWMats densmat;
+    return genwick(opers,opermat,densmat);
+  } else {
+    return wick(opers,opermat);
+  }
 }
 
 Sum< Term, TFactor > Term::wick(TWOps& opers, TWMats& krons) const
@@ -567,6 +572,119 @@ Sum< Term, TFactor > Term::wick(TWOps& opers, TWMats& krons) const
           sum+=wick(opers1,krons1);
         else
           sum-=wick(opers1,krons1);
+      }
+    }
+    sign+=iop->size();
+  }
+  return sum;
+}
+
+Sum< Term, TFactor > Term::genwick(Term::TWOps& opers, Term::TWMats& krons, Term::TWMats& densmat) const
+{
+  Sum<Term, TFactor>  sum;
+  if (opers.size()==0) { // no SQoperators left
+    Product<SQOp> p;
+    // generate Kroneckers
+    Product<Kronecker> d;
+    assert(krons.size()%2 == 0);
+    for (TWMats::iterator kr = krons.begin(); kr != krons.end(); ++kr){
+      TWMats::iterator kr0 = kr;
+      ++kr;
+      d*=Kronecker(_opProd[*kr0].orb(),_opProd[*kr].orb());
+    }
+    // add density matrices
+    Product<Orbital> dmorbs;
+    for (TWMats::iterator dm = densmat.begin(); dm != densmat.end(); ++dm){
+      dmorbs.push_back(_opProd[*dm].orb());
+    }
+    if (dmorbs.size() > 0){
+      Product<Matrices> mat(_mat);
+      short npair = dmorbs.size()/2;
+      mat *= Matrices(Ops::DensM,dmorbs,npair);
+      sum += Term(p,d,mat, _sumindx, _realsumindx, _prefac, _connections);
+    } else {
+      sum += Term(p,d,_mat, _sumindx, _realsumindx, _prefac, _connections);
+    }
+    return sum;
+  }
+  lui istart,sign;
+  TWOps::iterator ifirstop = opers.begin();
+  int curr=*(ifirstop->begin());
+  SQOp::Gender gencurr=_opProd[curr].gender();
+  Orbital::Type orbtypecurr=_opProd[curr].orb().type();
+  bool orbcurrgen = (orbtypecurr==Orbital::GenT);
+  bool orbcurract = (orbtypecurr==Orbital::Act);
+  // remove first SQop-index
+  if (ifirstop->size()<2) {
+    opers.erase(ifirstop);
+    istart=0;
+  } else {
+    ifirstop->erase(ifirstop->begin());
+    istart=1;
+  }
+  sign=0;
+  uint ii = 0;
+  for ( TWOps::iterator iop = opers.begin(); iop != opers.end(); ++iop, ++ii ) { // iterate over all Operators 
+    if (ii < istart) { //but the first
+      //count SQops for sign
+      sign+=iop->size();
+      continue;
+    }
+    uint jj = 0;
+    for ( TWMats::iterator ijop = iop->begin(); ijop != iop->end(); ++ijop, ++jj ) {// iterate over all SQop in Operator i
+      // check if the first operator and operator i would yield a Kronecker
+      const SQOp& op = _opProd[*ijop];
+      Orbital::Type oporbtype = op.orb().type();
+      if (op.gender()!=gencurr && 
+          (orbcurrgen || oporbtype == orbtypecurr|| oporbtype == Orbital::GenT)) {
+        // copy opers and krons
+        TWOps opers1(opers);
+        TWMats krons1(krons);
+        TWMats densmat1(densmat);
+        // remove SQop-index
+        TWOps::iterator iop1 = opers1.begin();
+        std::advance(iop1,ii);
+        if (iop1->size() == 1)
+          opers1.erase(iop1);
+        else {
+          TWMats::iterator ijop1 = iop1->begin();
+          std::advance(ijop1,jj);
+          iop1->erase(ijop1);
+        }
+        // add index to "Kronecker"
+        krons1.push_back(curr);
+        krons1.push_back(*ijop);
+        //call wick recursivly
+        if ((sign+jj)%2 == 0)
+          sum+=genwick(opers1,krons1,densmat1);
+        else
+          sum-=genwick(opers1,krons1,densmat1);
+        if ( (orbcurrgen || orbcurract) &&
+             (oporbtype == Orbital::Act || oporbtype == Orbital::GenT) ){
+          // add density matrix
+          // copy opers and krons
+          opers1 = opers;
+          krons1 = krons;
+          densmat1 = densmat;
+          // remove SQop-index
+          iop1 = opers1.begin();
+          std::advance(iop1,ii);
+          if (iop1->size() == 1)
+            opers1.erase(iop1);
+          else {
+            TWMats::iterator ijop1 = iop1->begin();
+            std::advance(ijop1,jj);
+            iop1->erase(ijop1);
+          }
+          densmat1.push_back(curr);
+          densmat1.push_back(*ijop);
+          //call wick recursivly
+          if ((sign+jj)%2 == 0)
+            sum+=genwick(opers1,krons1,densmat1);
+          else
+            sum-=genwick(opers1,krons1,densmat1);
+          
+        }
       }
     }
     sign+=iop->size();

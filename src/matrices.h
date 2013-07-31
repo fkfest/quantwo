@@ -12,7 +12,18 @@
 
 namespace Ops {
   // enumerate operator types 
-  enum Type {None, Exc, Exc0, Fock, FluctP, XPert, Deexc, Deexc0, Interm, Number};
+  enum Type 
+  { None, 
+    Exc, // excitation operators \op T_i
+    Exc0, // bare excitation operators \op \tau_{\mu_i}
+    Fock, // Fock 
+    FluctP, // fluctuation potential
+    XPert, // external perturbation
+    Deexc, // deexcitation operators \op T_i^\dg
+    Deexc0, // bare deexcitation operators \op \tau_{\mu_i}^\dg
+    Interm, // some intermediates
+    DensM, // density matrix (for active orbitals)
+    Number};
   // generate Product<Orbital> from occupied and virtual orbitals and excitation class 
   Product<Orbital> genprodorb(short exccl,Orbital const & occ, Orbital const & virt);
 };
