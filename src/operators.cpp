@@ -225,25 +225,38 @@ void Oper::create_Oper(const Product< Orbital >& occs, const Product< Orbital >&
     nanni = p_orb1->size(),
     nmax = std::max(ncrea,nanni),
     npairs = std::min(ncrea,nanni);
+  // symmetry (hash of orbital-type -> number of such electrons)
+  std::map<uint,uint> sym;
   _prefac = 1;
   for (unsigned short i = 0; i < nmax; ++i) {  
     if ( i < ncrea ) {
-      _SQprod*=SQOp(SQOp::Creator, (*p_orb0)[i]);
-      porbs *= (*p_orb0)[i];
-      _sumindx.insert((*p_orb0)[i]);
+      const Orbital& orb = (*p_orb0)[i];
+      _SQprod*=SQOp(SQOp::Creator, orb);
+      porbs *= orb;
+      _sumindx.insert(orb);
       if (InSet(_type, Ops::Exc0,Ops::Deexc0)) 
-        _fakesumindx.insert((*p_orb0)[i]);
+        _fakesumindx.insert(orb);
+      // add this type of electron-orbital
+      sym[uint(orb.type())] += 1;
     }
     if ( i < nanni ) {
-      _SQprod *= SQOp(SQOp::Annihilator, (*p_orb1)[i]);
-      porbs *= (*p_orb1)[i];
-      _sumindx.insert((*p_orb1)[i]);
+      const Orbital& orb = (*p_orb1)[i];
+      _SQprod *= SQOp(SQOp::Annihilator, orb);
+      porbs *= orb;
+      _sumindx.insert(orb);
       if (InSet(_type, Ops::Exc0,Ops::Deexc0)) 
-        _fakesumindx.insert((*p_orb1)[i]);
+        _fakesumindx.insert(orb);
+      // add this type of electron-orbital
+      sym[uint(orb.type())*Orbital::MaxType] += 1;
     }
-    _prefac /= i+1;
   }
-  _prefac *= _prefac;
+  // prefactor
+  std::map<uint,uint>::const_iterator is; 
+  _foreach(is,sym){
+    for (uint i = 0; i < is->second; ++i)
+      _prefac *= i+1;
+  }
+  _prefac = 1/_prefac;
   _mat=Matrices(_type,porbs,npairs,name);
 }
 

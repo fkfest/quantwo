@@ -15,11 +15,13 @@ class Orbital {
   public:
   // enumerate orbital types
   enum Type { 
-    Occ,  // occupied (i)
-    Virt, // virtual (a)
-    GenT, // general (p)
-    Act   // active (v)
+    Occ = 1,  // occupied (i)
+    Virt = 2, // virtual (a)
+    GenT = 3, // general (p)
+    Act = 4  // active (v)
   };
+  // for hash
+  static const uint MaxType = 10;
   // enumerate Spin
   enum Spin { No, Up, Down, GenS };
   Orbital ();

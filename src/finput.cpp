@@ -563,6 +563,7 @@ bool Equation::do_sumterms(bool excopsonly )
   if (_excops.size()>0) { // set last orbital of the term to the last orbital of pure excitation operators (has to be set before)
     term.set_lastorb(_occexcops.back());
     term.set_lastorb(_virexcops.back());
+    if (_actexcops.size() > 0) term.set_lastorb(_actexcops.back());
   }
   term.addmatrix(Matrices());
   Product<long int> indxoperterm;
@@ -590,6 +591,7 @@ bool Equation::do_sumterms(bool excopsonly )
         if (_excops.size()>0) {
           term.set_lastorb(_occexcops.back());
           term.set_lastorb(_virexcops.back());
+          if (_actexcops.size() > 0) term.set_lastorb(_actexcops.back());
         }
         indxoperterm=Product<long int>();
       }
@@ -723,6 +725,19 @@ Oper Equation::handle_explexcitation(Term& term, const std::string& name, bool d
       ipos2=_virexcops.find(Orbital(virts[i].letname(),Orbital::GenS));
       if (ipos2>=0)  // is there, change it
         _virexcops[ipos2] = term.freeorbname(Orbital::Virt);
+    }
+  }
+  if ( _actexcops.size() > 0 ){
+    //make sure that we haven't use these orbital names already
+    for ( uint i = 0; i < occs.size(); ++i ){
+      ipos2=_actexcops.find( Orbital(occs[i].letname(),Orbital::GenS));
+      if (ipos2>=0)  // is there, change it
+        _actexcops[ipos2] = term.freeorbname(Orbital::Act);
+    }
+    for ( uint i = 0; i < virts.size(); ++i ){
+      ipos2=_actexcops.find( Orbital(virts[i].letname(),Orbital::GenS));
+      if (ipos2>=0)  // is there, change it
+        _actexcops[ipos2] = term.freeorbname(Orbital::Act);
     }
   }
   int lmelec = virts.size()-occs.size();
