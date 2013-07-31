@@ -521,6 +521,7 @@ Sum< Term, TFactor > Term::wick(TWOps& opers, TWMats& krons) const
   int curr=*(ifirstop->begin());
   SQOp::Gender gencurr=_opProd[curr].gender();
   Orbital::Type orbtypecurr=_opProd[curr].orb().type();
+  bool orbcurrgen = (orbtypecurr==Orbital::GenT);
   // remove first SQop-index
   if (ifirstop->size()<2) {
     opers.erase(ifirstop);
@@ -542,9 +543,10 @@ Sum< Term, TFactor > Term::wick(TWOps& opers, TWMats& krons) const
     uint jj = 0;
     for ( TWMats::iterator ijop = iop->begin(); ijop != iop->end(); ++ijop, ++jj ) {// iterate over all SQop in Operator i
       // check if the first operator and operator i would yield a Kronecker
-      if (_opProd[*ijop].gender()!=gencurr && 
-          (_opProd[*ijop].orb().type()==orbtypecurr||
-           orbtypecurr==Orbital::GenT || _opProd[*ijop].orb().type()==Orbital::GenT)) {
+      const SQOp& op = _opProd[*ijop];
+      Orbital::Type oporbtype = op.orb().type();
+      if (op.gender()!=gencurr && 
+          (orbcurrgen || oporbtype == orbtypecurr|| oporbtype == Orbital::GenT)) {
         // copy opers and krons
         TWOps opers1(opers);
         TWMats krons1(krons);
