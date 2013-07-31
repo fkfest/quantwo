@@ -241,17 +241,6 @@ std::ostream & operator << (std::ostream & o, Matrices const & mat)
       }
       IL::add2name(name,oss.str(),false);
       o << param << name;
-//       o << param << mat.name();
-// //      o <<"^{" << mat.orbitals() << "}";
-//       o <<"^{";
-//       for ( uint i = 0; i < orbs.size(); i += 2 ){
-//         o << orbs[i];
-//       }
-//       o << "}_{";
-//       for ( uint i = 1; i < orbs.size(); i += 2 ){
-//         o << orbs[i];
-//       }
-//       o << "}";
       MyOut::pcurout->lenbuf += 1+mat.orbitals().size()/MyOut::pcurout->wsi;
       break;
     }

@@ -214,8 +214,7 @@ Sum< Term, TFactor > Q2::normalOrderPH(Sum< Term, TFactor > s)
   Sum<Term,TFactor> sum,sum0;
   Term term;
   say("Normal ordering");
-  for ( Sum<Term,TFactor>::const_iterator i=s.begin();i!=s.end(); ++i)
-  {
+  for ( Sum<Term,TFactor>::const_iterator i=s.begin();i!=s.end(); ++i) {
     term=i->first;
     sum0 += term.normalOrderPH_fullyContractedOnly();
     sum0 *= i->second;
@@ -229,8 +228,7 @@ Sum< Term, TFactor > Q2::wick(Sum< Term, TFactor > s)
   Sum<Term,TFactor> sum,sum0;
   Term term;
   say("Wick's theorem");
-  for ( Sum<Term,TFactor>::const_iterator i=s.begin();i!=s.end(); ++i)
-  {
+  for ( Sum<Term,TFactor>::const_iterator i=s.begin();i!=s.end(); ++i) {
     term=i->first;
     sum0 += term.wickstheorem();
     sum0 *= i->second;

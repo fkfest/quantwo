@@ -83,11 +83,12 @@ class Term {
     Sum<Term, TFactor>  normalOrderPH() const;
     //! calculate normal ordering in Particle/Hole formalism, fully contracted terms only
     Sum<Term, TFactor>  normalOrderPH_fullyContractedOnly() const;
+    typedef std::list<int> TWMats;
+    typedef std::list<TWMats> TWOps;
     //! Wick's theorem: call recursive routine wick
     Sum<Term, TFactor>  wickstheorem() const;
     //! Wick's theorem, recursive: opers contains index of SQop in _opProd (divided into individual operators)
-    Sum<Term, TFactor>  wick(std::vector< std::vector<long int> > & opers, std::vector<long int> & krons) const;
-    
+    Sum<Term, TFactor>  wick(TWOps& opers, TWMats& krons) const;
     //! set connections for each matrix
     void setmatconnections();
     //! reduce equation (delete Kroneckers and summation indices)

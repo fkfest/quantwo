@@ -456,11 +456,12 @@ Sum< Term, TFactor > Term::normalOrderPH(bool fullyContractedOnly) const
     sum += *this;   // add current term to the intermediate sum
   return sum;
 }
+
 Sum< Term, TFactor > Term::wickstheorem() const
 {
   // generate "matrix" of indices to SQops
-  std::vector< std::vector< long int > > opers;
-  std::vector< long int > opermat;
+  TWOps opers;
+  TWMats opermat;
   unsigned int m=0;
   int cran = 0;
   for (unsigned int i=0; i<_opProd.size(); i++) {
@@ -477,7 +478,7 @@ Sum< Term, TFactor > Term::wickstheorem() const
     if (m==_mat.size()) { // all SQops, which are not in Matrices have to be added as individual vectors
       opermat.push_back(i);
       opers.push_back(opermat);
-      opermat=std::vector< long int >();
+      opermat=TWMats();
       m=0; // search from begin
     } else if (_mat[m].orbitals().find(_opProd[i].orb())>=0)
       opermat.push_back(i);
@@ -485,77 +486,88 @@ Sum< Term, TFactor > Term::wickstheorem() const
       m++;
       i--;
       if (opermat.size()>0) opers.push_back(opermat);
-      opermat=std::vector< long int >();
+      opermat=TWMats();
     }
   }
   if (opermat.size()>0) opers.push_back(opermat);
-  opermat=std::vector< long int >();
+  opermat=TWMats();
   
-//  for (unsigned int i=0; i<opers.size(); i++)
-//  {
-//    for (unsigned int j=0; j<opers[i].size(); j++)
-//      std::cout << opers[i][j] << " " ;
-//    std::cout << std::endl;
-//  }
+//   for (TWOps::iterator iop = opers.begin(); iop != opers.end(); ++iop) {
+//     for ( TWMats::iterator ijop = iop->begin(); ijop != iop->end(); ++ijop)
+//       std::cout << *ijop << " " ;
+//     std::cout << std::endl;
+//   }
   return wick(opers,opermat);
 }
 
-Sum< Term, TFactor > Term::wick(std::vector< std::vector< long int > >& opers, std::vector< long int >& krons) const
+Sum< Term, TFactor > Term::wick(TWOps& opers, TWMats& krons) const
 {
   Sum<Term, TFactor>  sum;
   if (opers.size()==0) { // no SQoperators left
     Product<SQOp> p;
     // generate Kroneckers
     Product<Kronecker> d;
-    for (unsigned int i=0; i<krons.size(); i+=2)
-      d*=Kronecker(_opProd[krons[i]].orb(),_opProd[krons[i+1]].orb());
+    assert(krons.size()%2 == 0);
+    for (TWMats::iterator kr = krons.begin(); kr != krons.end(); ++kr){
+      TWMats::iterator kr0 = kr;
+      ++kr;
+      d*=Kronecker(_opProd[*kr0].orb(),_opProd[*kr].orb());
+    }
     sum += Term(p,d,_mat, _sumindx, _realsumindx, _prefac, _connections);
     return sum;
   }
   lui istart,sign;
-  long int curr=opers[0][0];
+  TWOps::iterator ifirstop = opers.begin();
+  int curr=*(ifirstop->begin());
   SQOp::Gender gencurr=_opProd[curr].gender();
   Orbital::Type orbtypecurr=_opProd[curr].orb().type();
   // remove first SQop-index
-  if (opers[0].size()<2) {
-    opers.erase(opers.begin());
+  if (ifirstop->size()<2) {
+    opers.erase(ifirstop);
     istart=0;
   } else {
-    opers[0].erase(opers[0].begin());
+    ifirstop->erase(ifirstop->begin());
     istart=1;
   }
   // add first index to krons1
   krons.push_back(curr);
   sign=0;
-  for ( unsigned int i=0 ; i<opers.size() ; ++i ) { // iterate over all Operators 
-    if (i<istart) { //but the first
+  uint ii = 0;
+  for ( TWOps::iterator iop = opers.begin(); iop != opers.end(); ++iop, ++ii ) { // iterate over all Operators 
+    if (ii < istart) { //but the first
       //count SQops for sign
-      sign+=opers[i].size();
+      sign+=iop->size();
       continue;
     }
-    for ( unsigned int j=0 ; j<opers[i].size() ; ++j ) {// iterate over all SQop in Operator i
+    uint jj = 0;
+    for ( TWMats::iterator ijop = iop->begin(); ijop != iop->end(); ++ijop, ++jj ) {// iterate over all SQop in Operator i
       // check if the first operator and operator i would yield a Kronecker
-      if (_opProd[opers[i][j]].gender()!=gencurr && 
-          (_opProd[opers[i][j]].orb().type()==orbtypecurr||
-           orbtypecurr==Orbital::GenT || _opProd[opers[i][j]].orb().type()==Orbital::GenT)) {
+      if (_opProd[*ijop].gender()!=gencurr && 
+          (_opProd[*ijop].orb().type()==orbtypecurr||
+           orbtypecurr==Orbital::GenT || _opProd[*ijop].orb().type()==Orbital::GenT)) {
         // copy opers and krons
-        std::vector< std::vector< long int > > opers1(opers);
-        std::vector< long int > krons1(krons);
+        TWOps opers1(opers);
+        TWMats krons1(krons);
         // remove SQop-index
-        if (opers1[i].size()==1)
-          opers1.erase(opers1.begin()+i);
-        else
-          opers1[i].erase(opers1[i].begin()+j);
+        TWOps::iterator iop1 = opers1.begin();
+        std::advance(iop1,ii);
+        if (iop1->size() == 1)
+          opers1.erase(iop1);
+        else {
+          TWMats::iterator ijop1 = iop1->begin();
+          std::advance(ijop1,jj);
+          iop1->erase(ijop1);
+        }
         // add index to "Kronecker"
-        krons1.push_back(opers[i][j]);
+        krons1.push_back(*ijop);
         //call wick recursivly
-        if ((sign+j)%2==0)
+        if ((sign+jj)%2 == 0)
           sum+=wick(opers1,krons1);
         else
           sum-=wick(opers1,krons1);
       }
     }
-    sign+=opers[i].size();
+    sign+=iop->size();
   }
   return sum;
 }
