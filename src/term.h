@@ -91,7 +91,7 @@ class Term {
     //! Wick's theorem, recursive: opers contains index of SQop in _opProd (divided into individual operators)
     Sum<Term, TFactor>  wick(TWOps& opers, TWMats& krons) const;
     //! generalized Wick's theorem, recursive: opers contains index of SQop in _opProd (divided into individual operators)
-    Sum<Term, TFactor>  genwick(TWOps& opers, TWMats& krons, TWMats& densmat) const;
+    Sum<Term, TFactor>  genwick(Term::TWOps& opers, const Term::TWMats& krons, const Term::TWMats& densmat) const;
     //! set connections for each matrix
     void setmatconnections();
     //! reduce equation (delete Kroneckers and summation indices)

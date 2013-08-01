@@ -192,20 +192,31 @@ void Oper::create_Oper(const short int& exccl, const std::map< Orbital::Type, Or
   Product<Orbital> occs, virts; 
   short 
     nocc = exccl,
-    nvirt = exccl+lm,
-    nmax = std::max(nocc,nvirt);
+    nvirt = exccl+lm;
   const Product<Orbital::Type> & occtype(orbtypes[0]);
   const Product<Orbital::Type> & virtype(orbtypes[1]);
-  for (short i=0; i<nmax ; ++i) {  
-    if (i>0) excl=num2str(i,std::dec);
-    if ( i < nocc ){
-      const Orbital& occ(orbnames.at(occtype[i]));
-      occs *= Orbital(occ.name()+excl,occ.spin());
+  std::map< Orbital::Type, uint > num4type;
+  for (short i = 0; i < nocc; ++i) {  
+    uint i4t = num4type[occtype[i]];
+    ++num4type[occtype[i]];
+    if (i4t > 0) {
+      excl = num2str(i4t,std::dec);
+    } else {
+      excl = "";
     }
-    if ( i < nvirt ){
-      const Orbital& virt(orbnames.at(virtype[i]));
-      virts *= Orbital(virt.name()+excl,virt.spin());
+    const Orbital& occ(orbnames.at(occtype[i]));
+    occs *= Orbital(occ.name()+excl,occ.spin());
+  }
+  for (short i = 0; i < nvirt; ++i) {  
+    uint i4t = num4type[virtype[i]];
+    ++num4type[virtype[i]];
+    if (i4t > 0) {
+      excl=num2str(i4t,std::dec);
+    } else {
+      excl = "";
     }
+    const Orbital& virt(orbnames.at(virtype[i]));
+    virts *= Orbital(virt.name()+excl,virt.spin());
   }
   create_Oper(occs,virts,name);
 }

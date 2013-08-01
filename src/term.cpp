@@ -579,7 +579,7 @@ Sum< Term, TFactor > Term::wick(TWOps& opers, TWMats& krons) const
   return sum;
 }
 
-Sum< Term, TFactor > Term::genwick(Term::TWOps& opers, Term::TWMats& krons, Term::TWMats& densmat) const
+Sum< Term, TFactor > Term::genwick(Term::TWOps& opers, const Term::TWMats& krons, const Term::TWMats& densmat) const
 {
   Sum<Term, TFactor>  sum;
   if (opers.size()==0) { // no SQoperators left
@@ -587,14 +587,14 @@ Sum< Term, TFactor > Term::genwick(Term::TWOps& opers, Term::TWMats& krons, Term
     // generate Kroneckers
     Product<Kronecker> d;
     assert(krons.size()%2 == 0);
-    for (TWMats::iterator kr = krons.begin(); kr != krons.end(); ++kr){
-      TWMats::iterator kr0 = kr;
+    for (TWMats::const_iterator kr = krons.begin(); kr != krons.end(); ++kr){
+      TWMats::const_iterator kr0 = kr;
       ++kr;
       d*=Kronecker(_opProd[*kr0].orb(),_opProd[*kr].orb());
     }
     // add density matrices
     Product<Orbital> dmorbs;
-    for (TWMats::iterator dm = densmat.begin(); dm != densmat.end(); ++dm){
+    for (TWMats::const_iterator dm = densmat.begin(); dm != densmat.end(); ++dm){
       dmorbs.push_back(_opProd[*dm].orb());
     }
     if (dmorbs.size() > 0){
@@ -664,8 +664,10 @@ Sum< Term, TFactor > Term::genwick(Term::TWOps& opers, Term::TWMats& krons, Term
           // add density matrix
           // copy opers and krons
           opers1 = opers;
-          krons1 = krons;
-          densmat1 = densmat;
+          krons1.pop_back();
+          krons1.pop_back();
+//           krons1 = krons;
+//           densmat1 = densmat;
           // remove SQop-index
           iop1 = opers1.begin();
           std::advance(iop1,ii);
@@ -680,9 +682,9 @@ Sum< Term, TFactor > Term::genwick(Term::TWOps& opers, Term::TWMats& krons, Term
           densmat1.push_back(*ijop);
           //call wick recursivly
           if ((sign+jj)%2 == 0)
-            sum+=genwick(opers1,krons1,densmat1);
-          else
             sum-=genwick(opers1,krons1,densmat1);
+          else
+            sum+=genwick(opers1,krons1,densmat1);
           
         }
       }
@@ -827,7 +829,7 @@ void Term::spinintegration(bool notfake)
   lui ithis = 0;
   long int ipos, iorb = 0;
   TOrbSet::iterator it;
-  bool samespinsym;
+  bool samespinsym, withdensmat;
   while ( po.size() > 0 || peo.size() > 0 ) {
     // start with external lines!
     if ( peo.size() > 0 )
@@ -846,6 +848,7 @@ void Term::spinintegration(bool notfake)
     } 
     orb1 = orb;
     samespinsym = true;
+    withdensmat = false;
     do {
       // remove orb1 from product of orbitals (we dont need to handle this orbital again!)
       it = peo.find(orb1);
@@ -863,6 +866,7 @@ void Term::spinintegration(bool notfake)
       ithis = cl.imat;
       ipos = cl.idx;
       samespinsym = samespinsym && (spinsym == _mat[ithis].spinsym(ipos));
+      withdensmat = withdensmat || (_mat[ithis].type() == Ops::DensM);
       iorb = _mat[ithis].iorbel(ipos);
       if ( iorb < 0 ) break;
       orb1 = _mat[ithis].orbitals()[iorb];
@@ -872,7 +876,7 @@ void Term::spinintegration(bool notfake)
       }
     } while (orb1!=orb && !already_done && _sumindx.count(orb1));
     if (samespinsym) {
-      if (notfake) _prefac*=2;
+      if (notfake && !withdensmat) _prefac*=2;
       // count number of loops
       ++_nloops;
       // count number of internal loops
