@@ -66,7 +66,7 @@ class Oper {
         const std::vector< Product<Orbital::Type> >& orbtypes, std::string name="T", int lm=0);
   // constructor from excitation class, Type and orbitals
   Oper (Ops::Type type, short exccl,Orbital occ, Orbital virt ,std::string name="T", int lm=0);
-  Oper (Ops::Type type, short exccl,Orbital occ, Orbital virt, Orbital act, 
+  Oper (Ops::Type type, short exccl, const std::map<Orbital::Type,Orbital>& orbnames, 
         const std::vector< Product<Orbital::Type> >& orbtypes, std::string name="T", int lm=0);
   // constructor from excitation class, Type and product of orbitals (virts.size - occs.size  == lm; occs.size = exccl)
   Oper (Ops::Type type, short exccl,const Product<Orbital>& occs, const Product<Orbital>& virts ,std::string name="T", int lm=0);

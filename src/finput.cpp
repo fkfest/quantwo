@@ -561,9 +561,12 @@ bool Equation::do_sumterms(bool excopsonly )
     error("Expand finput first!","Finput::do_sumterms");
   Term term;
   if (_excops.size()>0) { // set last orbital of the term to the last orbital of pure excitation operators (has to be set before)
-    term.set_lastorb(_occexcops.back());
-    term.set_lastorb(_virexcops.back());
-    if (_actexcops.size() > 0) term.set_lastorb(_actexcops.back());
+    for ( uint it = Orbital::Occ; it < Orbital::MaxType; ++it ){
+      Orbital::Type ot = static_cast<Orbital::Type>(it);
+      for ( int i = _orbs4excops.size()-1; i >= 0; --i )
+        if (_orbs4excops[i].count(ot))
+          term.set_lastorb(_orbs4excops[i][ot]);
+    }
   }
   term.addmatrix(Matrices());
   Product<long int> indxoperterm;
@@ -589,9 +592,12 @@ bool Equation::do_sumterms(bool excopsonly )
         term=Term();
         term.addmatrix(Matrices());
         if (_excops.size()>0) {
-          term.set_lastorb(_occexcops.back());
-          term.set_lastorb(_virexcops.back());
-          if (_actexcops.size() > 0) term.set_lastorb(_actexcops.back());
+          for ( uint it = Orbital::Occ; it < Orbital::MaxType; ++it ){
+            Orbital::Type ot = static_cast<Orbital::Type>(it);
+            for ( int i = _orbs4excops.size()-1; i >= 0; --i )
+              if (_orbs4excops[i].count(ot))
+                term.set_lastorb(_orbs4excops[i][ot]);
+          }
         }
         indxoperterm=Product<long int>();
       }
@@ -687,7 +693,6 @@ Oper Equation::handle_braket(const Lelem& lel, Term& term)
 Oper Equation::handle_explexcitation(Term& term, const std::string& name, bool dg)
 {
   lui ipos, ipos1;
-  long int ipos2;
   short excl;
   Product<Orbital> occs, virts;
   if ( name[0] != '_' && name[0] != '^' )
@@ -712,32 +717,24 @@ Oper Equation::handle_explexcitation(Term& term, const std::string& name, bool d
     term.set_lastorb(Orbital(occs[i].letname(),Orbital::GenS),true);
   for ( uint i = 0; i < virts.size(); ++i )
     term.set_lastorb(Orbital(virts[i].letname(),Orbital::GenS),true);
-  if ( _occexcops.size() > 0 ){
+  if ( _orbs4excops.size() > 0 ){
     //make sure that we haven't use these orbital names already
     for ( uint i = 0; i < occs.size(); ++i ){
-      ipos2=_occexcops.find( Orbital(occs[i].letname(),Orbital::GenS));
-      if (ipos2>=0)  // is there, change it
-        _occexcops[ipos2] = term.freeorbname(Orbital::Occ);
-    }
-  }
-  if ( _virexcops.size() > 0 ){
-    for ( uint i = 0; i < virts.size(); ++i ){
-      ipos2=_virexcops.find(Orbital(virts[i].letname(),Orbital::GenS));
-      if (ipos2>=0)  // is there, change it
-        _virexcops[ipos2] = term.freeorbname(Orbital::Virt);
-    }
-  }
-  if ( _actexcops.size() > 0 ){
-    //make sure that we haven't use these orbital names already
-    for ( uint i = 0; i < occs.size(); ++i ){
-      ipos2=_actexcops.find( Orbital(occs[i].letname(),Orbital::GenS));
-      if (ipos2>=0)  // is there, change it
-        _actexcops[ipos2] = term.freeorbname(Orbital::Act);
+      for ( uint iex = 0; iex < _orbs4excops.size(); ++iex ){
+        for ( uint it = Orbital::Occ; it < Orbital::MaxType; ++it ){
+          Orbital::Type ot = static_cast<Orbital::Type>(it);
+          if ( _orbs4excops[iex][ot] == Orbital(occs[i].letname(),Orbital::GenS) )  // is there, change it
+            _orbs4excops[iex][ot] = term.freeorbname(ot);
+        }
+      }
     }
     for ( uint i = 0; i < virts.size(); ++i ){
-      ipos2=_actexcops.find( Orbital(virts[i].letname(),Orbital::GenS));
-      if (ipos2>=0)  // is there, change it
-        _actexcops[ipos2] = term.freeorbname(Orbital::Act);
+      for ( uint iex = 0; iex < _orbs4excops.size(); ++iex )
+        for ( uint it = Orbital::Occ; it < Orbital::MaxType; ++it ){
+          Orbital::Type ot = static_cast<Orbital::Type>(it);
+          if ( _orbs4excops[iex][ot] == Orbital(virts[i].letname(),Orbital::GenS) )  // is there, change it
+            _orbs4excops[iex][ot] = term.freeorbname(ot);
+        }
     }
   }
   int lmelec = virts.size()-occs.size();
@@ -766,39 +763,40 @@ Oper Equation::handle_excitation(Term& term, const std::string& name, bool dg, i
   if (!updown && excl == 0 && lmelec <= 0)
     error("No excitation class in "+name,"Equation::handle_excitation");
   ipos2=_excops.find(name);
-  Orbital occ,virt,act;
+  TOrb4Type orb4t;
   if (ipos2<0) {// first run (don't distinguish terms)
     _excops*=name;
-    occ=term.freeorbname(Orbital::Occ);
-    virt=term.freeorbname(Orbital::Virt);
-    _occexcops*=occ;
-    _virexcops*=virt;
-    if (orbtypes.size()>0){
-      act=term.freeorbname(Orbital::Act);
-      _actexcops*=act;
+    Product<Orbital::Type>::const_iterator iot;
+    if (orbtypes.size() > 0){
+      for ( uint i = 0; i < orbtypes.size(); ++i ){
+        _foreach(iot,orbtypes[i]){
+          if (orb4t.count(*iot) == 0)
+            orb4t[*iot] = term.freeorbname(*iot);
+        }
+      }
+    } else {
+      orb4t[Orbital::Occ] = term.freeorbname(Orbital::Occ);
+      orb4t[Orbital::Virt] = term.freeorbname(Orbital::Virt);
     }
+    _orbs4excops.push_back(orb4t);
     _exccls*=excl;
     _spinsymexcs*=Matrices::Singlet; //TODO: implement Triplet!
     _posexcopsterm*=-1; // initialize
   } else {// may be second run...
-    occ=_occexcops[ipos2];
-    virt=_virexcops[ipos2];
-    if (orbtypes.size()>0){
-      act=_actexcops[ipos2];
-    }
+    orb4t = _orbs4excops[ipos2];
     _posexcopsterm[ipos2]=term.mat().size(); //set position of this operator in the term
   }
   // create \tau_{excl}
   if (orbtypes.size() == 0){
     if (dg)
-      return Oper(Ops::Deexc0,excl,occ,virt,"",lmelec);  
+      return Oper(Ops::Deexc0,excl,orb4t[Orbital::Occ],orb4t[Orbital::Virt],"",lmelec);  
     else
-      return Oper(Ops::Exc0,excl,occ,virt,"",lmelec);
+      return Oper(Ops::Exc0,excl,orb4t[Orbital::Occ],orb4t[Orbital::Virt],"",lmelec);
   } else {
     if (dg)
-      return Oper(Ops::Deexc0,excl,occ,virt,act,orbtypes,"",lmelec);  
+      return Oper(Ops::Deexc0,excl,orb4t,orbtypes,"",lmelec);  
     else
-      return Oper(Ops::Exc0,excl,occ,virt,act,orbtypes,"",lmelec);
+      return Oper(Ops::Exc0,excl,orb4t,orbtypes,"",lmelec);
   }
 }
 
@@ -1016,8 +1014,8 @@ void Equation::handle_sum(const Lelem& lel, Term& term)
     name=lelnam.substr(ipos,ipos1-ipos);
     iposnam=_excops.find(name);
     if (iposnam >= 0) {
-      term.addsummation(_occexcops[iposnam],_exccls[iposnam]);
-      term.addsummation(_virexcops[iposnam],_exccls[iposnam]);
+      term.addsummation(_orbs4excops[iposnam][Orbital::Occ],_exccls[iposnam]);
+      term.addsummation(_orbs4excops[iposnam][Orbital::Virt],_exccls[iposnam]);
     }
     else
       say("No excitation operator which would correspond to summation index "+name);
@@ -1090,7 +1088,7 @@ void Equation::handle_parameters(Term& term, bool excopsonly)
           iposexcn=_posexcopsterm[indxexcn];
           if (iposexcn>=0) {
             Matrices mat(Ops::Interm,
-                         Ops::genprodorb(_exccls[indxexcn],_occexcops[indxexcn],_virexcops[indxexcn]),
+                         Ops::genprodorb(_exccls[indxexcn],_orbs4excops[indxexcn][Orbital::Occ],_orbs4excops[indxexcn][Orbital::Virt]),
                          _exccls[indxexcn], name,_spinsymexcs[indxexcn]);
             term.replacematrix(mat,iposexcn);
           } else

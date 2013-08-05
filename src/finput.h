@@ -112,9 +112,9 @@ private:
   Sum<Term, TFactor> _sumterms;
   // save names of pure excitation and deexciation operators
   Product<std::string> _excops;
+  typedef std::map< Orbital::Type,Orbital > TOrb4Type;
   // save indices that the excitation (and deexcitation) operators have got.
-  Product<Orbital> _occexcops, _virexcops,
-                   _actexcops;
+  Product< TOrb4Type > _orbs4excops;
   // save excclass
   Product<short> _exccls;
   // save spinsymmetry
