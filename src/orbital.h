@@ -7,6 +7,37 @@
 #include "utilities.h"
 #include "globals.h"
 
+class Spin {
+public:
+  // enumerate Spin
+  enum Type { No, // no spin
+    Up, Down, // alpha, beta
+    GenS, // general spin-sum, i.e. sum of spins (alpha + beta), also can represent a general spin!
+    GenD}; // general spin-difference, i.e. (alpha - beta)
+  Spin (Type type = No) : _type(type), _name("") {};
+  // NOTE: we ignore names for spin != GenS or GenD 
+  Spin (const std::string& name, Type type = GenS) : _type(type), _name(name) { 
+    cleanname();};
+  
+  Type type() const {return _type;}; 
+  std::string name() const {return _name;}; 
+  void settype(Spin::Type type){ _type = type; cleanname();};
+  // we ignore names for spin != GenS or GenD 
+  void cleanname(){ if (_type != GenS && _type != GenD) _name = "";};
+  // check equality
+  bool operator == (const Spin& spin) const;
+  // check inequality
+  bool operator != (const Spin& spin) const {return !(*this == spin);};
+  // check ordering relation (for sorting)
+  bool operator < (const Spin& spin) const;
+private:
+  Type _type;
+  std::string _name;
+  
+};
+
+std::ostream & operator << (std::ostream & o, const Spin& spin);
+
 /*
     Orbitals (occ, virt, general) with spin (nospin, alpha, beta, general) 
 */
@@ -20,19 +51,21 @@ class Orbital {
     GenT = 3, // general (p)
     Act = 4  // active (v)
   };
-  // for hash
-  static const uint MaxType = 10;
+  // for hash and loops
+  static const uint MaxType = 5;
   // enumerate Spin
-  enum Spin { No, Up, Down, GenS };
+//  enum Spin { No, Up, Down, GenS };
   Orbital ();
   // constructor from name (a-h: virt, i-o: occ, p-z: general; lower case: no Spin, upper case: general)
-  Orbital (std::string name);
+  Orbital (const std::string& name);
   // constructor from name and Type 
-  Orbital (std::string name, Type type);
+  Orbital (const std::string& name, Type type);
   // constructor from name and Spin
-  Orbital (std::string name, Spin spin);
+  Orbital (const std::string& name, Spin spin);
+  Orbital (const std::string& name, Spin::Type spint);
   // full constructor
-  Orbital (std::string name, Type type, Spin spin);
+  Orbital (const std::string& name, Type type, Spin spin);
+  Orbital (const std::string& name, Type type, Spin::Type spint);
   // return orbital
   std::string name() const;
   Type type() const;
@@ -47,11 +80,13 @@ class Orbital {
   bool operator < (Orbital const & orb) const;
   // return letter-name of orbital
   std::string letname() const;
-  // check main (i.e. letter) names (e.g. i<j; ii>j, i23==i42 )
+  // compare main (i.e. letter) names (e.g. i<j; ii>j, i23==i42 )
   // -1: <; 0: ==; 1: >
   int comp_letname( const Orbital& orb ) const;
   
   private:
+  // generate orbital type from _name
+  void gentype();
   Type _type;
   Spin _spin;
   std::string _name;

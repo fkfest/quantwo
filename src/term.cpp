@@ -822,7 +822,7 @@ void Term::spinintegration(bool notfake)
   // internal indices
   TOrbSet po(_realsumindx); 
   _nocc=_nintloops=_nloops=0;
-  
+  Spin nospin(Spin::No);
   bool nonconserve = true, already_done = false;
   Orbital orb,orb1;
   Matrices::Spinsym spinsym=Matrices::Singlet;
@@ -894,14 +894,14 @@ void Term::spinintegration(bool notfake)
     TOrbSet sumindx;
     for ( TOrbSet::iterator it = _sumindx.begin(); it != _sumindx.end(); ++it ){
       orb = *it;
-      orb.setspin(Orbital::No);
+      orb.setspin(nospin);
       sumindx.insert(orb);
     }
     _sumindx = sumindx;
     sumindx.clear();
     for ( TOrbSet::iterator it =_realsumindx.begin(); it != _realsumindx.end(); ++it ){
       orb = *it;
-      orb.setspin(Orbital::No);
+      orb.setspin(nospin);
       sumindx.insert(orb);
     }
     _realsumindx = sumindx;
@@ -1046,7 +1046,7 @@ void Term::printdiag(Output* pout, TFactor fac) const
 Orbital Term::freeorbname(Orbital::Type type)
 {
   TsPar& orbs = Input::sPars["syntax"];
-  Orbital::Spin spin=Orbital::GenS;
+  Spin::Type spin=Spin::GenS;
   const std::string * ip_orbs;
   std::string lastorb=_lastorb[type].name();
   unsigned long int indx;

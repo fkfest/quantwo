@@ -134,12 +134,14 @@ void Oper::create_Oper(const std::string& name, bool antisym)
 {
   assert( InSet(_type, Ops::FluctP,Ops::Fock,Ops::XPert) );
   Product<Orbital> porbs;
+  Matrices::Spinsym spinsym = Matrices::Singlet;
   // operators with general indices
   Orbital orb(std::string("P"));
   _SQprod*=SQOp(SQOp::Creator,orb);
   porbs*=orb;
   _sumindx.insert(orb);
-  orb=Orbital(std::string("Q"));
+//   orb=Orbital(std::string("Q"),orb.spin());//same spin as in P
+  orb=Orbital(std::string("Q"));//same spin as in P
   porbs*=orb;
   _sumindx.insert(orb);
   _prefac=1;
@@ -151,7 +153,8 @@ void Oper::create_Oper(const std::string& name, bool antisym)
     _SQprod*=SQOp(SQOp::Creator,orb);
     porbs*=orb;
     _sumindx.insert(orb);
-    orb=Orbital(std::string("S"));
+//     orb=Orbital(std::string("S"),orb.spin());//same spin as in R
+    orb=Orbital(std::string("S"));//same spin as in R
     _SQprod*=SQOp(SQOp::Annihilator,orb);
     porbs*=orb;
     _sumindx.insert(orb);
@@ -160,7 +163,7 @@ void Oper::create_Oper(const std::string& name, bool antisym)
     _prefac /= 4;
   }
   short npairs = porbs.size()/2;
-  _mat=Matrices(_type,porbs,npairs,name,Matrices::Singlet,antisym);
+  _mat=Matrices(_type,porbs,npairs,name,spinsym,antisym);
 }
 void Oper::create_Oper(short int const & exccl,Orbital const & occ, Orbital const & virt, std::string const & name, int lm)
 {
@@ -223,6 +226,7 @@ void Oper::create_Oper(const Product< Orbital >& occs, const Product< Orbital >&
 {
   assert( !InSet(_type, Ops::FluctP,Ops::Fock,Ops::XPert) );
 //  assert( occs.size() == virts.size() );
+  Matrices::Spinsym spinsym = Matrices::Singlet;
   Product<Orbital> porbs;
   // excitation and deexcitation operators
   const Product<Orbital> 
@@ -238,8 +242,16 @@ void Oper::create_Oper(const Product< Orbital >& occs, const Product< Orbital >&
   std::map<uint,uint> sym;
   _prefac = 1;
   for (unsigned short i = 0; i < nmax; ++i) {  
+    Spin spin(Spin::No);
+    bool setspindiff = (i == nmax-1 && spinsym != Matrices::Singlet);
     if ( i < ncrea ) {
-      const Orbital& orb = (*p_orb0)[i];
+      Orbital orb = (*p_orb0)[i];
+      spin = orb.spin();
+      if (setspindiff){ // triplet part -- use spin-difference
+        assert(spin.type() != Spin::No);
+        spin.settype(Spin::GenD);
+        orb.setspin(spin);
+      }
       _SQprod*=SQOp(SQOp::Creator, orb);
       porbs *= orb;
       _sumindx.insert(orb);
@@ -249,7 +261,10 @@ void Oper::create_Oper(const Product< Orbital >& occs, const Product< Orbital >&
       sym[uint(orb.type())] += 1;
     }
     if ( i < nanni ) {
-      const Orbital& orb = (*p_orb1)[i];
+      Orbital orb = (*p_orb1)[i];
+      if (spin.type() != Spin::No){ // use same spin for same electrons
+        orb.setspin(spin);
+      }
       _SQprod *= SQOp(SQOp::Annihilator, orb);
       porbs *= orb;
       _sumindx.insert(orb);
@@ -266,7 +281,7 @@ void Oper::create_Oper(const Product< Orbital >& occs, const Product< Orbital >&
       _prefac *= i+1;
   }
   _prefac = 1/_prefac;
-  _mat=Matrices(_type,porbs,npairs,name);
+  _mat=Matrices(_type,porbs,npairs,name,spinsym);
 }
 
 Matrices Oper::mat() const

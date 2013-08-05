@@ -1,49 +1,75 @@
 #include "orbital.h"
 
-Orbital::Orbital() {}
-
-Orbital::Orbital(std::string name)
-{
-  TsPar& orbs = Input::sPars["syntax"];
-  _spin=(isupper((char)name[0]) ? GenS : No);
-  name[0] = std::tolower(name[0]);
-  if (orbs["virorb"].find(name[0])!=std::string::npos) {_type=Virt;}
-  else if (orbs["occorb"].find(name[0])!=std::string::npos) {_type=Occ;}
-  else if (orbs["genorb"].find(name[0])!=std::string::npos) {_type=GenT;}
-  else if (orbs["actorb"].find(name[0])!=std::string::npos) {_type=Act;}
-  else 
-    error("Unknown type of orbital! "+name,"Orbital::Orbital"); 
-  _name=name;
+Orbital::Orbital() 
+{ 
+  _type = Orbital::GenT;
+  _spin = Spin(Spin::No);
 }
 
-Orbital::Orbital(std::string name, Orbital::Type type)
+Orbital::Orbital(const std::string& name)
 {
-  _spin=(isupper((char)name[0]) ? GenS : No);
-  name[0] = std::tolower(name[0]);
+  bool genspin = isupper((char)name[0]);
+  _name=name;
+  _name[0] = std::tolower(name[0]);
+  gentype();
+  if ( genspin )
+    _spin = Spin(_name, Spin::GenS);
+  else
+    _spin = Spin(Spin::No);
+  
+}
+
+Orbital::Orbital(const std::string& name, Orbital::Type type)
+{
+  bool genspin = isupper((char)name[0]);
+  _name=name;
+  _name[0] = std::tolower(name[0]);
   _type=type;
-  _name=name;
+  if ( genspin )
+    _spin = Spin(_name, Spin::GenS);
+  else
+    _spin = Spin(Spin::No);
 }
 
-Orbital::Orbital(std::string name, Orbital::Spin spin)
-{
-  TsPar& orbs = Input::sPars["syntax"];
-  _spin=spin;
-  name[0] = std::tolower(name[0]);
-  if (orbs["virorb"].find(name[0])!=std::string::npos) {_type=Virt;}
-  else if (orbs["occorb"].find(name[0])!=std::string::npos) {_type=Occ;}
-  else if (orbs["genorb"].find(name[0])!=std::string::npos) {_type=GenT;}
-  else if (orbs["actorb"].find(name[0])!=std::string::npos) {_type=Act;}
-  else 
-    error("Unknown type of orbital! "+name,"Orbital::Orbital"); 
-  _name=name;
-}
-
-Orbital::Orbital(std::string name, Orbital::Type type, Orbital::Spin spin)
+Orbital::Orbital(const std::string& name, Spin spin)
 {
   _spin=spin;
-  _type=type;
-  name[0] = std::tolower(name[0]);
   _name=name;
+  _name[0] = std::tolower(name[0]);
+  gentype();
+}
+Orbital::Orbital(const std::string& name, Spin::Type spint)
+{
+  _name=name;
+  _name[0] = std::tolower(name[0]);
+  gentype();
+  _spin = Spin(name,spint);
+}
+Orbital::Orbital(const std::string& name, Orbital::Type type, Spin spin)
+{
+  _spin=spin;
+  _type=type;
+  _name=name;
+  _name[0] = std::tolower(name[0]);
+}
+Orbital::Orbital(const std::string& name, Orbital::Type type, Spin::Type spint)
+{
+  _type=type;
+  _name=name;
+  _name[0] = std::tolower(name[0]);
+  _spin = Spin(name,spint);
+}
+
+
+void Orbital::gentype()
+{
+  TsPar& orbs = Input::sPars["syntax"];
+  if (orbs["virorb"].find(_name[0])!=std::string::npos) {_type=Virt;}
+  else if (orbs["occorb"].find(_name[0])!=std::string::npos) {_type=Occ;}
+  else if (orbs["genorb"].find(_name[0])!=std::string::npos) {_type=GenT;}
+  else if (orbs["actorb"].find(_name[0])!=std::string::npos) {_type=Act;}
+  else 
+    error("Unknown type of orbital! "+_name,"Orbital::gentype"); 
 }
 
 std::string Orbital::name() const
@@ -52,9 +78,9 @@ std::string Orbital::name() const
 Orbital::Type Orbital::type() const
 { return _type;}
 
-Orbital::Spin Orbital::spin() const
+Spin Orbital::spin() const
 { return _spin;}
-void Orbital::setspin(Orbital::Spin spin)
+void Orbital::setspin(Spin spin)
 { _spin=spin; }
 
 bool Orbital::operator==(const Orbital& orb) const
@@ -93,16 +119,14 @@ int Orbital::comp_letname(const Orbital& orb) const
 
 std::ostream & operator << (std::ostream & o, Orbital const & orb)
 {
-  if ( orb.spin()==Orbital::GenS )
+  if ( orb.spin().type() == Spin::GenS )
     o << char(std::toupper(orb.name().at(0)));
   else
     o << orb.name().at(0);
-  if (orb.name().size()>1)
+  if (orb.name().size() > 1)
     o <<"_{" << orb.name().substr(1) << "}";
-  if ( orb.spin()==Orbital::Up )
-    o << "\\alpha";
-  else if ( orb.spin()==Orbital::Down )
-    o << "\\beta";
+  if ( orb.spin().type() != Spin::GenS )
+    o << orb.spin();
 /*  if ( orb.type()==Orbital::Occ ) 
     o << "^occ";
   else if ( orb.type()==Orbital::Virt )
@@ -112,6 +136,38 @@ std::ostream & operator << (std::ostream & o, Orbital const & orb)
 */
   return o;
 }
+bool Spin::operator==(const Spin& spin) const
+{
+  return (_type == spin._type && _name == spin._name);
+}
+
+bool Spin::operator<(const Spin& spin) const
+{
+  if (_name < spin._name) return true;
+  if (spin._name < _name) return false;
+  return  (_type < spin._type);
+}
+
+std::ostream& operator<<(std::ostream& o, const Spin& spin)
+{
+  switch (spin.type()) {
+    case Spin::Up:
+      o << "\\alpha";
+      break;
+    case Spin::Down:
+      o << "\\beta";
+      break;
+    case Spin::GenD:
+      o << "\\bar";
+    case Spin::GenS:
+      o << "\\sigma_{" << spin.name() << "}";
+      break;
+    default:
+      break;
+  }
+  return o;
+}
+
 
 std::ostream & operator << (std::ostream & o, const Electron& el)
 {

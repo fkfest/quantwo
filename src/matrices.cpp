@@ -78,7 +78,7 @@ bool Matrices::expandantisym(bool firstpart)
     assert(_orbs.size() == 4);
     if (_type!=Ops::FluctP && !( _type==Ops::Exc && Input::iPars["prog"]["quan3"] > 0 ))
       error("Can not expand antisymmetrical non-integral","Matrices::expandantisym");
-    if (_orbs[0].spin()==Orbital::No)
+    if (_orbs[0].spin().type()==Spin::No)
       error("Can not expand antisymmetrical integral in space orbitals","Matrices::expandantisym");
     _antisymform=false;
     if (!firstpart) { // (PQ|RS) -> (PS|RQ)
@@ -199,8 +199,9 @@ Matrices::Spinsym Matrices::spinsym(long int ipos)
 }
 void Matrices::set_no_spin()
 {
+  Spin nospin(Spin::No);
   for (unsigned int i=0; i<_orbs.size(); ++i)
-    _orbs[i].setspin(Orbital::No);
+    _orbs[i].setspin(nospin);
 }
 void Matrices::permute(const Permut& p)
 {
