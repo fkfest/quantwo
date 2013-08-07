@@ -23,10 +23,12 @@ bool Kronecker::operator < (Kronecker const & k) const
     return _orb2<k._orb2;
 }
 
-void Kronecker::replace(Orbital orb1, Orbital orb2)
+Return Kronecker::replace(Orbital orb1, Orbital orb2)
 {
-  if (_orb1==orb1) _orb1=orb2;
-  if (_orb2==orb1) _orb2=orb2;
+  Return rpl;
+  rpl += _orb1.replace(orb1,orb2);
+  rpl += _orb2.replace(orb1,orb2);
+  return rpl;
 }
 
 std::ostream & operator << (std::ostream & o, Kronecker const & k)

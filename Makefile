@@ -59,14 +59,17 @@ src/finput.o: src/matrices.h src/inpline.h src/kronecker.h src/sum.h
 src/finput.o: src/sum.cpp
 src/work.o: src/work.h src/utilities.h src/globals.h src/product.h
 src/work.o: src/product.cpp src/operators.h src/orbital.h src/matrices.h
-src/work.o: src/inpline.h src/kronecker.h src/sum.h src/sum.cpp src/term.h
+src/work.o: src/inpline.h src/term.h src/kronecker.h src/sum.h src/sum.cpp
 src/work.o: src/finput.h
-src/orbital.o: src/orbital.h src/utilities.h src/globals.h
+src/orbital.o: src/orbital.h src/utilities.h src/globals.h src/product.h
+src/orbital.o: src/product.cpp
 src/matrices.o: src/matrices.h src/product.h src/utilities.h src/globals.h
 src/matrices.o: src/product.cpp src/orbital.h src/inpline.h
 src/operators.o: src/operators.h src/utilities.h src/globals.h src/orbital.h
-src/operators.o: src/matrices.h src/product.h src/product.cpp src/inpline.h
+src/operators.o: src/product.h src/product.cpp src/matrices.h src/inpline.h
+src/operators.o: src/term.h src/kronecker.h src/sum.h src/sum.cpp
 src/kronecker.o: src/kronecker.h src/orbital.h src/utilities.h src/globals.h
+src/kronecker.o: src/product.h src/product.cpp
 src/term.o: src/term.h src/utilities.h src/globals.h src/product.h
 src/term.o: src/product.cpp src/operators.h src/orbital.h src/matrices.h
 src/term.o: src/inpline.h src/kronecker.h src/sum.h src/sum.cpp

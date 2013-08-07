@@ -64,12 +64,14 @@ std::string Matrices::name() const
 bool Matrices::antisymform() const
 { return _antisymform; }
 
-void Matrices::replace(Orbital orb1, Orbital orb2)
+Return Matrices::replace(Orbital orb1, Orbital orb2)
 {
+  Return rpl;
   for ( unsigned int i=0; i<_orbs.size(); ++i )
   {
-    if (_orbs[i]==orb1) _orbs[i]=orb2;
+    rpl += _orbs[i].replace(orb1,orb2);
   }
+  return rpl;
 }
 bool Matrices::expandantisym(bool firstpart)
 {

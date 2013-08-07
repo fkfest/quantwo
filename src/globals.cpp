@@ -1,5 +1,19 @@
 #include "globals.h"
 
+Return& Return::operator+=(const Return& ret)
+{
+  switch (ret._val){
+    case Done:
+    case Delete:
+    case Repeat:
+      _val = _val | ret._val;
+      break;
+    case Change_sign:
+      _val = _val ^ ret._val;
+  }
+  return *this;
+}
+
 Output::Output()
 {
   pout = &std::cout;

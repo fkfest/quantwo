@@ -6,29 +6,27 @@ Orbital::Orbital()
   _spin = Spin(Spin::No);
 }
 
-Orbital::Orbital(const std::string& name)
+Orbital::Orbital(const std::string& name, Electron el)
 {
-  bool genspin = isupper((char)name[0]);
+  if ( isupper((char)name[0]) )
+    _spin = Spin(el, Spin::GenS);
+  else
+    _spin = Spin(Spin::No);
   _name=name;
   _name[0] = std::tolower(name[0]);
   gentype();
-  if ( genspin )
-    _spin = Spin(_name, Spin::GenS);
-  else
-    _spin = Spin(Spin::No);
   
 }
 
-Orbital::Orbital(const std::string& name, Orbital::Type type)
+Orbital::Orbital(const std::string& name, Orbital::Type type, Electron el)
 {
-  bool genspin = isupper((char)name[0]);
+  if ( isupper((char)name[0]) )
+    _spin = Spin(el, Spin::GenS);
+  else
+    _spin = Spin(Spin::No);
   _name=name;
   _name[0] = std::tolower(name[0]);
   _type=type;
-  if ( genspin )
-    _spin = Spin(_name, Spin::GenS);
-  else
-    _spin = Spin(Spin::No);
 }
 
 Orbital::Orbital(const std::string& name, Spin spin)
@@ -38,12 +36,12 @@ Orbital::Orbital(const std::string& name, Spin spin)
   _name[0] = std::tolower(name[0]);
   gentype();
 }
-Orbital::Orbital(const std::string& name, Spin::Type spint)
+Orbital::Orbital(const std::string& name, Spin::Type spint, Electron el)
 {
+  _spin = Spin(el,spint);
   _name=name;
   _name[0] = std::tolower(name[0]);
   gentype();
-  _spin = Spin(name,spint);
 }
 Orbital::Orbital(const std::string& name, Orbital::Type type, Spin spin)
 {
@@ -52,12 +50,12 @@ Orbital::Orbital(const std::string& name, Orbital::Type type, Spin spin)
   _name=name;
   _name[0] = std::tolower(name[0]);
 }
-Orbital::Orbital(const std::string& name, Orbital::Type type, Spin::Type spint)
+Orbital::Orbital(const std::string& name, Orbital::Type type, Spin::Type spint, Electron el)
 {
+  _spin = Spin(el,spint);
   _type=type;
   _name=name;
   _name[0] = std::tolower(name[0]);
-  _spin = Spin(name,spint);
 }
 
 
@@ -138,14 +136,52 @@ std::ostream & operator << (std::ostream & o, Orbital const & orb)
 }
 bool Spin::operator==(const Spin& spin) const
 {
-  return (_type == spin._type && _name == spin._name);
+  return (_type == spin._type && _el == spin._el);
 }
 
 bool Spin::operator<(const Spin& spin) const
 {
-  if (_name < spin._name) return true;
-  if (spin._name < _name) return false;
+  if (_el < spin._el) return true;
+  if (spin._el < _el) return false;
   return  (_type < spin._type);
+}
+Return Spin::replace(const Spin& s1, const Spin& s2)
+{
+  assert( _type != No );
+  assert( s2._type != No );
+  if ( this->_el == s1._el ) {
+    assert( _type == s1._type ); // if not eq --> something wrong with the kroneckers!
+    // replace
+    if ( _type == s2._type ){
+      *this = s2;
+      return Return::Done;
+    }
+    // delete the term
+    if ( (_type == Up && s2._type == Down) ||
+         (_type == Down && s2._type == Up) ||
+         (_type == GenS && s2._type == GenD) ||
+         (_type == GenD && s2._type == GenS) ) 
+      return Return::Delete;
+    // downgrade the spin-sum
+    if ( _type == Up || _type == Down ) {
+      return Return::Repeat;
+    }
+    if (s2._type == Up){
+      *this = s2;
+      return Return::Done;
+    }
+    if (s2._type == Down){
+      if (_type == GenS){
+        *this = s2;
+        return Return::Done;
+      } else {
+        *this = s2;
+        return Return::Change_sign;
+      }
+    }
+    error("What am I doing here?","Spin::replace");
+  }
+  return Return::Done;
 }
 
 std::ostream& operator<<(std::ostream& o, const Spin& spin)
@@ -160,7 +196,7 @@ std::ostream& operator<<(std::ostream& o, const Spin& spin)
     case Spin::GenD:
       o << "\\bar";
     case Spin::GenS:
-      o << "\\sigma_{" << spin.name() << "}";
+      o << "\\sigma_{" << spin.el() << "}";
       break;
     default:
       break;
@@ -169,7 +205,7 @@ std::ostream& operator<<(std::ostream& o, const Spin& spin)
 }
 
 
-std::ostream & operator << (std::ostream & o, const Electron& el)
+std::ostream & operator << (std::ostream & o, const Electrons& el)
 {
   o << el.name().at(0);
   if (el.name().size()>1)

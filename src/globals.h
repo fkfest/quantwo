@@ -54,6 +54,20 @@ namespace Numbers
   static const double small=1.e-16;
   static const int big=1000;
 }
+
+class Return{
+public:
+  enum Vals{
+    Done = 0,
+    Delete = 1,
+    Change_sign = 2,
+    Repeat = 4
+  };
+  Return(Vals val = Done) : _val(val){};
+  Return & operator +=(const Return& ret);
+  char _val;
+};
+
 // global variables and functions for output
 class Output
 {

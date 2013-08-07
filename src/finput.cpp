@@ -741,9 +741,9 @@ Oper Equation::handle_explexcitation(Term& term, const std::string& name, bool d
   int lmelec = virts.size()-occs.size();
   // create \tau_{excl}
   if (dg)
-    return Oper(Ops::Deexc0,excl,occs,virts,"",lmelec);  
+    return Oper(Ops::Deexc0,excl,occs,virts,"",lmelec,&term);  
   else
-    return Oper(Ops::Exc0,excl,occs,virts,"",lmelec);
+    return Oper(Ops::Exc0,excl,occs,virts,"",lmelec,&term);
 }
 
 Oper Equation::handle_excitation(Term& term, const std::string& name, bool dg, int lmel)
@@ -790,14 +790,14 @@ Oper Equation::handle_excitation(Term& term, const std::string& name, bool dg, i
   // create \tau_{excl}
   if (orbtypes.size() == 0){
     if (dg)
-      return Oper(Ops::Deexc0,excl,orb4t[Orbital::Occ],orb4t[Orbital::Virt],"",lmelec);  
+      return Oper(Ops::Deexc0,excl,orb4t[Orbital::Occ],orb4t[Orbital::Virt],"",lmelec,&term);  
     else
-      return Oper(Ops::Exc0,excl,orb4t[Orbital::Occ],orb4t[Orbital::Virt],"",lmelec);
+      return Oper(Ops::Exc0,excl,orb4t[Orbital::Occ],orb4t[Orbital::Virt],"",lmelec,&term);
   } else {
     if (dg)
-      return Oper(Ops::Deexc0,excl,orb4t,orbtypes,"",lmelec);  
+      return Oper(Ops::Deexc0,excl,orb4t,orbtypes,"",lmelec,&term);  
     else
-      return Oper(Ops::Exc0,excl,orb4t,orbtypes,"",lmelec);
+      return Oper(Ops::Exc0,excl,orb4t,orbtypes,"",lmelec,&term);
   }
 }
 
@@ -871,10 +871,10 @@ Oper Equation::handle_operator(const Lelem& lel, Term& term, bool excopsonly)
     if (excopsonly) return Oper();
     if (updown)
       say("Sub- and superscripts in Hamiltonian will be ignored: "+lelnam);
-    if ( name==hms["fock"] ) return Oper(Ops::Fock);
-    if ( name==hms["flucpot"] ) return Oper(Ops::FluctP);
-    if ( name==hms["dflucpot"] ) return Oper(Ops::FluctP,false);
-    if ( name==hms["perturbation"] ) return Oper(Ops::XPert);
+    if ( name==hms["fock"] ) return Oper(Ops::Fock,true,&term);
+    if ( name==hms["flucpot"] ) return Oper(Ops::FluctP,true,&term);
+    if ( name==hms["dflucpot"] ) return Oper(Ops::FluctP,false,&term);
+    if ( name==hms["perturbation"] ) return Oper(Ops::XPert,true,&term);
   }
   // excitation class
   if (namedown=="")
@@ -889,14 +889,14 @@ Oper Equation::handle_operator(const Lelem& lel, Term& term, bool excopsonly)
     error("Excitation class in "+lelnam,"Equation::handle_operator");
   if (orbtypes.size() == 0){
     if(dg)
-      return Oper(Ops::Deexc,excl,(void*) &term, Term::getfreeorbname,name,lmelec);
+      return Oper(Ops::Deexc,excl,name,lmelec,&term);
     else
-      return Oper(Ops::Exc,excl,(void*) &term, Term::getfreeorbname,name,lmelec);
+      return Oper(Ops::Exc,excl,name,lmelec,&term);
   } else {
     if(dg)
-      return Oper(Ops::Deexc,excl,(void*) &term, Term::getfreeorbname,orbtypes,name,lmelec);
+      return Oper(Ops::Deexc,excl,orbtypes,name,lmelec,&term);
     else
-      return Oper(Ops::Exc,excl,(void*) &term, Term::getfreeorbname,orbtypes,name,lmelec);
+      return Oper(Ops::Exc,excl,orbtypes,name,lmelec,&term);
   }
 }
 bool Equation::handle_namupdown(std::string& name, short int& excl, std::string& nameup, std::string& namedown, bool& dg, 

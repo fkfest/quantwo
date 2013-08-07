@@ -8,13 +8,15 @@
 #include "utilities.h"
 #include "product.h"
 #include "operators.h"
+#include "matrices.h"
 #include "kronecker.h"
 #include "sum.h"
 #include "globals.h"
 
 #include <iostream>
 
-
+class SQOp;
+class Oper;
 /*!
     A term consists of a Product of SQOperators and a Product of Kroneckers
 */
@@ -127,10 +129,15 @@ class Term {
     Orbital freeorbname(Orbital::Type type);
     //! static wrapper-function to be able to callback the member function freeorbname()
     static Orbital getfreeorbname(void * Obj, Orbital::Type type);
+    //! return next free electron
+    Electron nextelectron();
+    //! static wrapper-function
+    static Electron getnextelectron(void * Obj);
 //    //! get last orbital
 //    Orbital get_lastorb(Orbital::Type type) const { return _lastorb[type]; };
     //! set last orbital (onlylarger: only if it's larger than current one)
     void set_lastorb(Orbital orb, bool onlylarger = false);
+    void set_lastel(Electron el, bool onlylarger = false);
 
   private:
     Sum<Term, TFactor>  normalOrder(bool fullyContractedOnly) const;
@@ -149,6 +156,7 @@ class Term {
 
     Sum<Permut,TFactor> _perm;
     std::map< Orbital::Type, Orbital > _lastorb;
+    Electron _lastel;
     // for term comparison:
     // number of (all and internal only) loops and occupied orbitals (set in spinintegration)
     lui _nloops, _nintloops, _nocc;
@@ -167,12 +175,16 @@ private:
 
 namespace Q2
 {
+  template <class T, class Q>
+  Return replace(Product<T> &p, Q orb1, Q orb2);
   template <class T>
-  void replace(Product<T> &p, Orbital orb1, Orbital orb2);
-  void replace(SQOp &op, Orbital orb1, Orbital orb2);
-  void replace(Orbital &orb, Orbital orb1, Orbital orb2);
-  void replace(Matrices &mat,Orbital orb1, Orbital orb2);
-  void replace(Kronecker &kron, Orbital orb1, Orbital orb2);
+  Return replace(SQOp &op, T orb1, T orb2);
+  template <class T>
+  Return replace(T &orb, T orb1, T orb2);
+  template <class T>
+  Return replace(Matrices &mat, T orb1, T orb2);
+  template <class T>
+  Return replace(Kronecker &kron, T orb1, T orb2);
 }
 #endif
 

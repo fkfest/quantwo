@@ -11,10 +11,8 @@
 #include "orbital.h"
 #include "matrices.h"
 #include "product.h"
+#include "term.h"
 #include "assert.h"
-
-typedef Set<Orbital> TOrbSet;
-typedef Set<Electron> TElSet;
 
 /*!
     Implements a second quantized creation (\op a_i^\dagger)
@@ -39,7 +37,7 @@ class SQOp {
   // check ordering relation (for sorting)
   bool operator < (SQOp const & o) const;
   // replace orbital orb1 with orb2
-  void replace(Orbital orb1, Orbital orb2);
+  Return replace(Orbital orb1, Orbital orb2);
 
   private:
   Gender _gender;
@@ -48,6 +46,7 @@ class SQOp {
 
 std::ostream & operator << (std::ostream & o, SQOp const & op);
 
+class Term;
 /*! 
     Implements Operators in second quantized form
 */
@@ -56,20 +55,20 @@ class Oper {
   //default constructor
   Oper ();
   // constructor from Type (for Hamiltonian)
-  Oper (Ops::Type type, bool antisym = true);
+  Oper (Ops::Type type, bool antisym = true, Term* pTerm = 0);
   // constructor from excitation class and Type, lm: difference in number of electrons (#virts-#occs), exccl == #occs
-  Oper (Ops::Type type, short exccl, std::string name="T", int lm=0);
-  Oper (Ops::Type type, short exccl, void * term, Orbital (*freeorb)(void * , Orbital::Type), std::string name="T", int lm=0);
+  Oper (Ops::Type type, short exccl, std::string name="T", int lm=0, Term* pTerm = 0);
   // constructor from excitation class, Type and orbital-types (for occ. orbs: [0] and virts.: [1] -- for multireference).
   // lm: difference in number of electrons (#virts-#occs), exccl == #occs
-  Oper (Ops::Type type, short exccl, void * term, Orbital (*freeorb)(void * , Orbital::Type),
-        const std::vector< Product<Orbital::Type> >& orbtypes, std::string name="T", int lm=0);
+  Oper (Ops::Type type, short exccl, const std::vector< Product<Orbital::Type> >& orbtypes, 
+        std::string name="T", int lm=0, Term* pTerm = 0);
   // constructor from excitation class, Type and orbitals
-  Oper (Ops::Type type, short exccl,Orbital occ, Orbital virt ,std::string name="T", int lm=0);
+  Oper (Ops::Type type, short exccl,Orbital occ, Orbital virt ,std::string name="T", int lm=0, Term* pTerm = 0);
   Oper (Ops::Type type, short exccl, const std::map<Orbital::Type,Orbital>& orbnames, 
-        const std::vector< Product<Orbital::Type> >& orbtypes, std::string name="T", int lm=0);
+        const std::vector< Product<Orbital::Type> >& orbtypes, std::string name="T", int lm=0, Term* pTerm = 0);
   // constructor from excitation class, Type and product of orbitals (virts.size - occs.size  == lm; occs.size = exccl)
-  Oper (Ops::Type type, short exccl,const Product<Orbital>& occs, const Product<Orbital>& virts ,std::string name="T", int lm=0);
+  Oper (Ops::Type type, short exccl,const Product<Orbital>& occs, const Product<Orbital>& virts ,
+        std::string name="T", int lm=0, Term* pTerm = 0);
   //return matrix (integral or amplitude)
   Matrices mat() const;
   //return operator
@@ -94,6 +93,7 @@ class Oper {
   Matrices _mat;
   TFactor _prefac;
   TOrbSet _sumindx, _fakesumindx;
+  Term * p_Term;
 //   Product <Orbital> _sumindx, _fakesumindx;
 };
 

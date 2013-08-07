@@ -1,18 +1,18 @@
 #include "term.h"
 
-Term::Term() : _prefac(1){_nloops=_nintloops=_nocc=0;_perm+=Permut();}
+Term::Term() : _prefac(1), _lastel(0) {_nloops=_nintloops=_nocc=0;_perm+=Permut();}
 
 Term::Term(Product<SQOp> const & opProd) :
-    _opProd(opProd), _prefac(1) {_nloops=_nintloops=_nocc=0;_perm+=Permut();}
+    _opProd(opProd), _prefac(1), _lastel(0) {_nloops=_nintloops=_nocc=0;_perm+=Permut();}
 
 Term::Term(Product<SQOp> const & opProd, Product<Kronecker> const & kProd) :
-    _opProd(opProd), _kProd(kProd), _prefac(1) {_nloops=_nintloops=_nocc=0;_perm+=Permut();}
+    _opProd(opProd), _kProd(kProd), _prefac(1), _lastel(0) {_nloops=_nintloops=_nocc=0;_perm+=Permut();}
     
 Term::Term(const Product< SQOp >& opProd, const Product< Kronecker >& kProd, 
            const Product< Matrices >& mat, const TOrbSet& sumindx, const TOrbSet& realsumindx, 
            const TFactor& prefac, const std::vector< Product<long int> >& connections) :
     _opProd(opProd), _kProd(kProd), _mat(mat), _sumindx(sumindx), _realsumindx(realsumindx), 
-    _prefac(prefac), _connections(connections) {_nloops=_nintloops=_nocc=0;_perm+=Permut();}
+    _prefac(prefac), _connections(connections), _lastel(0) {_nloops=_nintloops=_nocc=0;_perm+=Permut();}
 
 Term& Term::operator*=(const Oper& op)
 {
@@ -1095,22 +1095,47 @@ void Term::set_lastorb(Orbital orb, bool onlylarger)
   _lastorb[orb.type()]=orb; 
   
 }
-
-
-template <class T>
-void Q2::replace(Product< T > &p, Orbital orb1, Orbital orb2)
+Electron Term::nextelectron()
 {
+  ++_lastel;
+  return _lastel;
+}
+Electron Term::getnextelectron(void* Obj)
+{
+  // explicitly cast to a pointer to Term
+  Term * myself = (Term *) Obj;
+  // call member
+  return myself->nextelectron();
+}
+void Term::set_lastel(Electron el, bool onlylarger)
+{
+  if ( onlylarger && el < _lastel ) return;
+  _lastel = el;
+}
+
+
+template <class T, class Q>
+Return Q2::replace(Product< T >& p, Q orb1, Q orb2)
+{
+  Return rpl;
   for ( unsigned int i=0; i<p.size(); ++i )
   {
-    replace(p[i],orb1, orb2);
+    rpl += replace(p[i],orb1, orb2);
   }
+  return rpl;
 }
-void Q2::replace(SQOp &op, Orbital orb1, Orbital orb2)
-{ op.replace(orb1,orb2); }
-void Q2::replace(Orbital &orb, Orbital orb1, Orbital orb2)
-{ if (orb == orb1) orb=orb2; }
-void Q2::replace(Matrices &mat, Orbital orb1, Orbital orb2)
-{ mat.replace(orb1,orb2); }
-void Q2::replace(Kronecker &kron, Orbital orb1, Orbital orb2)
-{ kron.replace(orb1,orb2); }
+template <class T>
+Return Q2::replace(SQOp& op, T orb1, T orb2)
+{ return op.replace(orb1,orb2); }
+template <class T>
+Return Q2::replace(T &orb, T orb1, T orb2)
+{ return orb.replace(orb1,orb2);
+  //if (orb == orb1) orb=orb2; 
+}
+template <class T>
+Return Q2::replace(Matrices &mat, T orb1, T orb2)
+{ return mat.replace(orb1,orb2); }
+template <class T>
+Return Q2::replace(Kronecker& kron, T orb1, T orb2)
+{ return kron.replace(orb1,orb2); }
 

@@ -30,9 +30,9 @@ bool SQOp::operator<(const SQOp& o) const
     return false;
   return _orb<o._orb;
 }
-void SQOp::replace(Orbital orb1, Orbital orb2)
+Return SQOp::replace(Orbital orb1, Orbital orb2)
 {
-  if (_orb==orb1) _orb=orb2;
+  return _orb.replace(orb1,orb2);
 }
 
 std::ostream & operator << (std::ostream & o, SQOp const & op)
@@ -48,13 +48,15 @@ Oper::Oper()
 {  
   _prefac=1; 
   _type=Ops::None;
+  p_Term = 0;
 }
 
-Oper::Oper(Ops::Type type, bool antisym)
+Oper::Oper(Ops::Type type, bool antisym, Term* pTerm)
 {
   assert( InSet(type, Ops::FluctP,Ops::Fock,Ops::XPert) );
   std::string name;
   _type=type;
+  p_Term = pTerm;
   if (type == Ops::Fock )
     name="F";
   else if (type == Ops::FluctP )
@@ -63,53 +65,53 @@ Oper::Oper(Ops::Type type, bool antisym)
     name="X";
   create_Oper(name,antisym);
 }
-Oper::Oper(Ops::Type type, short int exccl, std::string name, int lm)
+Oper::Oper(Ops::Type type, short int exccl, std::string name, int lm, Term* pTerm)
 {
   assert( !InSet(type, Ops::FluctP,Ops::Fock,Ops::XPert) );
   _type=type;
-  Orbital orb0(std::string("A"));
-  Orbital orb1(std::string("I"));
+  p_Term = pTerm;
+  Orbital orb0, orb1;
+  if (pTerm) {
+    orb0 = pTerm->freeorbname(Orbital::Virt);
+    orb1 = pTerm->freeorbname(Orbital::Occ);
+  } else {
+    orb0 = Orbital(std::string("A"));
+    orb1 = Orbital(std::string("I"));
+  }
   create_Oper(exccl,orb1,orb0,name,lm);
 }
-Oper::Oper(Ops::Type type, short int exccl, 
-           void * term, Orbital (*freeorb)(void * term, Orbital::Type type), std::string name, int lm)
+Oper::Oper(Ops::Type type, short int exccl, Orbital occ, Orbital virt, std::string name, int lm, Term* pTerm)
 {
   assert( !InSet(type, Ops::FluctP,Ops::Fock,Ops::XPert) );
   _type=type;
-  Orbital orb0(freeorb(term,Orbital::Virt));
-  Orbital orb1(freeorb(term,Orbital::Occ));
-  create_Oper(exccl,orb1,orb0,name,lm);
-}
-Oper::Oper(Ops::Type type, short int exccl, Orbital occ, Orbital virt, std::string name, int lm)
-{
-  assert( !InSet(type, Ops::FluctP,Ops::Fock,Ops::XPert) );
-  _type=type;
+  p_Term = pTerm;
   create_Oper(exccl,occ,virt,name,lm);
 //   xout << *this << std::endl;
 }
 Oper::Oper(Ops::Type type, short int exccl, const std::map< Orbital::Type, Orbital >& orbnames, 
-           const std::vector< Product< Orbital::Type > >& orbtypes, std::string name, int lm)
+           const std::vector< Product< Orbital::Type > >& orbtypes, std::string name, int lm, Term* pTerm)
 {
   assert( !InSet(type, Ops::FluctP,Ops::Fock,Ops::XPert) );
   assert( orbtypes.size() == 2 );
   assert( int(orbtypes[0].size()) == exccl );
   assert( int(orbtypes[1].size()) == exccl+lm );
   _type=type;
+  p_Term = pTerm;
   create_Oper(exccl,orbnames,orbtypes,name,lm);
 }
 
 Oper::Oper(Ops::Type type, short int exccl, const Product< Orbital >& occs, const Product< Orbital >& virts, 
-           std::string name, int lm)
+           std::string name, int lm, Term* pTerm)
 {
   assert( occs.size() + lm == virts.size() );
   assert( occs.size() == uint(exccl) );
   assert( !InSet(type, Ops::FluctP,Ops::Fock,Ops::XPert) );
   _type=type;
+  p_Term = pTerm;
   create_Oper(occs,virts,name);
 }
-Oper::Oper(Ops::Type type, short int exccl, 
-           void * term, Orbital (*freeorb)(void * term, Orbital::Type type), 
-           const std::vector< Product< Orbital::Type > >& orbtypes, std::string name, int lm)
+Oper::Oper(Ops::Type type, short int exccl, const std::vector< Product< Orbital::Type > >& orbtypes, 
+           std::string name, int lm, Term* pTerm)
 {
   assert( !InSet(type, Ops::FluctP,Ops::Fock,Ops::XPert) );
   assert( orbtypes.size() == 2 );
@@ -117,15 +119,24 @@ Oper::Oper(Ops::Type type, short int exccl,
   assert( int(orbtypes[1].size()) == exccl+lm );
   
   _type=type;
+  p_Term = pTerm;
   std::map<Orbital::Type,Orbital> orbnames;
-  for ( uint i=0; i<orbtypes.size(); ++i ){
-    Product<Orbital::Type>::const_iterator iot;
-    _foreach(iot,orbtypes[i]){
-      if ( orbnames.count(*iot) == 0 ){
-        // new orb type
-        orbnames[*iot] = freeorb(term,*iot);
+  if ( p_Term ){
+    for ( uint i=0; i<orbtypes.size(); ++i ){
+      Product<Orbital::Type>::const_iterator iot;
+      _foreach(iot,orbtypes[i]){
+        if ( orbnames.count(*iot) == 0 ){
+          // new orb type
+          orbnames[*iot] = p_Term->freeorbname(*iot);
+        }
       }
     }
+  } else {
+    TsPar& orbs = Input::sPars["syntax"];
+    orbnames[Orbital::Occ] = Orbital(std::string(1,char(std::toupper(orbs["occorb"][0]))));
+    orbnames[Orbital::Virt] = Orbital(std::string(1,char(std::toupper(orbs["virorb"][0]))));
+    orbnames[Orbital::Act] = Orbital(std::string(1,char(std::toupper(orbs["actorb"][0]))));
+    orbnames[Orbital::GenT] = Orbital(std::string(1,char(std::toupper(orbs["genorb"][0]))));
   }
   create_Oper(exccl,orbnames,orbtypes,name,lm);
 }
@@ -135,13 +146,14 @@ void Oper::create_Oper(const std::string& name, bool antisym)
   assert( InSet(_type, Ops::FluctP,Ops::Fock,Ops::XPert) );
   Product<Orbital> porbs;
   Matrices::Spinsym spinsym = Matrices::Singlet;
+  Electron el = 1;
+  if (p_Term) el = p_Term->nextelectron();
   // operators with general indices
-  Orbital orb(std::string("P"));
+  Orbital orb(std::string("P"),el);
   _SQprod*=SQOp(SQOp::Creator,orb);
   porbs*=orb;
   _sumindx.insert(orb);
-//   orb=Orbital(std::string("Q"),orb.spin());//same spin as in P
-  orb=Orbital(std::string("Q"));//same spin as in P
+  orb=Orbital(std::string("Q"),el);//same electron as in P
   porbs*=orb;
   _sumindx.insert(orb);
   _prefac=1;
@@ -149,16 +161,17 @@ void Oper::create_Oper(const std::string& name, bool antisym)
     _SQprod*=SQOp(SQOp::Annihilator,orb);
   } else {
    // we use chemical notation (PQ|RS) P^\dg R^\dg S Q
-    orb=Orbital(std::string("R"));
+    ++el;
+    if (p_Term) el = p_Term->nextelectron();
+    orb=Orbital(std::string("R"),el);
     _SQprod*=SQOp(SQOp::Creator,orb);
     porbs*=orb;
     _sumindx.insert(orb);
-//     orb=Orbital(std::string("S"),orb.spin());//same spin as in R
-    orb=Orbital(std::string("S"));//same spin as in R
+    orb=Orbital(std::string("S"),el);//same electron as in R
     _SQprod*=SQOp(SQOp::Annihilator,orb);
     porbs*=orb;
     _sumindx.insert(orb);
-    orb=Orbital(std::string("Q"));
+    orb=porbs[1];
     _SQprod*=SQOp(SQOp::Annihilator,orb);
     _prefac /= 4;
   }
@@ -238,20 +251,23 @@ void Oper::create_Oper(const Product< Orbital >& occs, const Product< Orbital >&
     nanni = p_orb1->size(),
     nmax = std::max(ncrea,nanni),
     npairs = std::min(ncrea,nanni);
-  // symmetry (hash of orbital-type -> number of such electrons)
+  // symmetry (hash of orbital-type -> number of such electrons) (for prefactor calculation)
   std::map<uint,uint> sym;
   _prefac = 1;
+  Electron el;
   for (unsigned short i = 0; i < nmax; ++i) {  
     Spin spin(Spin::No);
     bool setspindiff = (i == nmax-1 && spinsym != Matrices::Singlet);
+    el = i+1;
     if ( i < ncrea ) {
       Orbital orb = (*p_orb0)[i];
       spin = orb.spin();
       if (setspindiff){ // triplet part -- use spin-difference
         assert(spin.type() != Spin::No);
         spin.settype(Spin::GenD);
-        orb.setspin(spin);
       }
+      spin.setel(el);
+      orb.setspin(spin);
       _SQprod*=SQOp(SQOp::Creator, orb);
       porbs *= orb;
       _sumindx.insert(orb);
@@ -262,9 +278,13 @@ void Oper::create_Oper(const Product< Orbital >& occs, const Product< Orbital >&
     }
     if ( i < nanni ) {
       Orbital orb = (*p_orb1)[i];
-      if (spin.type() != Spin::No){ // use same spin for same electrons
-        orb.setspin(spin);
+      spin = orb.spin();
+      if (setspindiff){ // triplet part -- use spin-difference
+        assert(spin.type() != Spin::No);
+        spin.settype(Spin::GenD);
       }
+      spin.setel(el);
+      orb.setspin(spin);
       _SQprod *= SQOp(SQOp::Annihilator, orb);
       porbs *= orb;
       _sumindx.insert(orb);
