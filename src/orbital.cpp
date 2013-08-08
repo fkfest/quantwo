@@ -114,6 +114,10 @@ int Orbital::comp_letname(const Orbital& orb) const
   else if ( lname > lnameo ) return 1;
   return 0;
 }
+Return Orbital::replace(const Orbital& orb1, const Orbital& orb2)
+{
+  if (*this == orb1) *this = orb2; return Return::Done;
+}
 
 std::ostream & operator << (std::ostream & o, Orbital const & orb)
 {

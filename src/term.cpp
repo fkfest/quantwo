@@ -726,27 +726,27 @@ void Term::reduceTerm()
     // search for orbitals in (real) summations
     it1 = _realsumindx.find(_kProd[i].orb1());
     it2 = _realsumindx.find(_kProd[i].orb2());
+    Orbital 
+      orb1 = _kProd[i].orb1(),
+      orb2 = _kProd[i].orb2();
+    bool insum = false;
     if ( it2 != _realsumindx.end() ) { // found orb2
+      insum = true;
+    } else if ( it1 != _realsumindx.end() ) { // found orb1
+      insum = true;
+      std::swap(it1,it2);
+      std::swap(orb1,orb2);
+    }
+    if ( insum ) { // found in sum
       _realsumindx.erase(it2); // delete summation over orb2
-      it2 = _sumindx.find(_kProd[i].orb2());
+      it2 = _sumindx.find(orb2);
       if ( it2 == _sumindx.end() )
         error("Strange, orbital not found in _sumindx","Term::reduceTerm");
       _sumindx.erase(it2);
-      Q2::replace(_opProd,_kProd[i].orb2(),_kProd[i].orb1());
-      Q2::replace(_mat,_kProd[i].orb2(),_kProd[i].orb1());
+      Q2::replace(_opProd,orb2,orb1);
+      Q2::replace(_mat,orb2,orb1);
       kpr.erase(kpr.begin()+ikpr); // delete the Kronecker
-      Q2::replace(kpr,_kProd[i].orb2(),_kProd[i].orb1());
-      ikpr--;
-    } else if ( it1 != _realsumindx.end() ) { // found orb1
-      _realsumindx.erase(it1); // delete summation over orb2
-      it1 = _sumindx.find(_kProd[i].orb1());
-      if ( it1 == _sumindx.end() )
-        error("Strange, orbital not found in _sumindx","Term::reduceTerm");
-      _sumindx.erase(it1);
-      Q2::replace(_opProd,_kProd[i].orb1(),_kProd[i].orb2());
-      Q2::replace(_mat,_kProd[i].orb1(),_kProd[i].orb2());
-      kpr.erase(kpr.begin()+ikpr); // delete the Kronecker
-      Q2::replace(kpr,_kProd[i].orb1(),_kProd[i].orb2());
+      Q2::replace(kpr,orb2,orb1);
       ikpr--;
     }
     ikpr++;
