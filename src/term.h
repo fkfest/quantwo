@@ -177,6 +177,8 @@ namespace Q2
 {
   template <class T, class Q>
   Return replace(Product<T> &p, Q orb1, Q orb2);
+  template <class T, class Q>
+  Return replace(Set<T> &p, Q orb1, Q orb2);
   template <class T>
   Return replace(SQOp &op, T orb1, T orb2);
   template <class T>

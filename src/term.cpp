@@ -711,11 +711,8 @@ void Term::setmatconnections()
 }
 void Term::reduceTerm()
 {
-  int ikpr;
   TOrbSet::iterator it1, it2;
-  Product<Kronecker> kpr(_kProd); // copy _kProd
-  ikpr=0;
-  for ( unsigned int i=0 ; i<_kProd.size() ; ++i ) // iterate over Product<Kronecker>
+  for ( int i = 0 ; i < int(_kProd.size()) ; ++i ) // iterate over Product<Kronecker>
   {
     if (_kProd[i].orb1().type()!=_kProd[i].orb2().type() 
         && _kProd[i].orb2().type()!=Orbital::GenT && _kProd[i].orb1().type()!=Orbital::GenT )
@@ -745,13 +742,14 @@ void Term::reduceTerm()
       _sumindx.erase(it2);
       Q2::replace(_opProd,orb2,orb1);
       Q2::replace(_mat,orb2,orb1);
-      kpr.erase(kpr.begin()+ikpr); // delete the Kronecker
-      Q2::replace(kpr,orb2,orb1);
-      ikpr--;
+      _kProd.erase(_kProd.begin()+i); // delete the Kronecker
+      Q2::replace(_kProd,orb2,orb1);
+      --i;
+      // for spin:
+      Q2::replace(_realsumindx,orb2,orb1);
+      Q2::replace(_sumindx,orb2,orb1);
     }
-    ikpr++;
   }
-  _kProd=kpr;
 }
 static bool matisnone(const Matrices& mat)
 { return (mat.type() == Ops::None); };
@@ -1124,6 +1122,23 @@ Return Q2::replace(Product< T >& p, Q orb1, Q orb2)
   {
     rpl += replace(p[i],orb1, orb2);
   }
+  return rpl;
+}
+template <class T, class Q>
+Return Q2::replace(Set< T >& p, Q orb1, Q orb2)
+{
+  Return rpl;
+  Set<T> tmp;
+  std::pair<typename Set<T>::iterator,bool> ret;
+  for ( typename Set<T>::iterator it = p.begin(); it != p.end(); ++it )
+  { 
+    T t(*it);
+    rpl += replace(t,orb1, orb2);
+    ret = tmp.insert(t);
+    if (!ret.second)
+      say("Strange, summation runs already over "+t.name());
+  }
+  p = tmp;
   return rpl;
 }
 template <class T>
