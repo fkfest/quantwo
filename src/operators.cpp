@@ -238,6 +238,7 @@ void Oper::create_Oper(const short int& exccl, const std::map< Orbital::Type, Or
 void Oper::create_Oper(const Product< Orbital >& occs, const Product< Orbital >& virts, const std::string& name)
 {
   assert( !InSet(_type, Ops::FluctP,Ops::Fock,Ops::XPert) );
+  bool spinintegr = Input::iPars["prog"]["spinintegr"];
 //  assert( occs.size() == virts.size() );
   Matrices::Spinsym spinsym = Matrices::Singlet;
   Product<Orbital> porbs;
@@ -253,6 +254,8 @@ void Oper::create_Oper(const Product< Orbital >& occs, const Product< Orbital >&
     npairs = std::min(ncrea,nanni);
   // symmetry (hash of orbital-type -> number of such electrons) (for prefactor calculation)
   std::map<uint,uint> sym;
+  std::map<uint,uint> symel;
+  uint hash;
   _prefac = 1;
   Electron el;
   for (unsigned short i = 0; i < nmax; ++i) {  
@@ -262,6 +265,7 @@ void Oper::create_Oper(const Product< Orbital >& occs, const Product< Orbital >&
       el = p_Term->nextelectron();
     else
       el = i+1;
+    uint elhash = 0;
     if ( i < ncrea ) {
       Orbital orb = (*p_orb0)[i];
       spin = orb.spin();
@@ -277,7 +281,10 @@ void Oper::create_Oper(const Product< Orbital >& occs, const Product< Orbital >&
       if (InSet(_type, Ops::Exc0,Ops::Deexc0)) 
         _fakesumindx.insert(orb);
       // add this type of electron-orbital
-      sym[uint(orb.type())] += 1;
+      hash = uint(orb.type()) + 2*Orbital::MaxType*orb.spin().spinhash();
+      sym[hash] += 1;
+      // hash for (any) electron
+      elhash += uint(orb.type()) + Orbital::MaxType*Orbital::MaxType*orb.spin().spinhash(false);
     }
     if ( i < nanni ) {
       Orbital orb = (*p_orb1)[i];
@@ -294,14 +301,25 @@ void Oper::create_Oper(const Product< Orbital >& occs, const Product< Orbital >&
       if (InSet(_type, Ops::Exc0,Ops::Deexc0)) 
         _fakesumindx.insert(orb);
       // add this type of electron-orbital
-      sym[uint(orb.type())*Orbital::MaxType] += 1;
+      hash = Orbital::MaxType + uint(orb.type()) + 2*Orbital::MaxType*orb.spin().spinhash();
+      sym[hash] += 1;
+      // hash for (any) electron
+      elhash += Orbital::MaxType*uint(orb.type()) + Orbital::MaxType*Orbital::MaxType*Spin::MaxType*orb.spin().spinhash(false);
     }
+    symel[elhash] += 1;
   }
   // prefactor
   std::map<uint,uint>::const_iterator is; 
   _foreach(is,sym){
     for (uint i = 0; i < is->second; ++i)
       _prefac *= i+1;
+  }
+  if (spinintegr){
+    // take into account the indistinguishability of the electrons
+    _foreach(is,symel){
+      for (uint i = 0; i < is->second; ++i)
+        _prefac *= i+1;
+    }
   }
   _prefac = 1/_prefac;
   _mat=Matrices(_type,porbs,npairs,name,spinsym);

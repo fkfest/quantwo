@@ -887,9 +887,9 @@ void Term::spinintegration(bool notfake)
   if (notfake) {// set no spin
     for (unsigned int i=0; i<_mat.size(); i++) {
       _mat[i].set_no_spin();
-      if (InSet(_mat[i].type(),Ops::Exc, Ops::Deexc, Ops::Exc0, Ops::Deexc0, Ops::Interm ))
-        for (unsigned int j=0; j<_mat[i].orbitals().size()/2; j++)
-          _prefac *= j+1; // the symmetry of closed shell cluster operators is lower 
+//       if (InSet(_mat[i].type(),Ops::Exc, Ops::Deexc, Ops::Exc0, Ops::Deexc0, Ops::Interm ))
+//         for (unsigned int j=0; j<_mat[i].orbitals().size()/2; j++)
+//           _prefac *= j+1; // the symmetry of closed shell cluster operators is lower 
     }
     TOrbSet sumindx;
     for ( TOrbSet::iterator it = _sumindx.begin(); it != _sumindx.end(); ++it ){
@@ -1046,7 +1046,9 @@ void Term::printdiag(Output* pout, TFactor fac) const
 Orbital Term::freeorbname(Orbital::Type type)
 {
   TsPar& orbs = Input::sPars["syntax"];
-  Spin::Type spin=Spin::GenS;
+  bool spinintegr = Input::iPars["prog"]["spinintegr"];
+  Spin::Type spin = Spin::Gen;
+  if (spinintegr) spin = Spin::GenS;
   const std::string * ip_orbs;
   std::string lastorb=_lastorb[type].name();
   unsigned long int indx;

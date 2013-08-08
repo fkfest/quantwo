@@ -695,11 +695,14 @@ Oper Equation::handle_explexcitation(Term& term, const std::string& name, bool d
   Product<Orbital> occs, virts;
   if ( name[0] != '_' && name[0] != '^' )
     error("Doesn't start with _ or ^ :"+name,"Finput::handle_explexcitation");
+  bool spinintegr = Input::iPars["prog"]["spinintegr"];
+  Spin::Type spintype = Spin::Gen;
+  if (spinintegr) spintype = Spin::GenS;
   ipos = 0;
   ipos = IL::skip(name,ipos,"{}_^ ");
   while ( (ipos1 = IL::nextwordpos(name,ipos,true,false)) != ipos ){//non greedy
     // TODO change it proper to singlet and triplet operators, handle sub and superscripts!!
-    Orbital orb(IL::plainname(name.substr(ipos,ipos1-ipos)),Spin::GenS);
+    Orbital orb(IL::plainname(name.substr(ipos,ipos1-ipos)),spintype);
     if ( orb.type() == Orbital::Occ )
       occs *= orb;
     else if ( orb.type() == Orbital::Virt )
@@ -713,9 +716,9 @@ Oper Equation::handle_explexcitation(Term& term, const std::string& name, bool d
   excl = occs.size();
   // set lastorb (if smaller)
   for ( uint i = 0; i < occs.size(); ++i )
-    term.set_lastorb(Orbital(occs[i].letname(),Spin::GenS),true);
+    term.set_lastorb(Orbital(occs[i].letname(),spintype),true);
   for ( uint i = 0; i < virts.size(); ++i )
-    term.set_lastorb(Orbital(virts[i].letname(),Spin::GenS),true);
+    term.set_lastorb(Orbital(virts[i].letname(),spintype),true);
   //make sure that we haven't use these orbital names already
   correct_orbs(term,occs);
   correct_orbs(term,virts);
@@ -730,12 +733,15 @@ Oper Equation::handle_explexcitation(Term& term, const std::string& name, bool d
 void Equation::correct_orbs(Term& term, const Product<Orbital>& orbs)
 {
   if ( _orbs4excops.size() > 0 ){
+    bool spinintegr = Input::iPars["prog"]["spinintegr"];
+    Spin::Type spintype = Spin::Gen;
+    if (spinintegr) spintype = Spin::GenS;
     //make sure that we haven't use these orbital names already
     for ( uint i = 0; i < orbs.size(); ++i ){
       for ( uint iex = 0; iex < _orbs4excops.size(); ++iex ){
         for ( uint it = Orbital::Occ; it < Orbital::MaxType; ++it ){
           Orbital::Type ot = static_cast<Orbital::Type>(it);
-          if ( _orbs4excops[iex][ot] == Orbital(orbs[i].letname(),Spin::GenS) )  // is there, change it
+          if ( _orbs4excops[iex][ot] == Orbital(orbs[i].letname(),spintype) )  // is there, change it
             _orbs4excops[iex][ot] = term.freeorbname(ot);
         }
       }
@@ -964,6 +970,9 @@ bool Equation::handle_orbtypes(std::vector< Product< Orbital::Type > >& orbtypes
 {
   bool foundorbtypes = false;
   lui up, down, ipos, ipos1;
+  bool spinintegr = Input::iPars["prog"]["spinintegr"];
+  Spin::Type spintype = Spin::Gen;
+  if (spinintegr) spintype = Spin::GenS;
   down=IL::lexfind(string,"_");
   up=IL::lexfind(string,"^");
   if (down!=std::string::npos && down!=string.size()-1){
@@ -971,7 +980,7 @@ bool Equation::handle_orbtypes(std::vector< Product< Orbital::Type > >& orbtypes
     ipos = IL::skip(string,ipos,"{}_^ ");
     Product<Orbital::Type> occtypes;
     while ( (ipos < up) == (down < up) && (ipos1 = IL::nextwordpos(string,ipos,true,false)) != ipos ){//non greedy
-      Orbital orb(IL::plainname(string.substr(ipos,ipos1-ipos)),Spin::GenS);
+      Orbital orb(IL::plainname(string.substr(ipos,ipos1-ipos)),spintype);
       occtypes *= orb.type();
       ipos = IL::skip(string,ipos1,"{}_^ ");
     }
@@ -983,7 +992,7 @@ bool Equation::handle_orbtypes(std::vector< Product< Orbital::Type > >& orbtypes
     ipos = IL::skip(string,ipos,"{}_^ ");
     Product<Orbital::Type> virtypes;
     while ( (ipos < down) == (up < down) && (ipos1 = IL::nextwordpos(string,ipos,true,false)) != ipos ){//non greedy
-      Orbital orb(IL::plainname(string.substr(ipos,ipos1-ipos)),Spin::GenS);
+      Orbital orb(IL::plainname(string.substr(ipos,ipos1-ipos)),spintype);
       virtypes *= orb.type();
       ipos = IL::skip(string,ipos1,"{}_^ ");
     }

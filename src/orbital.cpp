@@ -8,8 +8,11 @@ Orbital::Orbital()
 
 Orbital::Orbital(const std::string& name, Electron el)
 {
+  bool spinintegr = Input::iPars["prog"]["spinintegr"];
+  Spin::Type spintype = Spin::Gen;
+  if (spinintegr) spintype = Spin::GenS;
   if ( isupper((char)name[0]) )
-    _spin = Spin(el, Spin::GenS);
+    _spin = Spin(el, spintype);
   else
     _spin = Spin(Spin::No);
   _name=name;
@@ -20,8 +23,11 @@ Orbital::Orbital(const std::string& name, Electron el)
 
 Orbital::Orbital(const std::string& name, Orbital::Type type, Electron el)
 {
+  bool spinintegr = Input::iPars["prog"]["spinintegr"];
+  Spin::Type spintype = Spin::Gen;
+  if (spinintegr) spintype = Spin::GenS;
   if ( isupper((char)name[0]) )
-    _spin = Spin(el, Spin::GenS);
+    _spin = Spin(el, spintype);
   else
     _spin = Spin(Spin::No);
   _name=name;
@@ -116,18 +122,29 @@ int Orbital::comp_letname(const Orbital& orb) const
 }
 Return Orbital::replace(const Orbital& orb1, const Orbital& orb2)
 {
-  if (*this == orb1) *this = orb2; return Return::Done;
+  bool test = false;
+  if (*this == orb1) { 
+    *this = orb2; 
+    // restore spin -- will be replaced explicitely 
+    this->_spin = orb1._spin;
+    test = true;
+  }
+  if (test) {
+    this->_spin.replace(orb1._spin,orb2._spin);
+    if (*this != orb2) xout << "WHHYYYY?" << std::endl;
+  }
+  return Return::Done;
 }
 
 std::ostream & operator << (std::ostream & o, Orbital const & orb)
 {
-  if ( orb.spin().type() == Spin::GenS )
+  if ( orb.spin().type() == Spin::Gen )
     o << char(std::toupper(orb.name().at(0)));
   else
     o << orb.name().at(0);
   if (orb.name().size() > 1)
     o <<"_{" << orb.name().substr(1) << "}";
-  if ( orb.spin().type() != Spin::GenS )
+  if ( orb.spin().type() != Spin::Gen )
     o << orb.spin();
 /*  if ( orb.type()==Orbital::Occ ) 
     o << "^occ";
@@ -156,7 +173,7 @@ Return Spin::replace(const Spin& s1, const Spin& s2)
   if ( this->_el == s1._el ) {
     assert( _type == s1._type ); // if not eq --> something wrong with the kroneckers!
     // replace
-    if ( _type == s2._type ){
+    if ( _type == s2._type || _type == Gen ){
       *this = s2;
       return Return::Done;
     }
@@ -167,7 +184,7 @@ Return Spin::replace(const Spin& s1, const Spin& s2)
          (_type == GenD && s2._type == GenS) ) 
       return Return::Delete;
     // downgrade the spin-sum
-    if ( _type == Up || _type == Down ) {
+    if ( _type == Up || _type == Down || s2._type == Gen ) {
       return Return::Repeat;
     }
     if (s2._type == Up){

@@ -13,16 +13,21 @@ typedef uint Electron;
 class Spin {
 public:
   // enumerate Spin
-  enum Type { No, // no spin
-    Up, Down, // alpha, beta
-    GenS, // general spin-sum, i.e. sum of spins (alpha + beta), also can represent a general spin!
-    GenD}; // general spin-difference, i.e. (alpha - beta)
+  enum Type { No = 0, // no spin
+    Up = 1, Down = 2, // alpha, beta
+    Gen = 3 , // general spin (i.e. without any restrictions)
+    GenS = 4, // general spin-sum, i.e. sum of spins (alpha + beta)
+    GenD = 5}; // general spin-difference, i.e. (alpha - beta)
+  // for hash and loops
+  static const uint MaxType = 6;
   Spin (Type type = No) : _type(type), _el(0) {};
-  // NOTE: we ignore names for spin != GenS or GenD 
-  Spin (const Electron& el, Type type = GenS) : _type(type), _el(el) {}; 
+  // NOTE: we ignore electron labels for spin = Gen 
+  Spin (const Electron& el, Type type = GenS) : _type(type), _el(el) { if (type == Gen) _el = 0;}; 
   
   Type type() const {return _type;}; 
   Electron el() const {return _el;}; 
+  // returns hash for spin (type + electrons*MaxType)
+  uint spinhash(bool distinguish_el = true) const {return (uint(_type) + (distinguish_el?(MaxType*uint(_el)):0));};
   void settype(Spin::Type type){ _type = type; };
   void setel(Electron el) { _el = el; };
   // check equality
