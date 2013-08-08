@@ -560,15 +560,7 @@ bool Equation::do_sumterms(bool excopsonly )
   if (!expanded(_eqn))
     error("Expand finput first!","Finput::do_sumterms");
   Term term;
-  if (_excops.size()>0) { // set last orbital of the term to the last orbital of pure excitation operators (has to be set before)
-    for ( uint it = Orbital::Occ; it < Orbital::MaxType; ++it ){
-      Orbital::Type ot = static_cast<Orbital::Type>(it);
-      for ( int i = _orbs4excops.size()-1; i >= 0; --i )
-        if (_orbs4excops[i].count(ot))
-          term.set_lastorb(_orbs4excops[i][ot]);
-    }
-  }
-  term.addmatrix(Matrices());
+  reset_term(term);
   Product<long int> indxoperterm;
   for (i=0; i<_eqn.size(); i++) {
     if(InSet(_eqn[i].lex(), Lelem::Bra,Lelem::Ket)) { // handle bra/ket
@@ -581,7 +573,7 @@ bool Equation::do_sumterms(bool excopsonly )
         error("Cannot handle two KETs in one term yet...");
       else
         ket=true;
-      term*=handle_braket(_eqn[i],term);
+      term*=handle_braket(_eqn[i],term,excopsonly);
       indxoperterm *= i+1;
     } else if (InSet(_eqn[i].lex(), Lelem::Minus,Lelem::Plus)) { // add current term and save the sign of the next term
       bra=ket=false; // reset bra and ket variables
@@ -589,16 +581,7 @@ bool Equation::do_sumterms(bool excopsonly )
         if(i>0) addterm(term,plus,beg,i-1,indxoperterm,nterm,excopsonly);
         plus=(_eqn[i].lex()==Lelem::Plus);
         beg=i+1;
-        term=Term();
-        term.addmatrix(Matrices());
-        if (_excops.size()>0) {
-          for ( uint it = Orbital::Occ; it < Orbital::MaxType; ++it ){
-            Orbital::Type ot = static_cast<Orbital::Type>(it);
-            for ( int i = _orbs4excops.size()-1; i >= 0; --i )
-              if (_orbs4excops[i].count(ot))
-                term.set_lastorb(_orbs4excops[i][ot]);
-          }
-        }
+        reset_term(term);
         indxoperterm=Product<long int>();
       }
     } else if (InSet(_eqn[i].lex(), Lelem::Frac,Lelem::Num)) { // add prefactor
@@ -628,6 +611,20 @@ bool Equation::do_sumterms(bool excopsonly )
   if(_eqn.size()>0) addterm(term,plus,beg,_eqn.size()-1,indxoperterm,nterm,excopsonly);
   return ok;
 }
+void Equation::reset_term(Term& term) const
+{
+  term=Term();
+  term.addmatrix(Matrices());
+  if (_excops.size()>0) {
+    for ( uint it = Orbital::Occ; it < Orbital::MaxType; ++it ){
+      Orbital::Type ot = static_cast<Orbital::Type>(it);
+      for ( int i = _orbs4excops.size()-1; i >= 0; --i )
+        if (_orbs4excops[i].count(ot))
+          term.set_lastorb(_orbs4excops[i].at(ot));
+    }
+  }
+}
+
 void Equation::addterm(Term& term, bool plus, lui beg, lui end, 
                      Product<long int > const & indxoperterm, lui & nterm, bool excopsonly)
 {
@@ -673,7 +670,7 @@ void Equation::addterm(Term& term, bool plus, lui beg, lui end,
     _sumterms -= term;
 }
 
-Oper Equation::handle_braket(const Lelem& lel, Term& term)
+Oper Equation::handle_braket(const Lelem& lel, Term& term, bool excopsonly)
 {
   const TParArray& refs = Input::aPars["syntax"]["ref"];
   const TParArray& csfs = Input::aPars["syntax"]["csf"];
@@ -685,12 +682,13 @@ Oper Equation::handle_braket(const Lelem& lel, Term& term)
     ibeg = 0,
     iend = IL::nextwordpos(lelnam,ibeg,false);
   if (InSet(lelnam.substr(ibeg,iend-ibeg), csfs)){
-    return handle_explexcitation(term,lelnam.substr(iend),(lel.lex()==Lelem::Bra));
+    return handle_explexcitation(term,lelnam.substr(iend),(lel.lex()==Lelem::Bra),excopsonly);
   } else {
-    return handle_excitation(term,lelnam,(lel.lex()==Lelem::Bra));
+    int lm = 0;
+    return handle_excitation(term,lelnam,(lel.lex()==Lelem::Bra),lm,excopsonly);
   }
 }
-Oper Equation::handle_explexcitation(Term& term, const std::string& name, bool dg)
+Oper Equation::handle_explexcitation(Term& term, const std::string& name, bool dg, bool excopsonly)
 {
   lui ipos, ipos1;
   short excl;
@@ -718,35 +716,34 @@ Oper Equation::handle_explexcitation(Term& term, const std::string& name, bool d
     term.set_lastorb(Orbital(occs[i].letname(),Spin::GenS),true);
   for ( uint i = 0; i < virts.size(); ++i )
     term.set_lastorb(Orbital(virts[i].letname(),Spin::GenS),true);
-  if ( _orbs4excops.size() > 0 ){
-    //make sure that we haven't use these orbital names already
-    for ( uint i = 0; i < occs.size(); ++i ){
-      for ( uint iex = 0; iex < _orbs4excops.size(); ++iex ){
-        for ( uint it = Orbital::Occ; it < Orbital::MaxType; ++it ){
-          Orbital::Type ot = static_cast<Orbital::Type>(it);
-          if ( _orbs4excops[iex][ot] == Orbital(occs[i].letname(),Spin::GenS) )  // is there, change it
-            _orbs4excops[iex][ot] = term.freeorbname(ot);
-        }
-      }
-    }
-    for ( uint i = 0; i < virts.size(); ++i ){
-      for ( uint iex = 0; iex < _orbs4excops.size(); ++iex )
-        for ( uint it = Orbital::Occ; it < Orbital::MaxType; ++it ){
-          Orbital::Type ot = static_cast<Orbital::Type>(it);
-          if ( _orbs4excops[iex][ot] == Orbital(virts[i].letname(),Spin::GenS) )  // is there, change it
-            _orbs4excops[iex][ot] = term.freeorbname(ot);
-        }
-    }
-  }
+  //make sure that we haven't use these orbital names already
+  correct_orbs(term,occs);
+  correct_orbs(term,virts);
   int lmelec = virts.size()-occs.size();
+  if (excopsonly) return Oper();
   // create \tau_{excl}
   if (dg)
     return Oper(Ops::Deexc0,excl,occs,virts,"",lmelec,&term);  
   else
     return Oper(Ops::Exc0,excl,occs,virts,"",lmelec,&term);
 }
+void Equation::correct_orbs(Term& term, const Product<Orbital>& orbs)
+{
+  if ( _orbs4excops.size() > 0 ){
+    //make sure that we haven't use these orbital names already
+    for ( uint i = 0; i < orbs.size(); ++i ){
+      for ( uint iex = 0; iex < _orbs4excops.size(); ++iex ){
+        for ( uint it = Orbital::Occ; it < Orbital::MaxType; ++it ){
+          Orbital::Type ot = static_cast<Orbital::Type>(it);
+          if ( _orbs4excops[iex][ot] == Orbital(orbs[i].letname(),Spin::GenS) )  // is there, change it
+            _orbs4excops[iex][ot] = term.freeorbname(ot);
+        }
+      }
+    }
+  }
+}
 
-Oper Equation::handle_excitation(Term& term, const std::string& name, bool dg, int lmel)
+Oper Equation::handle_excitation(Term& term, const std::string& name, bool dg, int lmel, bool excopsonly)
 {
 //   bool multiref = ( Input::iPars["prog"]["multiref"] > 0 );
   long int ipos2;
@@ -787,6 +784,7 @@ Oper Equation::handle_excitation(Term& term, const std::string& name, bool dg, i
     orb4t = _orbs4excops[ipos2];
     _posexcopsterm[ipos2]=term.mat().size(); //set position of this operator in the term
   }
+  if (excopsonly) return Oper();
   // create \tau_{excl}
   if (orbtypes.size() == 0){
     if (dg)
@@ -882,7 +880,7 @@ Oper Equation::handle_operator(const Lelem& lel, Term& term, bool excopsonly)
   IL::add2name(name,nameadd); // add nameadd to name (as superscript)
   if (InSet(name.substr(0,4), bexcops)) { // bare excitation operator
     assert(orbtypes.size() == 0);
-    return handle_excitation(term,namedown,dg,lmelec);
+    return handle_excitation(term,namedown,dg,lmelec,excopsonly);
   }
   if (excopsonly) return Oper();
   if (excl == 0 && lmelec <= 0)

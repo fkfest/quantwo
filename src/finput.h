@@ -86,11 +86,11 @@ private:
   void addterm(Term& term, bool plus, lui beg, lui end, 
                Product< long int > const & indxoperterm, lui & nterm,bool excopsonly);
   // handle bra/ket
-  Oper handle_braket(Lelem const & lel, Term & term);
+  Oper handle_braket(Lelem const & lel, Term & term, bool excopsonly=false);
   // handle explicit excitation index (like ^{ab}_{ij})
-  Oper handle_explexcitation(Term& term, std::string const & name, bool dg);
+  Oper handle_explexcitation(Term& term, std::string const & name, bool dg, bool excopsonly=false);
   // handle excitation index
-  Oper handle_excitation( Term& term, std::string const & name, bool dg, int lmel = 0 );
+  Oper handle_excitation( Term& term, std::string const & name, bool dg, int lmel = 0, bool excopsonly=false );
   // handle factor
   TFactor handle_factor(Lelem const & lel);
   // handle operator
@@ -107,7 +107,11 @@ private:
   void handle_parameters(Term& term, bool excopsonly = false);
   // handle permutation
   Permut handle_permutation(Lelem const & lel);
-
+  // reset term (set to Term() and reset lastorbs)
+  void reset_term(Term& term) const;
+  // correct used orbitals
+  void correct_orbs(Term& term, const Product<Orbital>& orbs);
+  
   Product<Lelem> _eqn;
   Sum<Term, TFactor> _sumterms;
   // save names of pure excitation and deexciation operators

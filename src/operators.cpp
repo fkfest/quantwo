@@ -258,7 +258,10 @@ void Oper::create_Oper(const Product< Orbital >& occs, const Product< Orbital >&
   for (unsigned short i = 0; i < nmax; ++i) {  
     Spin spin(Spin::No);
     bool setspindiff = (i == nmax-1 && spinsym != Matrices::Singlet);
-    el = i+1;
+    if ( p_Term ) 
+      el = p_Term->nextelectron();
+    else
+      el = i+1;
     if ( i < ncrea ) {
       Orbital orb = (*p_orb0)[i];
       spin = orb.spin();
