@@ -112,6 +112,8 @@ class Term {
     bool antisymmetrized();
     //! expand all antisymmetrical matrices in term 
     Sum<Term,TFactor> expand_antisym();
+    //! reorder density matrices to singlet order
+    Sum<Term, TFactor> dm2singlet();
     //! Spin integration (if notfake false: calculate only _nloops, _nintloops, _nocc)
     void spinintegration(bool notfake);
     //! set prefactor of term to one

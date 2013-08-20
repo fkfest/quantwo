@@ -119,6 +119,16 @@ bool Matrices::operator==(const Matrices& t) const
   //}
   return false;
 }
+bool Matrices::nonsingldm() const
+{
+  if ( _type != Ops::DensM ) return false;
+  assert( _orbs.size()%2 == 0 );
+  for ( uint i = 0; i < _orbs.size()/2; i+=2 ){
+    if (_orbs[i].spin() != _orbs[i+1].spin() ) return true;
+  }
+  return false;
+}
+
 void Matrices::reset_vertices()
 { _indx=-1; }
 

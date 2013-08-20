@@ -65,6 +65,8 @@ class Matrices {
   bool operator < (Matrices const & t) const;
   // equality of two Matrices (including symmetry properties)
   bool operator == (Matrices const & t) const;
+  // returns true if this is a non-singlet density matrix
+  bool nonsingldm() const;
   // set "kind" of matrix (_exccl, _intlines, _intvirt)
   void setkind(short exccl, short intlines, short intvirt);
   // return excitation class (has to be set previously!)
@@ -101,7 +103,6 @@ class Matrices {
   const ConLine& conline(lui iorb) const;
   // permute with p
   void permute(const Permut& p);
-  
   private:
   Ops::Type _type;
   Product<Orbital> _orbs;

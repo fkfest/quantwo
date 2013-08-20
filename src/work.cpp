@@ -5,21 +5,37 @@ Sum< Term, TFactor > Q2::reduceSum(Sum< Term, TFactor > s)
   double minfac = Input::fPars["prog"]["minfac"];
   bool brill = ( Input::iPars["prog"]["brill"] > 0 );
   bool quan3 = ( Input::iPars["prog"]["quan3"] > 0 );
+  bool spinintegr = Input::iPars["prog"]["spinintegr"];
   Sum<Term,TFactor> sum,sum1;
   Term term,term1;
   bool added;
   TFactor prefac;
   say("Reduce sum of terms");
   _xout3(s << std::endl);
-  say("Kroneckers, Connections and Antisymmetry...");
-  bool spinintegr = Input::iPars["prog"]["spinintegr"];
-  for ( Sum<Term,TFactor>::const_iterator i=s.begin();i!=s.end(); ++i)
-  {
+  say("Kroneckers...");
+  sum = Kroneckers(s);
+  _xout3(sum << std::endl);
+  
+  if (false){
+//   if (spinintegr){
+    // bring all the density matrices into singlet-order
+    say("Singlet order...");
+    s = sum;
+    sum.clear();
+    for ( Sum<Term,TFactor>::const_iterator i=s.begin();i!=s.end(); ++i) {
+      term = i->first;
+      sum1 = term.dm2singlet();
+      sum1 *= i->second;
+      sum += sum1;
+    }
+    sum = Kroneckers(sum);
+    _xout3(sum << std::endl);
+  }
+  say("Connections and Antisymmetry...");
+  s = sum;
+  sum.clear();
+  for ( Sum<Term,TFactor>::const_iterator i=s.begin();i!=s.end(); ++i) {
     term=i->first;
-    // remove Kroneckers
-    term.reduceTerm();
-    if (term.kProd().size()>0)
-      error("Still some Kroneckers left. We can not handle it yet!","Q2::reduceSum");
     // generate Kallay's "triplets of integers"
     term.matrixkind();
     // set connections "map" of matrices
@@ -33,13 +49,11 @@ Sum< Term, TFactor > Q2::reduceSum(Sum< Term, TFactor > s)
     sum1 *= i->second;
     sum += sum1;
   }
-
-  _xout3(sum << std::endl);
   if (quan3) {
     say("count electrons (a posteriori)...");
-    sum1.clear();
-    Sum< Term, TFactor > sum2(sum);
-    for ( Sum<Term,TFactor>::const_iterator i=sum2.begin();i!=sum2.end(); ++i) {
+    s = sum;
+    sum.clear();
+    for ( Sum<Term,TFactor>::const_iterator i=s.begin();i!=s.end(); ++i) {
       term=i->first;
       term.deleteNoneMats();
       term.setmatconnections();
@@ -48,35 +62,35 @@ Sum< Term, TFactor > Q2::reduceSum(Sum< Term, TFactor > s)
       // remove prefactors in terms
       term.reset_prefac();
       added=false;
-      for ( Sum<Term,TFactor>::iterator k=sum1.begin();k!=sum1.end(); ++k) {
+      for ( Sum<Term,TFactor>::iterator k=sum.begin();k!=sum.end(); ++k) {
         Permut perm;
         term1=k->first;
         if (term.equal(term1,perm)) {
-          sum1.erase(k);
+          sum.erase(k);
           term1+=std::make_pair<Permut,TFactor>(perm,prefac);
           //std::cout<<"term old" << term1 <<std::endl;
-          if ( !term1.term_is_0(minfac) ) sum1+=term1;
+          if ( !term1.term_is_0(minfac) ) sum+=term1;
           added=true;
           break;
         }
       }
       if (!added) {
         term+=std::make_pair<Permut,TFactor>(Permut(),prefac);
-        if ( !term.term_is_0(minfac) ) sum1+=term;
+        if ( !term.term_is_0(minfac) ) sum+=term;
         //std::cout<<"term new" << term <<std::endl;
       }
       
       
 //      Termel termel(term);
-//      sum1 += std::make_pair(term,i->second);
+//      sum += std::make_pair(term,i->second);
     }
-//    _xout3(sum1 << std::endl);
-    return sum1;
+//    _xout3(sum << std::endl);
+    return sum;
   }
-    
   say("Diagrams and Spin-integration...");
-  sum1.clear();
-  for ( Sum<Term,TFactor>::const_iterator i=sum.begin();i!=sum.end(); ++i) {
+  s = sum;
+  sum.clear();
+  for ( Sum<Term,TFactor>::const_iterator i=s.begin();i!=s.end(); ++i) {
     term=i->first;
     // use Brilloin condition 
     if ( brill && term.brilloin() ) continue;
@@ -84,20 +98,36 @@ Sum< Term, TFactor > Q2::reduceSum(Sum< Term, TFactor > s)
     term.deleteNoneMats();
     term.setmatconnections();
     term.spinintegration(spinintegr);
-    sum1 += std::make_pair(term,i->second);
+    sum += std::make_pair(term,i->second);
   }
 
-  _xout3(sum1 << std::endl);
+  _xout3(sum << std::endl);
 
   say("Equal terms and permutations...");
-  //std::cout << "SUM:" << sum1 << std::endl;
-  sum = EqualTerms(sum1,minfac);
+  //std::cout << "SUM:" << sum << std::endl;
+  sum = EqualTerms(sum,minfac);
   say("Remove terms with small prefactors...");
   // now remove everything with small prefactor
-  sum1 = SmallTerms(sum,minfac);
+  sum = SmallTerms(sum,minfac);
   
-  return sum1;
+  return sum;
 }
+Sum< Term, TFactor > Q2::Kroneckers(Sum< Term, TFactor > s)
+{
+  Sum<Term,TFactor> sum;
+  Term term;
+  for ( Sum<Term,TFactor>::const_iterator i=s.begin();i!=s.end(); ++i)
+  {
+    term=i->first;
+    // remove Kroneckers
+    term.reduceTerm();
+    if (term.kProd().size()>0)
+      error("Still some Kroneckers left. We can not handle it yet!","Q2::reduceSum");
+    sum += std::make_pair(term,i->second);
+  }
+  return sum;
+}
+
 Sum< Term, TFactor > Q2::EqualTerms(Sum< Term, TFactor > s, double minfac)
 {
   Sum<Term,TFactor> sum;

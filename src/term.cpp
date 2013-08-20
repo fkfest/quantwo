@@ -812,6 +812,16 @@ Sum< Term, TFactor > Term::expand_antisym()
   }
   return sum;
 }
+Sum< Term, TFactor > Term::dm2singlet()
+{
+  Sum< Term, TFactor > sum;
+  for ( uint i = 0; i < _mat.size(); ++i ){
+    if (_mat[i].nonsingldm()){
+      // bring into singlet order
+    }
+  }
+  return sum;
+}
 
 void Term::spinintegration(bool notfake)
 {
