@@ -885,9 +885,6 @@ void Term::spinintegration(bool notfake)
   if (notfake) {// set no spin
     for (unsigned int i=0; i<_mat.size(); i++) {
       _mat[i].set_no_spin();
-//       if (InSet(_mat[i].type(),Ops::Exc, Ops::Deexc, Ops::Exc0, Ops::Deexc0, Ops::Interm ))
-//         for (unsigned int j=0; j<_mat[i].orbitals().size()/2; j++)
-//           _prefac *= j+1; // the symmetry of closed shell cluster operators is lower 
     }
     TOrbSet sumindx;
     for ( TOrbSet::iterator it = _sumindx.begin(); it != _sumindx.end(); ++it ){
