@@ -9,6 +9,7 @@
 #include "orbital.h"
 #include "globals.h"
 #include "inpline.h" // for name-handling
+#include "sum.h"
 
 namespace Ops {
   // enumerate operator types 
@@ -61,12 +62,12 @@ class Matrices {
   // if firstpart=true : < AB | CD >, if firstpart=false : < AB | DC >
   // if return is true: expanded, if false: don't need to expand
   bool expandantisym(bool firstpart);
+  // returns true if this is a non-singlet density matrix
+  bool nonsingldm() const;
   // artificial ordering
   bool operator < (Matrices const & t) const;
   // equality of two Matrices (including symmetry properties)
   bool operator == (Matrices const & t) const;
-  // returns true if this is a non-singlet density matrix
-  bool nonsingldm() const;
   // set "kind" of matrix (_exccl, _intlines, _intvirt)
   void setkind(short exccl, short intlines, short intvirt);
   // return excitation class (has to be set previously!)

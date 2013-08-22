@@ -91,6 +91,15 @@ bool Matrices::expandantisym(bool firstpart)
     return false;
   return true;
 }
+bool Matrices::nonsingldm() const
+{
+  if ( _type != Ops::DensM ) return false;
+  assert( _orbs.size()%2 == 0 );
+  for ( uint i = 0; i < _orbs.size()/2; i+=2 ){
+    if (_orbs[i].spin() != _orbs[i+1].spin() ) return true;
+  }
+  return false;
+}
 bool Matrices::operator<(const Matrices& t) const
 {
   if ( _type < t._type ) return true;
@@ -117,15 +126,6 @@ bool Matrices::operator==(const Matrices& t) const
    //   }
    // }
   //}
-  return false;
-}
-bool Matrices::nonsingldm() const
-{
-  if ( _type != Ops::DensM ) return false;
-  assert( _orbs.size()%2 == 0 );
-  for ( uint i = 0; i < _orbs.size()/2; i+=2 ){
-    if (_orbs[i].spin() != _orbs[i+1].spin() ) return true;
-  }
   return false;
 }
 
@@ -423,7 +423,6 @@ bool Permut::operator==(const Permut& p) const
   return true;
 }
 
-
 std::ostream & operator << (std::ostream & o, Permut const & p)
 {
   if (p.orbsfrom().size()>0) {
@@ -434,4 +433,3 @@ std::ostream & operator << (std::ostream & o, Permut const & p)
     o << "1";
   return o;
 }
-

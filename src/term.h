@@ -40,6 +40,16 @@ class Term {
     Term & operator *= (const TFactor& fac);
     //! multiply by a permutation
     Term & operator *= (Permut const & perm);
+    Term & operator *= (Sum<Permut,TFactor> const & perm);
+    //! multiply by another term 
+    // TODO: replace with a template
+    Term & operator *= (Term const & t);
+    //! multiply by a matrix
+    Term & operator *= (const Matrices & mat);
+    //! multiply a term by a sum
+    Sum<Term,TFactor> times(const Sum<Term,TFactor>& s) const;
+    //! multiply a term by a sum of matrices
+    Sum<Term,TFactor> times(const Sum<Matrices,TFactor>& s) const;
     //! add permutator
     Term & operator += (Permut const & perm);
     //! add permutator with a factor
@@ -112,8 +122,12 @@ class Term {
     bool antisymmetrized();
     //! expand all antisymmetrical matrices in term 
     Sum<Term,TFactor> expand_antisym();
+    //! true if has a non-singlet density matrix
+    bool has_nonsingldm() const;
     //! reorder density matrices to singlet order
     Sum<Term, TFactor> dm2singlet();
+    Sum<Term, TFactor> dmwickstheorem(const Matrices& dm);
+    Sum<Term, TFactor> dmwick( Term::TWMats& opers, const Term::TWMats& krons, const Matrices& dm, const Product< uint >& cranorder) const;
     //! Spin integration (if notfake false: calculate only _nloops, _nintloops, _nocc)
     void spinintegration(bool notfake);
     //! set prefactor of term to one
@@ -150,13 +164,13 @@ class Term {
     Product<Matrices> _mat;
     TOrbSet _sumindx,_realsumindx;
     TFactor _prefac;
+    Sum<Permut,TFactor> _perm;
     // connections of matrices in term
     // (abs(value)-1) gives the index of the corresponding matrix in _mat
     // positive sign: connected group of matrices Product<long int>
     // negative sign: disconnected --------------"-----------------
     std::vector< Product<long int> > _connections;
 
-    Sum<Permut,TFactor> _perm;
     std::map< Orbital::Type, Orbital > _lastorb;
     Electron _lastel;
     // for term comparison:

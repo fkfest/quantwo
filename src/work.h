@@ -21,6 +21,8 @@ namespace Q2
 {
   Sum<Term,TFactor> reduceSum(Sum<Term,TFactor> s);
   Sum<Term,TFactor> Kroneckers(Sum<Term,TFactor> s);
+  Sum<Term,TFactor> SingletDM(Sum<Term,TFactor> s);
+  bool has_nonsingldm(const Sum<Term,TFactor>& s);
   Sum<Term,TFactor> EqualTerms(Sum<Term,TFactor> s, double minfac);
   Sum<Term,TFactor> SmallTerms(Sum<Term,TFactor> s, double minfac);
   Sum<Term,TFactor> ResolvePermutaions(Sum<Term,TFactor> s);

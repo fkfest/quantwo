@@ -16,19 +16,10 @@ Sum< Term, TFactor > Q2::reduceSum(Sum< Term, TFactor > s)
   sum = Kroneckers(s);
   _xout3(sum << std::endl);
   
-  if (false){
-//   if (spinintegr){
+  if (spinintegr){
     // bring all the density matrices into singlet-order
     say("Singlet order...");
-    s = sum;
-    sum.clear();
-    for ( Sum<Term,TFactor>::const_iterator i=s.begin();i!=s.end(); ++i) {
-      term = i->first;
-      sum1 = term.dm2singlet();
-      sum1 *= i->second;
-      sum += sum1;
-    }
-    sum = Kroneckers(sum);
+    sum = SingletDM(sum);
     _xout3(sum << std::endl);
   }
   say("Connections and Antisymmetry...");
@@ -79,8 +70,6 @@ Sum< Term, TFactor > Q2::reduceSum(Sum< Term, TFactor > s)
         if ( !term.term_is_0(minfac) ) sum+=term;
         //std::cout<<"term new" << term <<std::endl;
       }
-      
-      
 //      Termel termel(term);
 //      sum += std::make_pair(term,i->second);
     }
@@ -100,7 +89,6 @@ Sum< Term, TFactor > Q2::reduceSum(Sum< Term, TFactor > s)
     term.spinintegration(spinintegr);
     sum += std::make_pair(term,i->second);
   }
-
   _xout3(sum << std::endl);
 
   say("Equal terms and permutations...");
@@ -116,8 +104,7 @@ Sum< Term, TFactor > Q2::Kroneckers(Sum< Term, TFactor > s)
 {
   Sum<Term,TFactor> sum;
   Term term;
-  for ( Sum<Term,TFactor>::const_iterator i=s.begin();i!=s.end(); ++i)
-  {
+  for ( Sum<Term,TFactor>::const_iterator i=s.begin();i!=s.end(); ++i) {
     term=i->first;
     // remove Kroneckers
     term.reduceTerm();
@@ -126,6 +113,31 @@ Sum< Term, TFactor > Q2::Kroneckers(Sum< Term, TFactor > s)
     sum += std::make_pair(term,i->second);
   }
   return sum;
+}
+Sum< Term, TFactor > Q2::SingletDM(Sum< Term, TFactor > s)
+{
+  Term term;
+  uint iter = 0;
+  for ( iter = 0; has_nonsingldm(s) && iter < 1000; ++iter ){
+    xout << "has nonsingldm" << std::endl;
+    Sum<Term,TFactor> sum,sum1;
+    for ( Sum<Term,TFactor>::const_iterator i=s.begin();i!=s.end(); ++i) {
+      term = i->first;
+      sum1 = term.dm2singlet();
+      sum1 *= i->second;
+      sum += sum1;
+    }
+    s = Kroneckers(sum);
+  }
+  // TODO uncomment!!
+//   if (iter == 1000) error("Could not bring density matrices into singlet order in 1000 iterations!");
+  return s;
+}
+bool Q2::has_nonsingldm(const Sum< Term, TFactor >& s)
+{
+  for ( Sum<Term,TFactor>::const_iterator i=s.begin();i!=s.end(); ++i) 
+    if (i->first.has_nonsingldm()) return true;
+  return false;
 }
 
 Sum< Term, TFactor > Q2::EqualTerms(Sum< Term, TFactor > s, double minfac)

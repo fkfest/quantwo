@@ -44,6 +44,67 @@ Term& Term::operator*=(const Permut& perm)
   }
   return *this;
 }
+Term& Term::operator*=(const Sum< Permut, TFactor >& perm)
+{
+  if ( _perm.size() == 0 ){
+    _perm = perm;
+    return *this;
+  }
+  Sum<Permut,TFactor> perms;
+  for ( Sum<Permut,TFactor>::const_iterator ip = perm.begin(); ip != perm.end(); ++ip){
+    Sum<Permut,TFactor> perms1;
+    Permut perm1;
+    for ( Sum<Permut,TFactor>::iterator i_p = _perm.begin(); i_p != _perm.end(); ++i_p ){
+      perm1 = i_p->first;
+      perm1 *= ip->first;
+      TFactor fac = ip->second * i_p->second;
+      perms += std::pair< Permut, TFactor >(perm1,fac);
+    }
+    _perm = perms;
+  }
+  return *this;
+}
+
+Term& Term::operator*=(const Term& t)
+{
+  _opProd *= t._opProd;
+  _kProd *= t._kProd;
+  _mat *= t._mat;
+  _sumindx *= t._sumindx;
+  _realsumindx *= t._realsumindx;
+  _prefac *= t._prefac;
+  *this *= t._perm;
+  return *this;
+}
+Term& Term::operator*=(const Matrices& mat)
+{
+  _mat *= mat;
+  return *this;
+}
+
+Sum< Term, TFactor > Term::times(const Sum< Term, TFactor >& s) const
+{
+  Sum< Term, TFactor > sum;
+  for ( Sum<Term,TFactor>::const_iterator is = s.begin(); is != s.end(); ++is) {
+    Term tt(*this);
+    tt *= is->first;
+    tt *= is->second;
+    sum += tt;
+  }
+  return sum;
+}
+Sum< Term, TFactor > Term::times(const Sum< Matrices, TFactor >& s) const
+{
+  Sum< Term, TFactor > sum;
+  for ( Sum<Matrices,TFactor>::const_iterator is = s.begin(); is != s.end(); ++is) {
+    Term tt(*this);
+    tt *= is->first;
+    tt *= is->second;
+    sum += tt;
+  }
+  return sum;
+}
+
 Term& Term::operator+=(const Permut& perm)
 {
   _perm+=perm;
@@ -594,9 +655,15 @@ Sum< Term, TFactor > Term::genwick(Term::TWOps& opers, const Term::TWMats& krons
     }
     // add density matrices
     Product<Orbital> dmorbs;
+    assert(densmat.size()%2 == 0);
+    bool creator = true;
     for (TWMats::const_iterator dm = densmat.begin(); dm != densmat.end(); ++dm){
+      if ((_opProd[*dm].gender()==SQOp::Creator) != creator ) 
+        error("Density matrix has a structure different from a^\\dg a a^\\dg a... Implement a resort!","genwick");
+      creator = !creator;
       dmorbs.push_back(_opProd[*dm].orb());
     }
+    xout << std::endl;
     if (dmorbs.size() > 0){
       Product<Matrices> mat(_mat);
       short npair = dmorbs.size()/2;
@@ -678,8 +745,9 @@ Sum< Term, TFactor > Term::genwick(Term::TWOps& opers, const Term::TWMats& krons
             std::advance(ijop1,jj);
             iop1->erase(ijop1);
           }
-          densmat1.push_back(curr);
+          //swapped operators!
           densmat1.push_back(*ijop);
+          densmat1.push_back(curr);
           //call wick recursivly
           if ((sign+jj)%2 == 0)
             sum-=genwick(opers1,krons1,densmat1);
@@ -692,6 +760,83 @@ Sum< Term, TFactor > Term::genwick(Term::TWOps& opers, const Term::TWMats& krons
     sign+=iop->size();
   }
   return sum;
+}
+Sum< Term, TFactor > Term::dmwickstheorem(const Matrices& dm)
+{
+  assert( dm.type() == Ops::DensM );
+  bool dmsort = (Input::iPars["prog"]["dmsort"] > 0);
+  // generate "matrix" of indices to SQops
+  TWMats opers, krons;
+  unsigned int m=0;
+  const Product<Orbital>& orbs(dm.orbitals());
+  Product<uint> cranorder;
+  if (true){
+  // TODO remove it!
+  Sum< Term, TFactor > sum;
+  Term term;
+  term *= dm;
+  sum += term;
+  return sum;
+  }
+  // sort now in the singlet order
+  assert( orbs.size()%2 == 0 );
+  uint creator = 1;
+  for ( uint i = 0; i < orbs.size(); ++i ){
+    opers.push_back(i);
+    cranorder.push_back(creator);
+    creator = 1 - creator;
+  }
+  // only dmsort version is implemented yet...
+  assert(dmsort);
+  return dmwick(opers,krons,dm,cranorder);
+}
+Sum< Term, TFactor > Term::dmwick(Term::TWMats& opers, const Term::TWMats& krons, 
+                                  const Matrices& dm, const Product<uint>& cranorder) const
+{
+  Sum<Term, TFactor>  sum;
+  const Product<Orbital>& orbs(dm.orbitals());
+  TWMats::iterator itelc = opers.begin(), itela = opers.end();
+  --itela;
+  uint nel =  opers.size()/2;
+  uint sign = 0;
+  for ( uint iel = 0; iel < nel; ++iel, ++itelc, --itela ){
+    // find the first creator operator
+    TWMats::iterator itelcr;
+    uint cur = iel;
+    for ( itelcr = itelc; (cranorder[*itelcr] != 1) && itelcr != opers.end(); ++itelcr, ++cur ){}
+    assert( itelcr != opers.end() );
+    for ( ; itelcr != itelc; --itelcr ){
+      // move creator to position itelc
+      TWMats::iterator it = itelcr;
+      --it;
+      --cur;
+      std::swap(*it,*itelcr);
+      ++sign;
+      TWMats opers1(opers);
+      TWMats krons1(krons);
+      // remove SQop-index
+      TWMats::iterator iop1 = opers1.begin();
+      std::advance(iop1,cur);
+      opers1.erase(iop1);
+      iop1 = opers1.begin();
+      std::advance(iop1,cur);
+      opers1.erase(iop1);
+      // add index to "Kronecker"
+      krons1.push_back(*it);
+      krons1.push_back(*itelcr);
+      //call wick recursivly
+      if ((sign)%2 == 0)
+        sum+=dmwick(opers1,krons1,dm,cranorder);
+      else
+        sum-=dmwick(opers1,krons1,dm,cranorder);
+    }
+    // find annihilator of the same electron (from end)
+    TWMats::iterator itelan;
+    cur = iel;
+    for ( itelan = itela; (cranorder[*itelcr] != 1) && itelan != opers.begin(); ++itelcr, ++cur ){}
+    assert( itelan != opers.begin() );
+    
+  }
 }
 
 void Term::setmatconnections()
@@ -812,14 +957,26 @@ Sum< Term, TFactor > Term::expand_antisym()
   }
   return sum;
 }
+bool Term::has_nonsingldm() const
+{
+  for ( uint i = 0; i < _mat.size(); ++i )
+    if (_mat[i].nonsingldm()) return true;
+  return false;
+}
 Sum< Term, TFactor > Term::dm2singlet()
 {
   Sum< Term, TFactor > sum;
   for ( uint i = 0; i < _mat.size(); ++i ){
     if (_mat[i].nonsingldm()){
       // bring into singlet order
+      Term tt(*this);
+      tt._mat.erase(tt._mat.begin()+i);
+      sum = tt.times(dmwickstheorem(_mat[i]));
+      // can transform only one matrix per call
+      return sum;
     }
   }
+  sum += *this;
   return sum;
 }
 
