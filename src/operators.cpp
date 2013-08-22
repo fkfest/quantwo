@@ -2,21 +2,21 @@
 
 /* SQOp::SQOp(std::string orb)
 {
-  _gender=(isupper((char)orb[0]) ? Creator : Annihilator);
+  _gender=(isupper((char)orb[0]) ? SQOpT::Creator : SQOpT::Annihilator);
   orb[0] = std::tolower(orb[0]);
   _orb = orb;
 } */
-SQOp::SQOp(Gender gender, Orbital orb)
+SQOp::SQOp(SQOpT::Gender gender, Orbital orb)
 {
   _gender=gender;
   _orb = orb;
 }
-SQOp::Gender SQOp::gender() const
+SQOpT::Gender SQOp::gender() const
 { return _gender; }
-SQOp::Gender SQOp::genderPH() const
-{ if (_orb.type()==Orbital::Occ && _gender==Creator) return Annihilator;
-  if (_orb.type()==Orbital::Occ && _gender==Annihilator) return Creator;
-  if (_orb.type()==Orbital::GenT || _orb.type()==Orbital::Act) return Gen;
+SQOpT::Gender SQOp::genderPH() const
+{ if (_orb.type()==Orbital::Occ && _gender==SQOpT::Creator) return SQOpT::Annihilator;
+  if (_orb.type()==Orbital::Occ && _gender==SQOpT::Annihilator) return SQOpT::Creator;
+  if (_orb.type()==Orbital::GenT || _orb.type()==Orbital::Act) return SQOpT::Gen;
   return _gender; }
 Orbital SQOp::orb() const
 { return _orb; }
@@ -38,7 +38,7 @@ Return SQOp::replace(Orbital orb1, Orbital orb2)
 std::ostream & operator << (std::ostream & o, SQOp const & op)
 {
   o << "\\op{" << op.orb() << "}";
-  if ( op.gender()==SQOp::Creator )
+  if ( op.gender()==SQOpT::Creator )
     o << "^\\dg";
   
   return o;
@@ -150,7 +150,7 @@ void Oper::create_Oper(const std::string& name, bool antisym)
   if (p_Term) el = p_Term->nextelectron();
   // operators with general indices
   Orbital orb(std::string("P"),el);
-  _SQprod*=SQOp(SQOp::Creator,orb);
+  _SQprod*=SQOp(SQOpT::Creator,orb);
   porbs*=orb;
   _sumindx.insert(orb);
   orb=Orbital(std::string("Q"),el);//same electron as in P
@@ -158,21 +158,21 @@ void Oper::create_Oper(const std::string& name, bool antisym)
   _sumindx.insert(orb);
   _prefac=1;
   if ( InSet(_type, Ops::Fock,Ops::XPert) ) {
-    _SQprod*=SQOp(SQOp::Annihilator,orb);
+    _SQprod*=SQOp(SQOpT::Annihilator,orb);
   } else {
    // we use chemical notation (PQ|RS) P^\dg R^\dg S Q
     ++el;
     if (p_Term) el = p_Term->nextelectron();
     orb=Orbital(std::string("R"),el);
-    _SQprod*=SQOp(SQOp::Creator,orb);
+    _SQprod*=SQOp(SQOpT::Creator,orb);
     porbs*=orb;
     _sumindx.insert(orb);
     orb=Orbital(std::string("S"),el);//same electron as in R
-    _SQprod*=SQOp(SQOp::Annihilator,orb);
+    _SQprod*=SQOp(SQOpT::Annihilator,orb);
     porbs*=orb;
     _sumindx.insert(orb);
     orb=porbs[1];
-    _SQprod*=SQOp(SQOp::Annihilator,orb);
+    _SQprod*=SQOp(SQOpT::Annihilator,orb);
     _prefac /= 4;
   }
   short npairs = porbs.size()/2;
@@ -275,7 +275,7 @@ void Oper::create_Oper(const Product< Orbital >& occs, const Product< Orbital >&
       }
       spin.setel(el);
       orb.setspin(spin);
-      _SQprod*=SQOp(SQOp::Creator, orb);
+      _SQprod*=SQOp(SQOpT::Creator, orb);
       porbs *= orb;
       _sumindx.insert(orb);
       if (InSet(_type, Ops::Exc0,Ops::Deexc0)) 
@@ -295,7 +295,7 @@ void Oper::create_Oper(const Product< Orbital >& occs, const Product< Orbital >&
       }
       spin.setel(el);
       orb.setspin(spin);
-      _SQprod *= SQOp(SQOp::Annihilator, orb);
+      _SQprod *= SQOp(SQOpT::Annihilator, orb);
       porbs *= orb;
       _sumindx.insert(orb);
       if (InSet(_type, Ops::Exc0,Ops::Deexc0)) 

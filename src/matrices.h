@@ -5,26 +5,15 @@
 #include <set>
 #include <iostream>
 #include <assert.h>
+#include "globals.h"
+#include "types.h"
 #include "product.h"
 #include "orbital.h"
-#include "globals.h"
 #include "inpline.h" // for name-handling
 #include "sum.h"
+// #include "operators.h" // for Creator/Annihilator types
 
 namespace Ops {
-  // enumerate operator types 
-  enum Type 
-  { None, 
-    Exc, // excitation operators \op T_i
-    Exc0, // bare excitation operators \op \tau_{\mu_i}
-    Fock, // Fock 
-    FluctP, // fluctuation potential
-    XPert, // external perturbation
-    Deexc, // deexcitation operators \op T_i^\dg
-    Deexc0, // bare deexcitation operators \op \tau_{\mu_i}^\dg
-    Interm, // some intermediates
-    DensM, // density matrix (for active orbitals)
-    Number};
   // generate Product<Orbital> from occupied and virtual orbitals and excitation class 
   Product<Orbital> genprodorb(short exccl,Orbital const & occ, Orbital const & virt);
 };
@@ -68,6 +57,9 @@ class Matrices {
   bool operator < (Matrices const & t) const;
   // equality of two Matrices (including symmetry properties)
   bool operator == (Matrices const & t) const;
+  // set cranorder for density matrix
+  void set_cran( const Product<SQOpT::Gender>& cran );
+  const Product<SQOpT::Gender>& get_cran() const {return _cranorder;};
   // set "kind" of matrix (_exccl, _intlines, _intvirt)
   void setkind(short exccl, short intlines, short intvirt);
   // return excitation class (has to be set previously!)
@@ -109,6 +101,7 @@ class Matrices {
   Product<Orbital> _orbs;
   std::string _name;
   Spinsym _matspinsym;
+  Product<SQOpT::Gender> _cranorder; // sets creator or annihilator type for every orbital (for density matrices only!)
   bool _antisymform; // W is constructed in antisymmetrized form, but can be expanded later.
   // number of orbital pairs (== electrons for number-conserving operators and otherwise == conserved particles)
   short _npairs;

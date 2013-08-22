@@ -443,12 +443,12 @@ Sum< Term, TFactor > Term::normalOrder(bool fullyContractedOnly) const
     for ( unsigned int i=0 ; i+1<_opProd.size() ; ++i ) // iterate over Product<SQOp> but the last
     {
         // check if two consecutive operators need reordering
-        if ( _opProd[i].gender()==SQOp::Annihilator  &&  _opProd[i+1].gender()==SQOp::Creator ) {   // yes
+        if ( _opProd[i].gender()==SQOpT::Annihilator  &&  _opProd[i+1].gender()==SQOpT::Creator ) {   // yes
           // handle 1st term
           Product<SQOp> p(_opProd); // copy Product<SQOp>
           std::swap(p[i], p[i+1]); // swap operators
           // check if we need downward recursion
-          if ( !fullyContractedOnly || p[_opProd.size()-1].gender()==SQOp::Creator )
+          if ( !fullyContractedOnly || p[_opProd.size()-1].gender()==SQOpT::Creator )
             sum -= Term(p, _kProd, _mat, _sumindx, _realsumindx, _prefac, _connections).normalOrder(fullyContractedOnly);
 
             // handle 2nd term 
@@ -460,7 +460,7 @@ Sum< Term, TFactor > Term::normalOrder(bool fullyContractedOnly) const
           Product<Kronecker>  d(_kProd);
           d *= Kronecker(p[i].orb(), p[i+1].orb());           // and add kronecker
           // check if we need downward recursion
-          if ( !fullyContractedOnly || q.size()==0 || q[q.size()-1].gender()==SQOp::Creator )
+          if ( !fullyContractedOnly || q.size()==0 || q[q.size()-1].gender()==SQOpT::Creator )
             sum += Term(q, d, _mat, _sumindx, _realsumindx, _prefac, _connections).normalOrder(fullyContractedOnly);
           return sum;
         }
@@ -483,17 +483,17 @@ Sum< Term, TFactor > Term::normalOrderPH(bool fullyContractedOnly) const
   bool creat2, annih1;
   for ( unsigned int i=0 ; i+1<_opProd.size() ; ++i ) {// iterate over Product<SQOp> but the last
     // check if two consecutive operators need reordering
-    creat2=(( _opProd[i].genderPH()==SQOp::Annihilator || _opProd[i].genderPH()==SQOp::Gen )
-              &&  _opProd[i+1].genderPH()==SQOp::Creator );
-    annih1=(_opProd[i].genderPH()==SQOp::Annihilator 
-              && ( _opProd[i+1].genderPH()==SQOp::Creator || _opProd[i+1].genderPH()==SQOp::Gen));
+    creat2=(( _opProd[i].genderPH()==SQOpT::Annihilator || _opProd[i].genderPH()==SQOpT::Gen )
+              &&  _opProd[i+1].genderPH()==SQOpT::Creator );
+    annih1=(_opProd[i].genderPH()==SQOpT::Annihilator 
+              && ( _opProd[i+1].genderPH()==SQOpT::Creator || _opProd[i+1].genderPH()==SQOpT::Gen));
     if ( creat2 || annih1 ) {   // yes
       // handle 1st term
       Product<SQOp> p(_opProd); // copy Product<SQOp>
       std::swap(p[i], p[i+1]); // swap operators
       // check if we need downward recursion
-      if ( !fullyContractedOnly || (p[_opProd.size()-1].genderPH()==SQOp::Creator)
-                || (p[0].genderPH()==SQOp::Annihilator))
+      if ( !fullyContractedOnly || (p[_opProd.size()-1].genderPH()==SQOpT::Creator)
+                || (p[0].genderPH()==SQOpT::Annihilator))
         sum -= Term(p, _kProd, _mat, _sumindx, _realsumindx, _prefac, _connections).normalOrderPH(fullyContractedOnly); 
           
       if ( _opProd[i].orb().type()==_opProd[i+1].orb().type() || 
@@ -506,8 +506,8 @@ Sum< Term, TFactor > Term::normalOrderPH(bool fullyContractedOnly) const
         Product<Kronecker>  d(_kProd);
         d *= Kronecker(p[i].orb(), p[i+1].orb());           // and add kronecker
         // check if we need downward recursion
-        if ( !fullyContractedOnly || q.size()==0 || q[q.size()-1].genderPH()==SQOp::Creator 
-                || q[0].genderPH()==SQOp::Annihilator)
+        if ( !fullyContractedOnly || q.size()==0 || q[q.size()-1].genderPH()==SQOpT::Creator 
+                || q[0].genderPH()==SQOpT::Annihilator)
               sum += Term(q, d, _mat, _sumindx, _realsumindx, _prefac, _connections).normalOrderPH(fullyContractedOnly);
       }
       return sum;
@@ -527,9 +527,9 @@ Sum< Term, TFactor > Term::wickstheorem(bool genw) const
   int cran = 0;
   for (unsigned int i=0; i<_opProd.size(); i++) {
     // calculate #creators - #annihilators
-    if ( _opProd[i].gender() == SQOp::Creator ){
+    if ( _opProd[i].gender() == SQOpT::Creator ){
       ++cran;
-    } else if ( _opProd[i].gender() == SQOp::Annihilator ){
+    } else if ( _opProd[i].gender() == SQOpT::Annihilator ){
       --cran;
     } else
       assert(false);
@@ -585,7 +585,7 @@ Sum< Term, TFactor > Term::wick(TWOps& opers, TWMats& krons) const
   lui istart,sign;
   TWOps::iterator ifirstop = opers.begin();
   int curr=*(ifirstop->begin());
-  SQOp::Gender gencurr=_opProd[curr].gender();
+  SQOpT::Gender gencurr=_opProd[curr].gender();
   Orbital::Type orbtypecurr=_opProd[curr].orb().type();
   bool orbcurrgen = (orbtypecurr==Orbital::GenT);
   // remove first SQop-index
@@ -655,19 +655,17 @@ Sum< Term, TFactor > Term::genwick(Term::TWOps& opers, const Term::TWMats& krons
     }
     // add density matrices
     Product<Orbital> dmorbs;
+    Product<SQOpT::Gender> dmcran;
     assert(densmat.size()%2 == 0);
-    bool creator = true;
     for (TWMats::const_iterator dm = densmat.begin(); dm != densmat.end(); ++dm){
-      if ((_opProd[*dm].gender()==SQOp::Creator) != creator ) 
-        error("Density matrix has a structure different from a^\\dg a a^\\dg a... Implement a resort!","genwick");
-      creator = !creator;
       dmorbs.push_back(_opProd[*dm].orb());
+      dmcran.push_back(_opProd[*dm].gender());
     }
-    xout << std::endl;
     if (dmorbs.size() > 0){
       Product<Matrices> mat(_mat);
       short npair = dmorbs.size()/2;
       mat *= Matrices(Ops::DensM,dmorbs,npair);
+      mat.back().set_cran(dmcran);
       sum += Term(p,d,mat, _sumindx, _realsumindx, _prefac, _connections);
     } else {
       sum += Term(p,d,_mat, _sumindx, _realsumindx, _prefac, _connections);
@@ -677,7 +675,7 @@ Sum< Term, TFactor > Term::genwick(Term::TWOps& opers, const Term::TWMats& krons
   lui istart,sign;
   TWOps::iterator ifirstop = opers.begin();
   int curr=*(ifirstop->begin());
-  SQOp::Gender gencurr=_opProd[curr].gender();
+  SQOpT::Gender gencurr=_opProd[curr].gender();
   Orbital::Type orbtypecurr=_opProd[curr].orb().type();
   bool orbcurrgen = (orbtypecurr==Orbital::GenT);
   bool orbcurract = (orbtypecurr==Orbital::Act);
@@ -761,40 +759,36 @@ Sum< Term, TFactor > Term::genwick(Term::TWOps& opers, const Term::TWMats& krons
   }
   return sum;
 }
-Sum< Term, TFactor > Term::dmwickstheorem(const Matrices& dm)
+Sum< Term, TFactor > Term::dmwickstheorem(const Matrices& dm) const
 {
   assert( dm.type() == Ops::DensM );
   bool dmsort = (Input::iPars["prog"]["dmsort"] > 0);
   // generate "matrix" of indices to SQops
   TWMats opers, krons;
-  unsigned int m=0;
   const Product<Orbital>& orbs(dm.orbitals());
-  Product<uint> cranorder;
-  if (true){
-  // TODO remove it!
-  Sum< Term, TFactor > sum;
-  Term term;
-  term *= dm;
-  sum += term;
-  return sum;
-  }
+//   if (true){
+//   // TODO remove it!
+//   Sum< Term, TFactor > sum;
+//   Term term;
+//   term *= dm;
+//   sum += term;
+//   return sum;
+//   }
   // sort now in the singlet order
   assert( orbs.size()%2 == 0 );
-  uint creator = 1;
   for ( uint i = 0; i < orbs.size(); ++i ){
     opers.push_back(i);
-    cranorder.push_back(creator);
-    creator = 1 - creator;
   }
   // only dmsort version is implemented yet...
   assert(dmsort);
-  return dmwick(opers,krons,dm,cranorder);
+  assert(dm.get_cran().size() == dm.orbitals().size());
+  return dmwick(opers,krons,dm);
 }
-Sum< Term, TFactor > Term::dmwick(Term::TWMats& opers, const Term::TWMats& krons, 
-                                  const Matrices& dm, const Product<uint>& cranorder) const
+Sum< Term, TFactor > Term::dmwick(Term::TWMats& opers, const Term::TWMats& krons, const Matrices& dm) const
 {
   Sum<Term, TFactor>  sum;
   const Product<Orbital>& orbs(dm.orbitals());
+  const Product<SQOpT::Gender> cranorder(dm.get_cran());
   TWMats::iterator itelc = opers.begin(), itela = opers.end();
   --itela;
   uint nel =  opers.size()/2;
@@ -803,7 +797,7 @@ Sum< Term, TFactor > Term::dmwick(Term::TWMats& opers, const Term::TWMats& krons
     // find the first creator operator
     TWMats::iterator itelcr;
     uint cur = iel;
-    for ( itelcr = itelc; (cranorder[*itelcr] != 1) && itelcr != opers.end(); ++itelcr, ++cur ){}
+    for ( itelcr = itelc; (cranorder[*itelcr] != SQOpT::Creator) && itelcr != opers.end(); ++itelcr, ++cur ){}
     assert( itelcr != opers.end() );
     for ( ; itelcr != itelc; --itelcr ){
       // move creator to position itelc
@@ -826,17 +820,71 @@ Sum< Term, TFactor > Term::dmwick(Term::TWMats& opers, const Term::TWMats& krons
       krons1.push_back(*itelcr);
       //call wick recursivly
       if ((sign)%2 == 0)
-        sum+=dmwick(opers1,krons1,dm,cranorder);
+        sum+=dmwick(opers1,krons1,dm);
       else
-        sum-=dmwick(opers1,krons1,dm,cranorder);
+        sum-=dmwick(opers1,krons1,dm);
     }
+    const Spin& spin( orbs[*itelc].spin() );
     // find annihilator of the same electron (from end)
     TWMats::iterator itelan;
-    cur = iel;
-    for ( itelan = itela; (cranorder[*itelcr] != 1) && itelan != opers.begin(); ++itelcr, ++cur ){}
+    cur = opers.size() - 1 - iel;
+    for ( itelan = itela; (cranorder[*itelan] != SQOpT::Annihilator || orbs[*itelan].spin() != spin ) && itelan != opers.begin(); --itelan, --cur ){}
     assert( itelan != opers.begin() );
-    
+    for ( ; itelan != itela; ++itelan, ++cur ){
+      // move creator to position itelc
+      TWMats::iterator it = itelan;
+      ++it;
+      std::swap(*it,*itelan);
+      ++sign;
+      TWMats opers1(opers);
+      TWMats krons1(krons);
+      // remove SQop-index
+      TWMats::iterator iop1 = opers1.begin();
+      std::advance(iop1,cur);
+      opers1.erase(iop1);
+      iop1 = opers1.begin();
+      std::advance(iop1,cur);
+      opers1.erase(iop1);
+      // add index to "Kronecker"
+      krons1.push_back(*it);
+      krons1.push_back(*itelan);
+      //call wick recursivly
+      if ((sign)%2 == 0)
+        sum+=dmwick(opers1,krons1,dm);
+      else
+        sum-=dmwick(opers1,krons1,dm);
+    }
   }
+  
+  Product<SQOp> p(_opProd);
+  // generate Kroneckers
+  Product<Kronecker> d(_kProd);
+  assert(krons.size()%2 == 0);
+  for (TWMats::const_iterator kr = krons.begin(); kr != krons.end(); ++kr){
+    TWMats::const_iterator kr0 = kr;
+    ++kr;
+    d *= Kronecker(orbs[*kr0],orbs[*kr]);
+  }
+  // add density matrix
+  Product<Orbital> dmorbs;
+  Product<SQOpT::Gender> dmcran;
+  assert(opers.size()%2 == 0);
+  for (TWMats::const_iterator dm = opers.begin(); dm != opers.end(); ++dm){
+    dmorbs.push_back(orbs[*dm]);
+    dmcran.push_back(cranorder[*dm]);
+  }
+  Product<Matrices> mat(_mat);
+  short npair = dmorbs.size()/2;
+  mat *= Matrices(Ops::DensM,dmorbs,npair);
+  mat.back().set_cran(dmcran);
+
+  assert( !mat.back().nonsingldm() );
+  if ((sign)%2 == 0)
+    sum += Term(p,d,mat, _sumindx, _realsumindx, _prefac, _connections);
+  else
+    sum -= Term(p,d,mat, _sumindx, _realsumindx, _prefac, _connections);
+  
+  return sum;
 }
 
 void Term::setmatconnections()
@@ -968,10 +1016,10 @@ Sum< Term, TFactor > Term::dm2singlet()
   Sum< Term, TFactor > sum;
   for ( uint i = 0; i < _mat.size(); ++i ){
     if (_mat[i].nonsingldm()){
+      Matrices mat(_mat[i]);
       // bring into singlet order
-      Term tt(*this);
-      tt._mat.erase(tt._mat.begin()+i);
-      sum = tt.times(dmwickstheorem(_mat[i]));
+      _mat.erase(_mat.begin()+i);
+      sum = this->dmwickstheorem(mat);
       // can transform only one matrix per call
       return sum;
     }

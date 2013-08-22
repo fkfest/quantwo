@@ -8,6 +8,7 @@
 #include <cmath>
 #include "utilities.h"
 #include "globals.h"
+#include "types.h"
 #include "orbital.h"
 #include "matrices.h"
 #include "product.h"
@@ -20,16 +21,14 @@
 */
 class SQOp {
   public:
-  // enumerate operator types (Gen: for Particle/Hole formalism and general orbitals)
-  enum Gender { Creator, Annihilator, Gen };
 /*  // constructor from character (upper case: creator, lower case> annihilator)
   SQOp (std::string orb); */
   // constructor from gender and orbital
-  SQOp (Gender gender, Orbital orb);
+  SQOp (SQOpT::Gender gender, Orbital orb);
   // return gender
-  Gender gender() const;
+  SQOpT::Gender gender() const;
   // return gender in Particle/Hole formalism
-  Gender genderPH() const;
+  SQOpT::Gender genderPH() const;
   // return orbital
   Orbital orb() const;
   // check equality
@@ -40,7 +39,7 @@ class SQOp {
   Return replace(Orbital orb1, Orbital orb2);
 
   private:
-  Gender _gender;
+  SQOpT::Gender _gender;
   Orbital _orb;
 };
 

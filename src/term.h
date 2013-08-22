@@ -6,12 +6,13 @@
 #include <cmath>
 #include <algorithm>
 #include "utilities.h"
+#include "globals.h"
+#include "types.h"
 #include "product.h"
 #include "operators.h"
 #include "matrices.h"
 #include "kronecker.h"
 #include "sum.h"
-#include "globals.h"
 
 #include <iostream>
 
@@ -126,8 +127,8 @@ class Term {
     bool has_nonsingldm() const;
     //! reorder density matrices to singlet order
     Sum<Term, TFactor> dm2singlet();
-    Sum<Term, TFactor> dmwickstheorem(const Matrices& dm);
-    Sum<Term, TFactor> dmwick( Term::TWMats& opers, const Term::TWMats& krons, const Matrices& dm, const Product< uint >& cranorder) const;
+    Sum<Term, TFactor> dmwickstheorem(const Matrices& dm) const;
+    Sum<Term, TFactor> dmwick( Term::TWMats& opers, const Term::TWMats& krons, const Matrices& dm ) const;
     //! Spin integration (if notfake false: calculate only _nloops, _nintloops, _nocc)
     void spinintegration(bool notfake);
     //! set prefactor of term to one

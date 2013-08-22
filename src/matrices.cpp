@@ -95,8 +95,18 @@ bool Matrices::nonsingldm() const
 {
   if ( _type != Ops::DensM ) return false;
   assert( _orbs.size()%2 == 0 );
-  for ( uint i = 0; i < _orbs.size()/2; i+=2 ){
-    if (_orbs[i].spin() != _orbs[i+1].spin() ) return true;
+  assert( _orbs.size() == _cranorder.size() );
+  bool dmsort = (Input::iPars["prog"]["dmsort"] > 0);
+  if (dmsort) {
+    // a^\dg(1)  a^\dg(2) ... a(2) a(1)
+    for ( uint i = 0, j = _orbs.size()-1; i < _orbs.size()/2; ++i, --j ){
+      if (_orbs[i].spin() != _orbs[j].spin() || _cranorder[i] != SQOpT::Creator || _cranorder[j] != SQOpT::Annihilator ) return true;
+    }
+  } else {
+    // a^\dg(1) a(1) a^\dg(2) a(2)...
+    for ( uint i = 0; i < _orbs.size()/2; i+=2 ){
+      if (_orbs[i].spin() != _orbs[i+1].spin() || _cranorder[i] != SQOpT::Creator || _cranorder[i+1] != SQOpT::Annihilator ) return true;
+    }
   }
   return false;
 }
@@ -170,6 +180,13 @@ const ConLine& Matrices::conline(lui iorb) const
   return _conlines[iorb]; 
 }
 
+void Matrices::set_cran(const Product< SQOpT::Gender >& cran)
+{
+  assert( _type == Ops::DensM );
+  assert( cran.size() == _orbs.size() );
+  _cranorder = cran;
+}
+
 void Matrices::setkind(short int exccl, short int intlines, short int intvirt)
 {
   _exccl=exccl;
@@ -179,7 +196,13 @@ void Matrices::setkind(short int exccl, short int intlines, short int intvirt)
 long int Matrices::iorbel(lui ipos)
 { 
   assert( ipos < _orbs.size() );
-  lui ipos1 = ipos%2==0?ipos+1:ipos-1;
+  lui ipos1;
+  if ( _type == Ops::DensM && Input::iPars["prog"]["dmsort"] > 0 )
+    // different order of electrons: 1,2,...2, 1
+    ipos1 = _orbs.size()-ipos-1;
+  else
+    ipos1 = ipos%2==0?ipos+1:ipos-1;
+  
   if ( (short)ipos1 >= 2*_npairs )
     // one of the non-conserved electrons
     return -1;
@@ -248,15 +271,28 @@ std::ostream & operator << (std::ostream & o, Matrices const & mat)
       Product<Orbital> orbs(mat.orbitals());
       std::string name("\\"+Input::sPars["command"]["densmat"]);
       std::ostringstream oss;
+      bool dmsort = (Input::iPars["prog"]["dmsort"] > 0);
       // occ.indices
-      for ( uint i = 1; i < orbs.size(); i += 2 ){
-        oss << orbs[i];
+      if (dmsort) {
+        for ( uint i = 0; i < orbs.size()/2; ++i ){
+          oss << orbs[i];
+        }
+      } else {
+        for ( uint i = 0; i < orbs.size(); i += 2 ){
+          oss << orbs[i];
+        }
       }
       IL::add2name(name,oss.str(),true);
       oss.str("");
       //virt. indices
-      for ( uint i = 0; i < orbs.size(); i += 2 ){
-        oss << orbs[i];
+      if (dmsort) {
+        for ( uint i = orbs.size()-1; i >= orbs.size()/2 ; --i ){
+          oss << orbs[i];
+        }
+      } else {
+        for ( uint i = 1; i < orbs.size(); i += 2 ){
+          oss << orbs[i];
+        }
       }
       IL::add2name(name,oss.str(),false);
       o << param << name;
