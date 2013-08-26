@@ -22,6 +22,12 @@ Sum< Term, TFactor > Q2::reduceSum(Sum< Term, TFactor > s)
     sum = SingletDM(sum);
     _xout3(sum << std::endl);
   }
+  // set remaining general indices to the occupied or active space
+  say("Handle general indices...");
+  sum = GeneralIndices(sum);
+  sum = ZeroTerms(sum);
+  _xout3(sum << std::endl);
+  
   say("Connections and Antisymmetry...");
   s = sum;
   sum.clear();
@@ -129,8 +135,7 @@ Sum< Term, TFactor > Q2::SingletDM(Sum< Term, TFactor > s)
     }
     s = Kroneckers(sum);
   }
-  // TODO uncomment!!
-//   if (iter == 1000) error("Could not bring density matrices into singlet order in 1000 iterations!");
+  if (iter == 1000) error("Could not bring density matrices into singlet order in 1000 iterations!");
   return s;
 }
 bool Q2::has_nonsingldm(const Sum< Term, TFactor >& s)
@@ -138,6 +143,38 @@ bool Q2::has_nonsingldm(const Sum< Term, TFactor >& s)
   for ( Sum<Term,TFactor>::const_iterator i=s.begin();i!=s.end(); ++i) 
     if (i->first.has_nonsingldm()) return true;
   return false;
+}
+Sum< Term, TFactor > Q2::GeneralIndices(Sum< Term, TFactor > s)
+{
+  uint iter = 0;
+  for ( iter = 0; has_generalindices(s) && iter < 1000; ++iter ){
+    Sum<Term,TFactor> sum;
+    for ( Sum<Term,TFactor>::const_iterator i=s.begin();i!=s.end(); ++i) {
+      Term term = i->first;
+      Sum<Term,TFactor> sum1 = term.removegeneralindices();
+      sum1 *= i->second;
+      sum += sum1;
+    }
+    s = sum;
+  }
+  if (iter == 1000) error("Could not remove all general indices in 1000 iterations!");
+  return s;
+}
+bool Q2::has_generalindices(const Sum< Term, TFactor >& s)
+{
+  for ( Sum<Term,TFactor>::const_iterator i=s.begin();i!=s.end(); ++i) 
+    if (i->first.has_generalindices()) return true;
+  return false;
+}
+Sum< Term, TFactor > Q2::ZeroTerms(Sum< Term, TFactor > s)
+{
+  Sum<Term,TFactor> sum;
+  for ( Sum<Term,TFactor>::const_iterator i=s.begin();i!=s.end(); ++i) {
+    if ( ! i->first.removeit()){
+      sum += std::make_pair(i->first,i->second);
+    }
+  }
+  return sum;
 }
 
 Sum< Term, TFactor > Q2::EqualTerms(Sum< Term, TFactor > s, double minfac)
@@ -269,13 +306,15 @@ Sum< Term, TFactor > Q2::wick(Sum< Term, TFactor > s)
 {
   int iwick = Input::iPars["prog"]["wick"];
   bool genwick = (iwick > 1);
+  bool hnormorder = (Input::iPars["prog"]["hnormalorder"] > 0);
+  if (!genwick && !hnormorder) error("Cannot have non-ordered Hamiltonian with wick=0. Either set hnormalorder=1 or wick=2");
   Sum<Term,TFactor> sum,sum0;
   Term term;
   _xout3(s << std::endl);
   say("Wick's theorem");
   for ( Sum<Term,TFactor>::const_iterator i=s.begin();i!=s.end(); ++i) {
     term=i->first;
-    sum0 += term.wickstheorem(genwick);
+    sum0 += term.wickstheorem(genwick,hnormorder);
     sum0 *= i->second;
     sum += sum0;
     sum0=Sum<Term,TFactor>();

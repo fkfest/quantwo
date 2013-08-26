@@ -57,6 +57,8 @@ class Matrices {
   bool operator < (Matrices const & t) const;
   // equality of two Matrices (including symmetry properties)
   bool operator == (Matrices const & t) const;
+  // return true if the matrix is zero
+  bool is0() const;
   // set cranorder for density matrix
   void set_cran( const Product<SQOpT::Gender>& cran );
   const Product<SQOpT::Gender>& get_cran() const {return _cranorder;};

@@ -179,6 +179,28 @@ const ConLine& Matrices::conline(lui iorb) const
   assert( iorb < _conlines.size() );
   return _conlines[iorb]; 
 }
+bool Matrices::is0() const
+{
+  if (_type == Ops::DensM){
+    if ( _orbs.size()%2 != 0 ) return true;
+    // only active orbitals!
+    Product<Orbital>::const_iterator ito;
+    _foreach(ito,_orbs){
+      if (ito->type() != Orbital::Act) return true;
+    }
+    // number of creators == annihilators
+    Product<SQOpT::Gender>::const_iterator itca;
+    int cran = 0;
+    _foreach(itca,_cranorder){
+      if (*itca == SQOpT::Creator) 
+        ++cran;
+      else 
+        --cran;
+    }
+    if (cran != 0 ) return true;
+  }
+  return false;
+}
 
 void Matrices::set_cran(const Product< SQOpT::Gender >& cran)
 {

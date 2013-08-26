@@ -83,6 +83,8 @@ class Term {
     std::vector< Product<long int> > connections() const;
     //! return true if term is zero
     bool term_is_0(double minfac) const;
+    //! return true if term has to be removed 
+    bool removeit() const;
     //! artificial ordering
     bool operator < (Term const & t) const;
     //! equal terms
@@ -100,7 +102,7 @@ class Term {
     typedef std::list<TWMats> TWOps;
     //! Wick's theorem: call recursive routine wick
     // if genw == true: use the generalized Wick's theorem
-    Sum<Term, TFactor>  wickstheorem(bool genw = false) const;
+    Sum<Term, TFactor>  wickstheorem(bool genw = false, bool hnormord = true) const;
     //! Wick's theorem, recursive: opers contains index of SQop in _opProd (divided into individual operators)
     Sum<Term, TFactor>  wick(TWOps& opers, TWMats& krons) const;
     //! generalized Wick's theorem, recursive: opers contains index of SQop in _opProd (divided into individual operators)
@@ -109,6 +111,8 @@ class Term {
     void setmatconnections();
     //! reduce equation (delete Kroneckers and summation indices)
     void reduceTerm();
+    //! replace orbital orb1 with orb2
+    void replace(Orbital orb1, Orbital orb2);
     // delete "None" matrices (caution, the order of matrices can be important, so do it AFTER connection stuff!)
     void deleteNoneMats();
     // brilloin condition (return true for terms with occ-virt fock)
@@ -129,6 +133,10 @@ class Term {
     Sum<Term, TFactor> dm2singlet();
     Sum<Term, TFactor> dmwickstheorem(const Matrices& dm) const;
     Sum<Term, TFactor> dmwick( Term::TWMats& opers, const Term::TWMats& krons, const Matrices& dm ) const;
+    //! true if has general indices
+    bool has_generalindices() const;
+    //! replace remaining general indices by occupied (and active) orbitals
+    Sum<Term, TFactor> removegeneralindices();
     //! Spin integration (if notfake false: calculate only _nloops, _nintloops, _nocc)
     void spinintegration(bool notfake);
     //! set prefactor of term to one
@@ -155,6 +163,8 @@ class Term {
     //! set last orbital (onlylarger: only if it's larger than current one)
     void set_lastorb(Orbital orb, bool onlylarger = false);
     void set_lastel(Electron el, bool onlylarger = false);
+//  set _lastorb using _sumindx
+    void set_lastorbs();
 
   private:
     Sum<Term, TFactor>  normalOrder(bool fullyContractedOnly) const;

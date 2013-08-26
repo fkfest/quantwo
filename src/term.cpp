@@ -204,6 +204,14 @@ bool Term::term_is_0(double minfac) const
     loop = is0 = _todouble(_abs(it->second)) < minfac;
   return is0;
 }
+bool Term::removeit() const
+{
+  for ( uint i = 0; i < _mat.size(); ++i ){
+    if (_mat[i].is0()) return true;
+  }
+  return false;
+}
+
 bool Term::term_is_valid()
 {
   for ( TOrbSet::const_iterator it = _realsumindx.begin(); it != _realsumindx.end(); ++it ) {
@@ -518,7 +526,7 @@ Sum< Term, TFactor > Term::normalOrderPH(bool fullyContractedOnly) const
   return sum;
 }
 
-Sum< Term, TFactor > Term::wickstheorem(bool genw) const
+Sum< Term, TFactor > Term::wickstheorem(bool genw, bool hnormord) const
 {
   // generate "matrix" of indices to SQops
   TWOps opers;
@@ -541,9 +549,14 @@ Sum< Term, TFactor > Term::wickstheorem(bool genw) const
       opers.push_back(opermat);
       opermat=TWMats();
       m=0; // search from begin
-    } else if (_mat[m].orbitals().find(_opProd[i].orb())>=0)
+    } else if (_mat[m].orbitals().find(_opProd[i].orb())>=0) {
       opermat.push_back(i);
-    else {
+      if ( !hnormord && InSet(_mat[m].type(),Ops::Fock,Ops::FluctP,Ops::XPert) ){
+        // H not normal ordered - add the every corresponding SQOp as an individual operator
+        opers.push_back(opermat);
+        opermat=TWMats();
+      }
+    } else {
       m++;
       i--;
       if (opermat.size()>0) opers.push_back(opermat);
@@ -766,18 +779,26 @@ Sum< Term, TFactor > Term::dmwickstheorem(const Matrices& dm) const
   // generate "matrix" of indices to SQops
   TWMats opers, krons;
   const Product<Orbital>& orbs(dm.orbitals());
-//   if (true){
-//   // TODO remove it!
-//   Sum< Term, TFactor > sum;
-//   Term term;
-//   term *= dm;
-//   sum += term;
-//   return sum;
-//   }
   // sort now in the singlet order
   assert( orbs.size()%2 == 0 );
-  for ( uint i = 0; i < orbs.size(); ++i ){
-    opers.push_back(i);
+  {
+    std::map<Electron,int> els;
+    const Product<SQOpT::Gender>& cran = dm.get_cran();
+    assert( cran.size() == orbs.size() );
+    for ( uint i = 0; i < orbs.size(); ++i ){
+      opers.push_back(i);
+      // every electron has to be presented by one creator and one annihilator!
+      // otherwise the term is zero!
+      if ( cran[i] == SQOpT::Creator ){
+        els[orbs[i].spin().el()] += 1;
+      } else if ( cran[i] == SQOpT::Annihilator ){
+        els[orbs[i].spin().el()] -= 1;
+      }
+    }
+    std::map<Electron,int>::const_iterator itel;
+    _foreach(itel,els){
+      if ( itel->second != 0 ) return Sum< Term, TFactor >();
+    }
   }
   // only dmsort version is implemented yet...
   assert(dmsort);
@@ -797,8 +818,10 @@ Sum< Term, TFactor > Term::dmwick(Term::TWMats& opers, const Term::TWMats& krons
     // find the first creator operator
     TWMats::iterator itelcr;
     uint cur = iel;
-    for ( itelcr = itelc; (cranorder[*itelcr] != SQOpT::Creator) && itelcr != opers.end(); ++itelcr, ++cur ){}
-    assert( itelcr != opers.end() );
+    for ( itelcr = itelc; itelcr != opers.end() && (cranorder[*itelcr] != SQOpT::Creator); ++itelcr, ++cur ){}
+    if ( itelcr == opers.end() ) break; // try next time after resolving of kroneckers
+//    assert( itelcr != opers.end() );
+    
     for ( ; itelcr != itelc; --itelcr ){
       // move creator to position itelc
       TWMats::iterator it = itelcr;
@@ -806,53 +829,58 @@ Sum< Term, TFactor > Term::dmwick(Term::TWMats& opers, const Term::TWMats& krons
       --cur;
       std::swap(*it,*itelcr);
       ++sign;
-      TWMats opers1(opers);
-      TWMats krons1(krons);
-      // remove SQop-index
-      TWMats::iterator iop1 = opers1.begin();
-      std::advance(iop1,cur);
-      opers1.erase(iop1);
-      iop1 = opers1.begin();
-      std::advance(iop1,cur);
-      opers1.erase(iop1);
-      // add index to "Kronecker"
-      krons1.push_back(*it);
-      krons1.push_back(*itelcr);
-      //call wick recursivly
-      if ((sign)%2 == 0)
-        sum+=dmwick(opers1,krons1,dm);
-      else
-        sum-=dmwick(opers1,krons1,dm);
+      if ( cranorder[*itelcr] == SQOpT::Annihilator ){
+        TWMats opers1(opers);
+        TWMats krons1(krons);
+        // remove SQop-index
+        TWMats::iterator iop1 = opers1.begin();
+        std::advance(iop1,cur);
+        opers1.erase(iop1);
+        iop1 = opers1.begin();
+        std::advance(iop1,cur);
+        opers1.erase(iop1);
+        // add index to "Kronecker"
+        krons1.push_back(*it);
+        krons1.push_back(*itelcr);
+        //call wick recursivly
+        if ((sign)%2 == 0)
+          sum+=dmwick(opers1,krons1,dm);
+        else
+          sum-=dmwick(opers1,krons1,dm);
+      }
     }
     const Spin& spin( orbs[*itelc].spin() );
     // find annihilator of the same electron (from end)
     TWMats::iterator itelan;
     cur = opers.size() - 1 - iel;
     for ( itelan = itela; (cranorder[*itelan] != SQOpT::Annihilator || orbs[*itelan].spin() != spin ) && itelan != opers.begin(); --itelan, --cur ){}
-    assert( itelan != opers.begin() );
+    if ( itelan == opers.begin() ) break; // try next time after resolving of kroneckers
+//    assert( itelan != opers.begin() );
     for ( ; itelan != itela; ++itelan, ++cur ){
       // move creator to position itelc
       TWMats::iterator it = itelan;
       ++it;
       std::swap(*it,*itelan);
       ++sign;
-      TWMats opers1(opers);
-      TWMats krons1(krons);
-      // remove SQop-index
-      TWMats::iterator iop1 = opers1.begin();
-      std::advance(iop1,cur);
-      opers1.erase(iop1);
-      iop1 = opers1.begin();
-      std::advance(iop1,cur);
-      opers1.erase(iop1);
-      // add index to "Kronecker"
-      krons1.push_back(*it);
-      krons1.push_back(*itelan);
-      //call wick recursivly
-      if ((sign)%2 == 0)
-        sum+=dmwick(opers1,krons1,dm);
-      else
-        sum-=dmwick(opers1,krons1,dm);
+      if ( cranorder[*itelan] == SQOpT::Creator ){
+        TWMats opers1(opers);
+        TWMats krons1(krons);
+        // remove SQop-index
+        TWMats::iterator iop1 = opers1.begin();
+        std::advance(iop1,cur);
+        opers1.erase(iop1);
+        iop1 = opers1.begin();
+        std::advance(iop1,cur);
+        opers1.erase(iop1);
+        // add index to "Kronecker"
+        krons1.push_back(*it);
+        krons1.push_back(*itelan);
+        //call wick recursivly
+        if ((sign)%2 == 0)
+          sum+=dmwick(opers1,krons1,dm);
+        else
+          sum-=dmwick(opers1,krons1,dm);
+      }
     }
   }
   
@@ -866,24 +894,24 @@ Sum< Term, TFactor > Term::dmwick(Term::TWMats& opers, const Term::TWMats& krons
     d *= Kronecker(orbs[*kr0],orbs[*kr]);
   }
   // add density matrix
-  Product<Orbital> dmorbs;
-  Product<SQOpT::Gender> dmcran;
-  assert(opers.size()%2 == 0);
-  for (TWMats::const_iterator dm = opers.begin(); dm != opers.end(); ++dm){
-    dmorbs.push_back(orbs[*dm]);
-    dmcran.push_back(cranorder[*dm]);
-  }
   Product<Matrices> mat(_mat);
-  short npair = dmorbs.size()/2;
-  mat *= Matrices(Ops::DensM,dmorbs,npair);
-  mat.back().set_cran(dmcran);
-
-  assert( !mat.back().nonsingldm() );
+  if ( opers.size() > 0 ){
+    assert(opers.size()%2 == 0);
+    Product<Orbital> dmorbs;
+    Product<SQOpT::Gender> dmcran;
+    for (TWMats::const_iterator dm = opers.begin(); dm != opers.end(); ++dm){
+      dmorbs.push_back(orbs[*dm]);
+      dmcran.push_back(cranorder[*dm]);
+    }
+    short npair = dmorbs.size()/2;
+    mat *= Matrices(Ops::DensM,dmorbs,npair);
+    mat.back().set_cran(dmcran);
+//    if( !mat.back().nonsingldm() ) xout << "nonsingl" << mat << std::endl;
+  }
   if ((sign)%2 == 0)
     sum += Term(p,d,mat, _sumindx, _realsumindx, _prefac, _connections);
   else
     sum -= Term(p,d,mat, _sumindx, _realsumindx, _prefac, _connections);
-  
   return sum;
 }
 
@@ -933,17 +961,21 @@ void Term::reduceTerm()
       if ( it2 == _sumindx.end() )
         error("Strange, orbital not found in _sumindx","Term::reduceTerm");
       _sumindx.erase(it2);
-      Q2::replace(_opProd,orb2,orb1);
-      Q2::replace(_mat,orb2,orb1);
       _kProd.erase(_kProd.begin()+i); // delete the Kronecker
-      Q2::replace(_kProd,orb2,orb1);
       --i;
-      // for spin:
-      Q2::replace(_realsumindx,orb2,orb1);
-      Q2::replace(_sumindx,orb2,orb1);
+      this->replace(orb2,orb1);
     }
   }
 }
+void Term::replace(Orbital orb1, Orbital orb2)
+{
+  Q2::replace(_opProd,orb1,orb2);
+  Q2::replace(_mat,orb1,orb2);
+  Q2::replace(_kProd,orb1,orb2);
+  Q2::replace(_realsumindx,orb1,orb2);
+  Q2::replace(_sumindx,orb1,orb2);
+}
+
 static bool matisnone(const Matrices& mat)
 { return (mat.type() == Ops::None); };
 void Term::deleteNoneMats()
@@ -1025,6 +1057,41 @@ Sum< Term, TFactor > Term::dm2singlet()
     }
   }
   sum += *this;
+  return sum;
+}
+bool Term::has_generalindices() const
+{
+  TOrbSet::const_iterator it;
+  _foreach(it,_sumindx)
+    if (it->type() == Orbital::GenT) return true;
+  return false;
+}
+Sum< Term, TFactor > Term::removegeneralindices()
+{
+  bool active = (Input::iPars["prog"]["multiref"] > 0);
+  Sum< Term, TFactor > sum;
+  this->set_lastorbs();
+  Term tt(*this);
+  TOrbSet::iterator it;
+  _foreach(it,_sumindx){
+    if ( it->type() == Orbital::GenT ){
+      // replace
+      Orbital orb = tt.freeorbname(Orbital::Occ);
+      orb.setspin(it->spin());
+      tt.replace(*it,orb);
+      if (active){
+        sum += tt;
+        tt = *this;
+        orb = tt.freeorbname(Orbital::Act);
+        orb.setspin(it->spin());
+        tt.replace(*it,orb);
+        sum += tt;
+        // have to repeat it
+        return sum;
+      }
+    }
+  }
+  sum += tt;
   return sum;
 }
 
@@ -1260,7 +1327,7 @@ Orbital Term::freeorbname(Orbital::Type type)
   Spin::Type spin = Spin::Gen;
   if (spinintegr) spin = Spin::GenS;
   const std::string * ip_orbs;
-  std::string lastorb=_lastorb[type].name();
+  std::string lastorb=_lastorb[type].letname();
   unsigned long int indx;
   if (type==Orbital::Occ)
     ip_orbs = & orbs["occorb"];
@@ -1307,6 +1374,15 @@ void Term::set_lastorb(Orbital orb, bool onlylarger)
   _lastorb[orb.type()]=orb; 
   
 }
+void Term::set_lastorbs()
+{
+  TOrbSet::const_iterator it;
+  _foreach(it,_sumindx){
+    if (_lastorb[it->type()].name().size() == 0 || _lastorb[it->type()] < *it) 
+      _lastorb[it->type()] = *it;
+  }
+}
+
 Electron Term::nextelectron()
 {
   ++_lastel;

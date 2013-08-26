@@ -73,10 +73,12 @@ set="diag",type=i,name="printnames",value=1,desc="if > 0: print names of amplitu
 set="prog",type=f,name="minfac",value=1e-10,desc="terms with smaller prefactors will be neglected"
 set="prog",type=i,name="maxlels",value=100000,desc="max number of lexic elements in the equation"
 set="prog",type=i,name="spinintegr",value=1,desc="if > 0 : do spin-integration"
-set="prog",type=i,name="wick",value=1,desc="if > 0 : do wicks theorem and normal ordering otherwise"
+set="prog",type=i,name="wick",value=1,desc="if > 0 : do wicks theorem (>1 : with density matrices) and normal ordering otherwise"
 set="prog",type=i,name="diagrams",value=0,desc="if > 0 : print diagrams (with ccdiag)"
 set="prog",type=i,name="brill",value=0,desc="if > 0 : remove occ-virt fock"
 set="prog",type=i,name="quan3",value=0,desc="if > 0 : count electrons (third quantization)"
 set="prog",type=i,name="multiref",value=0,desc="if > 0 : multi-reference, add active space in excitation operators"
 set="prog",type=i,name="dmsort",value=1,desc="if > 0 : use the usual order for density matrices, i.e., a^\dg(1)a^\dg(2)...a(2)a(1), otherwise use a^\dg(1)a(1)..."
+set="prog",type=i,name="hnormalorder",value=1,desc="if > 0 : Hamiltonian is normal ordered (active only for wick > 1)"
+
 
