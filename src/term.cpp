@@ -828,7 +828,6 @@ Sum< Term, TFactor > Term::dmwick(Term::TWMats& opers, const Term::TWMats& krons
       --it;
       --cur;
       std::swap(*it,*itelcr);
-      ++sign;
       if ( cranorder[*itelcr] == SQOpT::Annihilator ){
         TWMats opers1(opers);
         TWMats krons1(krons);
@@ -848,6 +847,7 @@ Sum< Term, TFactor > Term::dmwick(Term::TWMats& opers, const Term::TWMats& krons
         else
           sum-=dmwick(opers1,krons1,dm);
       }
+      ++sign;
     }
     const Spin& spin( orbs[*itelc].spin() );
     // find annihilator of the same electron (from end)
@@ -861,7 +861,6 @@ Sum< Term, TFactor > Term::dmwick(Term::TWMats& opers, const Term::TWMats& krons
       TWMats::iterator it = itelan;
       ++it;
       std::swap(*it,*itelan);
-      ++sign;
       if ( cranorder[*itelan] == SQOpT::Creator ){
         TWMats opers1(opers);
         TWMats krons1(krons);
@@ -881,6 +880,7 @@ Sum< Term, TFactor > Term::dmwick(Term::TWMats& opers, const Term::TWMats& krons
         else
           sum-=dmwick(opers1,krons1,dm);
       }
+      ++sign;
     }
   }
   
@@ -896,7 +896,6 @@ Sum< Term, TFactor > Term::dmwick(Term::TWMats& opers, const Term::TWMats& krons
   // add density matrix
   Product<Matrices> mat(_mat);
   if ( opers.size() > 0 ){
-    assert(opers.size()%2 == 0);
     Product<Orbital> dmorbs;
     Product<SQOpT::Gender> dmcran;
     for (TWMats::const_iterator dm = opers.begin(); dm != opers.end(); ++dm){
@@ -921,6 +920,15 @@ void Term::setmatconnections()
   for (lui i=0; i<_mat.size(); ++i)
     for (lui j=0; j<_mat[i].orbitals().size(); ++j){
       const Orbital& ijorb = _mat[i].orbitals()[j];
+      if ( (kj = _mat[i].orbitals().find(ijorb,j+1)) >= 0 ) {
+        // self-connection (non-normal-ordered hamiltonian)
+        assert(Input::iPars["prog"]["hnormalorder"] == 0);
+        _mat[i].add_connect(i+1);
+//        _mat[i].add_connect(i+1);
+        _mat[i].set_conline(j,i,kj);
+        _mat[i].set_conline(kj,i,j);
+        continue;
+      } 
       for(lui k=i+1; k<_mat.size(); ++k)
         if ( (kj = _mat[k].orbitals().find(ijorb)) >= 0) {
           _mat[i].add_connect(k+1);

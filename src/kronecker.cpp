@@ -33,7 +33,7 @@ Return Kronecker::replace(Orbital orb1, Orbital orb2)
 
 std::ostream & operator << (std::ostream & o, Kronecker const & k)
 {
-    o << "\\rho_{" << k.orb1() << k.orb2() << "}";
+    o << "\\delta_{" << k.orb1() << k.orb2() << "}";
     MyOut::pcurout->lenbuf += 1+2/MyOut::pcurout->wsi;
     return o;
 }

@@ -25,7 +25,7 @@ template <class T>
 inline
 int Product<T>::find(const T& t, uint ipos) const
 {
-  long unsigned int i = 0;
+  long unsigned int i = ipos;
   for ( typename Product<T>::const_iterator it = this->begin()+ipos; it != this->end(); ++it, ++i )
     if ( t== *it ) return i;
   return -1;

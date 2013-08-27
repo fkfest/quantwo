@@ -16,18 +16,19 @@ Sum< Term, TFactor > Q2::reduceSum(Sum< Term, TFactor > s)
   sum = Kroneckers(s);
   _xout3(sum << std::endl);
   
-  if (spinintegr){
-    // bring all the density matrices into singlet-order
-    say("Singlet order...");
-    sum = SingletDM(sum);
-    _xout3(sum << std::endl);
-  }
   // set remaining general indices to the occupied or active space
   say("Handle general indices...");
   sum = GeneralIndices(sum);
   sum = ZeroTerms(sum);
   _xout3(sum << std::endl);
   
+    if (spinintegr){
+    // bring all the density matrices into singlet-order
+    say("Singlet order...");
+    sum = SingletDM(sum);
+    _xout3(sum << std::endl);
+  }
+
   say("Connections and Antisymmetry...");
   s = sum;
   sum.clear();

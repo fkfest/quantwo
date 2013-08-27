@@ -292,33 +292,44 @@ std::ostream & operator << (std::ostream & o, Matrices const & mat)
     case Ops::DensM: {
       Product<Orbital> orbs(mat.orbitals());
       std::string name("\\"+Input::sPars["command"]["densmat"]);
-      std::ostringstream oss;
-      bool dmsort = (Input::iPars["prog"]["dmsort"] > 0);
-      // occ.indices
-      if (dmsort) {
-        for ( uint i = 0; i < orbs.size()/2; ++i ){
-          oss << orbs[i];
+      if ( mat.nonsingldm()){
+        const Product<SQOpT::Gender> cran = mat.get_cran();
+        assert(orbs.size() == cran.size());
+        o << name << "^{}_{";
+        for ( uint i = 0; i < orbs.size(); ++i ){
+          o << orbs[i];
+          if ( cran[i] == SQOpT::Creator ) o << "^{\\dg}";
         }
+        o << "}";
       } else {
-        for ( uint i = 0; i < orbs.size(); i += 2 ){
-          oss << orbs[i];
+        std::ostringstream oss;
+        bool dmsort = (Input::iPars["prog"]["dmsort"] > 0);
+        // occ.indices
+        if (dmsort) {
+          for ( uint i = 0; i < orbs.size()/2; ++i ){
+            oss << orbs[i];
+          }
+        } else {
+          for ( uint i = 0; i < orbs.size(); i += 2 ){
+            oss << orbs[i];
+          }
         }
+        IL::add2name(name,oss.str(),true);
+        oss.str("");
+        //virt. indices
+        if (dmsort) {
+          for ( uint i = orbs.size()-1; i >= orbs.size()/2 ; --i ){
+            oss << orbs[i];
+          }
+        } else {
+          for ( uint i = 1; i < orbs.size(); i += 2 ){
+            oss << orbs[i];
+          }
+        }
+        IL::add2name(name,oss.str(),false);
+        o << param << name;
+        MyOut::pcurout->lenbuf += 1+mat.orbitals().size()/MyOut::pcurout->wsi;
       }
-      IL::add2name(name,oss.str(),true);
-      oss.str("");
-      //virt. indices
-      if (dmsort) {
-        for ( uint i = orbs.size()-1; i >= orbs.size()/2 ; --i ){
-          oss << orbs[i];
-        }
-      } else {
-        for ( uint i = 1; i < orbs.size(); i += 2 ){
-          oss << orbs[i];
-        }
-      }
-      IL::add2name(name,oss.str(),false);
-      o << param << name;
-      MyOut::pcurout->lenbuf += 1+mat.orbitals().size()/MyOut::pcurout->wsi;
       break;
     }
     case Ops::Exc:
