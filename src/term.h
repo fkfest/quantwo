@@ -102,7 +102,7 @@ class Term {
     typedef std::list<TWMats> TWOps;
     //! Wick's theorem: call recursive routine wick
     // if genw == true: use the generalized Wick's theorem
-    Sum<Term, TFactor>  wickstheorem(bool genw = false, bool hnormord = true) const;
+    Sum<Term, TFactor>  wickstheorem(bool genw = false, int noord = 0) const;
     //! Wick's theorem, recursive: opers contains index of SQop in _opProd (divided into individual operators)
     Sum<Term, TFactor>  wick(TWOps& opers, TWMats& krons) const;
     //! generalized Wick's theorem, recursive: opers contains index of SQop in _opProd (divided into individual operators)

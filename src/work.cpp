@@ -307,15 +307,15 @@ Sum< Term, TFactor > Q2::wick(Sum< Term, TFactor > s)
 {
   int iwick = Input::iPars["prog"]["wick"];
   bool genwick = (iwick > 1);
-  bool hnormorder = (Input::iPars["prog"]["hnormalorder"] > 0);
-  if (!genwick && !hnormorder) error("Cannot have non-ordered Hamiltonian with wick=0. Either set hnormalorder=1 or wick=2");
+  int noorder = Input::iPars["prog"]["noorder"];
+  if (!genwick && noorder > 0 ) error("Cannot have non-ordered Hamiltonian with wick<2. Either set noorder=0 or wick=2");
   Sum<Term,TFactor> sum,sum0;
   Term term;
   _xout3(s << std::endl);
   say("Wick's theorem");
   for ( Sum<Term,TFactor>::const_iterator i=s.begin();i!=s.end(); ++i) {
     term=i->first;
-    sum0 += term.wickstheorem(genwick,hnormorder);
+    sum0 += term.wickstheorem(genwick,noorder);
     sum0 *= i->second;
     sum += sum0;
     sum0=Sum<Term,TFactor>();

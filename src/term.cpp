@@ -526,7 +526,7 @@ Sum< Term, TFactor > Term::normalOrderPH(bool fullyContractedOnly) const
   return sum;
 }
 
-Sum< Term, TFactor > Term::wickstheorem(bool genw, bool hnormord) const
+Sum< Term, TFactor > Term::wickstheorem(bool genw, int noord) const
 {
   // generate "matrix" of indices to SQops
   TWOps opers;
@@ -551,8 +551,8 @@ Sum< Term, TFactor > Term::wickstheorem(bool genw, bool hnormord) const
       m=0; // search from begin
     } else if (_mat[m].orbitals().find(_opProd[i].orb())>=0) {
       opermat.push_back(i);
-      if ( !hnormord && InSet(_mat[m].type(),Ops::Fock,Ops::FluctP,Ops::XPert) ){
-        // H not normal ordered - add the every corresponding SQOp as an individual operator
+      if ( noord > 1 || ( noord == 1 && InSet(_mat[m].type(),Ops::Fock,Ops::FluctP,Ops::XPert) ) ){
+        // not normal ordered - add every corresponding SQOp as an individual operator
         opers.push_back(opermat);
         opermat=TWMats();
       }
@@ -922,7 +922,7 @@ void Term::setmatconnections()
       const Orbital& ijorb = _mat[i].orbitals()[j];
       if ( (kj = _mat[i].orbitals().find(ijorb,j+1)) >= 0 ) {
         // self-connection (non-normal-ordered hamiltonian)
-        assert(Input::iPars["prog"]["hnormalorder"] == 0);
+        assert(Input::iPars["prog"]["noorder"] > 0);
         _mat[i].add_connect(i+1);
 //        _mat[i].add_connect(i+1);
         _mat[i].set_conline(j,i,kj);
