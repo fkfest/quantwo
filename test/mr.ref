@@ -1,5 +1,5 @@
 \beq
-&&<\mu_{2_{ii}^{at}}|\op F \op T_{2_{ii}^{at}} |0>
+&&<\mu_{2^{ii}_{at}}|\op F \op T_{2^{ii}_{at}} |0>
 =\nl
 (8*1 - 4*\Perm{ii_{1}}{i_{1}i})\sum_{j}\prm f_{jj}\prm T^{ii_{1}}_{at} + (-4*1 + 2*\Perm{ii_{1}}{i_{1}i})\sum_{ju}\prm f_{jj}\prm T^{ii_{1}}_{au}\prm \gamma^{u}_{t} + (4*1\nl
  - 2*\Perm{ii_{1}}{i_{1}i})\sum_{uv}\prm f_{uv}\prm T^{ii_{1}}_{at}\prm \gamma^{u}_{v} + (-2*1 + \Perm{ii_{1}}{i_{1}i})\sum_{uvw}\prm f_{vw}\prm T^{ii_{1}}_{au}\prm \gamma^{uv}_{tw} + (-4*1\nl

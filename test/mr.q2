@@ -2,5 +2,5 @@ prog,wick=2,noorder=2,multiref=1
 output,level=1
 
 \beq
-<\mu_{2_{ii}^{at}}|\op F \op T_{2_{ii}^{at}} |0>
+<\mu_{2^{ii}_{at}}|\op F \op T_{2^{ii}_{at}} |0>
 \eeq

@@ -975,11 +975,11 @@ bool Equation::handle_orbtypes(std::vector< Product< Orbital::Type > >& orbtypes
   if (spinintegr) spintype = Spin::GenS;
   down=IL::lexfind(string,"_");
   up=IL::lexfind(string,"^");
-  if (down!=std::string::npos && down!=string.size()-1){
-    ipos = down;
+  if (up!=std::string::npos && up!=string.size()-1){
+    ipos = up;
     ipos = IL::skip(string,ipos,"{}_^ ");
     Product<Orbital::Type> occtypes;
-    while ( (ipos < up) == (down < up) && (ipos1 = IL::nextwordpos(string,ipos,true,false)) != ipos ){//non greedy
+    while ( (ipos < down) == (up < down) && (ipos1 = IL::nextwordpos(string,ipos,true,false)) != ipos ){//non greedy
       Orbital orb(IL::plainname(string.substr(ipos,ipos1-ipos)),spintype);
       occtypes *= orb.type();
       ipos = IL::skip(string,ipos1,"{}_^ ");
@@ -987,11 +987,11 @@ bool Equation::handle_orbtypes(std::vector< Product< Orbital::Type > >& orbtypes
     if ( occtypes.size() > 0 ) foundorbtypes = true;
     orbtypes.push_back(occtypes);
   }
-  if (up!=std::string::npos && up!=string.size()-1){
-    ipos = up;
+  if (down!=std::string::npos && down!=string.size()-1){
+    ipos = down;
     ipos = IL::skip(string,ipos,"{}_^ ");
     Product<Orbital::Type> virtypes;
-    while ( (ipos < down) == (up < down) && (ipos1 = IL::nextwordpos(string,ipos,true,false)) != ipos ){//non greedy
+    while ( (ipos < up) == (down < up) && (ipos1 = IL::nextwordpos(string,ipos,true,false)) != ipos ){//non greedy
       Orbital orb(IL::plainname(string.substr(ipos,ipos1-ipos)),spintype);
       virtypes *= orb.type();
       ipos = IL::skip(string,ipos1,"{}_^ ");
