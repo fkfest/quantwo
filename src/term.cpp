@@ -969,7 +969,9 @@ void Term::deleteNoneMats()
 bool Term::brilloin() const
 {
   for ( Product<Matrices>::const_iterator it = _mat.begin(); it != _mat.end(); ++it )
-    if ( it->type() == Ops::Fock && it->orbitals()[0].type() != it->orbitals()[1].type() )
+    if ( it->type() == Ops::Fock && 
+         (( it->orbitals()[0].type() == Orbital::Occ && it->orbitals()[1].type() == Orbital::Virt ) ||
+          ( it->orbitals()[1].type() == Orbital::Occ && it->orbitals()[0].type() == Orbital::Virt )) )
       return true;
   return false;
 }
