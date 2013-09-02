@@ -688,7 +688,7 @@ Oper Equation::handle_braket(const Lelem& lel, Term& term, bool excopsonly)
     return handle_excitation(term,lelnam,(lel.lex()==Lelem::Bra),lm,excopsonly);
   }
 }
-Oper Equation::handle_explexcitation(Term& term, const std::string& name, bool dg, bool excopsonly)
+Oper Equation::handle_explexcitation(Term& term, const std::string& name, bool dg, bool excopsonly, bool phi)
 {
   lui ipos, ipos1;
   short excl;
@@ -698,21 +698,33 @@ Oper Equation::handle_explexcitation(Term& term, const std::string& name, bool d
   bool spinintegr = Input::iPars["prog"]["spinintegr"];
   Spin::Type spintype = Spin::Gen;
   if (spinintegr) spintype = Spin::GenS;
-  ipos = 0;
-  ipos = IL::skip(name,ipos,"{}_^ ");
-  while ( (ipos1 = IL::nextwordpos(name,ipos,true,false)) != ipos ){//non greedy
-    // TODO change it proper to singlet and triplet operators, handle sub and superscripts!!
-    Orbital orb(IL::plainname(name.substr(ipos,ipos1-ipos)),spintype);
-    if ( orb.type() == Orbital::Occ )
-      occs *= orb;
-    else if ( orb.type() == Orbital::Virt )
-      virts *= orb;
-    else
-      error("general orbitals in excitation operators are not supported! "+name);
-    ipos = IL::skip(name,ipos1,"{}_^ ");
+  lui up, down;
+  down=IL::lexfind(name,"_");
+  up=IL::lexfind(name,"^");
+  if (phi){ // in phi we have an opposite order of indices!
+    std::swap(up,down);
   }
-//   if ( occs.size() != virts.size() )
-//     error("can handle particle-number conserving operators only! "+name);
+  if (up!=std::string::npos && up!=name.size()-1){
+    ipos = up;
+    ipos = IL::skip(name,ipos,"{}_^ ");
+    while ( (ipos < down) == (up < down) && (ipos1 = IL::nextwordpos(name,ipos,true,false)) != ipos ){//non greedy
+      Orbital orb(IL::plainname(name.substr(ipos,ipos1-ipos)),spintype);
+      occs *= orb;
+      if ( orb.type() == Orbital::Virt ) xout << "WARNING: Do you really want to have orbital " << orb << " as occupied?" << std::endl;
+      ipos = IL::skip(name,ipos1,"{}_^ ");
+    }
+  }
+  if (down!=std::string::npos && down!=name.size()-1){
+    ipos = down;
+    ipos = IL::skip(name,ipos,"{}_^ ");
+    while ( (ipos < up) == (down < up) && (ipos1 = IL::nextwordpos(name,ipos,true,false)) != ipos ){//non greedy
+      Orbital orb(IL::plainname(name.substr(ipos,ipos1-ipos)),spintype);
+      virts *= orb;
+      if ( orb.type() == Orbital::Occ ) xout << "WARNING: Do you really want to have orbital " << orb << " as virtual?" << std::endl;
+      ipos = IL::skip(name,ipos1,"{}_^ ");
+    }
+  }
+  
   excl = occs.size();
   // set lastorb (if smaller)
   for ( uint i = 0; i < occs.size(); ++i )
@@ -982,6 +994,7 @@ bool Equation::handle_orbtypes(std::vector< Product< Orbital::Type > >& orbtypes
     while ( (ipos < down) == (up < down) && (ipos1 = IL::nextwordpos(string,ipos,true,false)) != ipos ){//non greedy
       Orbital orb(IL::plainname(string.substr(ipos,ipos1-ipos)),spintype);
       occtypes *= orb.type();
+      if ( orb.type() == Orbital::Virt ) xout << "WARNING: Do you really want to have orbital " << orb << " as occupied?" << std::endl;
       ipos = IL::skip(string,ipos1,"{}_^ ");
     }
     if ( occtypes.size() > 0 ) foundorbtypes = true;
@@ -994,6 +1007,7 @@ bool Equation::handle_orbtypes(std::vector< Product< Orbital::Type > >& orbtypes
     while ( (ipos < up) == (down < up) && (ipos1 = IL::nextwordpos(string,ipos,true,false)) != ipos ){//non greedy
       Orbital orb(IL::plainname(string.substr(ipos,ipos1-ipos)),spintype);
       virtypes *= orb.type();
+      if ( orb.type() == Orbital::Occ ) xout << "WARNING: Do you really want to have orbital " << orb << " as virtual?" << std::endl;
       ipos = IL::skip(string,ipos1,"{}_^ ");
     }
     if ( virtypes.size() > 0 ) foundorbtypes = true;

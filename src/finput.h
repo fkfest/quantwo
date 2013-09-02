@@ -88,7 +88,7 @@ private:
   // handle bra/ket
   Oper handle_braket(Lelem const & lel, Term & term, bool excopsonly=false);
   // handle explicit excitation index (like ^{ab}_{ij})
-  Oper handle_explexcitation(Term& term, std::string const & name, bool dg, bool excopsonly=false);
+  Oper handle_explexcitation(Term& term, std::string const & name, bool dg, bool excopsonly=false, bool phi=true);
   // handle excitation index
   Oper handle_excitation( Term& term, std::string const & name, bool dg, int lmel = 0, bool excopsonly=false );
   // handle factor
