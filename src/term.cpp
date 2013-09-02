@@ -255,7 +255,6 @@ bool Term::equal(Term& t, Permut& perm)
   po*=_realsumindx; // internal indices
   pot*=t._realsumindx; // internal indices
   if (po.size() != pot.size()) return false;
-
   Product<Matrices> mat, tmat;
   Product<Orbital> por, port;
   Permut perm1;
@@ -653,7 +652,7 @@ Sum< Term, TFactor > Term::wick(TWOps& opers, TWMats& krons) const
   return sum;
 }
 
-Sum< Term, TFactor > Term::genwick(Term::TWOps& opers, const Term::TWMats& krons, const Term::TWMats& densmat) const
+Sum< Term, TFactor > Term::genwick(Term::TWOps& opers, const Term::TWMats& krons, Term::TWMats densmat) const
 {
   Sum<Term, TFactor>  sum;
   if (opers.size()==0) { // no SQoperators left
@@ -718,7 +717,7 @@ Sum< Term, TFactor > Term::genwick(Term::TWOps& opers, const Term::TWMats& krons
         // copy opers and krons
         TWOps opers1(opers);
         TWMats krons1(krons);
-        TWMats densmat1(densmat);
+//         TWMats densmat1(densmat);
         // remove SQop-index
         TWOps::iterator iop1 = opers1.begin();
         std::advance(iop1,ii);
@@ -734,41 +733,20 @@ Sum< Term, TFactor > Term::genwick(Term::TWOps& opers, const Term::TWMats& krons
         krons1.push_back(*ijop);
         //call wick recursivly
         if ((sign+jj)%2 == 0)
-          sum+=genwick(opers1,krons1,densmat1);
+          sum+=genwick(opers1,krons1,densmat);
         else
-          sum-=genwick(opers1,krons1,densmat1);
-        if ( (orbcurrgen || orbcurract) &&
-             (oporbtype == Orbital::Act || oporbtype == Orbital::GenT) ){
-          // add density matrix
-          // copy opers and krons
-          opers1 = opers;
-          krons1.pop_back();
-          krons1.pop_back();
-//           krons1 = krons;
-//           densmat1 = densmat;
-          // remove SQop-index
-          iop1 = opers1.begin();
-          std::advance(iop1,ii);
-          if (iop1->size() == 1)
-            opers1.erase(iop1);
-          else {
-            TWMats::iterator ijop1 = iop1->begin();
-            std::advance(ijop1,jj);
-            iop1->erase(ijop1);
-          }
-          //swapped operators!
-          densmat1.push_back(*ijop);
-          densmat1.push_back(curr);
-          //call wick recursivly
-          if ((sign+jj)%2 == 0)
-            sum-=genwick(opers1,krons1,densmat1);
-          else
-            sum+=genwick(opers1,krons1,densmat1);
-          
-        }
+          sum-=genwick(opers1,krons1,densmat);
       }
     }
     sign+=iop->size();
+  }
+  if (orbcurrgen || orbcurract) {
+    // add density matrix
+    densmat.push_front(curr);
+    if ((sign)%2 == 0)
+      sum+=genwick(opers,krons,densmat);
+    else
+      sum-=genwick(opers,krons,densmat);
   }
   return sum;
 }
