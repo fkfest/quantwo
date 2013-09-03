@@ -24,6 +24,9 @@ void error(std::string what, std::string where="");
 // log function
 void say(std::string what, std::string where="");
 
+// warning function
+#define warning(x) { std::cerr << "WARNING: " << x << std::endl; } 
+
 // path of executable
 std::string exepath();
 

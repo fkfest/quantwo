@@ -710,7 +710,8 @@ Oper Equation::handle_explexcitation(Term& term, const std::string& name, bool d
     while ( (ipos < down) == (up < down) && (ipos1 = IL::nextwordpos(name,ipos,true,false)) != ipos ){//non greedy
       Orbital orb(IL::plainname(name.substr(ipos,ipos1-ipos)),spintype);
       occs *= orb;
-      if ( orb.type() == Orbital::Virt ) xout << "WARNING: Do you really want to have orbital " << orb << " as occupied?" << std::endl;
+      if ( orb.type() == Orbital::Virt ) 
+        warning("Do you really want to have orbital " << orb << " as occupied?");
       ipos = IL::skip(name,ipos1,"{}_^ ");
     }
   }
@@ -720,7 +721,7 @@ Oper Equation::handle_explexcitation(Term& term, const std::string& name, bool d
     while ( (ipos < up) == (down < up) && (ipos1 = IL::nextwordpos(name,ipos,true,false)) != ipos ){//non greedy
       Orbital orb(IL::plainname(name.substr(ipos,ipos1-ipos)),spintype);
       virts *= orb;
-      if ( orb.type() == Orbital::Occ ) xout << "WARNING: Do you really want to have orbital " << orb << " as virtual?" << std::endl;
+      if ( orb.type() == Orbital::Occ ) warning("Do you really want to have orbital " << orb << " as virtual?");
       ipos = IL::skip(name,ipos1,"{}_^ ");
     }
   }
