@@ -21,9 +21,9 @@ std::string exepath(){
   if (len != -1) {
     buff[len] = '\0';
     path = std::string(buff);
-#elif defined TARGET_OS_MAC
+#elif defined __MACH__
 // Mac
-  int  bufsize = sizeof(buff);
+  uint  bufsize = sizeof(buff);
   if (_NSGetExecutablePath(buff, &bufsize) == 0){
     path = std::string(buff);
 #else
