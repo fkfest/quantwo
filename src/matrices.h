@@ -101,6 +101,8 @@ class Matrices {
   const ConLine& conline(lui iorb) const;
   // permute with p
   void permute(const Permut& p);
+  // returns a plain name that can be used in algo's
+  std::string plainname() const;
   private:
   Ops::Type _type;
   Product<Orbital> _orbs;

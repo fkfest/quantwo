@@ -16,6 +16,7 @@ int main(int argc, char **argv) {
   string inputfile, outputfile,
     exePath = exepath();
   int iarg=1;
+  bool algo = false;
   while ( iarg<argc && argv[iarg][0]=='-') {// handle options
     if (strcmp(argv[iarg],"-h")==0 || strcmp(argv[iarg],"--help")==0) {
       cout << "quantwo <input-file> [<output-file>]" << endl;
@@ -36,6 +37,9 @@ int main(int argc, char **argv) {
       } else {
         ++iarg;
       }
+    } else if (strcmp(argv[iarg],"-a")==0 || strcmp(argv[iarg],"--algo")==0) {
+      // the input file is an algofile
+      algo = true;
     }
     ++iarg;
   }
@@ -74,7 +78,8 @@ int main(int argc, char **argv) {
     return 1;
   }
   for ( lui il = 0; il < inp.size(); ++il ){
-    if ( finput.addline(inp[il]) ){
+    if ( algo ) {
+    } else if ( finput.addline(inp[il]) ){
       if ( finput.sumterms().size() == 0 ){
         say("Empty equation!");
         continue;
@@ -115,12 +120,26 @@ int main(int argc, char **argv) {
       MyOut::pcurout->eeq();
       if ( Input::iPars["prog"]["diagrams"] > 0 )
         Q2::printdiags(MyOut::pcurout ,sum_final);
+      if ( Input::iPars["prog"]["algo"] > 0 ){
+        ofstream falgout;
+        std::string algofile;
+        if ( outputfile.substr(outputfile.size()-4).compare(".tex") == 0 )
+          algofile = outputfile.substr(0,outputfile.size()-4);
+        else
+          algofile = outputfile;
+        algofile += ".alg";
+        falgout.open(algofile.c_str());
+        Q2::printalgo(falgout,sum_final);
+      }
       finput.clear();
     }
   }
   // set current ouput back to default
   MyOut::pcurout = &MyOut::defout;
   fout.close();
+  
+    
+  
 //  // test permutation multiplication
 //  Orbital i("i"),j("j"),k("k");
 //  Permut p1,p2;

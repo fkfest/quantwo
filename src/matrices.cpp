@@ -277,6 +277,17 @@ void Matrices::permute(const Permut& p)
     _orbs[i] = p.permutorb(_orbs[i]);
   }
 }
+std::string Matrices::plainname() const
+{
+  const std::string& plainsymbols = Input::sPars["syntax"]["plainsymb"];
+  std::string plainnam;
+  for ( uint i = 0; i < _name.size(); ++i ){
+    if ( plainsymbols.find(_name[i]) != std::string::npos ){
+      plainnam += _name[i];
+    }
+  }
+  return plainnam;
+}
 
 std::ostream & operator << (std::ostream & o, Matrices const & mat)
 {

@@ -34,5 +34,7 @@ namespace Q2
   Sum<Term,TFactor> wick(Sum<Term,TFactor> s);
   Sum<Term,TFactor> postaction(Sum<Term,TFactor> s);
   void printdiags(Output* pout, Sum<Term,TFactor> s);
+  
+  void printalgo(std::ofstream& out, Sum<Term,TFactor> s);
 }
 #endif

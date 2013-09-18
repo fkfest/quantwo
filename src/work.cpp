@@ -343,3 +343,19 @@ void Q2::printdiags(Output* pout, Sum< Term, TFactor > s)
     it->first.printdiag(pout,it->second);
   }
 }
+
+void Q2::printalgo(std::ofstream& out, Sum< Term, TFactor > s)
+{
+  const std::string& resultt = Input::sPars["syntax"]["result"];
+  say("Algorithm...");
+  
+  out << "algorithm..." << std::endl;
+  // external indices
+  // .....
+  for ( Sum<Term,TFactor>::const_iterator i=s.begin();i!=s.end(); ++i) {
+    out << resultt << "[abij]" << " += ";
+    // call term ...
+    out << std::endl;
+  }
+}
+
