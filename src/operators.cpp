@@ -239,6 +239,7 @@ void Oper::create_Oper(const Product< Orbital >& occs, const Product< Orbital >&
 {
   assert( !InSet(_type, Ops::FluctP,Ops::Fock,Ops::XPert) );
   bool spinintegr = Input::iPars["prog"]["spinintegr"];
+  bool noprefac = (Input::iPars["prog"]["nobrafac"]) && InSet(_type, Ops::Exc0,Ops::Deexc0);
 //  assert( occs.size() == virts.size() );
   Matrices::Spinsym spinsym = Matrices::Singlet;
   Product<Orbital> porbs;
@@ -308,20 +309,22 @@ void Oper::create_Oper(const Product< Orbital >& occs, const Product< Orbital >&
     }
     symel[elhash] += 1;
   }
-  // prefactor
-  std::map<uint,uint>::const_iterator is; 
-  _foreach(is,sym){
-    for (uint i = 0; i < is->second; ++i)
-      _prefac *= i+1;
-  }
-  if (spinintegr){
-    // take into account the indistinguishability of the electrons
-    _foreach(is,symel){
+  if (!noprefac) {
+    // prefactor
+    std::map<uint,uint>::const_iterator is; 
+    _foreach(is,sym){
       for (uint i = 0; i < is->second; ++i)
         _prefac *= i+1;
     }
+    if (spinintegr){
+      // take into account the indistinguishability of the electrons
+      _foreach(is,symel){
+        for (uint i = 0; i < is->second; ++i)
+          _prefac *= i+1;
+      }
+    }
+    _prefac = 1/_prefac;
   }
-  _prefac = 1/_prefac;
   _mat=Matrices(_type,porbs,npairs,name,spinsym);
 }
 

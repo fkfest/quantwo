@@ -4,7 +4,7 @@ PROFILE =
 CFLAGS := -c -Wall -O3 $(PROFILE)
 LDFLAGS = $(PROFILE)
 #use rational numbers from boost
-CFLAGS := $(CFLAGS) -D _RATIONAL
+#CFLAGS := $(CFLAGS) -D _RATIONAL
 INCLUDES=
 # program name
 MAIN = quantwo
