@@ -8,8 +8,16 @@ LDFLAGS = $(PROFILE)
 INCLUDES=
 # program name
 MAIN = quantwo
+# OS type
+UNAME_S := $(shell uname -s)
 # base directory
-BASE=$(shell dirname $$(readlink -f Makefile))
+ifeq ($(UNAME_S),Linux)
+  BASE=$(shell dirname $$(readlink -f Makefile))
+endif
+ifeq ($(UNAME_S),Darwin)
+  # uses greadlink from coreutils
+  BASE=$(shell dirname $$(greadlink -f Makefile))
+endif
 # files to be linked to working-directory
 FILIN=definitions.tex equation.tex
 DIR = src
