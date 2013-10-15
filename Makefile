@@ -11,6 +11,7 @@ MAIN = quantwo
 # OS type
 UNAME_S := $(shell uname -s)
 # base directory
+BASE=$(PWD)
 ifeq ($(UNAME_S),Linux)
   BASE=$(shell dirname $$(readlink -f Makefile))
 endif
