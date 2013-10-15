@@ -30,9 +30,9 @@ bool SQOp::operator<(const SQOp& o) const
     return false;
   return _orb<o._orb;
 }
-Return SQOp::replace(Orbital orb1, Orbital orb2)
+Return SQOp::replace(Orbital orb1, Orbital orb2, bool smart)
 {
-  return _orb.replace(orb1,orb2);
+  return _orb.replace(orb1,orb2,smart);
 }
 
 std::ostream & operator << (std::ostream & o, SQOp const & op)

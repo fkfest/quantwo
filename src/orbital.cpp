@@ -120,14 +120,19 @@ int Orbital::comp_letname(const Orbital& orb) const
   else if ( lname > lnameo ) return 1;
   return 0;
 }
-Return Orbital::replace(const Orbital& orb1, const Orbital& orb2)
+Return Orbital::replace(const Orbital& orb1, const Orbital& orb2, bool smart)
 {
   if (*this == orb1) { 
     *this = orb2; 
-    // restore spin -- will be replaced explicitely 
-    this->_spin = orb1._spin;
+    if (smart) {
+      // restore spin -- will be replaced explicitely 
+      this->_spin = orb1._spin;
+    }
   }
-  return this->_spin.replace(orb1._spin,orb2._spin);
+  if (smart)
+    return this->_spin.replace(orb1._spin,orb2._spin);
+  else
+    return Return::Done;
 }
 
 std::ostream & operator << (std::ostream & o, Orbital const & orb)

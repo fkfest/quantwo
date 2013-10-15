@@ -36,7 +36,7 @@ class SQOp {
   // check ordering relation (for sorting)
   bool operator < (SQOp const & o) const;
   // replace orbital orb1 with orb2
-  Return replace(Orbital orb1, Orbital orb2);
+  Return replace(Orbital orb1, Orbital orb2, bool smart);
 
   private:
   SQOpT::Gender _gender;

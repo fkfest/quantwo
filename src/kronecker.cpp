@@ -23,11 +23,11 @@ bool Kronecker::operator < (Kronecker const & k) const
     return _orb2<k._orb2;
 }
 
-Return Kronecker::replace(Orbital orb1, Orbital orb2)
+Return Kronecker::replace(Orbital orb1, Orbital orb2, bool smart)
 {
   Return rpl;
-  rpl += _orb1.replace(orb1,orb2);
-  rpl += _orb2.replace(orb1,orb2);
+  rpl += _orb1.replace(orb1,orb2,smart);
+  rpl += _orb2.replace(orb1,orb2,smart);
   return rpl;
 }
 

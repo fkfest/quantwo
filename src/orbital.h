@@ -96,7 +96,7 @@ class Orbital {
   // -1: <; 0: ==; 1: >
   int comp_letname( const Orbital& orb ) const;
   // replace orb1 with orb2
-  Return replace( const Orbital& orb1, const Orbital& orb2);
+  Return replace( const Orbital& orb1, const Orbital& orb2, bool smart);
   
   private:
   // generate orbital type from _name

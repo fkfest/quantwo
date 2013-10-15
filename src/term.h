@@ -111,8 +111,8 @@ class Term {
     void setmatconnections();
     //! reduce equation (delete Kroneckers and summation indices)
     void reduceTerm();
-    //! replace orbital orb1 with orb2
-    void replace(Orbital orb1, Orbital orb2);
+    //! replace orbital orb1 with orb2, if smart == true : handle the spins in a smart way
+    void replace(Orbital orb1, Orbital orb2, bool smart = true);
     // delete "None" matrices (caution, the order of matrices can be important, so do it AFTER connection stuff!)
     void deleteNoneMats();
     // brilloin condition (return true for terms with occ-virt fock)
@@ -203,17 +203,17 @@ private:
 namespace Q2
 {
   template <class T, class Q>
-  Return replace(Product<T> &p, Q orb1, Q orb2);
+  Return replace(Product<T> &p, Q orb1, Q orb2, bool smart);
   template <class T, class Q>
-  Return replace(Set<T> &p, Q orb1, Q orb2);
+  Return replace(Set<T> &p, Q orb1, Q orb2, bool smart);
   template <class T>
-  Return replace(SQOp &op, T orb1, T orb2);
+  Return replace(SQOp &op, T orb1, T orb2, bool smart);
   template <class T>
-  Return replace(T &orb, T orb1, T orb2);
+  Return replace(T &orb, T orb1, T orb2, bool smart);
   template <class T>
-  Return replace(Matrices &mat, T orb1, T orb2);
+  Return replace(Matrices &mat, T orb1, T orb2, bool smart);
   template <class T>
-  Return replace(Kronecker &kron, T orb1, T orb2);
+  Return replace(Kronecker &kron, T orb1, T orb2, bool smart);
 }
 #endif
 

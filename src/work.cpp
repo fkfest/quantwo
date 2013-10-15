@@ -12,8 +12,20 @@ Sum< Term, TFactor > Q2::reduceSum(Sum< Term, TFactor > s)
   TFactor prefac;
   say("Reduce sum of terms");
   _xout3(s << std::endl);
+
+  say("Antisymmetry...");
+  sum.clear();
+  for ( Sum<Term,TFactor>::const_iterator i=s.begin();i!=s.end(); ++i) {
+    term=i->first;
+    // expand antisymmetrized integrals
+    sum1 = term.expand_antisym();
+    sum1 *= i->second;
+    sum += sum1;
+  }
+  _xout3(sum << std::endl);
+  
   say("Kroneckers...");
-  sum = Kroneckers(s);
+  sum = Kroneckers(sum);
   _xout3(sum << std::endl);
   
   // set remaining general indices to the occupied or active space
@@ -21,15 +33,15 @@ Sum< Term, TFactor > Q2::reduceSum(Sum< Term, TFactor > s)
   sum = GeneralIndices(sum);
   sum = ZeroTerms(sum);
   _xout3(sum << std::endl);
-  
-    if (spinintegr){
+
+  if (spinintegr){
     // bring all the density matrices into singlet-order
     say("Singlet order...");
     sum = SingletDM(sum);
     _xout3(sum << std::endl);
   }
 
-  say("Connections and Antisymmetry...");
+  say("Connections...");
   s = sum;
   sum.clear();
   for ( Sum<Term,TFactor>::const_iterator i=s.begin();i!=s.end(); ++i) {
@@ -42,10 +54,7 @@ Sum< Term, TFactor > Q2::reduceSum(Sum< Term, TFactor > s)
     if (!term.properconnect()) {
       continue;
     }
-    // expand antisymmetrized integrals
-    sum1 = term.expand_antisym();
-    sum1 *= i->second;
-    sum += sum1;
+    sum += std::make_pair(term,i->second);
   }
   if (quan3) {
     say("count electrons (a posteriori)...");

@@ -64,12 +64,12 @@ std::string Matrices::name() const
 bool Matrices::antisymform() const
 { return _antisymform; }
 
-Return Matrices::replace(Orbital orb1, Orbital orb2)
+Return Matrices::replace(Orbital orb1, Orbital orb2, bool smart)
 {
   Return rpl;
   for ( unsigned int i=0; i<_orbs.size(); ++i )
   {
-    rpl += _orbs[i].replace(orb1,orb2);
+    rpl += _orbs[i].replace(orb1,orb2,smart);
   }
   return rpl;
 }

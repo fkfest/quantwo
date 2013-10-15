@@ -46,7 +46,7 @@ class Matrices {
   // return true if antisymmetrized form
   bool antisymform() const;
   // replace orbital orb1 with orb2
-  Return replace(Orbital orb1, Orbital orb2);
+  Return replace(Orbital orb1, Orbital orb2, bool smart);
   // expand antisymmetrized matrix ( from antisymmetrized form < AB || CD > to the normal form < AB | CD > - < AB | DC > )
   // if firstpart=true : < AB | CD >, if firstpart=false : < AB | DC >
   // if return is true: expanded, if false: don't need to expand

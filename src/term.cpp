@@ -953,13 +953,13 @@ void Term::reduceTerm()
     }
   }
 }
-void Term::replace(Orbital orb1, Orbital orb2)
+void Term::replace(Orbital orb1, Orbital orb2, bool smart)
 {
-  Q2::replace(_opProd,orb1,orb2);
-  Q2::replace(_mat,orb1,orb2);
-  Q2::replace(_kProd,orb1,orb2);
-  Q2::replace(_realsumindx,orb1,orb2);
-  Q2::replace(_sumindx,orb1,orb2);
+  Q2::replace(_opProd,orb1,orb2,smart);
+  Q2::replace(_mat,orb1,orb2,smart);
+  Q2::replace(_kProd,orb1,orb2,smart);
+  Q2::replace(_realsumindx,orb1,orb2,smart);
+  Q2::replace(_sumindx,orb1,orb2,smart);
 }
 
 static bool matisnone(const Matrices& mat)
@@ -997,7 +997,21 @@ void Term::matrixkind()
 bool Term::expandintegral(bool firstpart)
 {
   for (unsigned int i=0; i<_mat.size(); i++)
-    if (_mat[i].expandantisym(firstpart)) return true;
+    if (_mat[i].expandantisym(firstpart)) {
+      if ( !firstpart ){
+        // electrons have to be swaped in the matrix and all corresponding kroneckers
+        assert(_mat[i].orbitals().size() == 4);
+        Orbital 
+          orb1 = _mat[i].orbitals()[1],
+          orb3 = _mat[i].orbitals()[3],
+          orbn1(orb1), orbn3(orb3);
+        orbn1.setspin(orb3.spin());
+        orbn3.setspin(orb1.spin());
+        this->replace(orb1,orbn1,false);
+        this->replace(orb3,orbn3,false);
+      }
+      return true;
+    }
   return false;
 }
 bool Term::antisymmetrized()
@@ -1391,17 +1405,17 @@ void Term::set_lastel(Electron el, bool onlylarger)
 
 
 template <class T, class Q>
-Return Q2::replace(Product< T >& p, Q orb1, Q orb2)
+Return Q2::replace(Product< T >& p, Q orb1, Q orb2, bool smart)
 {
   Return rpl;
   for ( unsigned int i=0; i<p.size(); ++i )
   {
-    rpl += replace(p[i],orb1, orb2);
+    rpl += replace(p[i],orb1, orb2, smart);
   }
   return rpl;
 }
 template <class T, class Q>
-Return Q2::replace(Set< T >& p, Q orb1, Q orb2)
+Return Q2::replace(Set< T >& p, Q orb1, Q orb2, bool smart)
 {
   Return rpl;
   Set<T> tmp;
@@ -1409,7 +1423,7 @@ Return Q2::replace(Set< T >& p, Q orb1, Q orb2)
   for ( typename Set<T>::iterator it = p.begin(); it != p.end(); ++it )
   { 
     T t(*it);
-    rpl += replace(t,orb1, orb2);
+    rpl += replace(t,orb1, orb2,smart);
     ret = tmp.insert(t);
     if (!ret.second)
       say("Strange, summation runs already over "+t.name());
@@ -1418,17 +1432,17 @@ Return Q2::replace(Set< T >& p, Q orb1, Q orb2)
   return rpl;
 }
 template <class T>
-Return Q2::replace(SQOp& op, T orb1, T orb2)
-{ return op.replace(orb1,orb2); }
+Return Q2::replace(SQOp& op, T orb1, T orb2, bool smart)
+{ return op.replace(orb1,orb2,smart); }
 template <class T>
-Return Q2::replace(T &orb, T orb1, T orb2)
-{ return orb.replace(orb1,orb2);
+Return Q2::replace(T &orb, T orb1, T orb2, bool smart)
+{ return orb.replace(orb1,orb2,smart);
   //if (orb == orb1) orb=orb2; 
 }
 template <class T>
-Return Q2::replace(Matrices &mat, T orb1, T orb2)
-{ return mat.replace(orb1,orb2); }
+Return Q2::replace(Matrices &mat, T orb1, T orb2, bool smart)
+{ return mat.replace(orb1,orb2,smart); }
 template <class T>
-Return Q2::replace(Kronecker& kron, T orb1, T orb2)
-{ return kron.replace(orb1,orb2); }
+Return Q2::replace(Kronecker& kron, T orb1, T orb2, bool smart)
+{ return kron.replace(orb1,orb2,smart); }
 
