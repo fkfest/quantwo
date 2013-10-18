@@ -85,3 +85,9 @@ set="prog",type=i,name="noorder",value=0,desc="if = 0: use normal ordering, = 1:
 set="prog",type=i,name="nobrafac",value=0,desc="if = 0: use the usual prefactors in bare excitation operators"
 set="prog",type=i,name="algo",value=0,desc="if > 0: print algorithm file"
 
+%FACTORIZATION
+set="fact",type=i,name="nocc",value=100,desc="number of occupied orbitals (for optimization)"
+set="fact",type=i,name="nvir",value=500,desc="number of virtual orbitals (for optimization)"
+set="fact",type=i,name="nact",value=20,desc="number of active orbitals (for optimization)"
+set="fact",type=i,name="nao",value=600,desc="number of atomic orbitals (for optimization)"
+set="fact",type=i,name="ndf",value=1000,desc="number of DF orbitals (for optimization)"

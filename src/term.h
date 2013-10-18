@@ -70,11 +70,11 @@ class Term {
     //! return prefactor
     TFactor prefac() const;
     //! return matrices
-    Product<Matrices> mat() const;
+    const Product<Matrices>& mat() const;
     //! return summation indices
-    TOrbSet sumindx() const;
+    const TOrbSet& sumindx() const;
     //! return real summation indices
-    TOrbSet realsumindx() const;
+    const TOrbSet& realsumindx() const;
     //! generate set of external-lines orbitals
     TOrbSet extindx() const;
     //! return Sum of Permutators
@@ -147,6 +147,8 @@ class Term {
     void setperm(const Sum<Permut,TFactor>& p){_perm = p;};
     // permute the term according to p
     void permute(const Permut& p);
+    // resolve permutations
+    Sum<Term, TFactor> resolve_permutations() const;
     //! compare actual connections with the needed (in _connections)
     //! return true if the term is ok
     bool properconnect() const;
@@ -160,14 +162,14 @@ class Term {
     Electron nextelectron();
     //! static wrapper-function
     static Electron getnextelectron(void * Obj);
-//    //! get last orbital
-//    Orbital get_lastorb(Orbital::Type type) const { return _lastorb[type]; };
     //! set last orbital (onlylarger: only if it's larger than current one)
     void set_lastorb(Orbital orb, bool onlylarger = false);
     void set_lastel(Electron el, bool onlylarger = false);
-//  set _lastorb using _sumindx
+    // set _lastorb using _sumindx
     void set_lastorbs();
-
+    // iterates over all orbitals in the term. Returns Orbital() if iorb > last one
+    Orbital orb( uint iorb ) const;
+    
   private:
     Sum<Term, TFactor>  normalOrder(bool fullyContractedOnly) const;
     Sum<Term, TFactor>  normalOrderPH(bool fullyContractedOnly) const;

@@ -349,6 +349,8 @@ void Q2::printalgo(std::ofstream& out, Sum< Term, TFactor > s)
   const std::string& resultt = Input::sPars["syntax"]["result"];
   say("Algorithm...");
   
+  Factorizer fact(s);
+  
   out << "algorithm..." << std::endl;
   // external indices
   // .....

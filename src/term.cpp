@@ -170,12 +170,25 @@ void Term::permute(const Permut& p)
     it->permute(p);
   }
 }
+Sum< Term, TFactor > Term::resolve_permutations() const
+{
+  Sum< Term, TFactor > sum;
+  Sum<Permut,TFactor> empty_perm;
+  for ( Sum<Permut,TFactor>::const_iterator itp = _perm.begin(); itp != _perm.end(); ++itp ){
+    Term term = *this;
+    term.setperm(empty_perm);
+    TFactor fac = itp->second;
+    term.permute(itp->first);
+    sum += std::make_pair(term,fac);
+  }
+  return sum;
+}
 
-Product<Matrices> Term::mat() const
+const Product< Matrices >& Term::mat() const
 { return _mat; }
-TOrbSet Term::sumindx() const
+const TOrbSet& Term::sumindx() const
 { return _sumindx; }
-TOrbSet Term::realsumindx() const
+const TOrbSet& Term::realsumindx() const
 { return _realsumindx; }
 TOrbSet Term::extindx() const
 {
@@ -753,7 +766,6 @@ Sum< Term, TFactor > Term::genwick(Term::TWOps& opers, const Term::TWMats& krons
 Sum< Term, TFactor > Term::dmwickstheorem(const Matrices& dm) const
 {
   assert( dm.type() == Ops::DensM );
-  bool dmsort = (Input::iPars["prog"]["dmsort"] > 0);
   // generate "matrix" of indices to SQops
   TWMats opers, krons;
   const Product<Orbital>& orbs(dm.orbitals());
@@ -779,7 +791,7 @@ Sum< Term, TFactor > Term::dmwickstheorem(const Matrices& dm) const
     }
   }
   // only dmsort version is implemented yet...
-  assert(dmsort);
+  assert(Input::iPars["prog"]["dmsort"] > 0);
   assert(dm.get_cran().size() == dm.orbitals().size());
   return dmwick(opers,krons,dm);
 }
@@ -1410,6 +1422,14 @@ void Term::set_lastel(Electron el, bool onlylarger)
 {
   if ( onlylarger && el < _lastel ) return;
   _lastel = el;
+}
+
+Orbital Term::orb(uint iorb) const
+{
+  if (iorb >= _sumindx.size()) return Orbital();
+  TOrbSet::const_iterator it = _sumindx.begin();
+  std::advance(it,iorb);
+  return *it;
 }
 
 

@@ -8,6 +8,7 @@
 #include "finput.h"
 #include "globals.h"
 #include "work.h"
+#include "tensor.h"
 
 using namespace std;
 

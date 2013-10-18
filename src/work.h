@@ -13,7 +13,7 @@
 #include "globals.h"
 #include "term.h"
 #include "finput.h"
-
+#include "factorizer.h"
 #include <iostream>
 
 
