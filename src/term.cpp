@@ -953,6 +953,15 @@ void Term::reduceTerm()
     }
   }
 }
+void Term::krons2mats()
+{
+  Product<Kronecker>::const_iterator ik;
+  _foreach(ik,_kProd){
+    _mat.push_back(Matrices(*ik));
+  }
+  _kProd = Product<Kronecker>();
+}
+
 void Term::replace(Orbital orb1, Orbital orb2, bool smart)
 {
   Q2::replace(_opProd,orb1,orb2,smart);

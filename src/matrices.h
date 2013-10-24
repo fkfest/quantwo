@@ -11,6 +11,7 @@
 #include "orbital.h"
 #include "inpline.h" // for name-handling
 #include "sum.h"
+#include "kronecker.h"
 // #include "operators.h" // for Creator/Annihilator types
 
 namespace Ops {
@@ -37,6 +38,8 @@ class Matrices {
   Matrices();
   // construct from type and orbitals and name
   Matrices(Ops::Type t, Product<Orbital> p, short npairs, std::string name="T", Spinsym matspinsym=Singlet, bool antisymW=true);
+  // construct from kronecker
+  Matrices(const Kronecker& d);
   // return Type
   Ops::Type type() const;
   // return const reference to Product of orbitals

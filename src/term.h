@@ -111,6 +111,8 @@ class Term {
     void setmatconnections();
     //! reduce equation (delete Kroneckers and summation indices)
     void reduceTerm();
+    //! transform Kroneckers to matrices
+    void krons2mats();
     //! replace orbital orb1 with orb2, if smart == true : handle the spins in a smart way
     void replace(Orbital orb1, Orbital orb2, bool smart = true);
     // delete "None" matrices (caution, the order of matrices can be important, so do it AFTER connection stuff!)

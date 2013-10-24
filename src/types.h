@@ -20,6 +20,7 @@ namespace Ops {
     Deexc0, // bare deexcitation operators \op \tau_{\mu_i}^\dg
     Interm, // some intermediates
     DensM, // density matrix (for active orbitals)
+    Delta, // kronecker
     Number};
 };
 

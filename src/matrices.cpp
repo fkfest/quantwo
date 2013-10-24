@@ -54,6 +54,17 @@ Matrices::Matrices(Ops::Type t, Product< Orbital > p, short npairs, std::string 
   } else
     _antisymform=false;
 }
+Matrices::Matrices(const Kronecker& d)
+{
+  _type = Ops::Delta;
+  _orbs.push_back(d.orb1());
+  _orbs.push_back(d.orb2());
+  _npairs = 1;
+  _name = "delta";
+  _matspinsym = Singlet;
+  _antisymform = false;
+}
+
 Ops::Type Matrices::type() const
 { return _type; }
 const Product< Orbital >& Matrices::orbitals() const
@@ -332,6 +343,9 @@ std::ostream & operator << (std::ostream & o, Matrices const & mat)
       }
       break;
     }
+    case Ops::Delta:
+      o << param << "\\delta_{" << mat.orbitals() << "}";
+      break;
     case Ops::Exc:
     case Ops::Deexc:
     case Ops::Interm: {
