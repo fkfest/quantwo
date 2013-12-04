@@ -1,5 +1,27 @@
 #include "tensor.h"
 
+SlotType::SlotType(const std::string& lettertype)
+{
+  TsPar& orbs = Input::sPars["syntax"];
+  if ( curlyfind(orbs["occorb"],lettertype) != std::string::npos ) {
+    _type = SlotType::Occ;
+    _nIndices = Input::iPars["fact"]["nocc"];
+  } else if ( curlyfind(orbs["virorb"],lettertype) != std::string::npos ) {
+    _type = SlotType::Virt;
+    _nIndices = Input::iPars["fact"]["nvir"];
+  } else if ( curlyfind(orbs["actorb"],lettertype) != std::string::npos ) {
+    _type = SlotType::Act;
+    _nIndices = Input::iPars["fact"]["nact"];
+  } else if ( curlyfind(orbs["genorb"],lettertype) != std::string::npos ) {
+    _type = SlotType::GenT;
+    _nIndices = Input::iPars["fact"]["nocc"]+Input::iPars["fact"]["nvir"];
+    if ( Input::iPars["prog"]["multiref"] > 0 ) _nIndices += Input::iPars["fact"]["nact"];
+  } else { 
+    error("Unknown letter-type space!","SlotType constructor");
+  }
+}
+
+
 bool SlotType::operator<(const SlotType& st) const
 {
   if (_nIndices < st._nIndices) return true;
@@ -34,8 +56,40 @@ std::string SlotType::typeLetter() const
   return "";
 }
 
+void Symmetry::canonicalize()
+{
+  assert( _simSlots.size() == 0 || _simSlots.size() == _symSlots.size() );
+  assert( _symSlots.size() > 0 );
+  Slots ref;
+  ref.identity(_symSlots.size());
+//  lui nswaps = 
+  InsertionSort( &_symSlots[0], &ref[0], ref.size() );
+  _symSlots = _symSlots.refarr(ref);
+  if ( _simSlots.size() > 0 ) _simSlots = _simSlots.refarr(ref);
+//  int ret = 1;
+//  if ( nswaps % 2 == 1 ) ret = _sign;
+//  return ret;
+}
 
-std::string Cut::StrengthLetter() const
+bool Symmetry::operator<(const Symmetry& sym) const
+{
+  if ( _symSlots.size() < sym._symSlots.size() ) return true;
+  if ( sym._symSlots.size() < _symSlots.size() ) return false;
+  if ( _simSlots.size() < sym._simSlots.size() ) return true;
+  if ( sym._simSlots.size() < _simSlots.size() ) return false;
+  for ( uint i = 0; i < _symSlots.size(); ++i ){
+    if ( _symSlots[i] < sym._symSlots[i] ) return true;
+    if ( sym._symSlots[i] < _symSlots[i] ) return false;
+  }
+  for ( uint i = 0; i < _simSlots.size(); ++i ){
+    if ( _simSlots[i] < sym._simSlots[i] ) return true;
+    if ( sym._simSlots[i] < _simSlots[i] ) return false;
+  }
+  return ( _sign < sym._sign );
+}
+
+
+std::string Cut::strengthLetter() const
 {
   switch (_cutStrength){
     case Cut::DefSth:
@@ -75,8 +129,211 @@ bool Cut::operator<(const Cut& cut) const
   return ( _cutStrength < cut._cutStrength );
 }
 
+void Cut::canonicalize()
+{
+  _cutSlots.resort();
+  _defSlots.resort();
+}
 
-std::string Tensor::SlotTypeLetters() const
+
+void Canonicalize(SlotTs& sts, Slots& ref)
+{
+  ref.identity(sts.size());
+  InsertionPSortD(&sts[0],&ref[0],sts.size());
+  sts = sts.refarr(ref);
+}
+
+// return -1 if not able to read
+static int ReadIndexAndAdvance(std::size_t& ipos, const std::string s){
+    assert( ipos < s.size() );
+    uint
+        islot;
+    std::size_t
+        last = ipos+1,
+        iposnew = last;
+    if ( s[ipos] == '{' ){
+        ++ipos;
+        // closing bracket
+        last = s.find_first_of( '}', ipos );
+        assert( last != std::string::npos );
+        iposnew = last+1;
+    }
+    if ( !str2num<uint>(islot,s.substr(ipos,last-ipos),std::dec) )
+        return -1;
+    ipos = iposnew;
+    return islot;
+
+}
+
+void TensorBase::CreateCutFromDesc(const std::string& desc)
+{
+
+  struct loc{
+    // return strength or other special modes (as uint(FTensorCut::CutNoSth)+type) (e.g. forced triangular)
+    // return nSlots as a count of all slots (including stars)
+    static uint SetSlots( Slots& SlotSet, uint& nSlots,
+              uint iFirstChar, uint iLastChar, std::string const &s ){
+      assert( iLastChar <= s.size() );
+      assert( s.size() > iFirstChar );
+      uint iret = 0;
+      // first char can represent type
+      if ( s[iFirstChar] == 'f' ) {
+        // list of phantom slots
+        iret = uint(Cut::NoSth)+uint(Cut::NoType);
+        ++iFirstChar;
+      } else if ( s[iFirstChar] == 't' ) {
+        // forced triangular mode
+        iret = uint(Cut::NoSth)+uint(Cut::Triang);
+        ++iFirstChar;
+      } else if ( s[iFirstChar] == 's' ) {
+        // forced strong list
+        iret = Cut::Strong;
+        ++iFirstChar;
+      } else if ( s[iFirstChar] == 'c' ) {
+        // forced strong+close list
+        iret = Cut::Close;
+        ++iFirstChar;
+      } else if ( s[iFirstChar] == 'w' ) {
+        // forced strong+close+weak list
+        iret = Cut::Weak;
+        ++iFirstChar;
+      } else if ( s[iFirstChar] == 'd' ) {
+        // forced strong+close+weak+distant list
+        iret = Cut::Dist;
+        ++iFirstChar;
+      }
+      bool goodstr = true;
+      int islot;
+      nSlots = 0;
+      for ( std::size_t i = iFirstChar; goodstr && i < iLastChar; ++i ){
+        if ( s[i] == '*' ) {
+          ++nSlots;
+          continue;
+        }
+        islot = ReadIndexAndAdvance(i,s);
+        goodstr = ( islot >= 0 );
+        if ( goodstr ) {
+          ++nSlots;
+          SlotSet.push_back(uint(islot));
+          --i;
+        }
+      }
+      assert ( goodstr );
+      return iret;
+    };
+  };
+
+  std::size_t
+      // find the cut description
+      iFirst = desc.find("cut:"), 
+      iLast;
+  if ( iFirst != std::string::npos ) iFirst += 4;
+  bool lastcut = false;
+  for ( ; iFirst != std::string::npos && !lastcut; ) {
+    // find next comma
+    iLast = desc.find_first_of( ',', iFirst );
+    std::size_t illast = desc.find_first_of( ';', iFirst );
+    if ( illast < iLast ) {
+      iLast = illast;
+      lastcut = true;
+    }
+
+    std::string
+        SubDesc = desc.substr(iFirst, iLast-iFirst);
+
+    iFirst = (iLast == std::string::npos) ? iLast : iLast + 1;
+
+    if ( SubDesc.empty() ) continue;
+
+    Cut cut;
+    cut._cutStrength = Cut::DefSth;
+    cut._PDCStrength = Cut::NoSth;
+    uint ltype;
+    // Find separator of slot sets.
+    std::size_t iSep = SubDesc.find_first_of("/");
+    if (iSep == std::string::npos){
+      // Cut independent of other orbitals ("List"-cut)
+      cut._cutType = Cut::List;
+      ltype = loc::SetSlots(cut._cutSlots,cut._nSlotCutType,0,SubDesc.size(),SubDesc);
+      if ( ltype >= uint(Cut::NoSth)){
+        ltype -= uint(Cut::NoSth);
+        cut._cutType = (Cut::Type)ltype;
+        ltype = 0;
+        if ( cut._cutType == Cut::Triang ) {
+          // forced triangular
+          // TODO
+          error("forced triangular is not implemented yet");
+          //_cuts.TriOps.push_back(Out.CutOps.size());
+        } else {
+          assert( cut._cutType == Cut::NoType );
+          // add to set of phantom slots
+          _phantomSlots.insert(cut._cutSlots.begin(),cut._cutSlots.end());
+        }
+      } else {
+//        Out.ListOps.push_back(Out.CutOps.size());
+        cut._cutStrength = (Cut::Strength)ltype;
+      }
+    } else {
+      // Cut dependent on other orbitals ("Domain"-cut)
+      cut._cutType = Cut::Domain;
+      uint dummy;
+      ltype = loc::SetSlots(cut._cutSlots,dummy,0,iSep,SubDesc);
+      // no triangular cut or phantom slots here
+      assert( ltype < uint(Cut::NoSth) );
+      cut._cutStrength = (Cut::Strength)ltype;
+      ltype = loc::SetSlots(cut._defSlots,cut._nSlotCutType,iSep+1,SubDesc.size(),SubDesc);
+      // no triangular cut or phantom slots here
+      assert( ltype < uint(Cut::NoSth) );
+      // not explicitly given strength means no strength here
+      if ( ltype == 0 ) ltype = uint(Cut::NoSth);
+      cut._PDCStrength = (Cut::Strength)ltype;
+//      _cuts.DomOps.push_back(Out.CutOps.size());
+    }
+    if ( cut._cutType != Cut::NoType )
+      // all but phantom-slots cuts
+      _cuts.push_back( cut );
+  }
+
+}
+
+DiagramTensor::DiagramTensor( const DiagramTensor& ten1, const DiagramTensor& ten2, const DiagramTensor& res, std::string name ) : TensorBase(name)
+{
+  std::bitset<MAXNINDICES>
+    connectionmask = ten1._connect.bitmask&ten2._connect.bitmask; 
+  _connect.bitmask = ten1._connect.bitmask^ten2._connect.bitmask;
+}
+
+std::string DiagramTensor::slotTypeLetters( const SlotTs& slottypes ) const
+{
+  assert( _connect.bitmask.size() >= slottypes.size() );
+  std::string ret;
+  std::vector<std::string> rr;
+  rr.resize(_connect.slotref.size());
+  for ( uint i = 0; i < slottypes.size(); ++i ){
+    if ( _connect.bitmask[i] ) {
+      uint ist = _connect.slotref[(_connect.bitmask>>(i+1)).count()];
+      assert( ist < rr.size() );
+      rr[ist] += slottypes[i]->typeLetter();
+    }
+  }
+  for ( uint i = 0; i < rr.size(); ++i ){
+    ret += rr[i];
+  }
+  return ret;
+}
+
+Cost DiagramTensor::contractionCost( const DiagramTensor& ten1, const DiagramTensor& ten2 ) const
+{
+  // find contracted slots
+  std::bitset<MAXNINDICES> 
+    connectionmask = ten1._connect.bitmask&ten2._connect.bitmask;
+  assert( (connectionmask&_connect.bitmask) == 0 );
+  assert( _connect.bitmask == (ten1._connect.bitmask^ten2._connect.bitmask));
+  xout << "connectionmask: " << connectionmask << std::endl;
+  return 1;
+}
+
+std::string Tensor::slotTypeLetters() const
 {
   std::string ret;
   SlotTs::const_iterator ist;
@@ -92,11 +349,17 @@ bool Tensor::operator<(const Tensor& ten) const
   if ( ten._name < _name ) return false;
   if ( _slots.size() < ten._slots.size() ) return true;
   if ( ten._slots.size() < _slots.size() ) return false;
+  if ( _syms.size() < ten._syms.size() ) return true;
+  if ( ten._syms.size() < _syms.size() ) return false;
   if ( _cuts.size() < ten._cuts.size() ) return true;
   if ( ten._cuts.size() < _cuts.size() ) return false;
   for ( uint i = 0; i < _slots.size(); ++i ){
     if ( _slots[i] < ten._slots[i] ) return true;
     if ( ten._slots[i] < _slots[i] ) return false;
+  }
+  for ( uint i = 0; i < _syms.size(); ++i ){
+    if ( _syms[i] < ten._syms[i] ) return true;
+    if ( ten._syms[i] < _syms[i] ) return false;
   }
   for ( uint i = 0; i < _cuts.size(); ++i ){
     if ( _cuts[i] < ten._cuts[i] ) return true;
@@ -104,9 +367,6 @@ bool Tensor::operator<(const Tensor& ten) const
   }
   return false;
 }
-
-
-
 
 
 
@@ -159,23 +419,26 @@ std::ostream & operator << (std::ostream& o, const Slots& ss) {
 }
 
 std::ostream & operator << (std::ostream& o, const Cut& cut) {
+  uint nst = 0;
   switch (cut.type()) {
     case Cut::Domain:
-      o << cut.cutSlots() << "/" << cut.StrengthLetter();
+      o << cut.cutSlots() << "/" << cut.strengthLetter();
       o << cut.defSlots();
+      nst = cut.defSlots().size();
       break;
     case Cut::List:
-      o << cut.StrengthLetter() << cut.cutSlots();
+      o << cut.strengthLetter() << cut.cutSlots();
+      nst = cut.cutSlots().size();
       break;
     default:
       error("Cannot print this cut","Printing cuts");
   }
-  for ( uint i = cut.defSlots().size(); i < cut.nSlotCutType(); ++i ) o << "*";
+  for ( uint i = nst; i < cut.nSlotCutType(); ++i ) o << "*";
   return o;
 }
 
 std::ostream & operator << (std::ostream& o, const Tensor& t) {
-  o << t.name() << "[" << t.SlotTypeLetters() << "]";
+  o << t.name() << "[" << t.slotTypeLetters() << "]";
   o << ", !Create{";
   // type: disk, plain...
   

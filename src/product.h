@@ -25,7 +25,7 @@ class Product : public std::vector<T> {
     Product<T> subprod(unsigned long int beg, unsigned long int end) const;
     // search (starting from position ipos), if not found -> -1
     int find(T const & t, uint ipos = 0) const;
-    // bubble sort in increasing order
+    // quick sort in increasing order
     void resort();
 };
 template <class T>
@@ -57,7 +57,7 @@ class List : public std::list<T> {
     List<T> subprod(unsigned long int beg, unsigned long int end) const;
     // search, if not found -> -1
     int find(T const & t) const;
-    // bubble sort in increasing order
+    // quick sort in increasing order
     void resort();
 };
 template <class T>

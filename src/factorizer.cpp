@@ -1,10 +1,22 @@
 #include "factorizer.h"
-
+#include <bitset> // for test
 
 Factorizer::Factorizer(const Sum< Term, TFactor >& s)
 {
   std::map<Orbital,const SlotType*> slotorbs;
   std::map<Matrices,const Tensor*> tensormats;
+
+///////////////////////////////////// TEST ///////////////////////////////
+  std::bitset<8> bs;
+  bs[1] = true;
+  bs [4] = true;
+  bs [6] = true;
+  bs [7] = true;
+  xout << "bitset: " << bs << " " << bs.count() << std::endl;
+  xout << "bitset2: " << (bs >> 2) << " " << (bs >> 2).count() << std::endl;
+
+///////////////////////////////////// END TEST ///////////////////////////////
+  
   // create an expression from the sum
   for ( Sum<Term,TFactor>::const_iterator i=s.begin();i!=s.end(); ++i) {
     Factor fac = (Factor) i->second;
@@ -24,8 +36,10 @@ Factorizer::Factorizer(const Sum< Term, TFactor >& s)
     for ( Sum<Term,TFactor>::const_iterator ist = sumt.begin();ist != sumt.end(); ++ist ) {
       Factor fact = (Factor) ist->second;
       fact *= fac;
-      
-      
+      Diagram diag = Translators::term2diagram(ist->first,slotorbs);
+      xout << diag; 
+      diag.binarize(_expression);
+      // contractions
       xout << fact << ist->first << std::endl;
     }
   }
@@ -66,8 +80,66 @@ Tensor Translators::mat2tensor(const Matrices& mat, const std::map< Orbital, con
     assert( slotorbs.count(*iorb) > 0 );
     sts.push_back(slotorbs.at(*iorb));
   }
-  // generate cuts??
+  Slots slotorder;
+  Canonicalize(sts,slotorder);
+  // look for default cuts
+  std::string name = mat.plainname();
+  
   // and parents??
   
   return Tensor(sts,mat.plainname());
+}
+
+Diagram Translators::term2diagram(const Term& term, const std::map<Orbital,const SlotType*>& slotorbs)
+{
+  Diagram diag;
+
+  // all orbitals in term:
+  Product<Orbital> orbitals;
+  Product<Orbital>::const_iterator itorb;
+  Orbital orb;
+  uint iorb = 0; 
+  while ( (orb = term.orb(iorb)) != Orbital() ){
+    orbitals.push_back(orb);
+    ++iorb;
+  }
+  // TODO: sort the orbitals somehow?
+
+  // put the orbitals to diag
+  if ( orbitals.size() > MAXNINDICES )
+    error("Too many indices in the term. Increase MAXNINDICES!","Translators::term2diagram");
+  _foreach(itorb,orbitals){
+    assert( slotorbs.count(*itorb) > 0 );
+    diag._slottypes.push_back(slotorbs.at(*itorb));
+  }
+
+  Product<Matrices>::const_iterator im;
+  _foreach(im,term.mat()){
+    const Product<Orbital>& orbs = im->orbitals();
+    SlotTs sts;
+    Connections con;
+    Slots positions;
+    _foreach(itorb,orbs){
+      assert( slotorbs.count(*itorb) > 0 );
+      sts.push_back(slotorbs.at(*itorb));
+      int ipos = orbitals.find(*itorb);
+      assert( ipos >= 0 );
+      positions.push_back(ipos);
+      con.bitmask[ipos] = true;
+    }
+    Slots slotorder;
+    Canonicalize(sts,slotorder);
+    // reorder positions according to the canonical order
+    positions = positions.refarr(slotorder);
+    // set slotref for bitset
+    con.slotref.resize(positions.size());
+    for ( uint ist = 0; ist < positions.size(); ++ist ){
+      assert( con.bitmask[positions[ist]] );
+      uint icnt = (con.bitmask>>(positions[ist]+1)).count();
+      assert( icnt < con.slotref.size() );
+      con.slotref[icnt] = ist;
+    }
+    diag._tensors.push_back(DiagramTensor(con,im->plainname()));
+  }
+  return diag;
 }

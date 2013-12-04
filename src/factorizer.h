@@ -20,6 +20,7 @@
 namespace Translators{
   SlotType orb2slot(const Orbital& orb);
   Tensor mat2tensor(const Matrices& mat, const std::map<Orbital,const SlotType*>& slotorbs);
+  Diagram term2diagram(const Term& term, const std::map<Orbital,const SlotType*>& slotorbs);
 }
 
 class Factorizer {

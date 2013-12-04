@@ -47,13 +47,13 @@ public:
 };
 
 typedef std::set<Tensor> TensorsSet;
-typedef std::vector<const Tensor*> TensorPointers;
+typedef Array<const Tensor*> TensorPointers;
 
 // R = \sum_i fac_i A_i
 class Summation : public Action {
 public:
-  typedef std::vector<Factor> Factor4Ten;
-  typedef std::vector<Slots> Slots4Ten;
+  typedef Array<Factor> Factor4Ten;
+  typedef Array<Slots> Slots4Ten;
   Summation() : p_R(0) {};
   Summation( const TensorPointers& pA, const Tensor& r,
              const Slots4Ten& AinR, const Slots4Ten& RinA,

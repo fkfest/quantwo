@@ -27,7 +27,8 @@ set="syntax",type=s,name="virorb",value="abcdefgh",desc="virtual orbitals"
 set="syntax",type=s,name="genorb",value="pqrs",desc="general orbitals"
 set="syntax",type=s,name="actorb",value="tuvwxyz",desc="active orbitals"
 set="syntax",type=s,name="plainsymb",value="abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789",desc="symbols allowed in plain names"
-set="syntax",type=s,name="result",value="RR",desc="result tensor (residuum)"
+set="syntax",type=s,name="result",value="R",desc="result tensor (residuum)"
+set="syntax",type=s,name="intermeds",value="ABCDEFGHIJKLMNOPQUVWXYZ",desc="names for intermediates"
 
 %COMMANDS
 set="command",type=s,name="operator",value="op",desc="command for operator"
@@ -85,8 +86,13 @@ set="prog",type=i,name="noorder",value=0,desc="if = 0: use normal ordering, = 1:
 set="prog",type=i,name="nobrafac",value=0,desc="if = 0: use the usual prefactors in bare excitation operators"
 set="prog",type=i,name="algo",value=0,desc="if > 0: print algorithm file"
 
+%TENSORS
+set="tensor",type=s,name="T[aaii]",value="cut:01/23,23;sym:23/01"
+set="tensor",type=s,name="T[ai]",value="cut:0/1"
+set="tensor",type=s,name="R[aaii]",value="cut:01/23,23;sym:23/01"
+
 %FACTORIZATION
-set="fact",type=i,name="nocc",value=100,desc="number of occupied orbitals (for optimization)"
+set="fact",type=i,name="nocc",value=60,desc="number of occupied orbitals (for optimization)"
 set="fact",type=i,name="nvir",value=500,desc="number of virtual orbitals (for optimization)"
 set="fact",type=i,name="nact",value=20,desc="number of active orbitals (for optimization)"
 set="fact",type=i,name="nao",value=600,desc="number of atomic orbitals (for optimization)"

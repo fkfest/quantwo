@@ -37,3 +37,28 @@ std::string exepath(){
   return DirName(path);
 }
 
+std::size_t curlyfind(const std::string& str, const std::string& what, std::size_t ipos)
+{
+  std::size_t ipos1, ires(ipos), icur(0);
+  int level = 0;
+  bool found(false);
+  for ( ipos1 = ipos; ipos1 < str.size() && !found; ++ipos1 ){
+    if ( level == 0 ){
+      // search at the current level only!
+      if ( str[ipos1] == what[icur] ){
+        if ( icur == 0 ) ires = ipos1;
+        ++icur;
+        if ( icur == what.size() ) found = true;
+      } else if ( icur > 0 ){
+        icur = 0;
+        ipos1 = ires;
+        continue;
+      }
+    }
+    if ( str[ipos1] == '{' ) ++level;
+    if ( str[ipos1] == '}' ) --level;
+  }
+  if (!found)
+    ires = std::string::npos;
+  return ires;
+}

@@ -9,6 +9,7 @@
 #include <stdlib.h>
 #include <algorithm>
 #include <unistd.h>
+#include <bitset>
 #ifdef __MACH__
 #include <mach-o/dyld.h>	/* _NSGetExecutablePath */
 #endif
@@ -29,6 +30,10 @@ void say(std::string what, std::string where="");
 
 // path of executable
 std::string exepath();
+
+// copied from IL namespace...
+// find position of a substring what on the current level of the string str (i.e. don't search inside of {})
+std::size_t curlyfind(const std::string& str, const std::string& what, std::size_t ipos = 0);
 
 // string to number transformation
 // call: str2num<double>(x,"3.14",std::dec), number will be in x
@@ -127,6 +132,106 @@ bool InSet(const ValueType& val, const Cont& con)
 { 
   for ( typename Cont::const_iterator it = con.begin(); it != con.end(); ++it )
     if ( val == *it ) return true;
+  return false;
+}
+
+// placeholder for __restrict__
+#define RESTRICT
+// insertion sort, the new order will be in pSel, returns the number of swaps
+template<class T, class P>
+long unsigned int InsertionSort( const T *RESTRICT pIn, P *RESTRICT pSel, uint N )
+{
+  long unsigned int nswaps = 0;
+  for ( P* p = pSel+1; p != pSel+N; ++p ){
+    P   s = *p,
+      * q = p;
+    const T& curr = pIn[s];
+    for ( ; q != pSel && curr < pIn[*(q-1)]; --q, ++nswaps ) *q = *(q-1);
+    *q = s;
+  }
+  return nswaps;
+}
+
+// insertion pointer sort, the new order will be in pSel, returns the number of swaps
+template<class T, class P>
+long unsigned int InsertionPSort( const T **RESTRICT pIn, P *RESTRICT pSel, uint N )
+{
+  long unsigned int nswaps = 0;
+  for ( P* p = pSel+1; p != pSel+N; ++p ){
+    P   s = *p,
+      * q = p;
+    const T& curr = *pIn[s];
+    for ( ; q != pSel && curr < *pIn[*(q-1)]; --q, ++nswaps ) *q = *(q-1);
+    *q = s;
+  }
+  return nswaps;
+}
+
+// insertion pointer sort, decreasing order, the new order will be in pSel, returns the number of swaps
+// TODO: unite with outer InsertionSorts
+template<class T, class P>
+long unsigned int InsertionPSortD( const T **RESTRICT pIn, P *RESTRICT pSel, uint N )
+{
+  long unsigned int nswaps = 0;
+  for ( P* p = pSel+1; p != pSel+N; ++p ){
+    P   s = *p,
+      * q = p;
+    const T& curr = *pIn[s];
+    for ( ; q != pSel && *pIn[*(q-1)] < curr; --q, ++nswaps ) *q = *(q-1);
+    *q = s;
+  }
+  return nswaps;
+}
+
+// Creates new combination (analog to std::new_permutation) of m out of n (m <= n), sorted in triangular manner
+// e.g. (0 1) 2, (0 2) 1, (1 2) 0
+// first and last point begin and end of the array, and k corresponds to m
+template <typename Iter>
+bool next_combination(Iter first, Iter k, Iter last)
+{
+  if ((first == last) || (first == k) || (last == k)) return false;
+  Iter i = k, last1 = last, first1 = first;
+  --first1;
+  --last1;
+  while ( --i != first1 && !(*i < *last1) ){}
+  if ( i == first1 ){
+    std::rotate(first,k,last);
+    return false;
+  }
+  Iter j = k;
+  for ( ; !(*i < *j); ++j) {}
+  std::iter_swap(i,j);
+  std::rotate(++i,++j,last);
+  for ( i = k; j != last; ++j, ++i) {}
+  std::rotate(k,i,last);
+  return true;
+}
+
+// Creates new bitset combination m out of n (m <= n)
+// e.g. 1 1 0, 1 0 1, 0 1 1
+//  std::bitset<8> x;
+//  x[1]=true;
+//  x[2]=true;
+//  do {
+//    xout << x << std::endl;
+//  } while ( next_combination(x) );
+template< std::size_t N >
+bool next_combination( std::bitset<N>& bset)
+{
+  uint nbits = 0;
+  for ( uint i = 0; i < N; ++i ) {
+    if ( bset[i] ) {
+      bset[i] = false;
+      if ( i != nbits ) {
+        // move the bit to the right and fill rest bits
+        for ( uint j = i-nbits-1; j < i; ++j ) bset[j] = true;
+        return true;
+      } else {
+        // all previous bits were full
+        ++nbits;
+      }
+    }
+  }
   return false;
 }
 
