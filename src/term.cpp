@@ -139,6 +139,15 @@ void Term::addsummation(const Orbital& orb, short int excl)
       say("Strange, real summation runs already over "+orb1.name());
   }
 }
+void Term::addsummation (const Product<Orbital> & orbs)
+{
+  std::pair<TOrbSet::iterator,bool> ret;
+  for ( uint i = 0; i < orbs.size(); ++i ){
+    ret = _realsumindx.insert(orbs[i]);
+    if (!ret.second)
+      say("Strange, real summation runs already over "+orbs[i].name());
+  }
+}
 void Term::addmatrix(const Matrices& mat)
 {
   _mat *= mat;

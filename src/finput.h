@@ -125,8 +125,8 @@ private:
   Product<Matrices::Spinsym> _spinsymexcs;
   // save position of a Matrix of the _excops in term, if -1: the _excops is not present in this term
   Product<int> _posexcopsterm;
-  // save parameters in term
-  Product<Lelem> _paramterm;
+  // save parameters and sums in term
+  Product<Lelem> _paramterm, _sumsterm;
   // connections "map" in _eqn (starts from 1)
   // positive: connected; negative: disconnected
   // the earlier the connection comes the more important it is:

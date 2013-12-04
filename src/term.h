@@ -59,6 +59,7 @@ class Term {
     void addconnection (Product<long int> const & connections);
     //! add summation indices
     void addsummation (Orbital const & orb, short excl);
+    void addsummation (const Product<Orbital> & orbs);
     //! add matrix
     void addmatrix (Matrices const & mat);
     //! replace matrix on position ipos

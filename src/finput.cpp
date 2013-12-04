@@ -591,7 +591,7 @@ bool Equation::do_sumterms(bool excopsonly )
       indxoperterm *= i+1;
     } else if (_eqn[i].lex()==Lelem::Sum) { // handle \sum
       if (!excopsonly)
-        handle_sum(_eqn[i],term);
+        _sumsterm *= _eqn[i];
     } else if (_eqn[i].lex()==Lelem::Par) { // handle Parameter
       if (!excopsonly)
         _paramterm*=_eqn[i];
@@ -635,6 +635,10 @@ void Equation::addterm(Term& term, bool plus, lui beg, lui end,
     return; // dont add zero term
   }
   ++nterm;
+  // handle sums in term
+  for ( uint i = 0; i < _sumsterm.size(); ++i ) handle_sum(_sumsterm[i],term);
+  // reset sums information
+  _sumsterm=Product<Lelem>();
   // handle parameters
   handle_parameters(term);
 //   if( term.term_is_0(minfac) ) {
@@ -1028,7 +1032,7 @@ bool Equation::handle_orbtypes(std::vector< Product< Orbital::Type > >& orbtypes
 void Equation::handle_sum(const Lelem& lel, Term& term)
 {
   lui ipos, ipos1, up, down;
-  long int iposnam;
+  long int iposnam, iposexcn;
   std::string lelnam=lel.name(),name;
   down=IL::lexfind(lelnam,"_");
   up=IL::lexfind(lelnam,"^");
@@ -1044,8 +1048,13 @@ void Equation::handle_sum(const Lelem& lel, Term& term)
     name=lelnam.substr(ipos,ipos1-ipos);
     iposnam=_excops.find(name);
     if (iposnam >= 0) {
-      term.addsummation(_orbs4excops[iposnam][Orbital::Occ],_exccls[iposnam]);
-      term.addsummation(_orbs4excops[iposnam][Orbital::Virt],_exccls[iposnam]);
+      iposexcn=_posexcopsterm[iposnam];
+      if (iposexcn>=0) {
+        const Product<Matrices>& mats = term.mat();
+        assert( uint(iposexcn) < mats.size() );
+        term.addsummation(mats[iposexcn].orbitals());
+      } else
+        say("Sum is not present in this term: "+lelnam);
     }
     else
       say("No excitation operator which would correspond to summation index "+name);
@@ -1118,7 +1127,8 @@ void Equation::handle_parameters(Term& term, bool excopsonly)
           iposexcn=_posexcopsterm[indxexcn];
           if (iposexcn>=0) {
             Matrices mat(Ops::Interm,
-                         Ops::genprodorb(_exccls[indxexcn],_orbs4excops[indxexcn][Orbital::Occ],_orbs4excops[indxexcn][Orbital::Virt]),
+                         term.mat()[iposexcn].orbitals(),
+//                         Ops::genprodorb(_exccls[indxexcn],_orbs4excops[indxexcn][Orbital::Occ],_orbs4excops[indxexcn][Orbital::Virt]),
                          _exccls[indxexcn], name,_spinsymexcs[indxexcn]);
             term.replacematrix(mat,iposexcn);
           } else
