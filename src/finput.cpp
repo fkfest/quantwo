@@ -943,9 +943,11 @@ bool Equation::handle_namupdown(std::string& name, short int& excl, std::string&
   if (up!=std::string::npos && up!=lelnam.size()-1){
     // handle superscript
     foundupdown = true;
+    lui last = std::string::npos;
+    if ( up < down ) last = down;
     ipos=up+1;
     ipos=IL::skip(lelnam,ipos,"{} ");
-    while((ipos1=IL::nextwordpos(lelnam,ipos))!=ipos) {
+    while((ipos1=IL::nextwordpos(lelnam,ipos,false))!=ipos && ipos < last ) {
       std::string nampart(lelnam.substr(ipos,ipos1-ipos));
       if(InSet(nampart, dgs)) {
         dg=true;
@@ -971,10 +973,15 @@ bool Equation::handle_namupdown(std::string& name, short int& excl, std::string&
     ipos=IL::skip(lelnam,ipos,"{} ");
     ipos1=IL::nextwordpos(lelnam,ipos,false);
     namedown = lelnam.substr(ipos,ipos1-ipos);
-    str2num<short>(excl,namedown,std::dec);
-    if ( handle_orbtypes(orbtypes,lelnam.substr(ipos1))){
-      assert(int(orbtypes[0].size()) == excl);
-      assert(int(orbtypes[1].size()) == lmel+excl);
+    if ( str2num<short>(excl,namedown,std::dec) ) {
+      if ( handle_orbtypes(orbtypes,lelnam.substr(ipos1))){
+        assert(int(orbtypes[0].size()) == excl);
+        assert(int(orbtypes[1].size()) == lmel+excl);
+      }
+    } else {
+      // subscript is not an excitation class, probably rather something like \mu_2
+      ipos1 = IL::closbrack(lelnam,down+1);
+      namedown = lelnam.substr(ipos,ipos1-ipos);
     }
   }
   return foundupdown;

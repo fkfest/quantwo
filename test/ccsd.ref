@@ -1272,3 +1272,47 @@ Energy
 \dcurve{t02}{t21}
 \dcurve{t11}{t02}
 \ediag
+
+MP2 from variational CC2
+
+\beq
+&&<0| \op \tau^\dg_{\mu_2} (\op W + \op F \op T_2) |0>_C
+=\nl
+(-2*1 + \Perm{ii_{1}}{i_{1}i} + \Perm{aa_{1}}{a_{1}a} - 2*\Perm{ii_{1}aa_{1}}{i_{1}ia_{1}a})\sum_{j}\prm f_{ji}\prm T^{ji_{1}}_{aa_{1}} + (2*1 - \Perm{ii_{1}}{i_{1}i} - \Perm{aa_{1}}{a_{1}a} \newpg
+\eeq
+\beq
+&& + 2*\Perm{ii_{1}aa_{1}}{i_{1}ia_{1}a})\sum_{b}\prm f_{ab}\prm T^{ii_{1}}_{ba_{1}} + (2*1 - \Perm{aa_{1}}{a_{1}a})\prm \intg{ai}{a_{1}i_{1}}
+\eeq
+ Diagrams: 
+
+\bdiags
+\dtext{0}{$(-2*1 + \Perm{ii_{1}}{i_{1}i} + \Perm{aa_{1}}{a_{1}a} - 2*\Perm{ii_{1}aa_{1}}{i_{1}ia_{1}a})$}
+\dTdv{2}{t0}
+\dFs{t1}
+\dAmp[$T$]{}{2}{t2}
+\dcurve{t01}{t11}
+\dcurve{t21}{t01}
+\dcurve{t02}{t22}
+\dcurve{t22}{t02}
+\dcurve{t11}{t21}
+\ediag
+\bdiags
+\dtext{0}{$(2*1 - \Perm{ii_{1}}{i_{1}i} - \Perm{aa_{1}}{a_{1}a} + 2*\Perm{ii_{1}aa_{1}}{i_{1}ia_{1}a})$}
+\dTdv{2}{t0}
+\dFs{t1}
+\dAmp[$T$]{}{2}{t2}
+\dcurve{t01}{t21}
+\dcurve{t11}{t01}
+\dcurve{t02}{t22}
+\dcurve{t22}{t02}
+\dcurve{t21}{t11}
+\ediag
+\bdiags
+\dtext{0}{$(2*1 - \Perm{aa_{1}}{a_{1}a})$}
+\dTdv{2}{t0}
+\dWs{t11}{t12}
+\dcurve{t01}{t11}
+\dcurve{t11}{t01}
+\dcurve{t02}{t12}
+\dcurve{t12}{t02}
+\ediag

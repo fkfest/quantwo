@@ -20,3 +20,9 @@ Energy
 \beq
 <0| \op H (1+\op T_1 + \half \op T_1 \op T_1 + \frac{1}{6}\op T_1 \op T_1 \op T_1 + \frac{1}{24}\op T_1 \op T_1 \op T_1 \op T_1)(1 +\op T_2 ) |0>_C
 \eeq
+
+MP2 from variational CC2
+
+\beq
+<0| \op \tau^\dg_{\mu_2} (\op W + \op F \op T_2) |0>_C
+\eeq
