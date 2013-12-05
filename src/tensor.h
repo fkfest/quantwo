@@ -129,12 +129,57 @@ typedef Array<const Action*> Actions;
 class TensorBase {
 public:
   TensorBase(std::string name = "T") : _name(name){};
-  TensorBase( const Symmetries& syms, const Cuts& cuts, std::string name = "T" ) 
-    : _syms(syms), _cuts(cuts), _name(name) {};
+  TensorBase( const Symmetries& syms, std::string name = "T" ) 
+    : _syms(syms), _name(name) {};
   const Symmetries& syms() const { return _syms; };
-  const Cuts& cuts() const { return _cuts; };
   const std::string& name() const { return _name; };
 //  virtual bool operator < ( const TensorBase& ten ) const = 0;
+  
+//private:
+  Symmetries _syms;
+  SlotUniqueSet _phantomSlots;
+  std::string _name;
+};
+
+const uint MAXNINDICES = 32;
+
+typedef double Factor;
+typedef double Cost;
+const Cost MAXCOST = std::numeric_limits<double>::max()/10.0; 
+
+// diagrammatic connections
+// slotref 
+struct Connections {
+  // positions in bitmask correspond to a global reference to a connection line in this diagram 
+  // (i.e., the orbital-index name in the term)
+  std::bitset<MAXNINDICES> bitmask;
+  // slotref[(bitmask>>ipos).count()] == iSlot in the tensor
+  // usually is simply nSlots-(bitmask>>ipos).count()-1, but we will keep it for the moment...
+  std::vector<unsigned short> slotref;
+};
+
+class DiagramTensor : public TensorBase {
+public:
+  DiagramTensor( std::string name = "" ) : TensorBase(name) {};
+  DiagramTensor( const Connections& conns, std::string name = "" ) : TensorBase(name), _connect(conns) {};
+//  DiagramTensor( const SlotTs& slots, const Symmetries& syms, const Cuts& cuts, std::string name = "T" ) 
+//    : TensorBase(slots,syms,cuts,name) {};
+//  bool operator < ( const DiagramTensor& ten ) const;
+  std::string slotTypeLetters( const SlotTs& slottypes ) const;
+//private:
+  Connections _connect;
+};
+
+class Tensor : public TensorBase {
+public:
+  Tensor( const SlotTs& slots, std::string name = "T" ) : TensorBase(name), _slots(slots) {};
+  Tensor( const SlotTs& slots, const Symmetries& syms, const Cuts& cuts, std::string name = "T" ) 
+    : TensorBase(syms,name), _slots(slots), _cuts(cuts) {};
+  const SlotTs& slots() const { return _slots; };
+  const Actions& parents() const { return _parents; };
+  const Cuts& cuts() const { return _cuts; };
+  std::string slotTypeLetters() const;
+  bool operator < ( const Tensor& ten ) const;
   /// Desc: A comma-separated string of cut specifications for local tensors:
   ///      "012/456": slots 012 depend on slots 456, e.g., triples-domains
   ///      "456": cut according to a list of orbitals, e.g., triples-list
@@ -154,57 +199,9 @@ public:
   void CreateCutFromDesc( std::string const &desc );
   
 //private:
-  Symmetries _syms;
-  Cuts _cuts;
-  SlotUniqueSet _phantomSlots;
-  std::string _name;
-};
-
-const uint MAXNINDICES = 32;
-
-typedef double Factor;
-typedef double Cost;
-const Cost MAXCOST = std::numeric_limits<double>::max()/10.0; 
-
-// diagrammatic connections
-// slotref 
-struct Connections {
-  // positions in bitmask correspond to a global reference to a connection line in this diagram 
-  // (i.e., the orbital-index name in the term)
-  std::bitset<MAXNINDICES> bitmask;
-  // 
-  std::vector<unsigned short> slotref;
-};
-
-class DiagramTensor : public TensorBase {
-public:
-  DiagramTensor( std::string name = "" ) : TensorBase(name) {};
-  DiagramTensor( const Connections& conns, std::string name = "" ) : TensorBase(name), _connect(conns) {};
-  // create an intermediate tensor from a contraction of ten1 and ten2. The residual tensor is given in res
-  DiagramTensor( const DiagramTensor& ten1, const DiagramTensor& ten2, const DiagramTensor& res, std::string name = "" );
-//  DiagramTensor( const SlotTs& slots, const Symmetries& syms, const Cuts& cuts, std::string name = "T" ) 
-//    : TensorBase(slots,syms,cuts,name) {};
-//  bool operator < ( const DiagramTensor& ten ) const;
-  std::string slotTypeLetters( const SlotTs& slottypes ) const;
-  // contraction cost of ten1 and ten2 with *this the result tensor (has to be created before!)
-  Cost contractionCost( const DiagramTensor& ten1, const DiagramTensor& ten2 ) const;   
-//private:
-  Connections _connect;
-};
-
-class Tensor : public TensorBase {
-public:
-  Tensor( const SlotTs& slots, std::string name = "T" ) : TensorBase(name), _slots(slots) {};
-  Tensor( const SlotTs& slots, const Symmetries& syms, const Cuts& cuts, std::string name = "T" ) 
-    : TensorBase(syms,cuts,name), _slots(slots) {};
-  const SlotTs& slots() const { return _slots; };
-  const Actions& parents() const { return _parents; };
-  std::string slotTypeLetters() const;
-  bool operator < ( const Tensor& ten ) const;
-  
-//private:
   SlotTs _slots;
   Actions _parents;
+  Cuts _cuts;
 };
 
 //! output operator for tensors

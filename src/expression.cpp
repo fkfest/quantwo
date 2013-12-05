@@ -1,5 +1,37 @@
 #include "expression.h"
 
+DiagramTensor Diagram::newTensor( const DiagramTensor& ten1, const DiagramTensor& ten2, std::string name ) const 
+{
+  DiagramTensor dT(name);
+//  std::bitset<MAXNINDICES>
+//    connectionmask = ten1._connect.bitmask&ten2._connect.bitmask;
+  dT._connect.bitmask = ten1._connect.bitmask^ten2._connect.bitmask;
+
+// set slotref
+// the slottypes in _slottypes are in canonical order, therefore we 
+// simply have a reverse order of slots here.
+  uint nSlots = dT._connect.bitmask.count();
+  dT._connect.slotref.resize(nSlots);
+  for ( uint ist = 0; ist < nSlots; ++ist ){
+    dT._connect.slotref[nSlots-ist-1] = ist;
+  }
+// TODO: set symmetry. may be also cuts?
+
+  return dT;
+}
+
+Cost Diagram::contractionCost( const DiagramTensor& ten1, const DiagramTensor& ten2, const DiagramTensor& res ) const
+{
+  // find contracted slots
+  std::bitset<MAXNINDICES>
+    connectionmask = ten1._connect.bitmask&ten2._connect.bitmask;
+  assert( (connectionmask&res._connect.bitmask) == 0 );
+  assert( res._connect.bitmask == (ten1._connect.bitmask^ten2._connect.bitmask));
+  xout << "connectionmask: " << connectionmask << std::endl;
+
+  return 1;
+}
+
 //std::vector<Action*> 
 void Diagram::binarize(Expression& expr) const
 {
@@ -52,7 +84,7 @@ void Diagram::binarize(Expression& expr) const
         ibt1 = bt1.to_ulong(),
         ibt2 = bt2.to_ulong();
       cost[ibt] = MAXCOST;
-      inters[ibt] = DiagramTensor(inters[ibt1],inters[ibt2],_tensors[0]);
+      inters[ibt] = newTensor(inters[ibt1],inters[ibt2]);
       // number of simple tensors in the first parent of the current intermediate tensor
       for ( uint nn = 1; nn <= L/2; ++nn, ++itmend ){
         // removes the rest redundancy for even L  
@@ -68,7 +100,7 @@ void Diagram::binarize(Expression& expr) const
           ibt2 = bt2.to_ulong();
           Cost qq = cost[ibt1] + cost[ibt2];
           if ( qq < cost[ibt] ) {
-            qq += inters[ibt].contractionCost(inters[ibt1],inters[ibt2]);
+            qq += contractionCost(inters[ibt1],inters[ibt2],inters[ibt]);
             if ( qq < cost[ibt] ) {
               cost[ibt] = qq;
               order[ibt] = bt1;

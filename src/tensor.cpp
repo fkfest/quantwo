@@ -165,7 +165,7 @@ static int ReadIndexAndAdvance(std::size_t& ipos, const std::string s){
 
 }
 
-void TensorBase::CreateCutFromDesc(const std::string& desc)
+void Tensor::CreateCutFromDesc(const std::string& desc)
 {
 
   struct loc{
@@ -296,13 +296,6 @@ void TensorBase::CreateCutFromDesc(const std::string& desc)
 
 }
 
-DiagramTensor::DiagramTensor( const DiagramTensor& ten1, const DiagramTensor& ten2, const DiagramTensor& res, std::string name ) : TensorBase(name)
-{
-  std::bitset<MAXNINDICES>
-    connectionmask = ten1._connect.bitmask&ten2._connect.bitmask; 
-  _connect.bitmask = ten1._connect.bitmask^ten2._connect.bitmask;
-}
-
 std::string DiagramTensor::slotTypeLetters( const SlotTs& slottypes ) const
 {
   assert( _connect.bitmask.size() >= slottypes.size() );
@@ -320,17 +313,6 @@ std::string DiagramTensor::slotTypeLetters( const SlotTs& slottypes ) const
     ret += rr[i];
   }
   return ret;
-}
-
-Cost DiagramTensor::contractionCost( const DiagramTensor& ten1, const DiagramTensor& ten2 ) const
-{
-  // find contracted slots
-  std::bitset<MAXNINDICES> 
-    connectionmask = ten1._connect.bitmask&ten2._connect.bitmask;
-  assert( (connectionmask&_connect.bitmask) == 0 );
-  assert( _connect.bitmask == (ten1._connect.bitmask^ten2._connect.bitmask));
-  xout << "connectionmask: " << connectionmask << std::endl;
-  return 1;
 }
 
 std::string Tensor::slotTypeLetters() const

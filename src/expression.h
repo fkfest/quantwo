@@ -21,6 +21,10 @@ class Expression;
 class Diagram {
 public:
   Diagram(){};
+  // create an intermediate tensor from a contraction of ten1 and ten2.
+  DiagramTensor newTensor( const DiagramTensor& ten1, const DiagramTensor& ten2, std::string name = "" ) const;
+  // contraction cost of ten1 and ten2 to res (res has to be created before!)
+  Cost contractionCost( const DiagramTensor& ten1, const DiagramTensor& ten2, const DiagramTensor& res ) const;
   // search for the best contraction order
 //  std::vector<Action*> 
   void binarize(Expression& expr) const;

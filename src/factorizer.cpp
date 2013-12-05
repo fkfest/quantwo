@@ -95,16 +95,14 @@ Diagram Translators::term2diagram(const Term& term, const std::map<Orbital,const
   Diagram diag;
 
   // all orbitals in term:
-  Product<Orbital> orbitals;
-  Product<Orbital>::const_iterator itorb;
+  Array<Orbital> orbitals;
+  Array<Orbital>::const_iterator itorb;
   Orbital orb;
   uint iorb = 0; 
   while ( (orb = term.orb(iorb)) != Orbital() ){
     orbitals.push_back(orb);
     ++iorb;
   }
-  // TODO: sort the orbitals somehow?
-
   // put the orbitals to diag
   if ( orbitals.size() > MAXNINDICES )
     error("Too many indices in the term. Increase MAXNINDICES!","Translators::term2diagram");
@@ -112,11 +110,18 @@ Diagram Translators::term2diagram(const Term& term, const std::map<Orbital,const
     assert( slotorbs.count(*itorb) > 0 );
     diag._slottypes.push_back(slotorbs.at(*itorb));
   }
+  Slots slotorder;
+  // use canonical order - then the intermediates will be in canonical order automatically 
+  Canonicalize(diag._slottypes,slotorder);
+  orbitals = orbitals.refarr(slotorder); 
+
+  xout << "orbitals: " << orbitals << std::endl;
 
   Product<Matrices>::const_iterator im;
   uint nbareops = 0;
   _foreach(im,term.mat()){
     const Product<Orbital>& orbs = im->orbitals();
+    Product<Orbital>::const_iterator itorb;
     SlotTs sts;
     Connections con;
     Slots positions;
@@ -128,7 +133,7 @@ Diagram Translators::term2diagram(const Term& term, const std::map<Orbital,const
       positions.push_back(ipos);
       con.bitmask[ipos] = true;
     }
-    Slots slotorder;
+    slotorder = Slots();
     Canonicalize(sts,slotorder);
     // reorder positions according to the canonical order
     positions = positions.refarr(slotorder);
