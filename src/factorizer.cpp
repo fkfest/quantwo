@@ -114,6 +114,7 @@ Diagram Translators::term2diagram(const Term& term, const std::map<Orbital,const
   }
 
   Product<Matrices>::const_iterator im;
+  uint nbareops = 0;
   _foreach(im,term.mat()){
     const Product<Orbital>& orbs = im->orbitals();
     SlotTs sts;
@@ -139,7 +140,12 @@ Diagram Translators::term2diagram(const Term& term, const std::map<Orbital,const
       assert( icnt < con.slotref.size() );
       con.slotref[icnt] = ist;
     }
-    diag._tensors.push_back(DiagramTensor(con,im->plainname()));
+    if ( im->type() == Ops::Exc0 || im->type() == Ops::Deexc0 ) {
+      diag._tensors.push_front(DiagramTensor(con,im->plainname()));
+      ++nbareops;
+    } else
+      diag._tensors.push_back(DiagramTensor(con,im->plainname()));
   }
+  if ( nbareops > 1 ) error("we can handle only upto one bare operator yet...", "Translators::term2diagram");
   return diag;
 }

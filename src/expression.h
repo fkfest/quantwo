@@ -27,7 +27,7 @@ public:
   // all slot types in this diagram
   SlotTs _slottypes;
   // all tensors in diagram, including the "vacuum tensor" (_tensor[0])
-  std::vector<DiagramTensor> _tensors;
+  Array<DiagramTensor> _tensors;
 };
 
 //! output operator for diagrams

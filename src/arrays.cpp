@@ -16,6 +16,18 @@ bool Array<T>::is_identity() const
 }
 template <class T>
 inline
+void Array<T>::push_front(const T& t)
+{
+  Array<T> temp;
+  temp.reserve(this->size()+1);
+  temp.push_back(t);
+  for ( typename Array<T>::const_iterator it = this->begin(); it != this->end(); ++it )
+    temp.push_back(*it);
+  *this = temp;
+}
+
+template <class T>
+inline
 Array<T> Array<T>::subarray(unsigned long int beg, unsigned long int end) const
 {
   unsigned long int end1=(end < this->size() ? end + 1 : this->size());
