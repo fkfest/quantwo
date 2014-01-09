@@ -46,7 +46,7 @@ public:
   Cost _cost;
 };
 
-typedef std::set<Tensor> TensorsSet;
+typedef std::list<Tensor> TensorsSet;
 typedef Array<const Tensor*> TensorPointers;
 
 // R = \sum_i fac_i A_i

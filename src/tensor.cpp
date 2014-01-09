@@ -88,6 +88,20 @@ bool Symmetry::operator<(const Symmetry& sym) const
   return ( _sign < sym._sign );
 }
 
+bool Symmetry::operator==(const Symmetry& sym) const
+{
+  if ( _symSlots.size() == sym._symSlots.size() &&
+       _simSlots.size() == sym._simSlots.size() &&
+       _sign == sym._sign ) {
+    for ( uint i = 0; i < _symSlots.size(); ++i )
+      if ( _symSlots[i] != sym._symSlots[i] ) return false;
+    for ( uint i = 0; i < _simSlots.size(); ++i )
+      if ( _simSlots[i] != sym._simSlots[i] ) return false;
+    return true;
+  }
+  return false;
+}
+
 
 std::string Cut::strengthLetter() const
 {
@@ -127,6 +141,22 @@ bool Cut::operator<(const Cut& cut) const
     if ( cut._defSlots[i] < _defSlots[i] ) return false;
   }
   return ( _cutStrength < cut._cutStrength );
+}
+
+bool Cut::operator==(const Cut& cut) const
+{
+  if ( _cutType == cut._cutType &&
+       _nSlotCutType == cut._nSlotCutType &&
+       _cutSlots.size() == cut._cutSlots.size() &&
+       _defSlots.size() == cut._defSlots.size() &&
+       _cutStrength == cut._cutStrength ) {
+    for ( uint i = 0; i < _cutSlots.size(); ++i )
+      if ( _cutSlots[i] != cut._cutSlots[i] ) return false;
+    for ( uint i = 0; i < _defSlots.size(); ++i )
+      if ( _defSlots[i] != cut._defSlots[i] ) return false;
+    return true;
+  }
+  return false;
 }
 
 void Cut::canonicalize()
@@ -350,6 +380,22 @@ bool Tensor::operator<(const Tensor& ten) const
   return false;
 }
 
+bool Tensor::operator==(const Tensor& ten) const
+{
+  if (_name == ten._name &&
+      _slots.size() == ten._slots.size() &&
+      _syms.size() == ten._syms.size() &&
+      _cuts.size() == ten._cuts.size() ) {
+    for ( uint i = 0; i < _slots.size(); ++i )
+      if ( _slots[i] != ten._slots[i] ) return false;
+    for ( uint i = 0; i < _syms.size(); ++i )
+      if ( _syms[i] != ten._syms[i] ) return false;
+    for ( uint i = 0; i < _cuts.size(); ++i )
+      if ( _cuts[i] != ten._cuts[i] ) return false;
+    return true;
+  }
+  return false;
+}
 
 
 std::ostream & operator << (std::ostream& o, const SlotType& st)

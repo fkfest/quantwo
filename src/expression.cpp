@@ -20,16 +20,45 @@ DiagramTensor Diagram::newTensor( const DiagramTensor& ten1, const DiagramTensor
   return dT;
 }
 
+Tensor Diagram::exprTensor(const DiagramTensor& ten) const
+{
+  SlotTs slots;
+  std::bitset<MAXNINDICES> bitm = ten._connect.bitmask;
+  slots.resize(bitm.count());
+  for ( uint ipos = 0, ist = 0; ist < slots.size() && ipos < _slottypes.size(); ++ipos, bitm >>= 1 ){
+    if ( bitm[0] ) {
+      ++ist;
+      uint iSlot = ten._connect.slotref[(bitm>>1).count()];
+      slots[iSlot] = _slottypes[ipos];
+    }
+  }
+  Cuts cuts;
+  if ( _cuts.size() > 0 )
+    error("generate cuts for expr Tensor");
+  std::string name(ten._name);
+  return Tensor( slots, ten._syms, cuts, name );
+}
+
 Cost Diagram::contractionCost( const DiagramTensor& ten1, const DiagramTensor& ten2, const DiagramTensor& res ) const
 {
+  Cost cost = 1;
   // find contracted slots
   std::bitset<MAXNINDICES>
-    connectionmask = ten1._connect.bitmask&ten2._connect.bitmask;
+    connectionmask = ten1._connect.bitmask&ten2._connect.bitmask,
+    allindices = ten1._connect.bitmask|ten2._connect.bitmask;
   assert( (connectionmask&res._connect.bitmask) == 0 );
   assert( res._connect.bitmask == (ten1._connect.bitmask^ten2._connect.bitmask));
-  xout << "connectionmask: " << connectionmask << std::endl;
-
-  return 1;
+  if ( _cuts.size() ) {
+    error("implement cost function with cuts","Diagram::contractionCost");
+  } else {
+    std::bitset<MAXNINDICES> allin(allindices);
+    for ( uint ipos = 0; allin.any(); ++ipos, allin>>=1 ) {
+      if ( allin[0] ) {
+        cost *= _slottypes[ipos]->length();
+      }
+    }
+  }
+  return cost;
 }
 
 //std::vector<Action*> 
@@ -51,7 +80,7 @@ void Diagram::binarize(Expression& expr) const
   cost.resize(1<<nmats);
   order.resize(1<<nmats);
   inters.resize(1<<nmats);
-
+  
   std::bitset<MAXNTENS> bt, bt1, bt2;
   for ( uint i = 0; i < mat_idx.size(); ++i ){
     bt.reset();
@@ -112,9 +141,24 @@ void Diagram::binarize(Expression& expr) const
     } while(next_combination(mat_idx.begin(),itmat,mat_idx.end()));
   }
   xout << "in " << nsteps << " steps" << std::endl;
-  bt.reset();
-  for ( uint i = 0; i < mat_idx.size(); ++i ) bt[i] = true;
-  xout << "recursive cost: " << cost[bt.to_ulong()] << std::endl;
+//  for ( uint i = 0; i < mat_idx.size(); ++i ) bt[i] = true;
+  unsigned long 
+        ibt = bt.to_ulong();
+  xout << "recursive cost: " << cost[ibt] << " " << bt << std::endl;
+  
+  bt1 = order[ibt];
+  bt2 = bt^bt1;
+  unsigned long 
+        ibt1 = bt1.to_ulong(),
+        ibt2 = bt2.to_ulong();
+  xout << "order: " << bt1 << " " << bt2 << std::endl;
+  xout << "sizes: " << (1<<nmats) << " " << ibt << std::endl;
+  xout << "bitmask " << inters[ibt]._connect.bitmask << std::endl;
+  Tensor ten(exprTensor(inters[ibt]));
+//  Tensor ten(exprTensor(_tensors[0]));
+  
+  expr.add(ten);
+  
 //  LOOP STRUCTURE USING bitset next_combination
 //  nsteps = 0;
 //  std::bitset<MAXNTENS> xx, xxt;
@@ -186,7 +230,7 @@ Expression::Expression()
     }
     Tensor tens(sts,name);
     tens.CreateCutFromDesc(idt->second);
-    _tensors.insert(tens);
+    _tensors.push_back(tens);
   }
 }
 
@@ -199,9 +243,14 @@ const SlotType* Expression::add(const SlotType& slottype)
 
 const Tensor* Expression::add(const Tensor& tensor)
 {
-  TensorsSet::iterator it = _tensors.begin();
-  it = _tensors.insert(it,tensor);
-  return &(*it);
+  for ( TensorsSet::iterator it = _tensors.begin(); it != _tensors.end(); ++it)
+    if ( *it == tensor ) return &(*it);
+  _tensors.push_back(tensor);
+  if ( tensor.name() == "" ){
+    // generate a name for the noname (intermediate) tensor
+    _tensors.back()._name = newname(tensor.syms(),tensor.cuts());
+  }
+  return &(_tensors.back());
 }
 
 std::string Expression::newname(const Symmetries& syms, const Cuts& cuts)

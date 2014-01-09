@@ -57,6 +57,8 @@ class Symmetry {
 public:
   void canonicalize();
   bool operator < ( const Symmetry& sym ) const;
+  bool operator == ( const Symmetry& sym ) const;
+  bool operator != ( const Symmetry& sym ) const { return !(*this == sym); };
   int _sign;
   // symmetric slots
   Slots _symSlots;
@@ -96,6 +98,8 @@ public:
   const Slots& cutSlots() const { return _cutSlots; };
   const Slots& defSlots() const { return _defSlots; };
   bool operator < ( const Cut& cut ) const;
+  bool operator == ( const Cut& cut ) const;
+  bool operator != ( const Cut& cut ) const { return !(*this == cut); };
   void canonicalize();
 //private:
   Cut::Type _cutType;
@@ -180,6 +184,7 @@ public:
   const Cuts& cuts() const { return _cuts; };
   std::string slotTypeLetters() const;
   bool operator < ( const Tensor& ten ) const;
+  bool operator == ( const Tensor& ten ) const;
   /// Desc: A comma-separated string of cut specifications for local tensors:
   ///      "012/456": slots 012 depend on slots 456, e.g., triples-domains
   ///      "456": cut according to a list of orbitals, e.g., triples-list

@@ -28,10 +28,14 @@ public:
   // search for the best contraction order
 //  std::vector<Action*> 
   void binarize(Expression& expr) const;
+  // generates an expression-tensor from a diagram-tensor
+  Tensor exprTensor( const DiagramTensor& ten ) const;
   // all slot types in this diagram
   SlotTs _slottypes;
-  // all tensors in diagram, including the "vacuum tensor" (_tensor[0])
+  // all tensors in diagram, including the "vacuum tensor", i.e., the "result" (_tensor[0])
   Array<DiagramTensor> _tensors;
+  // all cuts in diagram
+  Cuts _cuts;
 };
 
 //! output operator for diagrams
