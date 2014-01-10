@@ -30,6 +30,8 @@ public:
   void binarize(Expression& expr) const;
   // generates an expression-tensor from a diagram-tensor
   Tensor exprTensor( const DiagramTensor& ten ) const;
+  // add tensor
+  const DiagramTensor * add( DiagramTensor dten, const Tensor * pTen = 0, bool pushfront = false );
   // all slot types in this diagram
   SlotTs _slottypes;
   // all tensors in diagram, including the "vacuum tensor", i.e., the "result" (_tensor[0])
@@ -47,7 +49,9 @@ public:
   const SlotTypes& slottypes() const { return _slottypes; };
   const TensorsSet& tensors() const { return _tensors; };
   const SlotType * add( const SlotType& slottype ); 
-  const Tensor * add( const Tensor& tensor ); 
+  const Tensor * add( const Tensor& tensor );
+  // searches for the same tensor, if considerprops==false does not consider symmetry and cuts
+  const Tensor * find( const Tensor& tensor, bool considerprops = true ) const;
   //! new name for a tensor. TODO: Reuse some intermediate names!
   std::string newname( const Symmetries& syms, const Cuts& cuts );
   

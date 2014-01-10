@@ -28,15 +28,15 @@ Factorizer::Factorizer(const Sum< Term, TFactor >& s)
       slotorbs[orb] = _expression.add(Translators::orb2slot(orb));
       ++iorb;
     }
-    Product<Matrices>::const_iterator im;
-    _foreach(im,term.mat()){
-      tensormats[*im] = _expression.add(Translators::mat2tensor(*im,slotorbs));
-    }
+//    Product<Matrices>::const_iterator im;
+//    _foreach(im,term.mat()){
+//      tensormats[*im] = _expression.add(Translators::mat2tensor(*im,slotorbs));
+//    }
     Sum<Term,TFactor> sumt = term.resolve_permutations();
     for ( Sum<Term,TFactor>::const_iterator ist = sumt.begin();ist != sumt.end(); ++ist ) {
       Factor fact = (Factor) ist->second;
       fact *= fac;
-      Diagram diag = Translators::term2diagram(ist->first,slotorbs);
+      Diagram diag = Translators::term2diagram(ist->first,slotorbs,_expression);
       xout << diag; 
       diag.binarize(_expression);
       // contractions
@@ -90,10 +90,11 @@ Tensor Translators::mat2tensor(const Matrices& mat, const std::map< Orbital, con
   return Tensor(sts,mat.plainname());
 }
 
-Diagram Translators::term2diagram(const Term& term, const std::map<Orbital,const SlotType*>& slotorbs)
+Diagram Translators::term2diagram(const Term& term, const std::map<Orbital,const SlotType*>& slotorbs, const Expression& expr)
 {
+  const std::string& resultt = Input::sPars["syntax"]["result"];
   Diagram diag;
-
+  
   // all orbitals in term:
   Array<Orbital> orbitals;
   Array<Orbital>::const_iterator itorb;
@@ -146,10 +147,13 @@ Diagram Translators::term2diagram(const Term& term, const std::map<Orbital,const
       con.slotref[icnt] = ist;
     }
     if ( im->type() == Ops::Exc0 || im->type() == Ops::Deexc0 ) {
-      diag._tensors.push_front(DiagramTensor(con,im->plainname()));
+      Tensor ten(sts,resultt);
+      const Tensor * pTen = expr.find(ten,false);
+      // the first tensor is the result tensor (residuum)
+      diag.add(DiagramTensor(con,im->plainname()),pTen,true);
       ++nbareops;
     } else
-      diag._tensors.push_back(DiagramTensor(con,im->plainname()));
+      diag.add(DiagramTensor(con,im->plainname()));
   }
   if ( nbareops > 1 ) error("we can handle only upto one bare operator yet...", "Translators::term2diagram");
   return diag;

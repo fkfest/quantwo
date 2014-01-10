@@ -1,5 +1,22 @@
 #include "expression.h"
 
+const DiagramTensor* Diagram::add(DiagramTensor dten, const Tensor* pTen, bool pushfront)
+{
+  if (pTen){
+    if (pTen->_cuts.size() > 0) error( "add cuts handling in Diagram", "Diagram::add");
+    dten._name = pTen->_name;
+    dten._syms = pTen->_syms;
+    dten._phantomSlots = pTen->_phantomSlots;
+  }
+  if ( pushfront){
+    _tensors.push_front(dten);
+    return &(_tensors.front());
+  } else {
+    _tensors.push_back(dten);
+    return &(_tensors.back());
+  }
+}
+
 DiagramTensor Diagram::newTensor( const DiagramTensor& ten1, const DiagramTensor& ten2, std::string name ) const 
 {
   DiagramTensor dT(name);
@@ -144,7 +161,7 @@ void Diagram::binarize(Expression& expr) const
 //  for ( uint i = 0; i < mat_idx.size(); ++i ) bt[i] = true;
   unsigned long 
         ibt = bt.to_ulong();
-  xout << "recursive cost: " << cost[ibt] << " " << bt << std::endl;
+//  xout << "recursive cost: " << cost[ibt] << " " << bt << std::endl;
   
   bt1 = order[ibt];
   bt2 = bt^bt1;
@@ -154,8 +171,8 @@ void Diagram::binarize(Expression& expr) const
   xout << "order: " << bt1 << " " << bt2 << std::endl;
   xout << "sizes: " << (1<<nmats) << " " << ibt << std::endl;
   xout << "bitmask " << inters[ibt]._connect.bitmask << std::endl;
-  Tensor ten(exprTensor(inters[ibt]));
-//  Tensor ten(exprTensor(_tensors[0]));
+//  Tensor ten(exprTensor(inters[ibt]));
+  Tensor ten(exprTensor(_tensors[0]));
   
   expr.add(ten);
   
@@ -244,7 +261,7 @@ const SlotType* Expression::add(const SlotType& slottype)
 const Tensor* Expression::add(const Tensor& tensor)
 {
   for ( TensorsSet::iterator it = _tensors.begin(); it != _tensors.end(); ++it)
-    if ( *it == tensor ) return &(*it);
+    if ( it->equal(tensor) ) return &(*it);
   _tensors.push_back(tensor);
   if ( tensor.name() == "" ){
     // generate a name for the noname (intermediate) tensor
@@ -252,6 +269,14 @@ const Tensor* Expression::add(const Tensor& tensor)
   }
   return &(_tensors.back());
 }
+
+const Tensor* Expression::find(const Tensor& tensor, bool considerprops) const
+{
+  for ( TensorsSet::const_iterator it = _tensors.begin(); it != _tensors.end(); ++it)
+    if ( it->equal(tensor,considerprops) ) return &(*it);
+  return 0;
+}
+
 
 std::string Expression::newname(const Symmetries& syms, const Cuts& cuts)
 {

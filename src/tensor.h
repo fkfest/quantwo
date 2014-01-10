@@ -183,8 +183,9 @@ public:
   const Actions& parents() const { return _parents; };
   const Cuts& cuts() const { return _cuts; };
   std::string slotTypeLetters() const;
+  bool equal( const Tensor& ten, bool considerprops = true ) const;
   bool operator < ( const Tensor& ten ) const;
-  bool operator == ( const Tensor& ten ) const;
+  bool operator == ( const Tensor& ten ) const { return equal(ten); };
   /// Desc: A comma-separated string of cut specifications for local tensors:
   ///      "012/456": slots 012 depend on slots 456, e.g., triples-domains
   ///      "456": cut according to a list of orbitals, e.g., triples-list

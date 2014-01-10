@@ -380,18 +380,22 @@ bool Tensor::operator<(const Tensor& ten) const
   return false;
 }
 
-bool Tensor::operator==(const Tensor& ten) const
+bool Tensor::equal(const Tensor& ten, bool considerprops) const
 {
-  if (_name == ten._name &&
+  if ( _name == ten._name &&
       _slots.size() == ten._slots.size() &&
-      _syms.size() == ten._syms.size() &&
-      _cuts.size() == ten._cuts.size() ) {
+      _syms.size() == ten._syms.size() 
+     ) {
     for ( uint i = 0; i < _slots.size(); ++i )
       if ( _slots[i] != ten._slots[i] ) return false;
-    for ( uint i = 0; i < _syms.size(); ++i )
-      if ( _syms[i] != ten._syms[i] ) return false;
-    for ( uint i = 0; i < _cuts.size(); ++i )
-      if ( _cuts[i] != ten._cuts[i] ) return false;
+    if ( considerprops ) {
+      if (_syms.size() == ten._syms.size() || 
+          _cuts.size() != ten._cuts.size()) return false;
+      for ( uint i = 0; i < _syms.size(); ++i )
+        if ( _syms[i] != ten._syms[i] ) return false;
+      for ( uint i = 0; i < _cuts.size(); ++i )
+        if ( _cuts[i] != ten._cuts[i] ) return false;
+    }
     return true;
   }
   return false;
