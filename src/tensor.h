@@ -182,6 +182,8 @@ public:
   const SlotTs& slots() const { return _slots; };
   const Actions& parents() const { return _parents; };
   const Cuts& cuts() const { return _cuts; };
+  // add a parent action (if it's not there already)
+  void add( const Action * pAct );
   std::string slotTypeLetters() const;
   bool equal( const Tensor& ten, bool considerprops = true ) const;
   bool operator < ( const Tensor& ten ) const;

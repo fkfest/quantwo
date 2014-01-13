@@ -345,6 +345,15 @@ std::string DiagramTensor::slotTypeLetters( const SlotTs& slottypes ) const
   return ret;
 }
 
+void Tensor::add(const Action* pAct)
+{
+  Actions::const_iterator itact;
+  _foreach(itact,_parents){
+    if ( pAct == *itact ) return;
+  }
+  _parents.push_back(pAct);
+}
+
 std::string Tensor::slotTypeLetters() const
 {
   std::string ret;
@@ -389,7 +398,7 @@ bool Tensor::equal(const Tensor& ten, bool considerprops) const
     for ( uint i = 0; i < _slots.size(); ++i )
       if ( _slots[i] != ten._slots[i] ) return false;
     if ( considerprops ) {
-      if (_syms.size() == ten._syms.size() || 
+      if (_syms.size() != ten._syms.size() || 
           _cuts.size() != ten._cuts.size()) return false;
       for ( uint i = 0; i < _syms.size(); ++i )
         if ( _syms[i] != ten._syms[i] ) return false;

@@ -1,9 +1,10 @@
 #include "action.h"
 
-Contraction::Contraction(const Tensor& a, const Tensor& b, const Tensor& r, 
+Contraction::Contraction(const Tensor& a, const Tensor& b, //const Tensor& r, 
                          const Slots& AinB, const Slots& BinA, 
                          const Slots& AinR, const Slots& RinA, const Slots& BinR, const Slots& RinB, const Factor& fac) :
-  p_A(&a), p_B(&b), p_R(&r), _fac(fac), _AinB(AinB), _BinA(BinA), _AinR(AinR), _RinA(RinA), _BinR(BinR), _RinB(RinB), _cost(-1)
+  p_A(&a), p_B(&b), //p_R(&r), 
+  _fac(fac), _AinB(AinB), _BinA(BinA), _AinR(AinR), _RinA(RinA), _BinR(BinR), _RinB(RinB), _cost(-1)
 {
   assert( _AinB.size() == _BinA.size() );
   assert( _AinR.size() == _RinA.size() );

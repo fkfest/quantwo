@@ -1,4 +1,5 @@
 #include "expression.h"
+#include "sum.h"
 
 const DiagramTensor* Diagram::add(DiagramTensor dten, const Tensor* pTen, bool pushfront)
 {
@@ -45,7 +46,7 @@ Tensor Diagram::exprTensor(const DiagramTensor& ten) const
   for ( uint ipos = 0, ist = 0; ist < slots.size() && ipos < _slottypes.size(); ++ipos, bitm >>= 1 ){
     if ( bitm[0] ) {
       ++ist;
-      uint iSlot = ten._connect.slotref[(bitm>>1).count()];
+      uint iSlot = ten._connect.slotref[bitm.count()-1];
       slots[iSlot] = _slottypes[ipos];
     }
   }
@@ -54,6 +55,33 @@ Tensor Diagram::exprTensor(const DiagramTensor& ten) const
     error("generate cuts for expr Tensor");
   std::string name(ten._name);
   return Tensor( slots, ten._syms, cuts, name );
+}
+
+static void setContractionSlots( Slots& sXinY, Slots& sYinX, const DiagramTensor& tenX, const DiagramTensor& tenY ) {
+  std::bitset<MAXNINDICES> overlap = tenX._connect.bitmask^tenY._connect.bitmask;
+  sXinY.resize(overlap.count());
+  sYinX.resize(sXinY.size());
+  for ( uint ist = 0; ist < sXinY.size(); overlap >>= 1 ){
+    if ( overlap[0] ) {
+      ++ist;
+      uint iStRef = overlap.count() - 1;
+      sXinY[ist] = tenX._connect.slotref[iStRef];
+      sYinX[ist] = tenY._connect.slotref[iStRef];
+    }
+  }
+}
+Contraction Diagram::exprContraction(const DiagramTensor& tenA, const DiagramTensor& tenB, const DiagramTensor& tenR,
+                                     const Tensor * pA, const Tensor * pB ) const
+{
+  Slots 
+    sAinB, sBinA,
+    sAinR, sRinA,
+    sBinR, sRinB;
+  setContractionSlots(sAinB,sBinA,tenA,tenB);  
+  setContractionSlots(sAinR,sRinA,tenA,tenR);  
+  setContractionSlots(sBinR,sRinB,tenB,tenR);  
+    
+  return Contraction(*pA,*pB,sAinB,sBinA,sAinR,sRinA,sBinR,sRinB);
 }
 
 Cost Diagram::contractionCost( const DiagramTensor& ten1, const DiagramTensor& ten2, const DiagramTensor& res ) const
@@ -81,8 +109,6 @@ Cost Diagram::contractionCost( const DiagramTensor& ten1, const DiagramTensor& t
 //std::vector<Action*> 
 void Diagram::binarize(Expression& expr) const
 {
-  const uint MAXNTENS = 12;
-  
   uint nmats = _tensors.size();
   // first tensor is the residual tensor
   if ( nmats > 0 ) --nmats; 
@@ -159,22 +185,9 @@ void Diagram::binarize(Expression& expr) const
   }
   xout << "in " << nsteps << " steps" << std::endl;
 //  for ( uint i = 0; i < mat_idx.size(); ++i ) bt[i] = true;
-  unsigned long 
-        ibt = bt.to_ulong();
-//  xout << "recursive cost: " << cost[ibt] << " " << bt << std::endl;
+  transform2Expr(expr,inters,order,bt);
   
-  bt1 = order[ibt];
-  bt2 = bt^bt1;
-  unsigned long 
-        ibt1 = bt1.to_ulong(),
-        ibt2 = bt2.to_ulong();
-  xout << "order: " << bt1 << " " << bt2 << std::endl;
-  xout << "sizes: " << (1<<nmats) << " " << ibt << std::endl;
-  xout << "bitmask " << inters[ibt]._connect.bitmask << std::endl;
-//  Tensor ten(exprTensor(inters[ibt]));
-  Tensor ten(exprTensor(_tensors[0]));
   
-  expr.add(ten);
   
 //  LOOP STRUCTURE USING bitset next_combination
 //  nsteps = 0;
@@ -206,6 +219,34 @@ void Diagram::binarize(Expression& expr) const
 //  }
 
 }
+
+const Tensor * Diagram::transform2Expr(Expression& expr, const Array< DiagramTensor >& inters, const Array< std::bitset< MAXNTENS > >& order, 
+                             std::bitset< MAXNTENS > bt) const
+{
+  unsigned long ibt = bt.to_ulong();
+  const Action * pAct = 0;
+  if ( bt.count() > 1 ) {
+    // get parents
+    std::bitset<MAXNTENS> 
+        bt1 = order[ibt],
+        bt2 = bt^bt1;
+    unsigned long 
+        ibt1 = bt1.to_ulong(),
+        ibt2 = bt2.to_ulong();
+    const Tensor 
+      * pTen1 = transform2Expr(expr,inters,order,bt1),
+      * pTen2 = transform2Expr(expr,inters,order,bt2);
+    // action...
+    Contraction contr = exprContraction(inters[ibt1],inters[ibt2],inters[ibt],pTen1,pTen2);
+    pAct = expr.add(&contr);
+  }
+  assert( bt.count() > 0 );
+  // add the intermediate
+  Tensor ten(exprTensor(inters[ibt]));
+  ten.add(pAct);
+  return expr.add(ten);
+}
+
 
 // returns a character or a string in curly brackets
 static std::string ReadAndAdvance(std::size_t& ipos, const std::string& s)
@@ -260,14 +301,28 @@ const SlotType* Expression::add(const SlotType& slottype)
 
 const Tensor* Expression::add(const Tensor& tensor)
 {
-  for ( TensorsSet::iterator it = _tensors.begin(); it != _tensors.end(); ++it)
+  for ( TensorsSet::iterator it = _tensors.begin(); it != _tensors.end(); ++it) {
     if ( it->equal(tensor) ) return &(*it);
+  }
   _tensors.push_back(tensor);
   if ( tensor.name() == "" ){
     // generate a name for the noname (intermediate) tensor
     _tensors.back()._name = newname(tensor.syms(),tensor.cuts());
   }
   return &(_tensors.back());
+}
+
+const Action* Expression::add(const Action* pAction)
+{
+  const Contraction * pContr = dynamic_cast< const Contraction * >( pAction );
+  if ( pAction ) {
+    _contractions.push_back(*pContr);
+    return &(_contractions.back());
+  }
+  const Summation * pSum = dynamic_cast< const Summation * >( pAction );
+  assert( pSum );
+  _summations.push_back(*pSum);
+  return &(_summations.back());
 }
 
 const Tensor* Expression::find(const Tensor& tensor, bool considerprops) const
@@ -327,6 +382,8 @@ std::ostream & operator << (std::ostream& o, const Expression& exp) {
   }
   
   // contractions...
+  o << std::endl << "---- code (\"eval_residual\")" << std::endl;
+  
   
   return o;
 }
