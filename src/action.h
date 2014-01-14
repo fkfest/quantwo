@@ -35,6 +35,7 @@ public:
   ~Contraction(){};
   // for mincost > 0: will return either actual cost if it's smaller than mincost, or (mincost + 1)
   Cost cost( Cost mincost = -1 );
+  void print( std::ostream& o, const Tensor& res ) const;
 //private:
   const Tensor *p_A, *p_B; //, *p_R;
   Factor _fac;

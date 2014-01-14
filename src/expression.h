@@ -55,9 +55,12 @@ public:
   Expression();
   const SlotTypes& slottypes() const { return _slottypes; };
   const TensorsSet& tensors() const { return _tensors; };
+  const std::set< const Tensor *>& residualtensors() const { return _residuals; };
   const SlotType * add( const SlotType& slottype ); 
   const Tensor * add( const Tensor& tensor );
   const Action * add( const Action * pAction );
+  // add residual tensor
+  void addresidual( const Tensor * pRes ) {_residuals.insert(pRes);};
   // searches for the same tensor, if considerprops==false does not consider symmetry and cuts
   const Tensor * find( const Tensor& tensor, bool considerprops = true ) const;
   //! new name for a tensor. TODO: Reuse some intermediate names!
@@ -66,6 +69,7 @@ public:
 //private:
   SlotTypes _slottypes;
   TensorsSet _tensors;
+  std::set< const Tensor * > _residuals;
   std::list<Contraction> _contractions;
   std::list<Summation> _summations;
   std::string _lastname;
@@ -74,7 +78,7 @@ public:
 };
 
 // prints contractions recursively
-void print_contractions(std::ostream& o, const Tensor& ten);
+void print_code(std::ostream& o, const Tensor& ten);
 //! output operator for expression
 std::ostream & operator << (std::ostream& o, const Expression& exp);
 

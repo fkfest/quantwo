@@ -45,9 +45,9 @@ Tensor Diagram::exprTensor(const DiagramTensor& ten) const
   slots.resize(bitm.count());
   for ( uint ipos = 0, ist = 0; ist < slots.size() && ipos < _slottypes.size(); ++ipos, bitm >>= 1 ){
     if ( bitm[0] ) {
-      ++ist;
       uint iSlot = ten._connect.slotref[bitm.count()-1];
       slots[iSlot] = _slottypes[ipos];
+      ++ist;
     }
   }
   Cuts cuts;
@@ -58,15 +58,17 @@ Tensor Diagram::exprTensor(const DiagramTensor& ten) const
 }
 
 static void setContractionSlots( Slots& sXinY, Slots& sYinX, const DiagramTensor& tenX, const DiagramTensor& tenY ) {
-  std::bitset<MAXNINDICES> overlap = tenX._connect.bitmask^tenY._connect.bitmask;
+  std::bitset<MAXNINDICES> overlap = tenX._connect.bitmask&tenY._connect.bitmask;
+  
   sXinY.resize(overlap.count());
   sYinX.resize(sXinY.size());
-  for ( uint ist = 0; ist < sXinY.size(); overlap >>= 1 ){
+  for ( uint ipos = 1, ist = 0; ist < sXinY.size(); ++ipos, overlap >>= 1 ){
     if ( overlap[0] ) {
-      ++ist;
-      uint iStRef = overlap.count() - 1;
+      uint iStRef = (tenX._connect.bitmask >> ipos).count();
       sXinY[ist] = tenX._connect.slotref[iStRef];
+      iStRef = (tenY._connect.bitmask >> ipos).count();
       sYinX[ist] = tenY._connect.slotref[iStRef];
+      ++ist;
     }
   }
 }
@@ -77,7 +79,7 @@ Contraction Diagram::exprContraction(const DiagramTensor& tenA, const DiagramTen
     sAinB, sBinA,
     sAinR, sRinA,
     sBinR, sRinB;
-  setContractionSlots(sAinB,sBinA,tenA,tenB);  
+  setContractionSlots(sAinB,sBinA,tenA,tenB);
   setContractionSlots(sAinR,sRinA,tenA,tenR);  
   setContractionSlots(sBinR,sRinB,tenB,tenR);  
     
@@ -185,8 +187,8 @@ void Diagram::binarize(Expression& expr) const
   }
   xout << "in " << nsteps << " steps" << std::endl;
 //  for ( uint i = 0; i < mat_idx.size(); ++i ) bt[i] = true;
-  transform2Expr(expr,inters,order,bt);
-  
+  const Tensor * pRes = transform2Expr(expr,inters,order,bt);
+  expr.addresidual(pRes);
   
   
 //  LOOP STRUCTURE USING bitset next_combination
@@ -366,19 +368,25 @@ std::ostream & operator << (std::ostream& o, const Diagram& d) {
   return o;
 }
 
-void print_contractions(std::ostream& o, const Tensor& ten)
+void print_code(std::ostream& o, const Tensor& ten)
 {
   if (ten._parents.size() > 0) {
     const Action * pAct = ten._parents.back();
     assert( pAct );
     const Contraction * pContr = dynamic_cast< const Contraction * >(pAct);
     if (pContr) {
-      print_contractions(o,*(pContr->p_A));
-      print_contractions(o,*(pContr->p_B));
+      print_code(o,*(pContr->p_A));
+      print_code(o,*(pContr->p_B));
       
+      pContr->print(o,ten); 
+      o << std::endl;  
     } else {
       const Summation * pSum = dynamic_cast< const Summation * >(pAct);
       assert( pSum );
+      for ( uint iten = 0; iten < pSum->p_A.size(); ++iten ){
+        print_code(o,*(pSum->p_A[iten]));
+      }
+      error("implement print code for summation");
     }
   }
 }
@@ -400,7 +408,12 @@ std::ostream & operator << (std::ostream& o, const Expression& exp) {
   
   // contractions...
   o << std::endl << "---- code (\"eval_residual\")" << std::endl;
-  
+  std::set< const Tensor * > residuals = exp.residualtensors();
+  if ( residuals.size() == 0 )
+    o << "// No residual tensors set!" << std::endl;
+  std::set< const Tensor * >::const_iterator itres;
+  _foreach(itres,residuals)
+    print_code(o,*(*itres));
   
   return o;
 }

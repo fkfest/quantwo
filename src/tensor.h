@@ -138,6 +138,7 @@ public:
     : _syms(syms), _name(name) {};
   const Symmetries& syms() const { return _syms; };
   const std::string& name() const { return _name; };
+  bool phantomSlot( uint iSlot ) const { return _phantomSlots.count(iSlot); };
 //  virtual bool operator < ( const TensorBase& ten ) const = 0;
   
 //private:
@@ -160,7 +161,7 @@ struct Connections {
   std::bitset<MAXNINDICES> bitmask;
   // slotref[(bitmask>>ipos).count()] == iSlot in the tensor
   // usually is simply nSlots-(bitmask>>ipos).count()-1, but we will keep it for the moment...
-  std::vector<unsigned short> slotref;
+  Array<unsigned short> slotref;
 };
 
 class DiagramTensor : public TensorBase {
