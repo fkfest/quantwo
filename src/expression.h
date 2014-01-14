@@ -73,6 +73,8 @@ public:
   std::list<Diagram> _diagrams;
 };
 
+// prints contractions recursively
+void print_contractions(std::ostream& o, const Tensor& ten);
 //! output operator for expression
 std::ostream & operator << (std::ostream& o, const Expression& exp);
 

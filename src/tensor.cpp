@@ -1,20 +1,69 @@
 #include "tensor.h"
 
+// return -1 if not able to read
+static int ReadIndexAndAdvance(std::size_t& ipos, const std::string s){
+    assert( ipos < s.size() );
+    uint
+        islot;
+    std::size_t
+        last = ipos+1,
+        iposnew = last;
+    if ( s[ipos] == '{' ){
+        ++ipos;
+        // closing bracket
+        last = s.find_first_of( '}', ipos );
+        assert( last != std::string::npos );
+        iposnew = last+1;
+    }
+    if ( !str2num<uint>(islot,s.substr(ipos,last-ipos),std::dec) )
+        return -1;
+    ipos = iposnew;
+    return islot;
+
+}
+
+// reads character or a set of characters in curly brackets, i.e. "a" or "{a1}" etc
+static std::string ReadNameAndAdvance(std::size_t& ipos, const std::string& s){
+    assert( ipos < s.size() );
+    std::size_t iposold = ipos;
+    if ( s[iposold] == '{' ){
+        // closing bracket
+        ipos = s.find_first_of( '}', iposold );
+        assert( ipos != std::string::npos );
+    }
+    ++ipos;
+    return s.substr(iposold,ipos-iposold);
+}
+
+static std::string nextName(const std::string& s, const std::string& oldname){
+  std::string name = "";
+  for ( std::size_t ipos = 0; ipos < s.size(); ){
+    name = ReadNameAndAdvance(ipos,s);
+    if ( oldname == "" || oldname != name ) return name;
+  }
+  error( "add more slot names: "+s,"nextName");
+  return name;
+}
+
 SlotType::SlotType(const std::string& lettertype)
 {
   TsPar& orbs = Input::sPars["syntax"];
   if ( curlyfind(orbs["occorb"],lettertype) != std::string::npos ) {
     _type = SlotType::Occ;
     _nIndices = Input::iPars["fact"]["nocc"];
+    _internalName = "occorb";
   } else if ( curlyfind(orbs["virorb"],lettertype) != std::string::npos ) {
     _type = SlotType::Virt;
     _nIndices = Input::iPars["fact"]["nvir"];
+    _internalName = "virorb";
   } else if ( curlyfind(orbs["actorb"],lettertype) != std::string::npos ) {
     _type = SlotType::Act;
     _nIndices = Input::iPars["fact"]["nact"];
+    _internalName = "actorb";
   } else if ( curlyfind(orbs["genorb"],lettertype) != std::string::npos ) {
     _type = SlotType::GenT;
     _nIndices = Input::iPars["fact"]["nocc"]+Input::iPars["fact"]["nvir"];
+    _internalName = "genorb";
     if ( Input::iPars["prog"]["multiref"] > 0 ) _nIndices += Input::iPars["fact"]["nact"];
   } else { 
     error("Unknown letter-type space!","SlotType constructor");
@@ -29,31 +78,10 @@ bool SlotType::operator<(const SlotType& st) const
   return _type < st._type;
 }
 
-std::string SlotType::typeLetter() const
+std::string SlotType::name(const std::string& oldname) const
 {
   TsPar& orbs = Input::sPars["syntax"];
-  switch (_type) {
-    case SlotType::Occ:
-      return orbs["occorb"].substr(0,1);
-    case SlotType::Virt:
-      return orbs["virorb"].substr(0,1);
-    case SlotType::Act:
-      return orbs["actorb"].substr(0,1);
-    case SlotType::GenT:
-      return orbs["genorb"].substr(0,1);
-    case SlotType::AO:
-      error("AO space not implemented yet","Printing SlotType"); 
-      return orbs["aoorb"].substr(0,1);
-    case SlotType::DF:
-      error("DF space not implemented yet","Printing SlotType"); 
-      return orbs["dforb"].substr(0,1);
-    case SlotType::RI:
-      error("RI space not implemented yet","Printing SlotType"); 
-      return orbs["riorb"].substr(0,1);
-    default:
-      error("Unknown space","Printing SlotType");
-  }
-  return "";
+  return nextName(orbs[_internalName],oldname);
 }
 
 void Symmetry::canonicalize()
@@ -171,28 +199,6 @@ void Canonicalize(SlotTs& sts, Slots& ref)
   ref.identity(sts.size());
   InsertionPSortD(&sts[0],&ref[0],sts.size());
   sts = sts.refarr(ref);
-}
-
-// return -1 if not able to read
-static int ReadIndexAndAdvance(std::size_t& ipos, const std::string s){
-    assert( ipos < s.size() );
-    uint
-        islot;
-    std::size_t
-        last = ipos+1,
-        iposnew = last;
-    if ( s[ipos] == '{' ){
-        ++ipos;
-        // closing bracket
-        last = s.find_first_of( '}', ipos );
-        assert( last != std::string::npos );
-        iposnew = last+1;
-    }
-    if ( !str2num<uint>(islot,s.substr(ipos,last-ipos),std::dec) )
-        return -1;
-    ipos = iposnew;
-    return islot;
-
 }
 
 void Tensor::CreateCutFromDesc(const std::string& desc)
@@ -336,7 +342,7 @@ std::string DiagramTensor::slotTypeLetters( const SlotTs& slottypes ) const
     if ( _connect.bitmask[i] ) {
       uint ist = _connect.slotref[(_connect.bitmask>>(i+1)).count()];
       assert( ist < rr.size() );
-      rr[ist] += slottypes[i]->typeLetter();
+      rr[ist] += slottypes[i]->name();
     }
   }
   for ( uint i = 0; i < rr.size(); ++i ){
@@ -347,11 +353,13 @@ std::string DiagramTensor::slotTypeLetters( const SlotTs& slottypes ) const
 
 void Tensor::add(const Action* pAct)
 {
-  Actions::const_iterator itact;
-  _foreach(itact,_parents){
-    if ( pAct == *itact ) return;
+  if (pAct) {
+    Actions::const_iterator itact;
+    _foreach(itact,_parents){
+      if ( pAct == *itact ) return;
+    }
+    _parents.push_back(pAct);
   }
-  _parents.push_back(pAct);
 }
 
 std::string Tensor::slotTypeLetters() const
@@ -359,7 +367,7 @@ std::string Tensor::slotTypeLetters() const
   std::string ret;
   SlotTs::const_iterator ist;
   _foreach(ist,_slots){
-    ret += (*ist)->typeLetter();
+    ret += (*ist)->name();
   }
   return ret;
 }

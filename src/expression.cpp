@@ -366,6 +366,23 @@ std::ostream & operator << (std::ostream& o, const Diagram& d) {
   return o;
 }
 
+void print_contractions(std::ostream& o, const Tensor& ten)
+{
+  if (ten._parents.size() > 0) {
+    const Action * pAct = ten._parents.back();
+    assert( pAct );
+    const Contraction * pContr = dynamic_cast< const Contraction * >(pAct);
+    if (pContr) {
+      print_contractions(o,*(pContr->p_A));
+      print_contractions(o,*(pContr->p_B));
+      
+    } else {
+      const Summation * pSum = dynamic_cast< const Summation * >(pAct);
+      assert( pSum );
+    }
+  }
+}
+
 std::ostream & operator << (std::ostream& o, const Expression& exp) {
   o << "---- decl" << std::endl;
   // index spaces

@@ -37,10 +37,11 @@ public:
   bool operator < ( const SlotType& st) const; 
   Length length() const { return _nIndices; };
   SlotType::Type type() const { return _type; };
-  std::string typeLetter() const;
+  std::string name(const std::string & oldname = "") const;
 //private:
   Length _nIndices;
   Type _type;
+  std::string _internalName;
 };
 
 //! output operator for slot types
