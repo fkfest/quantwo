@@ -187,6 +187,8 @@ void Diagram::binarize(Expression& expr) const
   }
   xout << "in " << nsteps << " steps" << std::endl;
 //  for ( uint i = 0; i < mat_idx.size(); ++i ) bt[i] = true;
+  assert( _tensors[0]._connect.bitmask == inters[bt.to_ulong()]._connect.bitmask );
+  inters[bt.to_ulong()] = _tensors[0];
   const Tensor * pRes = transform2Expr(expr,inters,order,bt);
   expr.addresidual(pRes);
   
@@ -232,19 +234,21 @@ const Tensor * Diagram::transform2Expr(Expression& expr, const Array< DiagramTen
     std::bitset<MAXNTENS> 
         bt1 = order[ibt],
         bt2 = bt^bt1;
-    unsigned long 
-        ibt1 = bt1.to_ulong(),
-        ibt2 = bt2.to_ulong();
     const Tensor 
       * pTen1 = transform2Expr(expr,inters,order,bt1),
       * pTen2 = transform2Expr(expr,inters,order,bt2);
+    unsigned long 
+        ibt1 = bt1.to_ulong(),
+        ibt2 = bt2.to_ulong();
     // action...
+    xout << "hi " << *pTen1 << " and " << *pTen2 << std::endl;
     Contraction contr = exprContraction(inters[ibt1],inters[ibt2],inters[ibt],pTen1,pTen2);
     pAct = expr.add(&contr);
   }
   assert( bt.count() > 0 );
   // add the intermediate
   Tensor ten(exprTensor(inters[ibt]));
+  xout << "tensor " << ten << std::endl;
   ten.add(pAct);
   return expr.add(ten);
 }
@@ -303,6 +307,7 @@ const SlotType* Expression::add(const SlotType& slottype)
 
 const Tensor* Expression::add(const Tensor& tensor)
 {
+  xout << "add tensor " << tensor << std::endl;
   for ( TensorsSet::iterator it = _tensors.begin(); it != _tensors.end(); ++it) {
     if ( it->equal(tensor) ) return &(*it);
   }
@@ -370,6 +375,7 @@ std::ostream & operator << (std::ostream& o, const Diagram& d) {
 
 void print_code(std::ostream& o, const Tensor& ten)
 {
+  xout << "ten._parents.size() = " << ten._parents.size() << std::endl;
   if (ten._parents.size() > 0) {
     const Action * pAct = ten._parents.back();
     assert( pAct );
@@ -412,8 +418,10 @@ std::ostream & operator << (std::ostream& o, const Expression& exp) {
   if ( residuals.size() == 0 )
     o << "// No residual tensors set!" << std::endl;
   std::set< const Tensor * >::const_iterator itres;
-  _foreach(itres,residuals)
+  _foreach(itres,residuals) {
+    xout << "Residual " << *(*itres) << std::endl;
     print_code(o,*(*itres));
+  }
   
   return o;
 }
