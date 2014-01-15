@@ -21,7 +21,9 @@ Cost Contraction::cost(Cost mincost)
   _cost = 0;
   if ( p_B == 0){
     if ( p_A ){
-      // scaling by a factor: cost = number of elements in A
+      if ( std::abs(_fac - 1) > Numbers::verysmall ) {
+        // scaling by a factor: cost = number of elements in A
+      }
     }
   } else {
     assert( p_A );
@@ -94,11 +96,17 @@ void Contraction::print(std::ostream& o, const Tensor& res) const
     o << "-= ";
   else 
     o << "+= ";
-  if ( (std::abs(_fac) - 1) > Numbers::verysmall ) o << std::abs(_fac) << " ";
+  if ( std::abs(std::abs(_fac) - 1) > Numbers::verysmall ) o << std::abs(_fac) << " ";
   o << p_A->name() << "[" << aslots << "] ";
   o << p_B->name() << "[" << bslots << "]";
 }
 
+Summation::Summation(const ActionPointers& pActs, const Summation::Slots4Ten& AinR, const Summation::Slots4Ten& RinA) :
+  _pActs(pActs), _AinR(AinR), _RinA(RinA)
+{
+  assert( _pActs.size() == _AinR.size() );
+  assert( _AinR.size() == _RinA.size() );
+}
 
 Cost Summation::cost(Cost mincost)
 {

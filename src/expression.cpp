@@ -389,8 +389,8 @@ void print_code(std::ostream& o, const Tensor& ten)
     } else {
       const Summation * pSum = dynamic_cast< const Summation * >(pAct);
       assert( pSum );
-      for ( uint iten = 0; iten < pSum->p_A.size(); ++iten ){
-        print_code(o,*(pSum->p_A[iten]));
+      for ( uint iten = 0; iten < pSum->_pActs.size(); ++iten ){
+//        print_code(o,*(pSum->p_A[iten]));
       }
       error("implement print code for summation");
     }
