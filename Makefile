@@ -3,7 +3,7 @@ PROFILE =
 #PROFILE = -pg
 CFLAGS := -c -Wall -O3 $(PROFILE)
 LDFLAGS = $(PROFILE)
-#comment out to activate asserts
+#comment out to deactivate debug and asserts
 #CFLAGS := $(CFLAGS) -D NDEBUG
 #use rational numbers from boost
 #CFLAGS := $(CFLAGS) -D _RATIONAL

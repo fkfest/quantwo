@@ -101,12 +101,8 @@ void Contraction::print(std::ostream& o, const Tensor& res) const
   o << p_B->name() << "[" << bslots << "]";
 }
 
-Summation::Summation(const ActionPointers& pActs, const Summation::Slots4Ten& AinR, const Summation::Slots4Ten& RinA) :
-  _pActs(pActs), _AinR(AinR), _RinA(RinA)
-{
-  assert( _pActs.size() == _AinR.size() );
-  assert( _AinR.size() == _RinA.size() );
-}
+Summation::Summation(const ActionsSets& pActs) : _pActs(pActs)
+{ }
 
 Cost Summation::cost(Cost mincost)
 {

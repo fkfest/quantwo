@@ -309,7 +309,11 @@ const Tensor* Expression::add(const Tensor& tensor)
 {
   xout << "add tensor " << tensor << std::endl;
   for ( TensorsSet::iterator it = _tensors.begin(); it != _tensors.end(); ++it) {
-    if ( it->equal(tensor) ) return &(*it);
+    if ( it->equal(tensor) ) {
+      if ( tensor._parents.size() > 0 )
+        it->add(tensor._parents.back());
+      return &(*it);
+    }
   }
   _tensors.push_back(tensor);
   if ( tensor.name() == "" ){
@@ -373,27 +377,31 @@ std::ostream & operator << (std::ostream& o, const Diagram& d) {
   return o;
 }
 
+void print_action(std::ostream& o, const Action * pAct, const Tensor& ten)
+{
+  assert( pAct );
+  const Contraction * pContr = dynamic_cast< const Contraction * >(pAct);
+  if (pContr) {
+    print_code(o,*(pContr->p_A));
+    print_code(o,*(pContr->p_B));
+    pContr->print(o,ten); 
+    o << std::endl;  
+  } else {
+    const Summation * pSum = dynamic_cast< const Summation * >(pAct);
+    assert( pSum );
+    ActionsSets::const_iterator itap;
+    _foreach(itap,pSum->_pActs) {
+      print_action(o,itap->back(),ten);
+    }
+    error("implement print code for summation");
+  }
+}
+
 void print_code(std::ostream& o, const Tensor& ten)
 {
-  xout << "ten._parents.size() = " << ten._parents.size() << std::endl;
   if (ten._parents.size() > 0) {
     const Action * pAct = ten._parents.back();
-    assert( pAct );
-    const Contraction * pContr = dynamic_cast< const Contraction * >(pAct);
-    if (pContr) {
-      print_code(o,*(pContr->p_A));
-      print_code(o,*(pContr->p_B));
-      
-      pContr->print(o,ten); 
-      o << std::endl;  
-    } else {
-      const Summation * pSum = dynamic_cast< const Summation * >(pAct);
-      assert( pSum );
-      for ( uint iten = 0; iten < pSum->_pActs.size(); ++iten ){
-//        print_code(o,*(pSum->p_A[iten]));
-      }
-      error("implement print code for summation");
-    }
+    print_action(o,pAct,ten);
   }
 }
 

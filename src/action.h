@@ -49,21 +49,19 @@ public:
 };
 
 typedef std::list<Tensor> TensorsSet;
-typedef Array<const Action*> ActionPointers;
+typedef Array<Slots> Slots4Ten;
+typedef Array<Actions> ActionsSets;
 
 // R = \sum_i fac_i "Contraction"
 class Summation : public Action {
 public:
-  typedef Array<Slots> Slots4Ten;
   Summation() {};
-  Summation( const ActionPointers& pActs, const Slots4Ten& AinR, const Slots4Ten& RinA );
+  Summation( const ActionsSets& pActs );
   ~Summation(){};
   // for mincost > 0: will return either actual cost if it's smaller than mincost, or (mincost + 1)
   Cost cost( Cost mincost = -1 );
 //private:
-  ActionPointers _pActs;
-  Slots4Ten
-    _AinR, _RinA;
+  ActionsSets _pActs;
   // save cost
   Cost _cost;
 };
