@@ -6,17 +6,6 @@ Factorizer::Factorizer(const Sum< Term, TFactor >& s)
   std::map<Orbital,const SlotType*> slotorbs;
   std::map<Matrices,const Tensor*> tensormats;
 
-///////////////////////////////////// TEST ///////////////////////////////
-  std::bitset<8> bs;
-  bs[1] = true;
-  bs [4] = true;
-  bs [6] = true;
-  bs [7] = true;
-  xout << "bitset: " << bs << " " << bs.count() << std::endl;
-  xout << "bitset2: " << (bs >> 2) << " " << (bs >> 2).count() << std::endl;
-
-///////////////////////////////////// END TEST ///////////////////////////////
-  
   // create an expression from the sum
   for ( Sum<Term,TFactor>::const_iterator i=s.begin();i!=s.end(); ++i) {
     Factor fac = (Factor) i->second;
@@ -36,7 +25,7 @@ Factorizer::Factorizer(const Sum< Term, TFactor >& s)
     for ( Sum<Term,TFactor>::const_iterator ist = sumt.begin();ist != sumt.end(); ++ist ) {
       Factor fact = (Factor) ist->second;
       fact *= fac;
-      Diagram diag = Translators::term2diagram(ist->first,slotorbs,_expression);
+      Diagram diag = Translators::term2diagram(ist->first,fact,slotorbs,_expression);
       xout << diag; 
       diag.binarize(_expression);
       // contractions
@@ -90,7 +79,7 @@ Tensor Translators::mat2tensor(const Matrices& mat, const std::map< Orbital, con
   return Tensor(sts,mat.plainname());
 }
 
-Diagram Translators::term2diagram(const Term& term, const std::map<Orbital,const SlotType*>& slotorbs, const Expression& expr)
+Diagram Translators::term2diagram(const Term& term, Factor fact, const std::map< Orbital, const SlotType* >& slotorbs, const Expression& expr)
 {
   const std::string& resultt = Input::sPars["syntax"]["result"];
   Diagram diag;
@@ -115,8 +104,6 @@ Diagram Translators::term2diagram(const Term& term, const std::map<Orbital,const
   // use canonical order - then the intermediates will be in canonical order automatically 
   Canonicalize(diag._slottypes,slotorder);
   orbitals = orbitals.refarr(slotorder); 
-
-  xout << "orbitals: " << orbitals << std::endl;
 
   Product<Matrices>::const_iterator im;
   uint nbareops = 0;
@@ -155,6 +142,8 @@ Diagram Translators::term2diagram(const Term& term, const std::map<Orbital,const
     } else
       diag.add(DiagramTensor(con,im->plainname()));
   }
+  assert( std::abs(std::abs(term.prefac()) - 1) < Numbers::verysmall );
+  diag._fac = fact;
   if ( nbareops > 1 ) error("we can handle only upto one bare operator yet...", "Translators::term2diagram");
   return diag;
 }

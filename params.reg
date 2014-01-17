@@ -87,9 +87,9 @@ set="prog",type=i,name="nobrafac",value=0,desc="if = 0: use the usual prefactors
 set="prog",type=i,name="algo",value=0,desc="if > 0: print algorithm file"
 
 %TENSORS
-set="tensor",type=s,name="T[aaii]",value="cut:01/23,23;sym:23/01"
-set="tensor",type=s,name="T[ai]",value="cut:0/1"
-set="tensor",type=s,name="R[aaii]",value="cut:01/23,23;sym:23/01"
+set="tensor",type=s,name="T[aaii]",value="" 
+set="tensor",type=s,name="T[ai]",value="" 
+set="tensor",type=s,name="R[aaii]",value=""
 set="tensor",type=s,name="R[ai]",value=""
 
 %FACTORIZATION

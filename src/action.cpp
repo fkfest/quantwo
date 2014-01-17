@@ -101,11 +101,32 @@ void Contraction::print(std::ostream& o, const Tensor& res) const
   o << p_B->name() << "[" << bslots << "]";
 }
 
-Summation::Summation(const ActionsSets& pActs) : _pActs(pActs)
-{ }
-
 Cost Summation::cost(Cost mincost)
 {
   Cost cst = 0;
   return cst;
 }
+
+void Summation::print(std::ostream& o, const Tensor& res) const
+{
+  std::map<SlotType::Type,std::string> slotnames;
+  Array<std::string> 
+        resslots(res.slots().size());
+  Summands::const_iterator its;
+  _foreach(its,_summands){
+    Array<std::string> 
+        aslots(its->p_A->slots().size());
+    slotNames4Refs(resslots,aslots,slotnames,its->_RinA,its->_AinR,res.slots(),its->p_A->slots());
+    fillFreeSlotNames(resslots,slotnames,res);
+    std::map<SlotType::Type,std::string> slotnamesA(slotnames);
+    fillFreeSlotNames(aslots,slotnamesA,*(its->p_A));
+    o << res.name() << "[" << resslots << "] ";
+    if ( its->_fac < 0 )
+      o << "-= ";
+    else 
+      o << "+= ";
+    if ( std::abs(std::abs(its->_fac) - 1) > Numbers::verysmall ) o << std::abs(its->_fac) << " ";
+    o << its->p_A->name() << "[" << aslots << "] " << std::endl;
+  }
+}
+

@@ -21,7 +21,7 @@ const uint MAXNTENS = 12;
 // TODO: move to a new file
 class Diagram {
 public:
-  Diagram(){};
+  Diagram() : _fac(1) {};
   // create an intermediate tensor from a contraction of ten1 and ten2.
   DiagramTensor newTensor( const DiagramTensor& ten1, const DiagramTensor& ten2, std::string name = "" ) const;
   // contraction cost of ten1 and ten2 to res (res has to be created before!)
@@ -34,9 +34,12 @@ public:
   // generates an expression-contraction from a diagrammatic contraction R=AB
   Contraction exprContraction( const DiagramTensor& tenA, const DiagramTensor& tenB, const DiagramTensor& tenR, 
                                const Tensor * pA, const Tensor * pB ) const;
+  // generates an expression summation from a diagrammatic "summation" R = a*A
+  Summand exprSummation( const DiagramTensor& tenA, Factor fac, const DiagramTensor& tenR, const Tensor * pA ) const;
   // transforms to tensors and intermediates using bitmasks from binarize-function
+  // if accumulate = true: adds the tensor as a new summand 
   const Tensor * transform2Expr( Expression& expr, const Array<DiagramTensor>& inters, const Array<std::bitset<MAXNTENS> >& order,
-                       std::bitset<MAXNTENS> bt ) const;
+                       std::bitset<MAXNTENS> bt, bool accumulate = false ) const;
   // add tensor
   const DiagramTensor * add( DiagramTensor dten, const Tensor * pTen = 0, bool pushfront = false );
   // all slot types in this diagram
@@ -45,6 +48,7 @@ public:
   Array<DiagramTensor> _tensors;
   // all cuts in diagram
   Cuts _cuts;
+  Factor _fac;
 };
 
 //! output operator for diagrams
@@ -57,10 +61,13 @@ public:
   const TensorsSet& tensors() const { return _tensors; };
   const std::set< const Tensor *>& residualtensors() const { return _residuals; };
   const SlotType * add( const SlotType& slottype ); 
-  const Tensor * add( const Tensor& tensor );
+  // if accumulate = true: add as a new summand
+  const Tensor * add( const Tensor& tensor, bool accumulate = false );
   const Action * add( const Action * pAction );
   // add residual tensor
   void addresidual( const Tensor * pRes ) {_residuals.insert(pRes);};
+  // finds residual that corresponds to res (or creates it new) and adds a summand
+  const Tensor * add2residual( const Tensor& res, const Summand& sumd );
   // searches for the same tensor, if considerprops==false does not consider symmetry and cuts
   const Tensor * find( const Tensor& tensor, bool considerprops = true ) const;
   //! new name for a tensor. TODO: Reuse some intermediate names!

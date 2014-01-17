@@ -37,12 +37,13 @@ static std::string ReadNameAndAdvance(std::size_t& ipos, const std::string& s){
 
 static std::string nextName(const std::string& s, const std::string& oldname){
   std::string name = "";
-  for ( std::size_t ipos = 0; ipos < s.size(); ){
+  std::size_t ipos = 0;
+  while( name != oldname && ipos < s.size() ) {
     name = ReadNameAndAdvance(ipos,s);
-    if ( oldname == "" || oldname != name ) return name;
   }
-  error( "add more slot names: "+s,"nextName");
-  return name;
+  if ( ipos >= s.size() )
+    error( "add more slot names: "+s,"nextName");
+  return ReadNameAndAdvance(ipos,s);
 }
 
 SlotType::SlotType(const std::string& lettertype)
@@ -382,6 +383,8 @@ bool Tensor::operator<(const Tensor& ten) const
   if ( ten._syms.size() < _syms.size() ) return false;
   if ( _cuts.size() < ten._cuts.size() ) return true;
   if ( ten._cuts.size() < _cuts.size() ) return false;
+  if ( _dummy < ten._dummy ) return true;
+  if ( ten._dummy < _dummy ) return false;
   for ( uint i = 0; i < _slots.size(); ++i ){
     if ( _slots[i] < ten._slots[i] ) return true;
     if ( ten._slots[i] < _slots[i] ) return false;

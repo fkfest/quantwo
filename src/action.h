@@ -32,7 +32,6 @@ public:
                const Slots& AinR, const Slots& RinA,
                const Slots& BinR, const Slots& RinB,
                const Factor& fac = 1 );
-  ~Contraction(){};
   // for mincost > 0: will return either actual cost if it's smaller than mincost, or (mincost + 1)
   Cost cost( Cost mincost = -1 );
   void print( std::ostream& o, const Tensor& res ) const;
@@ -49,19 +48,25 @@ public:
 };
 
 typedef std::list<Tensor> TensorsSet;
-typedef Array<Slots> Slots4Ten;
-typedef Array<Actions> ActionsSets;
 
-// R = \sum_i fac_i "Contraction"
+struct Summand {
+  Summand( const Tensor * pA, const Slots& AinR, const Slots& RinA, Factor fac ) 
+    : p_A(pA), _AinR(AinR), _RinA(RinA), _fac(fac) {};
+  const Tensor * p_A;
+  Slots _AinR, _RinA;
+  Factor _fac;
+};
+typedef std::list<Summand> Summands;
+// R = \sum_i fac_i A_i
 class Summation : public Action {
 public:
   Summation() {};
-  Summation( const ActionsSets& pActs );
-  ~Summation(){};
+  void add( const Summand& sumd ) { _summands.push_back(sumd);};
   // for mincost > 0: will return either actual cost if it's smaller than mincost, or (mincost + 1)
   Cost cost( Cost mincost = -1 );
+  void print( std::ostream& o, const Tensor& res ) const;
 //private:
-  ActionsSets _pActs;
+  Summands _summands;
   // save cost
   Cost _cost;
 };

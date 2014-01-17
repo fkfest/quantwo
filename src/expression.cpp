@@ -86,6 +86,15 @@ Contraction Diagram::exprContraction(const DiagramTensor& tenA, const DiagramTen
   return Contraction(*pA,*pB,sAinB,sBinA,sAinR,sRinA,sBinR,sRinB);
 }
 
+Summand Diagram::exprSummation(const DiagramTensor& tenA, Factor fac, const DiagramTensor& tenR, const Tensor* pA) const
+{
+  Slots 
+    sAinR, sRinA;
+  setContractionSlots(sAinR,sRinA,tenA,tenR);
+  
+  return Summand(pA,sAinR,sRinA,fac);
+}
+
 Cost Diagram::contractionCost( const DiagramTensor& ten1, const DiagramTensor& ten2, const DiagramTensor& res ) const
 {
   Cost cost = 1;
@@ -185,14 +194,17 @@ void Diagram::binarize(Expression& expr) const
       }
     } while(next_combination(mat_idx.begin(),itmat,mat_idx.end()));
   }
-  xout << "in " << nsteps << " steps" << std::endl;
+//  xout << "in " << nsteps << " steps" << std::endl;
 //  for ( uint i = 0; i < mat_idx.size(); ++i ) bt[i] = true;
   assert( _tensors[0]._connect.bitmask == inters[bt.to_ulong()]._connect.bitmask );
-  inters[bt.to_ulong()] = _tensors[0];
-  const Tensor * pRes = transform2Expr(expr,inters,order,bt);
+//  inters[bt.to_ulong()] = _tensors[0];
+  const Tensor * pSummand = transform2Expr(expr,inters,order,bt,true);
+  
+  // residual tensor
+  Tensor res = exprTensor(_tensors[0]);
+  Summand sumd = exprSummation(inters[bt.to_ulong()],_fac,_tensors[0],pSummand);
+  const Tensor * pRes = expr.add2residual(res,sumd);
   expr.addresidual(pRes);
-  
-  
 //  LOOP STRUCTURE USING bitset next_combination
 //  nsteps = 0;
 //  std::bitset<MAXNTENS> xx, xxt;
@@ -225,7 +237,7 @@ void Diagram::binarize(Expression& expr) const
 }
 
 const Tensor * Diagram::transform2Expr(Expression& expr, const Array< DiagramTensor >& inters, const Array< std::bitset< MAXNTENS > >& order, 
-                             std::bitset< MAXNTENS > bt) const
+                             std::bitset< MAXNTENS > bt, bool accumulate ) const
 {
   unsigned long ibt = bt.to_ulong();
   const Action * pAct = 0;
@@ -241,16 +253,14 @@ const Tensor * Diagram::transform2Expr(Expression& expr, const Array< DiagramTen
         ibt1 = bt1.to_ulong(),
         ibt2 = bt2.to_ulong();
     // action...
-    xout << "hi " << *pTen1 << " and " << *pTen2 << std::endl;
     Contraction contr = exprContraction(inters[ibt1],inters[ibt2],inters[ibt],pTen1,pTen2);
     pAct = expr.add(&contr);
   }
   assert( bt.count() > 0 );
   // add the intermediate
   Tensor ten(exprTensor(inters[ibt]));
-  xout << "tensor " << ten << std::endl;
   ten.add(pAct);
-  return expr.add(ten);
+  return expr.add(ten, accumulate);
 }
 
 
@@ -305,9 +315,8 @@ const SlotType* Expression::add(const SlotType& slottype)
   return &(*it);
 }
 
-const Tensor* Expression::add(const Tensor& tensor)
+const Tensor* Expression::add(const Tensor& tensor, bool accumulate)
 {
-  xout << "add tensor " << tensor << std::endl;
   for ( TensorsSet::iterator it = _tensors.begin(); it != _tensors.end(); ++it) {
     if ( it->equal(tensor) ) {
       if ( tensor._parents.size() > 0 )
@@ -320,13 +329,14 @@ const Tensor* Expression::add(const Tensor& tensor)
     // generate a name for the noname (intermediate) tensor
     _tensors.back()._name = newname(tensor.syms(),tensor.cuts());
   }
+  _tensors.back()._dummy = accumulate;
   return &(_tensors.back());
 }
 
 const Action* Expression::add(const Action* pAction)
 {
   const Contraction * pContr = dynamic_cast< const Contraction * >( pAction );
-  if ( pAction ) {
+  if ( pContr ) {
     _contractions.push_back(*pContr);
     return &(_contractions.back());
   }
@@ -334,6 +344,36 @@ const Action* Expression::add(const Action* pAction)
   assert( pSum );
   _summations.push_back(*pSum);
   return &(_summations.back());
+}
+
+const Tensor* Expression::add2residual(const Tensor& res, const Summand& sumd)
+{
+  for ( TensorsSet::iterator it = _tensors.begin(); it != _tensors.end(); ++it) {
+    if ( it->equal(res) ) {
+      if ( it->_parents.size() > 0 ) {
+        const Summation * pS = dynamic_cast< const Summation * >(it->_parents.back());
+        if ( pS ) {
+          std::list<Summation>::iterator its;
+          _foreach(its,_summations){
+            if ( pS == &(*its) ) {
+              its->add(sumd);
+              return &(*it);
+            }
+          }
+          error("Something is wrong: a summation not found!","Expression::add2residual");
+        }
+      }
+      // create a new summation and add to it
+      Summation sum;
+      sum.add(sumd);
+      const Action * pAct = this->add(&sum);
+      it->add(pAct);
+      return &(*it);
+    }
+  }
+  // create a new tensor and add a new summation to it
+  error("Something is wrong: residual not found!","Expression::add2residual");
+  return 0;
 }
 
 const Tensor* Expression::find(const Tensor& tensor, bool considerprops) const
@@ -369,6 +409,7 @@ std::string Expression::newname(const Symmetries& syms, const Cuts& cuts)
 
 std::ostream & operator << (std::ostream& o, const Diagram& d) {
   o << "Diagram: {";
+  o << d._fac;
   for ( uint i = 0; i < d._tensors.size(); ++i ){
     o << d._tensors[i].name() << "["<< d._tensors[i].slotTypeLetters(d._slottypes) << "]";
     o << "(" << d._tensors[i]._connect.bitmask << ")";
@@ -389,11 +430,11 @@ void print_action(std::ostream& o, const Action * pAct, const Tensor& ten)
   } else {
     const Summation * pSum = dynamic_cast< const Summation * >(pAct);
     assert( pSum );
-    ActionsSets::const_iterator itap;
-    _foreach(itap,pSum->_pActs) {
-      print_action(o,itap->back(),ten);
+    Summands::const_iterator itsd;
+    _foreach(itsd,pSum->_summands){
+      print_code(o,*(itsd->p_A));
     }
-    error("implement print code for summation");
+    pSum->print(o,ten);
   }
 }
 
@@ -417,7 +458,8 @@ std::ostream & operator << (std::ostream& o, const Expression& exp) {
   const TensorsSet& ts = exp.tensors();
   TensorsSet::const_iterator its;
   _foreach(its,ts){
-    o << "tensor: " << *its << std::endl;
+    if ( !its->_dummy )
+      o << "tensor: " << *its << std::endl;
   }
   
   // contractions...
