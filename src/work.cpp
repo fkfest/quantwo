@@ -340,7 +340,7 @@ void Q2::printdiags(Output* pout, Sum< Term, TFactor > s)
   *(pout->pout) << " Diagrams: " << std::endl;
     *(pout->pout) << std::endl;
   for ( Sum<Term,TFactor>::const_iterator it = s.begin(); it != s.end(); ++it){
-    it->first.printdiag(pout,it->second);
+    it->first.printdiag(pout);
   }
 }
 

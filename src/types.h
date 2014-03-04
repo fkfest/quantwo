@@ -5,7 +5,7 @@
 namespace SQOpT{
   // enumerate operator types (Gen: for Particle/Hole formalism and general orbitals)
   enum Gender { Creator, Annihilator, Gen };
-};
+}
 
 namespace Ops {
   // enumerate operator types 
@@ -22,7 +22,7 @@ namespace Ops {
     DensM, // density matrix (for active orbitals)
     Delta, // kronecker
     Number};
-};
+}
 
 
 #endif

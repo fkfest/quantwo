@@ -154,7 +154,7 @@ class Term {
     //! return true if the term is ok
     bool properconnect() const;
     //! print diagram, which corresponds to this term 
-    void printdiag(Output* pout, TFactor fac) const;
+    void printdiag(Output* pout) const;
     //! return free orbital name
     Orbital freeorbname(Orbital::Type type);
     //! static wrapper-function to be able to callback the member function freeorbname()

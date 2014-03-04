@@ -392,7 +392,7 @@ std::string Expression::newname(const Symmetries& syms, const Cuts& cuts)
     return _lastname;
   }
   for ( int i = _lastname.size()-1; i >= 0; --i) {
-    uint indx = names.find(_lastname[i]);
+    std::size_t indx = names.find(_lastname[i]);
     if(indx==std::string::npos)
       error("Something wrong with tensor names","Expression::newname");
     else if ( indx < names.size()-1 ) { // not the last possible name

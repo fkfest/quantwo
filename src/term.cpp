@@ -993,7 +993,7 @@ void Term::replace(Orbital orb1, Orbital orb2, bool smart)
 }
 
 static bool matisnone(const Matrices& mat)
-{ return (mat.type() == Ops::None); };
+{ return (mat.type() == Ops::None); }
 void Term::deleteNoneMats()
 { _mat.erase(std::remove_if(_mat.begin(),_mat.end(),matisnone),_mat.end()); }
 bool Term::brilloin() const
@@ -1248,7 +1248,7 @@ bool Term::properconnect() const
   }
   return true;
 }
-void Term::printdiag(Output* pout, TFactor fac) const
+void Term::printdiag(Output* pout) const
 {
   TsPar & diag = Input::sPars["diag"];
   short verb = Input::iPars["diag"]["printnames"]; // print names of operators and indices...

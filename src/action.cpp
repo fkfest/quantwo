@@ -28,8 +28,11 @@ Cost Contraction::cost(Cost mincost)
   } else {
     assert( p_A );
     // multiplication: cost = nA*nL*nB (take care of locality!)
+    if ( _cost > mincost ) { 
+      // do less work, we don't need to calculate the whole cost 
+      // if at some point we know that the cost is larger than the previous minimal cost...
+    }
   }
-  
   return _cost;
 }
 

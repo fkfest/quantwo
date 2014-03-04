@@ -41,6 +41,6 @@ namespace IL{
   lui lexfind(const std::string& str, const std::string& sstr, const lui& ipos = 0);
   // add nameadd to name (as superscript if superscript=true)
   void add2name(std::string & name, std::string const & nameadd, bool superscript = true);
-};
+}
 
 #endif

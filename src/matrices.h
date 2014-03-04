@@ -17,7 +17,7 @@
 namespace Ops {
   // generate Product<Orbital> from occupied and virtual orbitals and excitation class 
   Product<Orbital> genprodorb(short exccl,Orbital const & occ, Orbital const & virt);
-};
+}
 
 typedef std::set<long int> TCon2;
 // represents connecting line, i.e. tells to which index in which matrix it is connected
