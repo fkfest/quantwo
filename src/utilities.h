@@ -57,6 +57,15 @@ std::string num2str(const T& t,
   oss << f << t;
   return oss.str();
 }
+// anything to string transformation
+template <class T>
+inline
+std::string any2str(const T& t)
+{
+  std::ostringstream oss;
+  oss << t;
+  return oss.str();
+}
 
 template<typename string_t>
 string_t DirName(string_t source)

@@ -293,7 +293,7 @@ lui Equation::closbrack(const Product< Lelem >& eqn, lui ipos)
     }
   }
   if ( nk != 0 ) 
-    error("Number of brackets is incosistent: "+nk,"Finput::closbrack"); 
+    error("Number of brackets is incosistent: "+any2str(nk),"Finput::closbrack"); 
   return ipos1;
 }
 lui Equation::openbrack(const Product< Lelem >& eqn, lui ipos)
@@ -319,7 +319,7 @@ lui Equation::openbrack(const Product< Lelem >& eqn, lui ipos)
       --nk; // count number of ")"
   }
   if ( nk != 0 ) 
-    error("Number of brackets is incosistent: "+nk,"Finput::openbrack"); 
+    error("Number of brackets is incosistent: "+any2str(nk),"Finput::openbrack"); 
   return ipos1;
 }
 Product< long int > Equation::addconnections(const Product< Lelem >& aterm, lui beg, lui end)

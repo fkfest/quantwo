@@ -142,7 +142,7 @@ lui IL::closbrack(const std::string& str, lui ipos)
   const std::string& brackets = Input::sPars["syntax"]["brackets"];
   lui i=brackets.find(str[ipos]),ipos1=ipos;
   if (i==std::string::npos) 
-    error(str[ipos]+"is not a bracket!","IL::closbrack"); 
+    error(any2str(str[ipos])+"is not a bracket!","IL::closbrack"); 
   char lk(brackets[i]), rk(brackets[i+1]); // left and right brackets
   int nk=1;
   for ( i=ipos+1;i<str.size();++i) {
@@ -157,7 +157,7 @@ lui IL::closbrack(const std::string& str, lui ipos)
     }
   }
   if ( nk != 0 ) 
-    error("Number of brackets is incosistent: "+nk,"IL::closbrack"); 
+    error("Number of brackets is incosistent: "+any2str(nk),"IL::closbrack"); 
   return ipos1;
 }
 

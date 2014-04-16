@@ -38,3 +38,4 @@ namespace Q2
   void printalgo(std::ofstream& out, Sum<Term,TFactor> s);
 }
 #endif
+

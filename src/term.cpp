@@ -155,7 +155,7 @@ void Term::addmatrix(const Matrices& mat)
 void Term::replacematrix(const Matrices& mat, lui ipos)
 {
   if (ipos >= _mat.size())
-    error("The position is outside of this term: "+ipos,"Term::replacematrix");
+    error("The position is outside of this term: "+any2str(ipos),"Term::replacematrix");
   _mat[ipos]=mat;
 }
 
