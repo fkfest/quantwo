@@ -195,14 +195,12 @@ bool Matrices::is0() const
   if (_type == Ops::DensM){
     if ( _orbs.size()%2 != 0 ) return true;
     // only active orbitals!
-    Product<Orbital>::const_iterator ito;
-    _foreach(ito,_orbs){
+    _foreach_cauto(Product<Orbital>,ito,_orbs){
       if (ito->type() != Orbital::Act) return true;
     }
     // number of creators == annihilators
-    Product<SQOpT::Gender>::const_iterator itca;
     int cran = 0;
-    _foreach(itca,_cranorder){
+    _foreach_cauto(Product<SQOpT::Gender>,itca,_cranorder){
       if (*itca == SQOpT::Creator) 
         ++cran;
       else 

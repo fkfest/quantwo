@@ -19,9 +19,6 @@
     Implements utilities (e.g. error function)
 */
 
-#define _for_each_auto(type,it,con) for ( type::iterator (it) = (con).begin(); (it) != (con).end(); ++(it) )
-#define _for_each_cauto(type,it,con) for ( type::const_iterator (it) = (con).begin(); (it) != (con).end(); ++(it) )
-
 // error function
 void error(std::string what, std::string where="");
 

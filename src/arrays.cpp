@@ -53,8 +53,7 @@ inline
 Array<T> Array<T>::refarr( const Array<uint>& ref ) const
 {
   Array<T> res;
-  Array<uint>::const_iterator ir;
-  _foreach(ir,ref){
+  _foreach_cauto(Array<uint>,ir,ref){
     assert( *ir < this->size() );
     res.push_back((*this)[*ir]);
   }
@@ -64,8 +63,7 @@ template <class T>
 inline
 void Array<T>::canonicalize()
 {
-  typename Array<T>::iterator it;
-  _foreach(it,*this){
+  _foreach_auto(typename Array<T>,it,*this){
     it->canonicalize();
   }
   std::sort(this->begin(), this->end());

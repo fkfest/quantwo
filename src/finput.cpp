@@ -787,10 +787,9 @@ Oper Equation::handle_excitation(Term& term, const std::string& name, bool dg, i
   TOrb4Type orb4t;
   if (ipos2<0) {// first run (don't distinguish terms)
     _excops*=name;
-    Product<Orbital::Type>::const_iterator iot;
     if (orbtypes.size() > 0){
       for ( uint i = 0; i < orbtypes.size(); ++i ){
-        _foreach(iot,orbtypes[i]){
+        _foreach_cauto(Product<Orbital::Type>,iot,orbtypes[i]){
           if (orb4t.count(*iot) == 0)
             orb4t[*iot] = term.freeorbname(*iot);
         }

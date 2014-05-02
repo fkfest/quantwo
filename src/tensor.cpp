@@ -355,8 +355,7 @@ std::string DiagramTensor::slotTypeLetters( const SlotTs& slottypes ) const
 void Tensor::add(const Action* pAct)
 {
   if (pAct) {
-    Actions::const_iterator itact;
-    _foreach(itact,_parents){
+    _foreach_cauto(Actions,itact,_parents){
       if ( pAct == *itact ) return;
     }
     _parents.push_back(pAct);
@@ -366,8 +365,7 @@ void Tensor::add(const Action* pAct)
 std::string Tensor::slotTypeLetters() const
 {
   std::string ret;
-  SlotTs::const_iterator ist;
-  _foreach(ist,_slots){
+  _foreach_cauto(SlotTs,ist,_slots){
     ret += (*ist)->name();
   }
   return ret;
@@ -460,8 +458,7 @@ std::ostream & operator << (std::ostream& o, const SlotType& st)
 }
 
 std::ostream & operator << (std::ostream& o, const Slots& ss) {
-  Slots::const_iterator is;
-  _foreach(is,ss){
+  _foreach_cauto(Slots,is,ss){
     if (*is > 9) 
       o << "{" << *is << "}";
     else
@@ -497,9 +494,8 @@ std::ostream & operator << (std::ostream& o, const Tensor& t) {
   // cut info
   if ( t.cuts().size() > 0 ){
     o << "cut:";
-    Cuts::const_iterator ic;
     bool putcomma = false;
-    _foreach(ic,t.cuts()){
+    _foreach_cauto(Cuts,ic,t.cuts()){
       if (putcomma) o << ",";
       o << *ic;
       putcomma = true;

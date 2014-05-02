@@ -976,8 +976,7 @@ void Term::reduceTerm()
 }
 void Term::krons2mats()
 {
-  Product<Kronecker>::const_iterator ik;
-  _foreach(ik,_kProd){
+  _foreach_cauto(Product<Kronecker>,ik,_kProd){
     _mat.push_back(Matrices(*ik));
   }
   _kProd = Product<Kronecker>();
@@ -1093,8 +1092,7 @@ Sum< Term, TFactor > Term::dm2singlet()
 }
 bool Term::has_generalindices() const
 {
-  TOrbSet::const_iterator it;
-  _foreach(it,_sumindx)
+  _foreach_cauto(TOrbSet,it,_sumindx)
     if (it->type() == Orbital::GenT) return true;
   return false;
 }
@@ -1104,8 +1102,7 @@ Sum< Term, TFactor > Term::removegeneralindices()
   Sum< Term, TFactor > sum;
   this->set_lastorbs();
   Term tt(*this);
-  TOrbSet::iterator it;
-  _foreach(it,_sumindx){
+  _foreach_auto(TOrbSet,it,_sumindx){
     if ( it->type() == Orbital::GenT ){
       // replace
       Orbital orb = tt.freeorbname(Orbital::Occ);
@@ -1408,8 +1405,7 @@ void Term::set_lastorb(Orbital orb, bool onlylarger)
 }
 void Term::set_lastorbs()
 {
-  TOrbSet::const_iterator it;
-  _foreach(it,_sumindx){
+  _foreach_cauto(TOrbSet,it,_sumindx){
     if (_lastorb[it->type()].name().size() == 0 || _lastorb[it->type()] < *it) 
       _lastorb[it->type()] = *it;
   }

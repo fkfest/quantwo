@@ -17,8 +17,7 @@ Factorizer::Factorizer(const Sum< Term, TFactor >& s)
       slotorbs[orb] = _expression.add(Translators::orb2slot(orb));
       ++iorb;
     }
-//    Product<Matrices>::const_iterator im;
-//    _foreach(im,term.mat()){
+//    _foreach_cauto(Product<Matrices>,im,term.mat()){
 //      tensormats[*im] = _expression.add(Translators::mat2tensor(*im,slotorbs));
 //    }
     Sum<Term,TFactor> sumt = term.resolve_permutations();
@@ -64,8 +63,7 @@ Tensor Translators::mat2tensor(const Matrices& mat, const std::map< Orbital, con
 {
   SlotTs sts;
   const Product<Orbital>& orbs = mat.orbitals();
-  Product<Orbital>::const_iterator iorb;
-  _foreach(iorb,orbs){
+  _foreach_cauto(Product<Orbital>,iorb,orbs){
     assert( slotorbs.count(*iorb) > 0 );
     sts.push_back(slotorbs.at(*iorb));
   }
@@ -86,7 +84,6 @@ Diagram Translators::term2diagram(const Term& term, Factor fact, const std::map<
   
   // all orbitals in term:
   Array<Orbital> orbitals;
-  Array<Orbital>::const_iterator itorb;
   Orbital orb;
   uint iorb = 0; 
   while ( (orb = term.orb(iorb)) != Orbital() ){
@@ -96,7 +93,7 @@ Diagram Translators::term2diagram(const Term& term, Factor fact, const std::map<
   // put the orbitals to diag
   if ( orbitals.size() > MAXNINDICES )
     error("Too many indices in the term. Increase MAXNINDICES!","Translators::term2diagram");
-  _foreach(itorb,orbitals){
+  _foreach_cauto(Array<Orbital>,itorb,orbitals){
     assert( slotorbs.count(*itorb) > 0 );
     diag._slottypes.push_back(slotorbs.at(*itorb));
   }
@@ -105,15 +102,13 @@ Diagram Translators::term2diagram(const Term& term, Factor fact, const std::map<
   Canonicalize(diag._slottypes,slotorder);
   orbitals = orbitals.refarr(slotorder); 
 
-  Product<Matrices>::const_iterator im;
   uint nbareops = 0;
-  _foreach(im,term.mat()){
+  _foreach_cauto(Product<Matrices>,im,term.mat()){
     const Product<Orbital>& orbs = im->orbitals();
-    Product<Orbital>::const_iterator itorb;
     SlotTs sts;
     Connections con;
     Slots positions;
-    _foreach(itorb,orbs){
+    _foreach_cauto(Product<Orbital>,itorb,orbs){
       assert( slotorbs.count(*itorb) > 0 );
       sts.push_back(slotorbs.at(*itorb));
       int ipos = orbitals.find(*itorb);

@@ -115,8 +115,7 @@ void Summation::print(std::ostream& o, const Tensor& res) const
   std::map<SlotType::Type,std::string> slotnames;
   Array<std::string> 
         resslots(res.slots().size());
-  Summands::const_iterator its;
-  _foreach(its,_summands){
+  _foreach_cauto(Summands,its,_summands){
     Array<std::string> 
         aslots(its->p_A->slots().size());
     slotNames4Refs(resslots,aslots,slotnames,its->_RinA,its->_AinR,res.slots(),its->p_A->slots());

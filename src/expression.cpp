@@ -283,8 +283,7 @@ Expression::Expression()
 {
   // add default tensors
   const TsPar& deftensors = Input::sPars["tensor"];
-  TsPar::const_iterator idt;
-  _foreach(idt,deftensors) {
+  _foreach_cauto(TsPar,idt,deftensors) {
     SlotTs sts;
     std::size_t 
       ibra = idt->first.find_first_of('['),
@@ -353,8 +352,7 @@ const Tensor* Expression::add2residual(const Tensor& res, const Summand& sumd)
       if ( it->_parents.size() > 0 ) {
         const Summation * pS = dynamic_cast< const Summation * >(it->_parents.back());
         if ( pS ) {
-          std::list<Summation>::iterator its;
-          _foreach(its,_summations){
+          _foreach_auto(std::list<Summation>,its,_summations){
             if ( pS == &(*its) ) {
               its->add(sumd);
               return &(*it);
@@ -430,8 +428,7 @@ void print_action(std::ostream& o, const Action * pAct, const Tensor& ten)
   } else {
     const Summation * pSum = dynamic_cast< const Summation * >(pAct);
     assert( pSum );
-    Summands::const_iterator itsd;
-    _foreach(itsd,pSum->_summands){
+    _foreach_cauto(Summands,itsd,pSum->_summands){
       print_code(o,*(itsd->p_A));
     }
     pSum->print(o,ten);
@@ -450,14 +447,12 @@ std::ostream & operator << (std::ostream& o, const Expression& exp) {
   o << "---- decl" << std::endl;
   // index spaces
   const SlotTypes& sts = exp.slottypes();
-  SlotTypes::const_iterator ists;
-  _foreach(ists,sts){
+  _foreach_cauto(SlotTypes,ists,sts){
     o << *ists << std::endl;
   }
   // tensors....
   const TensorsSet& ts = exp.tensors();
-  TensorsSet::const_iterator its;
-  _foreach(its,ts){
+  _foreach_cauto(TensorsSet,its,ts){
     if ( !its->_dummy )
       o << "tensor: " << *its << std::endl;
   }
@@ -467,8 +462,7 @@ std::ostream & operator << (std::ostream& o, const Expression& exp) {
   std::set< const Tensor * > residuals = exp.residualtensors();
   if ( residuals.size() == 0 )
     o << "// No residual tensors set!" << std::endl;
-  std::set< const Tensor * >::const_iterator itres;
-  _foreach(itres,residuals) {
+  _foreach_cauto(std::set< const Tensor * >,itres,residuals) {
     xout << "Residual " << *(*itres) << std::endl;
     print_code(o,*(*itres));
   }

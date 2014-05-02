@@ -123,8 +123,7 @@ Oper::Oper(Ops::Type type, short int exccl, const std::vector< Product< Orbital:
   std::map<Orbital::Type,Orbital> orbnames;
   if ( p_Term ){
     for ( uint i=0; i<orbtypes.size(); ++i ){
-      Product<Orbital::Type>::const_iterator iot;
-      _foreach(iot,orbtypes[i]){
+      _foreach_cauto(Product<Orbital::Type>,iot,orbtypes[i]){
         if ( orbnames.count(*iot) == 0 ){
           // new orb type
           orbnames[*iot] = p_Term->freeorbname(*iot);
