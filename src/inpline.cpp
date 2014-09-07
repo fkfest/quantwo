@@ -117,7 +117,7 @@ lui IL::skip(const std::string& str, const lui& ipos, const std::string& what)
 }
 lui IL::skipr(const std::string& str, const lui& ipos, const std::string& what)
 {
-  lui ires = std::min(ipos,str.size());
+  lui ires = std::min(std::size_t(ipos),str.size());
   while (ires > 0 && what.find(str[ires-1])!=std::string::npos )
     --ires;
   return ires;

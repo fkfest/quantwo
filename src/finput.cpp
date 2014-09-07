@@ -929,8 +929,10 @@ bool Equation::handle_namupdown(std::string& name, short int& excl, std::string&
   down=IL::lexfind(lelnam,"_");
   up=IL::lexfind(lelnam,"^");
   // last position of name of operator
-  iposnam=std::min(up,down)-1;
-  iposnam=std::min(iposnam,lelnam.size()-1);
+  iposnam=std::min(up,down);
+  assert( iposnam > 0 );
+  --iposnam;
+  iposnam=std::min(std::size_t(iposnam),lelnam.size()-1);
   name=lelnam.substr(0,iposnam+1);
   excl=0;
   nameup="";

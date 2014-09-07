@@ -2,3 +2,8 @@
 *~
 *.kdev4
 quantwo
+quantwo.config
+quantwo.creator
+quantwo.files
+quantwo.includes
+quantwo.exe

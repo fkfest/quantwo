@@ -1,4 +1,7 @@
 #include "utilities.h"
+#ifdef _WIN32
+#include <windows.h>
+#endif
 void error(std::string what, std::string where)
 {
   std::cerr << "  ERROR: " << what << std::endl;
@@ -15,7 +18,7 @@ void say(std::string what, std::string where)
 std::string exepath(){
   std::string path;
   char buff[1024];
-#ifdef __linux__
+#if defined __linux__ || defined __CYGWIN__
 // Linux
   ssize_t len = ::readlink("/proc/self/exe", buff, sizeof(buff)-1);
   if (len != -1) {
@@ -26,6 +29,15 @@ std::string exepath(){
   uint  bufsize = sizeof(buff);
   if (_NSGetExecutablePath(buff, &bufsize) == 0){
     path = std::string(buff);
+#elif defined _WIN32
+// windows
+  HMODULE hModule = GetModuleHandleW(NULL);
+  if (hModule != NULL){
+    GetModuleFileName(hModule,buff, sizeof(buff));
+    path = std::string(buff);
+    std::size_t bslash = path.rfind("\\");
+    if (bslash != std::string::npos )
+      path = path.substr(0,bslash);
 #else
 #error "unknown platform"
   if (false){
