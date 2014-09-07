@@ -17,6 +17,9 @@ BASE=$(PWD)
 ifeq ($(UNAME_S),Linux)
   BASE=$(shell dirname $$(readlink -f Makefile))
 endif
+ifeq ($(findstring CYGWIN, $(UNAME_S)),CYGWIN)
+  BASE=$(shell dirname $$(readlink -f Makefile))
+endif
 ifeq ($(UNAME_S),Darwin)
   # uses greadlink from coreutils
   BASE=$(shell dirname $$(greadlink -f Makefile))
