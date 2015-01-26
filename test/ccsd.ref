@@ -12,7 +12,7 @@ CCSD doubles amplitude equation with $\exp(\op T_1)$-similiarity transformed $\o
  + \Perm{ijab}{jiba})\sum_{klcc_{1}}\prm \intg{kc_{1}}{lc}\prm T^{ki}_{cc_{1}}\prm T^{lj}_{ab} + \sum_{klc_{1}d_{1}}\prm \intg{kc_{1}}{ld_{1}}\prm T^{ki}_{ac_{1}}\prm T^{lj}_{bd_{1}} + (-1\nl
  - \Perm{ijab}{jiba})\sum_{kc_{1}}\prm \intg{kc_{1}}{ai}\prm T^{kj}_{bc_{1}} + \sum_{kk_{1}dd_{1}}\prm \intg{kd}{k_{1}d_{1}}\prm T^{kk_{1}}_{ab}\prm T^{ij}_{dd_{1}} + (1\nl
  + \Perm{ijab}{jiba})\sum_{klc_{1}d}\prm \intg{kd}{lc_{1}}\prm T^{ki}_{ac_{1}}\prm T^{lj}_{db} + \sum_{kl_{1}c_{1}d}\prm \intg{kd}{l_{1}c_{1}}\prm T^{kj}_{ac_{1}}\prm T^{il_{1}}_{db} + \prm \intg{ai}{bj}\nl
- + \sum_{cc_{1}}\prm \intg{ac}{bc_{1}}\prm T^{ij}_{cc_{1}}
+ + \sum_{cc_{1}}\prm \intg{ac_{1}}{bc}\prm T^{ji}_{cc_{1}}
 \eeq
  Diagrams: 
 
@@ -271,12 +271,12 @@ CCSD doubles amplitude equation with $\exp(\op T_1)$-similiarity transformed $\o
 \dTdv{2}{t0}
 \dWs{t11}{t12}
 \dAmp[$T$]{}{2}{t2}
-\dcurve{t01}{t21}
+\dcurve{t01}{t22}
 \dcurve{t11}{t01}
-\dcurve{t02}{t22}
+\dcurve{t02}{t21}
 \dcurve{t12}{t02}
-\dcurve{t21}{t11}
-\dcurve{t22}{t12}
+\dcurve{t22}{t11}
+\dcurve{t21}{t12}
 \ediag
 
 LCCSD doubles amplitude equation:
@@ -307,7 +307,7 @@ LCCSD doubles amplitude equation:
  + (1 + \Perm{ijab}{jiba})\sum_{ll_{1}c}\prm \intg{li}{l_{1}c}\prm T^{j}_{c}\prm T^{ll_{1}}_{ab} + (-1 - \Perm{ijab}{jiba})\sum_{lcd}\prm \intg{lc}{ad}\prm T^{i}_{c}\prm T^{lj}_{db} + (-1\nl
  - \Perm{ijab}{jiba})\sum_{lcd_{1}}\prm \intg{lc}{ad_{1}}\prm T^{j}_{c}\prm T^{li}_{bd_{1}} + (-1 - \Perm{ijab}{jiba})\sum_{lcd_{1}}\prm \intg{ld_{1}}{ac}\prm T^{i}_{c}\prm T^{lj}_{bd_{1}}\nl
  + \sum_{mm_{1}cd}\prm \intg{mc}{m_{1}d}\prm T^{i}_{c}\prm T^{j}_{d}\prm T^{mm_{1}}_{ab} + \prm \intg{ai}{bj} + (1 + \Perm{ijab}{jiba})\sum_{c}\prm \intg{ai}{bc}\prm T^{j}_{c}\nl
- + \sum_{cc_{1}}\prm \intg{ac}{bc_{1}}\prm T^{ij}_{cc_{1}} + \sum_{cd}\prm \intg{ac}{bd}\prm T^{i}_{c}\prm T^{j}_{d}
+ + \sum_{cd}\prm \intg{ac}{bd}\prm T^{i}_{c}\prm T^{j}_{d} + \sum_{cc_{1}}\prm \intg{ac_{1}}{bc}\prm T^{ji}_{cc_{1}}
 \eeq
  Diagrams: 
 
@@ -889,17 +889,6 @@ LCCSD doubles amplitude equation:
 \bdiags
 \dTdv{2}{t0}
 \dWs{t11}{t12}
-\dAmp[$T$]{}{2}{t2}
-\dcurve{t01}{t21}
-\dcurve{t11}{t01}
-\dcurve{t02}{t22}
-\dcurve{t12}{t02}
-\dcurve{t21}{t11}
-\dcurve{t22}{t12}
-\ediag
-\bdiags
-\dTdv{2}{t0}
-\dWs{t11}{t12}
 \dAmp[$T$]{}{1}{t2}
 \dAmp[$T$]{}{1}{t3}
 \dcurve{t01}{t21}
@@ -908,6 +897,17 @@ LCCSD doubles amplitude equation:
 \dcurve{t12}{t02}
 \dcurve{t21}{t11}
 \dcurve{t31}{t12}
+\ediag
+\bdiags
+\dTdv{2}{t0}
+\dWs{t11}{t12}
+\dAmp[$T$]{}{2}{t2}
+\dcurve{t01}{t22}
+\dcurve{t11}{t01}
+\dcurve{t02}{t21}
+\dcurve{t12}{t02}
+\dcurve{t22}{t11}
+\dcurve{t21}{t12}
 \ediag
 
 CCSD singles amplitude equation:

@@ -155,6 +155,8 @@ namespace Input
 
 #define _foreach(It,Array) for ( (It) = (Array).begin(); (It) != (Array).end(); ++(It) )
 #define _foreach_auto(Type,It,Array) for ( Type::iterator (It) = (Array).begin(); (It) != (Array).end(); ++(It) )
+#define _foreach_rauto(Type,It,Array) for ( Type::reverse_iterator (It) = (Array).rbegin(); (It) != (Array).rend(); ++(It) )
 #define _foreach_cauto(Type,It,Array) for ( Type::const_iterator (It) = (Array).begin(); (It) != (Array).end(); ++(It) )
+#define _foreach_crauto(Type,It,Array) for ( Type::const_reverse_iterator (It) = (Array).rbegin(); (It) != (Array).rend(); ++(It) )
 
 #endif

@@ -85,6 +85,7 @@ set="prog",type=i,name="dmsort",value=1,desc="if > 0 : use the usual order for d
 set="prog",type=i,name="noorder",value=0,desc="if = 0: use normal ordering, = 1: no ordering for Hamiltonian, > 1 : no ordering at all (active only for wick > 1)"
 set="prog",type=i,name="nobrafac",value=0,desc="if = 0: use the usual prefactors in bare excitation operators"
 set="prog",type=i,name="algo",value=0,desc="if > 0: print algorithm file"
+set="prog",type=i,name="contrexcop",value=1,desc="if > 0: use contracted excitation operators (e.g., a^+b^+ji) instead of a product of one-electron excitation operators (e.g.,a^+ib^+j)"
 
 %TENSORS
 set="tensor",type=s,name="T[aaii]",value="" 

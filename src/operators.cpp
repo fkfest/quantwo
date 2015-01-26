@@ -239,9 +239,11 @@ void Oper::create_Oper(const Product< Orbital >& occs, const Product< Orbital >&
   assert( !InSet(_type, Ops::FluctP,Ops::Fock,Ops::XPert) );
   bool spinintegr = Input::iPars["prog"]["spinintegr"];
   bool noprefac = (Input::iPars["prog"]["nobrafac"]) && InSet(_type, Ops::Exc0,Ops::Deexc0);
+  bool contrexcop = Input::iPars["prog"]["contrexcop"];
 //  assert( occs.size() == virts.size() );
   Matrices::Spinsym spinsym = Matrices::Singlet;
   Product<Orbital> porbs;
+  Product<SQOp> anniSQprod;
   // excitation and deexcitation operators
   const Product<Orbital> 
     * p_orb0 = &virts,
@@ -295,7 +297,10 @@ void Oper::create_Oper(const Product< Orbital >& occs, const Product< Orbital >&
       }
       spin.setel(el);
       orb.setspin(spin);
-      _SQprod *= SQOp(SQOpT::Annihilator, orb);
+      if (contrexcop)
+        anniSQprod *= SQOp(SQOpT::Annihilator, orb);
+      else
+        _SQprod *= SQOp(SQOpT::Annihilator, orb);
       porbs *= orb;
       _sumindx.insert(orb);
       if (InSet(_type, Ops::Exc0,Ops::Deexc0)) 
@@ -307,6 +312,12 @@ void Oper::create_Oper(const Product< Orbital >& occs, const Product< Orbital >&
       elhash += Orbital::MaxType*uint(orb.type()) + Orbital::MaxType*Orbital::MaxType*Spin::MaxType*orb.spin().spinhash(false);
     }
     symel[elhash] += 1;
+  }
+  if (contrexcop) {
+    // add annihilation operators in the opposite order 
+    _foreach_crauto(Product<SQOp>,ita,anniSQprod){
+      _SQprod *= *ita;
+    }
   }
   if (!noprefac) {
     // prefactor
