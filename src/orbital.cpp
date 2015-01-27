@@ -134,6 +134,10 @@ Return Orbital::replace(const Orbital& orb1, const Orbital& orb2, bool smart)
   else
     return Return::Done;
 }
+Return Orbital::replace(const Spin& spin1, const Spin& spin2, bool smart)
+{
+  return this->_spin.replace(spin1,spin2);
+}
 
 std::ostream & operator << (std::ostream & o, Orbital const & orb)
 {

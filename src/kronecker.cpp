@@ -30,6 +30,13 @@ Return Kronecker::replace(Orbital orb1, Orbital orb2, bool smart)
   rpl += _orb2.replace(orb1,orb2,smart);
   return rpl;
 }
+Return Kronecker::replace(Spin spin1, Spin spin2, bool smart)
+{
+  Return rpl;
+  rpl += _orb1.replace(spin1,spin2,smart);
+  rpl += _orb2.replace(spin1,spin2,smart);
+  return rpl;
+}
 
 std::ostream & operator << (std::ostream & o, Kronecker const & k)
 {

@@ -37,6 +37,8 @@ class SQOp {
   bool operator < (SQOp const & o) const;
   // replace orbital orb1 with orb2
   Return replace(Orbital orb1, Orbital orb2, bool smart);
+  // replace spin spin1 with spin2
+  Return replace(Spin spin1, Spin spin2, bool smart);
 
   private:
   SQOpT::Gender _gender;

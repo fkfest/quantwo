@@ -974,6 +974,23 @@ void Term::reduceTerm()
     }
   }
 }
+void Term::reduceElectronsInTerm()
+{
+  assert( _kProd.size() > 0 );
+  TOrbSet::iterator it1, it2;
+  _foreach_cauto(Product<Kronecker>,ik,_kProd){
+    Spin 
+      spin1 = ik->orb1().spin(),
+      spin2 = ik->orb2().spin();
+    it1 = Q2::findSpin<TOrbSet>(_realsumindx,spin1);
+    it2 = Q2::findSpin<TOrbSet>(_realsumindx,spin2);
+    if ( it1 != _realsumindx.end() ) { // found spin1
+      std::swap(spin1,spin2);
+    } 
+    this->replace(spin2,spin1);
+  }
+  
+}
 void Term::krons2mats()
 {
   _foreach_cauto(Product<Kronecker>,ik,_kProd){
@@ -989,6 +1006,14 @@ void Term::replace(Orbital orb1, Orbital orb2, bool smart)
   Q2::replace(_kProd,orb1,orb2,smart);
   Q2::replace(_realsumindx,orb1,orb2,smart);
   Q2::replace(_sumindx,orb1,orb2,smart);
+}
+void Term::replace(Spin spin1, Spin spin2, bool smart)
+{
+  Q2::replace(_opProd,spin1,spin2,smart);
+  Q2::replace(_mat,spin1,spin2,smart);
+  Q2::replace(_kProd,spin1,spin2,smart);
+  Q2::replace(_realsumindx,spin1,spin2,smart);
+  Q2::replace(_sumindx,spin1,spin2,smart);
 }
 
 static bool matisnone(const Matrices& mat)
@@ -1468,8 +1493,8 @@ Return Q2::replace(Set< T >& p, Q orb1, Q orb2, bool smart)
 template <class T>
 Return Q2::replace(SQOp& op, T orb1, T orb2, bool smart)
 { return op.replace(orb1,orb2,smart); }
-template <class T>
-Return Q2::replace(T &orb, T orb1, T orb2, bool smart)
+template <class T, class Q>
+Return Q2::replace(T &orb, Q orb1, Q orb2, bool smart)
 { return orb.replace(orb1,orb2,smart);
   //if (orb == orb1) orb=orb2; 
 }
@@ -1479,4 +1504,9 @@ Return Q2::replace(Matrices &mat, T orb1, T orb2, bool smart)
 template <class T>
 Return Q2::replace(Kronecker& kron, T orb1, T orb2, bool smart)
 { return kron.replace(orb1,orb2,smart); }
-
+template < class T >
+typename T::iterator Q2::findSpin(T orbs, const Spin& spin){
+  typename T::iterator it;
+  for (it=orbs.begin(); it != orbs.end() && it->spin() != spin; ++it);
+  return it;
+}

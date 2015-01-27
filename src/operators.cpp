@@ -34,6 +34,10 @@ Return SQOp::replace(Orbital orb1, Orbital orb2, bool smart)
 {
   return _orb.replace(orb1,orb2,smart);
 }
+Return SQOp::replace(Spin spin1, Spin spin2, bool smart)
+{
+  return _orb.replace(spin1,spin2,smart);
+}
 
 std::ostream & operator << (std::ostream & o, SQOp const & op)
 {

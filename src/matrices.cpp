@@ -84,6 +84,15 @@ Return Matrices::replace(Orbital orb1, Orbital orb2, bool smart)
   }
   return rpl;
 }
+Return Matrices::replace(Spin spin1, Spin spin2, bool smart)
+{
+  Return rpl;
+  for ( unsigned int i=0; i<_orbs.size(); ++i )
+  {
+    rpl += _orbs[i].replace(spin1,spin2,smart);
+  }
+  return rpl;
+}
 bool Matrices::expandantisym(bool firstpart)
 {
   if (_antisymform) {

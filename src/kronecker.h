@@ -22,6 +22,8 @@ public:
     bool operator < (Kronecker const & k) const;
     // replace orbital orb1 with orb2
     Return replace(Orbital orb1, Orbital orb2, bool smart);
+    // replace spin spin1 with spin2
+    Return replace(Spin spin1, Spin spin2, bool smart);
 
 private:
 Orbital    _orb1;

@@ -97,6 +97,8 @@ class Orbital {
   int comp_letname( const Orbital& orb ) const;
   // replace orb1 with orb2
   Return replace( const Orbital& orb1, const Orbital& orb2, bool smart);
+  // replace spin1 with spin2
+  Return replace( const Spin& spin1, const Spin& spin2, bool smart);
   
   private:
   // generate orbital type from _name
@@ -127,5 +129,6 @@ std::ostream & operator << (std::ostream & o, const Electrons& el);
 
 typedef Set<Orbital> TOrbSet;
 typedef Set<Electrons> TElSet;
+
 #endif
 
