@@ -712,6 +712,7 @@ Oper Equation::handle_explexcitation(Term& term, const std::string& name, bool d
     ipos = up;
     ipos = IL::skip(name,ipos,"{}_^ ");
     while ( (ipos < down) == (up < down) && (ipos1 = IL::nextwordpos(name,ipos,true,false)) != ipos ){//non greedy
+      if (ipos < down && ipos1 >= down) ipos1 = down;
       Orbital orb(IL::plainname(name.substr(ipos,ipos1-ipos)),spintype);
       occs *= orb;
       if ( orb.type() == Orbital::Virt ) 
@@ -723,6 +724,7 @@ Oper Equation::handle_explexcitation(Term& term, const std::string& name, bool d
     ipos = down;
     ipos = IL::skip(name,ipos,"{}_^ ");
     while ( (ipos < up) == (down < up) && (ipos1 = IL::nextwordpos(name,ipos,true,false)) != ipos ){//non greedy
+      if (ipos < up && ipos1 >= up) ipos1 = up;
       Orbital orb(IL::plainname(name.substr(ipos,ipos1-ipos)),spintype);
       virts *= orb;
       if ( orb.type() == Orbital::Occ ) warning("Do you really want to have orbital " << orb << " as virtual?");

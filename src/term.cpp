@@ -623,7 +623,7 @@ Sum< Term, TFactor > Term::wick(TWOps& opers, TWMats& krons) const
   Orbital::Type orbtypecurr=_opProd[curr].orb().type();
   bool orbcurrgen = (orbtypecurr==Orbital::GenT);
   // remove first SQop-index
-  if (ifirstop->size()<2) {
+  if (ifirstop->size() == 1) {
     opers.erase(ifirstop);
     istart=0;
   } else {
@@ -708,13 +708,13 @@ Sum< Term, TFactor > Term::genwick(Term::TWOps& opers, const Term::TWMats& krons
   }
   lui istart,sign;
   TWOps::iterator ifirstop = opers.begin();
-  int curr=*(ifirstop->begin());
-  SQOpT::Gender gencurr=_opProd[curr].gender();
-  Orbital::Type orbtypecurr=_opProd[curr].orb().type();
+  int curr = *(ifirstop->begin());
+  SQOpT::Gender gencurr = _opProd[curr].gender();
+  Orbital::Type orbtypecurr = _opProd[curr].orb().type();
   bool orbcurrgen = (orbtypecurr==Orbital::GenT);
   bool orbcurract = (orbtypecurr==Orbital::Act);
   // remove first SQop-index
-  if (ifirstop->size()<2) {
+  if (ifirstop->size() == 1) {
     opers.erase(ifirstop);
     istart=0;
   } else {
