@@ -78,6 +78,8 @@ class Term {
     const TOrbSet& realsumindx() const;
     //! generate set of external-lines orbitals
     TOrbSet extindx() const;
+    //! generate set of orbitals that correspond to external-creation lines
+    TOrbSet extcreaindx() const;
     //! return Sum of Permutators
     Sum<Permut,TFactor> perm() const;
     //! return connections
@@ -90,6 +92,7 @@ class Term {
     bool operator < (Term const & t) const;
     //! equal terms
     // terms will be not changed! (but const can't be applied) 
+    // perm: permutation which brings t-term to this term (if true at return)
     bool equal(Term & t, Permut & perm);
     //! calculate normal ordering
     Sum<Term, TFactor>  normalOrder() const;

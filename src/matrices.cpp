@@ -28,6 +28,7 @@ Matrices::Matrices(Ops::Type t, Product< Orbital > p, short npairs, std::string 
   _orbs=p;
   _npairs=npairs;
   assert(_npairs <= int(_orbs.size()/2));
+  std::string exc0 = Input::sPars["output"]["exc0"];
   switch (t) {
     case Ops::Fock:
       _name = "Fock";
@@ -41,6 +42,12 @@ Matrices::Matrices(Ops::Type t, Product< Orbital > p, short npairs, std::string 
     case Ops::DensM:
       _name = "Gamma";
       break;
+    case Ops::Exc0:
+    case Ops::Deexc0:
+      if (exc0 != " "){
+        _name = exc0;
+        break;
+      }
     default:
       _name=name;
   }
@@ -272,6 +279,15 @@ Matrices::Spinsym Matrices::spinsym(long int ipos)
     return Triplet;
   return Singlet;
 }
+SQOpT::Gender Matrices::genderguess(uint ipos) const
+{
+  if (_cranorder.size() > 0) return _cranorder[ipos];
+  // can't guess for non-conserved electrons, so return a placeholder
+  if ((short)ipos >= 2*_npairs) return SQOpT::Gen;
+  // first creators, second annihilators
+  return (ipos%2 == 0)? SQOpT::Creator : SQOpT::Annihilator;
+}
+
 void Matrices::set_no_spin()
 {
   Spin nospin(Spin::No);
@@ -299,6 +315,7 @@ std::string Matrices::plainname() const
 std::ostream & operator << (std::ostream & o, Matrices const & mat)
 {
   short clean = Input::iPars["output"]["clean"];
+  std::string exc0 = Input::sPars["output"]["exc0"];
   std::string param("");
   if ( clean <= 0 ) param = "\\"+Input::sPars["command"]["parameter"] + " ";
   switch ( mat.type() ){
@@ -364,6 +381,9 @@ std::ostream & operator << (std::ostream & o, Matrices const & mat)
     case Ops::Delta:
       o << param << "\\delta_{" << mat.orbitals() << "}";
       break;
+    case Ops::Exc0:
+    case Ops::Deexc0:
+      if (exc0 == " ") break;
     case Ops::Exc:
     case Ops::Deexc:
     case Ops::Interm: {
@@ -390,8 +410,6 @@ std::ostream & operator << (std::ostream & o, Matrices const & mat)
       MyOut::pcurout->lenbuf += 2;
       break;
     case Ops::None:
-    case Ops::Exc0:
-    case Ops::Deexc0:
       break;
   }
   //o <<"["<<mat.connected2()<<"]" ;

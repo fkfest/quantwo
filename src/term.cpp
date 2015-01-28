@@ -212,6 +212,22 @@ TOrbSet Term::extindx() const
   }
   return peo;
 }
+TOrbSet Term::extcreaindx() const
+{
+  TOrbSet peo;
+  _foreach_cauto(Product<Matrices>,im,_mat){
+    if (!InSet(im->type(),Ops::Exc0,Ops::Deexc0)) continue;
+    const Product<Orbital> orbs = im->orbitals();
+    for ( uint i = 0; i < orbs.size(); ++i ){
+      SQOpT::Gender gen = im->genderguess(i);
+//       assert( gen != SQOpT::Gen );
+      if ( gen == SQOpT::Creator && _realsumindx.count(orbs[i]) == 0 )
+        peo.insert(orbs[i]);
+    }
+  }
+  return peo;
+}
+
 Sum< Permut, TFactor > Term::perm() const
 { return _perm; }
 std::vector< Product< long int > > Term::connections() const
@@ -272,7 +288,9 @@ bool Term::equal(Term& t, Permut& perm)
       _realsumindx.size() != t._realsumindx.size() ||
       _nintloops != t._nintloops || _nocc != t._nocc) return false;
   // generate Product of all orbitals and external-lines orbitals
-  TOrbSet peo(extindx()), peot(t.extindx());
+  TOrbSet peo(extindx()), peot(t.extindx()), 
+          // external creator lines
+          pceo(extcreaindx()), pceot(t.extcreaindx());
   List<Orbital> po(peo),pot(peot); // start with external lines!
   po*=_realsumindx; // internal indices
   pot*=t._realsumindx; // internal indices
@@ -285,7 +303,9 @@ bool Term::equal(Term& t, Permut& perm)
   List<Orbital>::iterator it;
   Product<Orbital>::iterator jt;
   unsigned int ithis=0,ithist=0,i;
-  bool equal=false,exter,extert,exter1,extert1,loop,loopt;
+  bool equal=false,exter,extert,exter1,extert1,loop,loopt,
+       // is it an external creator line?
+       extcr,extcrt;
   std::vector< unsigned int > ordmat, ordmatt, oordmat, oordmatt;
   for (i=0; i<_mat.size(); i++) {
     _mat[i].reset_vertices();
@@ -308,6 +328,7 @@ bool Term::equal(Term& t, Permut& perm)
   while (po.size()>0) {
     orb=po.front();
     exter=(peo.count(orb)); //external orbital
+    extcr=(pceo.count(orb)); // external orbital from a creator operator
     it = pot.begin();
     i = 0;
     equal=false;
@@ -324,6 +345,12 @@ bool Term::equal(Term& t, Permut& perm)
         equal=false;
         continue;
       }
+      extcrt=(pceot.count(orbt));
+      if (extcr != extcrt){
+        // one comes from external creator operator and the other not
+        equal=false;
+        continue;
+      }
       orb1=orb;
       orb1t=orbt;
       port = por = Product<Orbital>();
@@ -336,7 +363,7 @@ bool Term::equal(Term& t, Permut& perm)
         por*=orb1;
         port*=orb1t;
         if (orb1 != orb1t) { // external orbitals not match -> add permutation
-          perm1 += Permut(orb1,orb1t);
+          perm1 += Permut(orb1t,orb1);
         }
       }
       assert(ordmat.size() == mat.size());
@@ -392,7 +419,7 @@ bool Term::equal(Term& t, Permut& perm)
           por*=orb1;
           port*=orb1t;
           if (exter1 && orb1 != orb1t) { // external orbitals not match -> add permutation
-            perm1 += Permut(orb1,orb1t);
+            perm1 += Permut(orb1t,orb1);
           }
         }
       } while (equal && !loop && !exter1);

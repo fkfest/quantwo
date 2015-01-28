@@ -79,6 +79,9 @@ class Matrices {
   Orbital orbel(long int const & ipos);
   // get the spin symmetry of the electron, which corresponds to the orbital on position ipos
   Spinsym spinsym(long int ipos);
+  // returns gender of the creation/annihilation operator that corresponds to the orbital on position ipos
+  // information is either taken from _cranorder or guessed 
+  SQOpT::Gender genderguess(uint ipos) const;
   // set no spin for all orbitals
   void set_no_spin();
   // reset vertices
@@ -135,7 +138,7 @@ class Permut {
     Permut();
     // construct from product of indices
     Permut(Product<Orbital> p1,Product<Orbital> p2);
-    // construct from orbitals
+    // construct from orbitals (permutation from o1 to o2)
     Permut(Orbital o1,Orbital o2);
     // append permutator
     Permut & operator += (const Permut& p);
