@@ -1,0 +1,4 @@
+\beq
+&&(-4*1)\sum_{ii_{1}jaa_{1}}\prm T^{{Y\dg}aa_{1}}_{ii_{1}}\prm X_{ji}\prm T^{{X}ji_{1}}_{aa_{1}} + 4*1\sum_{ii_{1}aa_{1}b}\prm T^{{Y\dg}aa_{1}}_{ii_{1}}\prm X_{ab}\prm T^{{X}ii_{1}}_{ba_{1}} + 2*1\sum_{ii_{1}jaa_{1}}\prm T^{{Y\dg}aa_{1}}_{ii_{1}}\prm X_{ji_{1}}\prm T^{{X}ji}_{aa_{1}}\nl
+ + (-2*1)\sum_{ii_{1}aa_{1}b}\prm T^{{Y\dg}aa_{1}}_{ii_{1}}\prm X_{a_{1}b}\prm T^{{X}ii_{1}}_{ba}
+\eeq

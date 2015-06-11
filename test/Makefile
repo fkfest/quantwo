@@ -1,6 +1,6 @@
 # program name
 MAIN = ../quantwo
-OBJ = ccsd sums ip mr
+OBJ = ccsd sums ip mr names
 
 test : $(OBJ)
 

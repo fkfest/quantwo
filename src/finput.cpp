@@ -936,6 +936,19 @@ bool Equation::handle_namupdown(std::string& name, short int& excl, std::string&
   --iposnam;
   iposnam=std::min(std::size_t(iposnam),lelnam.size()-1);
   name=lelnam.substr(0,iposnam+1);
+  std::string upname, downname;
+  if (up!=std::string::npos && up!=lelnam.size()-1){
+    upname = lelnam.substr(up);
+  }  
+  if (down!=std::string::npos && down!=lelnam.size()-1){
+    downname = lelnam.substr(down);
+  }  
+  if (up < down){
+    upname = upname.substr(0,down-up);
+  } else if (down < up) {
+    downname = downname.substr(0,up-down);
+  }
+  
   excl=0;
   nameup="";
   namedown="";
@@ -951,15 +964,14 @@ bool Equation::handle_namupdown(std::string& name, short int& excl, std::string&
     // handle superscript
     foundupdown = true;
     lui last = std::string::npos;
-    if ( up < down ) last = down;
-    ipos=up+1;
-    ipos=IL::skip(lelnam,ipos,"{} ");
-    while((ipos1=IL::nextwordpos(lelnam,ipos,false))!=ipos && ipos < last ) {
-      std::string nampart(lelnam.substr(ipos,ipos1-ipos));
+    ipos=1;
+    ipos=IL::skip(upname,ipos,"{} ");
+    while((ipos1=IL::nextwordpos(upname,ipos,false))!=ipos && ipos < last ) {
+      std::string nampart(upname.substr(ipos,ipos1-ipos));
       if(InSet(nampart, dgs)) {
         dg=true;
         nameup += dgs.front();
-      } else if (lelnam[ipos]!='}') {
+      } else if (upname[ipos]!='}') {
         nameup += nampart;
         if (nampart.size() > lmsize ){
           // is it less/more?
@@ -976,19 +988,19 @@ bool Equation::handle_namupdown(std::string& name, short int& excl, std::string&
   if (down!=std::string::npos && down!=lelnam.size()-1){
     // handle subscript
     foundupdown = true;
-    ipos=down+1;
-    ipos=IL::skip(lelnam,ipos,"{} ");
-    ipos1=IL::nextwordpos(lelnam,ipos,false);
-    namedown = lelnam.substr(ipos,ipos1-ipos);
+    ipos=1;
+    ipos=IL::skip(downname,ipos,"{} ");
+    ipos1=IL::nextwordpos(downname,ipos,false);
+    namedown = downname.substr(ipos,ipos1-ipos);
     if ( str2num<short>(excl,namedown,std::dec) ) {
-      if ( handle_orbtypes(orbtypes,lelnam.substr(ipos1))){
+      if ( handle_orbtypes(orbtypes,downname.substr(ipos1))){
         assert(int(orbtypes[0].size()) == excl);
         assert(int(orbtypes[1].size()) == lmel+excl);
       }
     } else {
       // subscript is not an excitation class, probably rather something like \mu_2
-      ipos1 = IL::closbrack(lelnam,down+1);
-      namedown = lelnam.substr(ipos,ipos1-ipos);
+      ipos1 = IL::closbrack(downname,1);
+      namedown = downname.substr(ipos,ipos1-ipos);
     }
   }
   return foundupdown;
