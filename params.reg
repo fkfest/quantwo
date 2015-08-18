@@ -34,6 +34,7 @@ set="syntax",type=s,name="intermeds",value="ABCDEFGHIJKLMNOPQUVWXYZ",desc="names
 %COMMANDS
 set="command",type=s,name="operator",value="op",desc="command for operator"
 set="command",type=s,name="parameter",value="prm",desc="command for parameter"
+set="command",type=s,name="supername",value="snam",desc="command for superscript-name in the parameters"
 set="command",type=s,name="permutation",value="Perm",desc="command for permutation"
 set="command",type=s,name="integral",value="intg",desc="command for integral"
 set="command",type=s,name="densmat",value="gamma",desc="command for density matrix"

@@ -360,7 +360,7 @@ std::ostream & operator << (std::ostream & o, Matrices const & mat)
             oss << orbs[i];
           }
         }
-        IL::add2name(name,oss.str(),true);
+        IL::add2name(name,oss.str(),true,false);
         oss.str("");
         //virt. indices
         if (dmsort) {
@@ -372,7 +372,7 @@ std::ostream & operator << (std::ostream & o, Matrices const & mat)
             oss << orbs[i];
           }
         }
-        IL::add2name(name,oss.str(),false);
+        IL::add2name(name,oss.str(),false,false);
         o << param << name;
         MyOut::pcurout->lenbuf += 1+mat.orbitals().size()/MyOut::pcurout->wsi;
       }
@@ -394,13 +394,13 @@ std::ostream & operator << (std::ostream & o, Matrices const & mat)
       for ( uint i = 1; i < orbs.size(); i += 2 ){
         oss << orbs[i];
       }
-      IL::add2name(name,oss.str(),true);
+      IL::add2name(name,oss.str(),true,false);
       oss.str("");
       //virt. indices
       for ( uint i = 0; i < orbs.size(); i += 2 ){
         oss << orbs[i];
       }
-      IL::add2name(name,oss.str(),false);
+      IL::add2name(name,oss.str(),false,false);
       o << param << name;
       MyOut::pcurout->lenbuf += 1+mat.orbitals().size()/MyOut::pcurout->wsi;
       break;

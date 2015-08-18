@@ -968,6 +968,7 @@ bool Equation::handle_namupdown(std::string& name, short int& excl, std::string&
     ipos=IL::skip(upname,ipos,"{} ");
     while((ipos1=IL::nextwordpos(upname,ipos,false))!=ipos && ipos < last ) {
       std::string nampart(upname.substr(ipos,ipos1-ipos));
+      if ( nameup.size() > 0 && upname[ipos]!='}' ) nameup += " ";
       if(InSet(nampart, dgs)) {
         dg=true;
         nameup += dgs.front();
@@ -1129,6 +1130,7 @@ void Equation::handle_parameters(Term& term, bool excopsonly)
         }
       } 
       IL::add2name(name,nameadd); // add nameadd to name (as superscript)
+      
       // handle subscript
       if (down==std::string::npos || down==lelnam.size()-1) { // no subscript, parameter is a "number"
         term.addmatrix(Matrices(Ops::Number,Product<Orbital>(),0,name));
@@ -1150,7 +1152,7 @@ void Equation::handle_parameters(Term& term, bool excopsonly)
             say("Parameter is not present in this term: "+lelnam);
         } else
         // TODO : add parameters with explicit excitations
-          error("Unknown excitation in parameter"+excn);
+          error("Unknown excitation in parameter "+excn);
       }
     }
   }

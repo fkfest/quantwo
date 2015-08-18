@@ -224,8 +224,9 @@ lui IL::lexfind(const std::string& str, const std::string& sstr, const lui& ipos
     ires = std::string::npos;
   return ires;
 }
-void IL::add2name(std::string& name, const std::string& nameadd, bool superscript)
+void IL::add2name(std::string& name, const std::string& nameadd, bool superscript, bool snam)
 {
+  const std::string& supername = Input::sPars["command"]["supername"]; // environment for name addition 
   unsigned long int ipos,ipos1;
   std::string ch("^");
   if (!superscript) ch = "_";
@@ -233,12 +234,17 @@ void IL::add2name(std::string& name, const std::string& nameadd, bool superscrip
     ipos=IL::lexfind(name,ch);
     if (ipos!=std::string::npos) { // there is already a superscript
       ++ipos;
+      if ( snam && name.compare(ipos,supername.size()+1,"\\"+supername))
+        ipos += supername.size()+2;
       ipos1=IL::nextwordpos(name,ipos,false);
       name.insert(ipos,"{");
       ++ipos1;
       name.insert(ipos1,nameadd+"}");
     } else { // no superscript yet
-      name += ch + "{" + nameadd + "}";
+      if (snam)
+        name += ch + "{\\"+ supername + "{" + nameadd + "}}";
+      else
+        name += ch + "{" + nameadd + "}";
     }
   }
 }
