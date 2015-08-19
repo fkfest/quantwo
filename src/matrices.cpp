@@ -33,6 +33,9 @@ Matrices::Matrices(Ops::Type t, Product< Orbital > p, short npairs, std::string 
     case Ops::Fock:
       _name = "Fock";
       break;
+    case Ops::OneEl:
+      _name = "OneEl";
+      break;
     case Ops::FluctP:
       _name = "FluctP";
       break;
@@ -321,6 +324,10 @@ std::ostream & operator << (std::ostream & o, Matrices const & mat)
   switch ( mat.type() ){
     case Ops::Fock:
       o << param << "f_{" << mat.orbitals() << "}";
+      MyOut::pcurout->lenbuf += 1+mat.orbitals().size()/MyOut::pcurout->wsi;
+      break;
+    case Ops::OneEl:
+      o << param << "h_{" << mat.orbitals() << "}";
       MyOut::pcurout->lenbuf += 1+mat.orbitals().size()/MyOut::pcurout->wsi;
       break;
     case Ops::FluctP:

@@ -14,6 +14,7 @@ namespace Ops {
     Exc, // excitation operators \op T_i
     Exc0, // bare excitation operators \op \tau_{\mu_i}
     Fock, // Fock 
+    OneEl, // one-electron operator \op h
     FluctP, // fluctuation potential
     XPert, // external perturbation
     Deexc, // deexcitation operators \op T_i^\dg

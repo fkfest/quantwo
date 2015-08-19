@@ -81,6 +81,11 @@ bool Finput::addline(const std::string& line)
   const TParArray& newops = Input::aPars["syntax"]["newoperator"];
   const TParArray& comments = Input::aPars["syntax"]["comment"];
   short iprint = Input::iPars["output"]["level"];
+  if ( Input::iPars["prog"]["noorder"] > 0 ) {
+    // default non-normal-ordered Hamiltonian: \op H = \op h + \op W
+    TsPar& newops = Input::sPars["newoperator"];
+    newops["H"] = "\\op h + \\op W";
+  }
   if ( iprint > 0 && _eq )
     _ineq.push_back(line);
   if ( iprint > 1 && !_eq )
@@ -894,6 +899,7 @@ Oper Equation::handle_operator(const Lelem& lel, Term& term, bool excopsonly)
     if (updown)
       say("Sub- and superscripts in Hamiltonian will be ignored: "+lelnam);
     if ( name==hms["fock"] ) return Oper(Ops::Fock,true,&term);
+    if ( name==hms["oneelop"] ) return Oper(Ops::OneEl,true,&term);
     if ( name==hms["flucpot"] ) return Oper(Ops::FluctP,true,&term);
     if ( name==hms["dflucpot"] ) return Oper(Ops::FluctP,false,&term);
     if ( name==hms["perturbation"] ) return Oper(Ops::XPert,true,&term);

@@ -599,7 +599,8 @@ Sum< Term, TFactor > Term::wickstheorem(bool genw, int noord) const
       m=0; // search from begin
     } else if (_mat[m].orbitals().find(_opProd[i].orb())>=0) {
       opermat.push_back(i);
-      if ( noord > 1 || ( noord == 1 && InSet(_mat[m].type(),Ops::Fock,Ops::FluctP,Ops::XPert) ) ){
+      if ( noord > 1 || 
+           ( noord == 1 && InSet(_mat[m].type(),Ops::Fock,Ops::OneEl,Ops::FluctP,Ops::XPert) ) ){
         // not normal ordered - add every corresponding SQOp as an individual operator
         opers.push_back(opermat);
         opermat=TWMats();
@@ -1330,6 +1331,9 @@ void Term::printdiag(Output* pout) const
           *(pout->pout) << diag["fockn"] << "{t" << im << "}" << std::endl;
         else
           *(pout->pout) << diag["fock"] << "{t" << im << "}" << std::endl;
+        break;
+      case Ops::OneEl:
+        error("Line for one-El.operator not defined","printdiag");
         break;
       case Ops::FluctP:
         if ( verb > 1 )

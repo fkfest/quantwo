@@ -57,12 +57,14 @@ Oper::Oper()
 
 Oper::Oper(Ops::Type type, bool antisym, Term* pTerm)
 {
-  assert( InSet(type, Ops::FluctP,Ops::Fock,Ops::XPert) );
+  assert( InSet(type, Ops::FluctP,Ops::Fock,Ops::OneEl,Ops::XPert) );
   std::string name;
   _type=type;
   p_Term = pTerm;
   if (type == Ops::Fock )
     name="F";
+  if (type == Ops::OneEl )
+    name="h";
   else if (type == Ops::FluctP )
     name="W";
   else
@@ -71,7 +73,7 @@ Oper::Oper(Ops::Type type, bool antisym, Term* pTerm)
 }
 Oper::Oper(Ops::Type type, short int exccl, std::string name, int lm, Term* pTerm)
 {
-  assert( !InSet(type, Ops::FluctP,Ops::Fock,Ops::XPert) );
+  assert( !InSet(type, Ops::FluctP,Ops::Fock,Ops::OneEl,Ops::XPert) );
   _type=type;
   p_Term = pTerm;
   Orbital orb0, orb1;
@@ -86,7 +88,7 @@ Oper::Oper(Ops::Type type, short int exccl, std::string name, int lm, Term* pTer
 }
 Oper::Oper(Ops::Type type, short int exccl, Orbital occ, Orbital virt, std::string name, int lm, Term* pTerm)
 {
-  assert( !InSet(type, Ops::FluctP,Ops::Fock,Ops::XPert) );
+  assert( !InSet(type, Ops::FluctP,Ops::Fock,Ops::OneEl,Ops::XPert) );
   _type=type;
   p_Term = pTerm;
   create_Oper(exccl,occ,virt,name,lm);
@@ -95,7 +97,7 @@ Oper::Oper(Ops::Type type, short int exccl, Orbital occ, Orbital virt, std::stri
 Oper::Oper(Ops::Type type, short int exccl, const std::map< Orbital::Type, Orbital >& orbnames, 
            const std::vector< Product< Orbital::Type > >& orbtypes, std::string name, int lm, Term* pTerm)
 {
-  assert( !InSet(type, Ops::FluctP,Ops::Fock,Ops::XPert) );
+  assert( !InSet(type, Ops::FluctP,Ops::Fock,Ops::OneEl,Ops::XPert) );
   assert( orbtypes.size() == 2 );
   assert( int(orbtypes[0].size()) == exccl );
   assert( int(orbtypes[1].size()) == exccl+lm );
@@ -109,7 +111,7 @@ Oper::Oper(Ops::Type type, short int exccl, const Product< Orbital >& occs, cons
 {
   assert( occs.size() + lm == virts.size() );
   assert( occs.size() == uint(exccl) );
-  assert( !InSet(type, Ops::FluctP,Ops::Fock,Ops::XPert) );
+  assert( !InSet(type, Ops::FluctP,Ops::Fock,Ops::OneEl,Ops::XPert) );
   _type=type;
   p_Term = pTerm;
   create_Oper(occs,virts,name);
@@ -117,7 +119,7 @@ Oper::Oper(Ops::Type type, short int exccl, const Product< Orbital >& occs, cons
 Oper::Oper(Ops::Type type, short int exccl, const std::vector< Product< Orbital::Type > >& orbtypes, 
            std::string name, int lm, Term* pTerm)
 {
-  assert( !InSet(type, Ops::FluctP,Ops::Fock,Ops::XPert) );
+  assert( !InSet(type, Ops::FluctP,Ops::Fock,Ops::OneEl,Ops::XPert) );
   assert( orbtypes.size() == 2 );
   assert( int(orbtypes[0].size()) == exccl );
   assert( int(orbtypes[1].size()) == exccl+lm );
@@ -146,7 +148,7 @@ Oper::Oper(Ops::Type type, short int exccl, const std::vector< Product< Orbital:
 
 void Oper::create_Oper(const std::string& name, bool antisym)
 {
-  assert( InSet(_type, Ops::FluctP,Ops::Fock,Ops::XPert) );
+  assert( InSet(_type, Ops::FluctP,Ops::Fock,Ops::OneEl,Ops::XPert) );
   Product<Orbital> porbs;
   Matrices::Spinsym spinsym = Matrices::Singlet;
   Electron el = 1;
@@ -160,7 +162,7 @@ void Oper::create_Oper(const std::string& name, bool antisym)
   porbs*=orb;
   _sumindx.insert(orb);
   _prefac=1;
-  if ( InSet(_type, Ops::Fock,Ops::XPert) ) {
+  if ( InSet(_type, Ops::Fock,Ops::OneEl,Ops::XPert) ) {
     _SQprod*=SQOp(SQOpT::Annihilator,orb);
   } else {
    // we use chemical notation (PQ|RS) P^\dg R^\dg S Q
@@ -183,7 +185,7 @@ void Oper::create_Oper(const std::string& name, bool antisym)
 }
 void Oper::create_Oper(short int const & exccl,Orbital const & occ, Orbital const & virt, std::string const & name, int lm)
 {
-  assert( !InSet(_type, Ops::FluctP,Ops::Fock,Ops::XPert) );
+  assert( !InSet(_type, Ops::FluctP,Ops::Fock,Ops::OneEl,Ops::XPert) );
   std::string excl;
   Product<Orbital> occs, virts; 
   short 
@@ -202,7 +204,7 @@ void Oper::create_Oper(short int const & exccl,Orbital const & occ, Orbital cons
 void Oper::create_Oper(const short int& exccl, const std::map< Orbital::Type, Orbital >& orbnames, 
                        const std::vector< Product< Orbital::Type > >& orbtypes, const std::string& name, int lm)
 {
-  assert( !InSet(_type, Ops::FluctP,Ops::Fock,Ops::XPert) );
+  assert( !InSet(_type, Ops::FluctP,Ops::Fock,Ops::OneEl,Ops::XPert) );
   std::string excl;
   Product<Orbital> occs, virts; 
   short 
@@ -240,7 +242,7 @@ void Oper::create_Oper(const short int& exccl, const std::map< Orbital::Type, Or
 
 void Oper::create_Oper(const Product< Orbital >& occs, const Product< Orbital >& virts, const std::string& name)
 {
-  assert( !InSet(_type, Ops::FluctP,Ops::Fock,Ops::XPert) );
+  assert( !InSet(_type, Ops::FluctP,Ops::Fock,Ops::OneEl,Ops::XPert) );
   bool spinintegr = Input::iPars["prog"]["spinintegr"];
   bool noprefac = (Input::iPars["prog"]["nobrafac"]) && InSet(_type, Ops::Exc0,Ops::Deexc0);
   bool contrexcop = Input::iPars["prog"]["contrexcop"];
