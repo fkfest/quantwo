@@ -6,6 +6,8 @@ Sum< Term, TFactor > Q2::reduceSum(Sum< Term, TFactor > s)
   bool brill = ( Input::iPars["prog"]["brill"] > 0 );
   bool quan3 = ( Input::iPars["prog"]["quan3"] > 0 );
   bool spinintegr = Input::iPars["prog"]["spinintegr"];
+  bool usefock = Input::iPars["prog"]["usefock"];
+  usefock = usefock && (Input::iPars["prog"]["noorder"]>0);
   Sum<Term,TFactor> sum,sum1;
   Term term,term1;
   bool added;
@@ -34,6 +36,12 @@ Sum< Term, TFactor > Q2::reduceSum(Sum< Term, TFactor > s)
   sum = ZeroTerms(sum);
   _xout3(sum << std::endl);
 
+  if (usefock){
+    // replace h matrices by fock matrices
+    say("Use Fock matrices...");
+    
+  }
+  
   if (spinintegr){
     // bring all the density matrices into singlet-order
     say("Singlet order...");
