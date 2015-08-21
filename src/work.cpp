@@ -39,7 +39,7 @@ Sum< Term, TFactor > Q2::reduceSum(Sum< Term, TFactor > s)
   if (usefock){
     // replace h matrices by fock matrices
     say("Use Fock matrices...");
-    
+    sum = OneEl2Fock(sum);
   }
   
   if (spinintegr){
@@ -142,6 +142,20 @@ Sum< Term, TFactor > Q2::Kroneckers(Sum< Term, TFactor > s)
   }
   return sum;
 }
+Sum< Term, TFactor > Q2::OneEl2Fock(Sum< Term, TFactor > s)
+{
+  Term term;
+  Sum<Term,TFactor> sum,sum1;
+  Sum< Term, TFactor >::const_iterator its;
+  _foreach(its,s){
+    term = its->first;
+    sum1 = term.oneel2fock();
+    sum1 *= its->second;
+    sum += sum1;
+  }
+  return sum;
+}
+
 Sum< Term, TFactor > Q2::SingletDM(Sum< Term, TFactor > s)
 {
   Term term;

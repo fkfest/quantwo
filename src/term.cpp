@@ -800,6 +800,15 @@ Sum< Term, TFactor > Term::genwick(Term::TWOps& opers, const Term::TWMats& krons
   }
   return sum;
 }
+Sum<Term, TFactor> Term::change2fock(uint imat) const
+{
+  assert( _mat[imat].type() == Ops::OneEl );
+  Sum<Term, TFactor> sum;
+  Term term(*this);
+  // h_pq = f_pq - (pq|kk) + (pk|kq) [-0.5(pq|tu)\gamma^t_u + 0.5(pu|tq)\gamma^t_u]
+  sum += term;
+  return sum;
+}
 Sum< Term, TFactor > Term::dmwickstheorem(const Matrices& dm) const
 {
   assert( dm.type() == Ops::DensM );
@@ -1121,6 +1130,21 @@ Sum< Term, TFactor > Term::expand_antisym()
   }
   return sum;
 }
+Sum< Term, TFactor > Term::oneel2fock()
+{
+  Sum< Term, TFactor > sum;
+  for ( uint i = 0; i < _mat.size(); ++i ){
+    if (_mat[i].type() == Ops::OneEl){
+      // replace "h" by "f - integrals"
+      sum = this->change2fock(i);
+      // can transform only one matrix per call
+      return sum;
+    }
+  }
+  sum += *this;
+  return sum;
+}
+
 bool Term::has_nonsingldm() const
 {
   for ( uint i = 0; i < _mat.size(); ++i )
