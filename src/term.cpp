@@ -800,13 +800,52 @@ Sum< Term, TFactor > Term::genwick(Term::TWOps& opers, const Term::TWMats& krons
   }
   return sum;
 }
-Sum<Term, TFactor> Term::change2fock(uint imat) const
+Sum<Term, TFactor> Term::change2fock(uint imat, bool multiref) const
 {
   assert( _mat[imat].type() == Ops::OneEl );
   Sum<Term, TFactor> sum;
   Term term(*this);
-  // h_pq = f_pq - (pq|kk) + (pk|kq) [-0.5(pq|tu)\gamma^t_u + 0.5(pu|tq)\gamma^t_u]
+  // h_PQ = f_PQ - (PQ||KK) [-(PQ||TU)\gamma^T_U]
+  Product<Orbital> orbs = _mat[imat].orbitals();
+  TCon2 connected2 = _mat[imat].connected2();
+  // f_PQ
+  term._mat[imat] = Matrices(Ops::Fock,orbs,1);
+  term._mat[imat].set_connect(connected2);
   sum += term;
+  // (PQ||KK)
+  term = *this;
+  Orbital korb = term.freeorbname(Orbital::Occ);
+  orbs *= korb;
+  orbs *= korb;
+  term._mat[imat] = Matrices(Ops::FluctP,orbs,2);
+  term._mat[imat].set_connect(connected2);
+  term._realsumindx.insert(korb);
+  term._sumindx.insert(korb);
+  sum -= term;
+  if (multiref) {
+    // (PQ||TU)\gamma^T_U
+    term = *this;
+    orbs = _mat[imat].orbitals();
+    Orbital torb = term.freeorbname(Orbital::Act),
+    		uorb = term.freeorbname(Orbital::Act);
+    orbs *= torb;
+    orbs *= uorb;
+    term._mat[imat] = Matrices(Ops::FluctP,orbs,2);
+    term._mat[imat].set_connect(connected2);
+    orbs.clear();
+    orbs *= torb;
+    orbs *= uorb;
+    term._mat.push_back(Matrices(Ops::DensM,orbs,1));
+    Product< SQOpT::Gender > cran;
+    cran *= SQOpT::Creator;
+    cran *= SQOpT::Annihilator;
+    term._mat.back().set_cran(cran);
+    term._realsumindx.insert(torb);
+    term._sumindx.insert(torb);
+    term._realsumindx.insert(uorb);
+    term._sumindx.insert(uorb);
+    sum -= term;
+  }
   return sum;
 }
 Sum< Term, TFactor > Term::dmwickstheorem(const Matrices& dm) const
@@ -1130,13 +1169,13 @@ Sum< Term, TFactor > Term::expand_antisym()
   }
   return sum;
 }
-Sum< Term, TFactor > Term::oneel2fock()
+Sum< Term, TFactor > Term::oneel2fock(bool multiref)
 {
   Sum< Term, TFactor > sum;
   for ( uint i = 0; i < _mat.size(); ++i ){
     if (_mat[i].type() == Ops::OneEl){
       // replace "h" by "f - integrals"
-      sum = this->change2fock(i);
+      sum = this->change2fock(i,multiref);
       // can transform only one matrix per call
       return sum;
     }
@@ -1446,28 +1485,31 @@ Orbital Term::freeorbname(Orbital::Type type)
     ip_orbs = & orbs["actorb"];
   else
     ip_orbs = & orbs["genorb"];
-  if (lastorb.size()==0) 
-  {
-    lastorb=ip_orbs->at(0);
-    _lastorb[type]=Orbital(lastorb,type,spin);
-    return _lastorb[type];
-  }
-  for ( int i=lastorb.size()-1; i>=0; --i)
-  {
-    indx=ip_orbs->find(lastorb[i]);
-    if(indx==std::string::npos)
-      error("Something wrong with orbitals","Term::freeorbname");
-    else if (indx<ip_orbs->size()-1) // not the last possible orbital index
-    {
-      lastorb[i]=ip_orbs->at(indx+1);
+  do {
+    if (lastorb.size()==0) {
+      lastorb=ip_orbs->at(0);
       _lastorb[type]=Orbital(lastorb,type,spin);
-      return _lastorb[type];
+    } else {
+      bool lastorbset = false;
+      for ( int i=lastorb.size()-1; i>=0 && !lastorbset; --i) {
+        indx=ip_orbs->find(lastorb[i]);
+        if(indx==std::string::npos)
+          error("Something wrong with orbitals","Term::freeorbname");
+        else if (indx<ip_orbs->size()-1) {// not the last possible orbital index
+          lastorb[i]=ip_orbs->at(indx+1);
+          _lastorb[type]=Orbital(lastorb,type,spin);
+          lastorbset = true;
+        } else {
+          lastorb[i]=ip_orbs->at(0);//set to first letter
+        }
+      }
+      if (!lastorbset) {
+        //add one orbital index more
+        lastorb+=ip_orbs->at(0);
+        _lastorb[type]=Orbital(lastorb,type,spin);
+      }
     }
-    lastorb[i]=ip_orbs->at(0);//set to first letter
-  }
-  //add one orbital index more
-  lastorb+=ip_orbs->at(0);
-  _lastorb[type]=Orbital(lastorb,type,spin);
+  } while (_lastorb[type].is_in_set(_sumindx));
   return _lastorb[type];
 }
 Orbital Term::getfreeorbname(void* Obj, Orbital::Type type)

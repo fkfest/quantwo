@@ -743,7 +743,7 @@ Oper Equation::handle_explexcitation(Term& term, const std::string& name, bool d
     term.set_lastorb(Orbital(occs[i].letname(),spintype),true);
   for ( uint i = 0; i < virts.size(); ++i )
     term.set_lastorb(Orbital(virts[i].letname(),spintype),true);
-  //make sure that we haven't use these orbital names already
+  //make sure that we haven't used these orbital names already
   correct_orbs(term,occs);
   correct_orbs(term,virts);
   int lmelec = virts.size()-occs.size();
@@ -760,7 +760,7 @@ void Equation::correct_orbs(Term& term, const Product<Orbital>& orbs)
     bool spinintegr = Input::iPars["prog"]["spinintegr"];
     Spin::Type spintype = Spin::Gen;
     if (spinintegr) spintype = Spin::GenS;
-    //make sure that we haven't use these orbital names already
+    //make sure that we haven't used these orbital names already
     for ( uint i = 0; i < orbs.size(); ++i ){
       for ( uint iex = 0; iex < _orbs4excops.size(); ++iex ){
         for ( uint it = Orbital::Occ; it < Orbital::MaxType; ++it ){

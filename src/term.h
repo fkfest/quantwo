@@ -138,9 +138,9 @@ class Term {
     //! expand all antisymmetrical matrices in term 
     Sum<Term,TFactor> expand_antisym();
     //! one-electron matrices to fock
-    Sum<Term, TFactor> oneel2fock();
+    Sum<Term, TFactor> oneel2fock(bool multiref = false);
     //! change matrix imat in _mat from oneel to fock
-    Sum<Term, TFactor> change2fock(uint imat) const;
+    Sum<Term, TFactor> change2fock(uint imat, bool multiref = false) const;
     //! true if has a non-singlet density matrix
     bool has_nonsingldm() const;
     //! reorder density matrices to singlet order

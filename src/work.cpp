@@ -12,6 +12,13 @@ Sum< Term, TFactor > Q2::reduceSum(Sum< Term, TFactor > s)
   Term term,term1;
   bool added;
   TFactor prefac;
+
+  if (usefock){
+    // replace h matrices by fock matrices
+    say("Use Fock matrices...");
+    s = OneEl2Fock(s);
+  }
+
   say("Reduce sum of terms");
   _xout3(s << std::endl);
 
@@ -36,12 +43,6 @@ Sum< Term, TFactor > Q2::reduceSum(Sum< Term, TFactor > s)
   sum = ZeroTerms(sum);
   _xout3(sum << std::endl);
 
-  if (usefock){
-    // replace h matrices by fock matrices
-    say("Use Fock matrices...");
-    sum = OneEl2Fock(sum);
-  }
-  
   if (spinintegr){
     // bring all the density matrices into singlet-order
     say("Singlet order...");
@@ -144,12 +145,13 @@ Sum< Term, TFactor > Q2::Kroneckers(Sum< Term, TFactor > s)
 }
 Sum< Term, TFactor > Q2::OneEl2Fock(Sum< Term, TFactor > s)
 {
+  bool multiref = (Input::iPars["prog"]["multiref"] > 0);
   Term term;
   Sum<Term,TFactor> sum,sum1;
   Sum< Term, TFactor >::const_iterator its;
   _foreach(its,s){
     term = its->first;
-    sum1 = term.oneel2fock();
+    sum1 = term.oneel2fock(multiref);
     sum1 *= its->second;
     sum += sum1;
   }

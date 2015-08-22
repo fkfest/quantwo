@@ -48,6 +48,11 @@ private:
 
 std::ostream & operator << (std::ostream & o, const Spin& spin);
 
+class Orbital;
+class Electrons;
+typedef Set<Orbital> TOrbSet;
+typedef Set<Electrons> TElSet;
+
 /*
     Orbitals (occ, virt, general) with spin (nospin, alpha, beta, general) 
 */
@@ -95,6 +100,8 @@ class Orbital {
   // compare main (i.e. letter) names (e.g. i<j; ii>j, i23==i42 )
   // -1: <; 0: ==; 1: >
   int comp_letname( const Orbital& orb ) const;
+  // check whether the orbital name is already in set
+  bool is_in_set(const TOrbSet& orbset) const;
   // replace orb1 with orb2
   Return replace( const Orbital& orb1, const Orbital& orb2, bool smart);
   // replace spin1 with spin2
@@ -127,8 +134,6 @@ private:
 };
 std::ostream & operator << (std::ostream & o, const Electrons& el);
 
-typedef Set<Orbital> TOrbSet;
-typedef Set<Electrons> TElSet;
 
 #endif
 

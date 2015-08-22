@@ -120,6 +120,14 @@ int Orbital::comp_letname(const Orbital& orb) const
   else if ( lname > lnameo ) return 1;
   return 0;
 }
+bool Orbital::is_in_set(const TOrbSet& orbset) const
+{
+  _foreach_cauto(TOrbSet,its,orbset){
+    if (this->comp_letname(*its) == 0)
+      return true;
+  }
+  return false;
+}
 Return Orbital::replace(const Orbital& orb1, const Orbital& orb2, bool smart)
 {
   if (*this == orb1) { 
