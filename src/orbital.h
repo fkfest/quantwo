@@ -89,6 +89,8 @@ class Orbital {
   void setspin(Spin spin);
   // set electron (in _spin)
   void setel(Electron el){_spin.setel(el);};
+  // get electron (from _spin)
+  Electron getel() const {return _spin.el();};
   // check equality
   bool operator == (Orbital const & orb) const;
   // check inequality

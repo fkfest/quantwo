@@ -805,23 +805,30 @@ Sum<Term, TFactor> Term::change2fock(uint imat, bool multiref) const
   assert( _mat[imat].type() == Ops::OneEl );
   Sum<Term, TFactor> sum;
   Term term(*this);
-  // h_PQ = f_PQ - (PQ||KK) [-(PQ||TU)\gamma^T_U]
+  // h_PQ = f_PQ - (PQ||KJ)\delta_KJ [-(PQ||TU)\gamma^T_U]
   Product<Orbital> orbs = _mat[imat].orbitals();
   TCon2 connected2 = _mat[imat].connected2();
   // f_PQ
   term._mat[imat] = Matrices(Ops::Fock,orbs,1);
   term._mat[imat].set_connect(connected2);
   sum += term;
-  // (PQ||KK)
+  // (PQ||KJ)\delta_{KJ}
   term = *this;
-  Orbital korb = term.freeorbname(Orbital::Occ);
-  korb.setel(term.nextelectron());
-  orbs *= korb;
-  orbs *= korb;
+  Orbital
+    orb1 = term.freeorbname(Orbital::Occ),
+    orb2 = term.freeorbname(Orbital::Occ);
+  Electron el = term.nextelectron();
+  orb1.setel(el);
+  orb2.setel(el);
+  orbs *= orb1;
+  orbs *= orb2;
   term._mat[imat] = Matrices(Ops::FluctP,orbs,2);
   term._mat[imat].set_connect(connected2);
-  term._realsumindx.insert(korb);
-  term._sumindx.insert(korb);
+  term._kProd.push_back(Kronecker(orb1,orb2));
+  term._realsumindx.insert(orb1);
+  term._realsumindx.insert(orb2);
+  term._sumindx.insert(orb1);
+  term._sumindx.insert(orb2);
   sum -= term;
   if (multiref) {
     // (PQ||TU)\gamma^T_U
@@ -860,24 +867,8 @@ Sum< Term, TFactor > Term::dmwickstheorem(const Matrices& dm) const
   const Product<Orbital>& orbs(dm.orbitals());
   // sort now in the singlet order
   assert( orbs.size()%2 == 0 );
-  {
-    std::map<Electron,int> els;
-    const Product<SQOpT::Gender>& cran = dm.get_cran();
-    assert( cran.size() == orbs.size() );
-    for ( uint i = 0; i < orbs.size(); ++i ){
-      opers.push_back(i);
-      // every electron has to be presented by one creator and one annihilator!
-      // otherwise the term is zero!
-      if ( cran[i] == SQOpT::Creator ){
-        els[orbs[i].spin().el()] += 1;
-      } else if ( cran[i] == SQOpT::Annihilator ){
-        els[orbs[i].spin().el()] -= 1;
-      }
-    }
-    std::map<Electron,int>::const_iterator itel;
-    _foreach(itel,els){
-      if ( itel->second != 0 ) return Sum< Term, TFactor >();
-    }
+  for ( uint i = 0; i < orbs.size(); ++i ){
+    opers.push_back(i);
   }
   // only dmsort version is implemented yet...
   assert(Input::iPars["prog"]["dmsort"] > 0);
@@ -1069,7 +1060,6 @@ void Term::reduceElectronsInTerm()
     } 
     this->replace(spin2,spin1);
   }
-  
 }
 void Term::krons2mats()
 {
@@ -1133,7 +1123,7 @@ bool Term::expandintegral(bool firstpart)
   for (unsigned int i=0; i<_mat.size(); i++)
     if (_mat[i].expandantisym(firstpart)) {
       if ( !firstpart ){
-        // electrons have to be swaped in the matrix and all corresponding kroneckers
+        // electrons have to be swapped in the matrix and all corresponding kroneckers
         assert(_mat[i].orbitals().size() == 4);
         Orbital 
           orb1 = _mat[i].orbitals()[1],
@@ -1199,6 +1189,7 @@ Sum< Term, TFactor > Term::dm2singlet()
   Sum< Term, TFactor > sum;
   for ( uint i = 0; i < _mat.size(); ++i ){
     if (_mat[i].nonsingldm()){
+      this->dmelectrons(i);
       Matrices mat(_mat[i]);
       // bring into singlet order
       _mat.erase(_mat.begin()+i);
@@ -1209,6 +1200,49 @@ Sum< Term, TFactor > Term::dm2singlet()
   }
   sum += *this;
   return sum;
+}
+void Term::dmelectrons(uint imat)
+{
+  const Matrices & dm = _mat[imat];
+  assert( dm.type() == Ops::DensM );
+  const Product<Orbital>& orbs(dm.orbitals());
+  assert( orbs.size()%2 == 0 );
+  std::map<Electron,int> els;
+  const Product<SQOpT::Gender>& cran = dm.get_cran();
+  assert( cran.size() == orbs.size() );
+  for ( uint i = 0; i < orbs.size(); ++i ){
+    // every electron has to be presented by one creator and one annihilator!
+    // otherwise, if just one creator-annihilator pair has different electrons - kronecker
+    // call error if more than one...
+    if ( cran[i] == SQOpT::Creator ){
+      els[orbs[i].spin().el()] += 1;
+    } else if ( cran[i] == SQOpT::Annihilator ){
+      els[orbs[i].spin().el()] -= 1;
+    }
+  }
+  std::map<Electron,int>::const_iterator itel;
+  Electron el1 = 0, el2 = 0;
+  _foreach(itel,els){
+    if ( itel->second > 0 && el1 == 0 )
+      el1 = itel->first;
+    else if ( itel->second < 0 && el2 == 0 )
+      el2 = itel->first;
+    else if ( itel->second != 0 )
+      error("More than one annihilator-creator pair has different electrons","Term::dmwickstheorem");
+//      return Sum< Term, TFactor >();
+  }
+  if (el1 > 0){
+    assert( el2 > 0 );
+    Spin
+      spin1 = Spin(el1),
+      spin2 = Spin(el2);
+    TOrbSet::const_iterator
+      it1 = Q2::findSpin<TOrbSet>(_realsumindx,spin1);
+    if ( it1 != _realsumindx.end() ) { // found spin1
+      std::swap(spin1,spin2);
+    }
+    this->replace(spin2,spin1);
+  }
 }
 bool Term::has_generalindices() const
 {
@@ -1247,7 +1281,8 @@ Sum< Term, TFactor > Term::removegeneralindices()
 void Term::spinintegration(bool notfake)
 {
   // generate Product of all orbitals and external-lines orbitals
-  TOrbSet peo(extindx()), peo1(peo);
+  TOrbSet peo(extindx());
+  TOrbSet peo1(peo);
   // internal indices
   TOrbSet po(_realsumindx); 
   _nocc=_nintloops=_nloops=0;
@@ -1539,6 +1574,14 @@ void Term::set_lastorbs()
 
 Electron Term::nextelectron()
 {
+  if (_lastel == 0){
+    // set to correct value (if there are already electrons )
+    _foreach_cauto(TOrbSet,its,_sumindx){
+      Electron el = its->getel();
+      if (el > _lastel)
+        _lastel = el;
+    }
+  }
   ++_lastel;
   return _lastel;
 }

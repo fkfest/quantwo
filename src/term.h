@@ -145,6 +145,8 @@ class Term {
     bool has_nonsingldm() const;
     //! reorder density matrices to singlet order
     Sum<Term, TFactor> dm2singlet();
+    //! check electrons in DMs and make electron-deltas
+    void dmelectrons(uint imat);
     Sum<Term, TFactor> dmwickstheorem(const Matrices& dm) const;
     Sum<Term, TFactor> dmwick( Term::TWMats& opers, const Term::TWMats& krons, const Matrices& dm ) const;
     //! true if has general indices
