@@ -134,6 +134,18 @@ The following equality applies:
 If connection sign is written after ket (|...>_C), the expression inside of bra/ket has to be connected 
 (as in usual Coupled Cluster).
 
+NO NORMAL ORDERING
+
+to switch off the normal ordering set prog,wick=2,noorder=2
+noorder=1: only Hamiltonian is not ordered.
+In order to replace h_pq in the final expressions by f_pq set prog,usefock=1
+
+MULTIREFERENCE
+
+to have internally contracted expressions with active orbitals set prog,multiref=1
+contracted excitation operators can be activated by setting prog,contrexcop=1 (default now)
+
+
 EXAMPLE
 
 Energy expression:
