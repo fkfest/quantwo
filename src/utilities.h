@@ -11,7 +11,7 @@
 #include <unistd.h>
 #include <bitset>
 #ifdef __MACH__
-#include <mach-o/dyld.h>	/* _NSGetExecutablePath */
+#include <mach-o/dyld.h>    /* _NSGetExecutablePath */
 #endif
 
 #include "globals.h"

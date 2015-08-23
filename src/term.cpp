@@ -815,6 +815,7 @@ Sum<Term, TFactor> Term::change2fock(uint imat, bool multiref) const
   // (PQ||KK)
   term = *this;
   Orbital korb = term.freeorbname(Orbital::Occ);
+  korb.setel(term.nextelectron());
   orbs *= korb;
   orbs *= korb;
   term._mat[imat] = Matrices(Ops::FluctP,orbs,2);
@@ -827,7 +828,10 @@ Sum<Term, TFactor> Term::change2fock(uint imat, bool multiref) const
     term = *this;
     orbs = _mat[imat].orbitals();
     Orbital torb = term.freeorbname(Orbital::Act),
-    		uorb = term.freeorbname(Orbital::Act);
+            uorb = term.freeorbname(Orbital::Act);
+    Electron el = term.nextelectron();
+    torb.setel(el);
+    uorb.setel(el);
     orbs *= torb;
     orbs *= uorb;
     term._mat[imat] = Matrices(Ops::FluctP,orbs,2);

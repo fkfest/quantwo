@@ -3,3 +3,6 @@ output,level=1
 \beq                                                               
 <\Phi_{i}^{a}| \op H |0>                                           
 \eeq                                                               
+\beq                                                               
+<0| \op H |0>                                           
+\eeq                                                               
