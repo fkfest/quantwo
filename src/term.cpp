@@ -1103,8 +1103,7 @@ bool Term::brilloin() const
 void Term::matrixkind()
 {
   short exccl,intlines=0,intvirt=0;
-  for (unsigned int i=0; i<_mat.size(); i++)
-  {
+  for (unsigned int i=0; i<_mat.size(); i++) {
     // excitation class of operator (= #electrons = #orbitals/2)
     exccl=_mat[i].orbitals().size()/2;
     for (unsigned int j=0; j<_mat[i].orbitals().size(); j++) {
@@ -1201,7 +1200,7 @@ Sum< Term, TFactor > Term::dm2singlet()
   sum += *this;
   return sum;
 }
-void Term::dmelectrons(uint imat)
+bool Term::dmelectrons(uint imat)
 {
   const Matrices & dm = _mat[imat];
   assert( dm.type() == Ops::DensM );
@@ -1220,19 +1219,23 @@ void Term::dmelectrons(uint imat)
       els[orbs[i].spin().el()] -= 1;
     }
   }
+  bool replace_el = false;
   std::map<Electron,int>::const_iterator itel;
   Electron el1 = 0, el2 = 0;
   _foreach(itel,els){
-    if ( itel->second > 0 && el1 == 0 )
+    if ( itel->second > 0 && el1 == 0 ) {
+      replace_el = true;
       el1 = itel->first;
-    else if ( itel->second < 0 && el2 == 0 )
+    } else if ( itel->second < 0 && el2 == 0 ) {
+      replace_el = true;
       el2 = itel->first;
-    else if ( itel->second != 0 )
+    } else if ( itel->second != 0 ) {
       error("More than one annihilator-creator pair has different electrons","Term::dmwickstheorem");
 //      return Sum< Term, TFactor >();
+    }
   }
-  if (el1 > 0){
-    assert( el2 > 0 );
+  if ( replace_el ) {
+    assert( el1 > 0 && el2 > 0 );
     Spin
       spin1 = Spin(el1),
       spin2 = Spin(el2);
@@ -1243,6 +1246,7 @@ void Term::dmelectrons(uint imat)
     }
     this->replace(spin2,spin1);
   }
+  return replace_el;
 }
 bool Term::has_generalindices() const
 {
@@ -1293,7 +1297,9 @@ void Term::spinintegration(bool notfake)
   lui ithis = 0;
   long int ipos, iorb = 0;
   TOrbSet::iterator it;
-  bool samespinsym, withdensmat;
+  bool samespinsym;
+  uint number_of_densmat;
+  bool dm_warning = false;
   while ( po.size() > 0 || peo.size() > 0 ) {
     // start with external lines!
     if ( peo.size() > 0 )
@@ -1312,7 +1318,7 @@ void Term::spinintegration(bool notfake)
     } 
     orb1 = orb;
     samespinsym = true;
-    withdensmat = false;
+    number_of_densmat = 0;
     do {
       // remove orb1 from product of orbitals (we dont need to handle this orbital again!)
       it = peo.find(orb1);
@@ -1330,7 +1336,7 @@ void Term::spinintegration(bool notfake)
       ithis = cl.imat;
       ipos = cl.idx;
       samespinsym = samespinsym && (spinsym == _mat[ithis].spinsym(ipos));
-      withdensmat = withdensmat || (_mat[ithis].type() == Ops::DensM);
+      if ( _mat[ithis].type() == Ops::DensM ) ++number_of_densmat; 
       iorb = _mat[ithis].iorbel(ipos);
       if ( iorb < 0 ) break;
       orb1 = _mat[ithis].orbitals()[iorb];
@@ -1340,7 +1346,12 @@ void Term::spinintegration(bool notfake)
       }
     } while (orb1!=orb && !already_done && _sumindx.count(orb1));
     if (samespinsym) {
-      if (notfake && !withdensmat) _prefac*=2;
+      if ( notfake ) _prefac*=2;
+      // reduce by a factor of two for every density matrix in the loop
+      for (uint i = 0; i < number_of_densmat; ++i ){
+        _prefac /= 2;
+      }
+      if ( number_of_densmat > 1 ) dm_warning = true;
       // count number of loops
       ++_nloops;
       // count number of internal loops
@@ -1366,6 +1377,10 @@ void Term::spinintegration(bool notfake)
       sumindx.insert(orb);
     }
     _realsumindx = sumindx;
+    if ( dm_warning ) {
+      // It is probably relevant for explicitly inserted terms only (e.g. by creating fock from h)...
+      warning("spin summation in " << *this << " relies on \\gamma^t\\alpha_u\\alpha = \\gamma^t\\beta_u\\beta = \\half \\gamma^t_u");
+    }
   }
 }
 
@@ -1654,3 +1669,4 @@ typename T::iterator Q2::findSpin(T orbs, const Spin& spin){
   for (it=orbs.begin(); it != orbs.end() && it->spin() != spin; ++it);
   return it;
 }
+

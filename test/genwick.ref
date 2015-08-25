@@ -8,5 +8,5 @@
 =\nl
 (-2*1)\sum_{ij}\prm \intg{ii}{jj} + (-2*1)\sum_{itu}\prm \intg{tu}{ii}\prm \gamma^{t}_{u} + (-1)\sum_{tuvw}\prm \intg{vw}{tu}\prm \gamma^{t}_{u}\prm \gamma^{v}_{w}\nl
  + 0.5*1\sum_{tuvw}\prm \intg{tu}{vw}\prm \gamma^{vt}_{wu} + 2*1\sum_{i}\prm f_{ii} + \sum_{tu}\prm f_{tu}\prm \gamma^{t}_{u} + \sum_{ij}\prm \intg{ij}{ji} + \sum_{itu}\prm \intg{it}{ui}\prm \gamma^{u}_{t}\nl
- + \sum_{tuvw}\prm \intg{vu}{tw}\prm \gamma^{t}_{u}\prm \gamma^{v}_{w}
+ + 0.5*1\sum_{tuvw}\prm \intg{vu}{tw}\prm \gamma^{t}_{u}\prm \gamma^{v}_{w}
 \eeq

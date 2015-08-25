@@ -129,15 +129,19 @@ Sum< Term, TFactor > Q2::Kroneckers(Sum< Term, TFactor > s)
 {
   Sum<Term,TFactor> sum;
   Term term;
+  bool printed = false;
   for ( Sum<Term,TFactor>::const_iterator i=s.begin();i!=s.end(); ++i) {
     term=i->first;
     // remove Kroneckers
     term.reduceTerm();
     if (term.kProd().size()>0 && term.prefac() != 0) {
-      say("Still some Kroneckers left. Reducing electrons according to them...","Q2::reduceSum");
+      if (!printed)
+        say("Still some Kroneckers left. Reducing electrons according to them...","Q2::reduceSum");
       term.reduceElectronsInTerm();
-      say("... and transforming them to matrices...","Q2::reduceSum");
+      if (!printed)
+        say("... and transforming them to matrices...","Q2::reduceSum");
       term.krons2mats();
+      printed = true;
     }
     sum += std::make_pair(term,i->second);
   }
