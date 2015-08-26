@@ -1211,7 +1211,7 @@ bool Term::dmelectrons(uint imat)
   assert( cran.size() == orbs.size() );
   for ( uint i = 0; i < orbs.size(); ++i ){
     // every electron has to be presented by one creator and one annihilator!
-    // otherwise, if just one creator-annihilator pair has different electrons - kronecker
+    // otherwise, if just one creator-annihilator pair has different electrons - kronecker (singlet!)
     // call error if more than one...
     if ( cran[i] == SQOpT::Creator ){
       els[orbs[i].spin().el()] += 1;
@@ -1244,6 +1244,8 @@ bool Term::dmelectrons(uint imat)
     if ( it1 != _realsumindx.end() ) { // found spin1
       std::swap(spin1,spin2);
     }
+    warning("Assuming singlet excitations in density matrices " << *this);
+    warning("Replace electrons" << spin1 << " " << spin2);
     this->replace(spin2,spin1);
   }
   return replace_el;
