@@ -346,7 +346,7 @@ bool Equation::do_sumterms(bool excopsonly )
     } else if (_eqn[i].lex()==Lelem::Sum) { // handle \sum
       if (!excopsonly)
         _sumsterm *= _eqn[i];
-    } else if (_eqn[i].lex()==Lelem::Par) { // handle Parameter
+    } else if (_eqn[i].lex()==Lelem::Param) { // handle Parameter
       if (!excopsonly)
         _paramterm*=_eqn[i];
     } else if (_eqn[i].lex()==Lelem::Perm) { // handle Permutation
@@ -930,7 +930,7 @@ std::ostream& operator<<(std::ostream& o, const Lelem& lel)
     o << ")";
   else if (lel.lex()==Lelem::Oper)
     o << "\\"<< commands["operator"]<<" ";
-  else if (lel.lex()==Lelem::Par)
+  else if (lel.lex()==Lelem::Param)
     o << "\\"<< commands["parameter"]<<" ";
   else if (lel.lex()==Lelem::Perm)
     o << "\\"<< commands["permutation"];
@@ -950,5 +950,12 @@ std::ostream& operator<<(std::ostream& o, const Lelem& lel)
     o << "| ";
   else if (lel.lex()==Lelem::Ket)
     o << "> ";
+  return o;
+}
+
+std::ostream& operator<<(std::ostream& o, const Equation& inp)
+{
+  for (unsigned long int i=0; i<inp.eqn().size(); i++)
+    o << inp.eqn().at(i);
   return o;
 }

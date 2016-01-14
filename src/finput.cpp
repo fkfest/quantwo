@@ -162,8 +162,7 @@ bool Finput::analyzeit()
       i=ipos;
     } else if (ch=='\\') { // command
       ++i;
-      ipos=IL::nextwordpos(_input,i);
-      ipos=analyzecommand(_input.substr(i,ipos-i),ipos);
+      ipos=analyzecommand(i);
       i=ipos-1;
     } else if (ch=='+') { // plus
       _eqn += Lelem("",Lelem::Plus);
@@ -195,21 +194,28 @@ bool Finput::analyzeit()
   }
   return true;
 }
-lui Finput::analyzecommand(const std::string& str, lui ipos)
+lui Finput::analyzecommand(lui ipos)
 {
   const TParArray& skipops = Input::aPars["syntax"]["skipop"];
   TsPar& commands = Input::sPars["command"];
   // custom commands
   TsPar& newcom = Input::sPars["newcommand"];
+  lui ipos1 = IL::nextwordpos(_input,ipos);
+  std::string str = _input.substr(ipos,ipos1-ipos);
+  ipos = ipos1;
   lui 
-    ipos1=ipos, 
     ipos2, ipos3;
   if (str==commands["operator"]) { // operators
     ipos1=IL::nextwordpos(_input,ipos);
     _eqn += Lelem(_input.substr(ipos,ipos1-ipos),Lelem::Oper);
   } else if (str==commands["parameter"]) { // parameters
     ipos1=IL::nextwordpos(_input,ipos);
-    _eqn += Lelem(_input.substr(ipos,ipos1-ipos),Lelem::Par);
+    std::string name = _input.substr(ipos,ipos1-ipos);
+    if ( name == "\\"+commands["integral"] ){ // two sets of indices {pq}{rs}
+       ipos1=IL::nextwordpos(_input,ipos1);
+       ipos1=IL::nextwordpos(_input,ipos1);
+    } 
+    _eqn += Lelem(_input.substr(ipos,ipos1-ipos),Lelem::Param);
   } else if (str==commands["fraction"]) { // fraction
     ipos1=IL::nextwordpos(_input,ipos);
     ipos2=ipos1;

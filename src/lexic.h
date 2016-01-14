@@ -18,7 +18,7 @@
 class Lelem {
   public:
   // enumerate lexic
-  enum Lex {Bra, Ket, LPar, RPar, Oper, Par, Num, Frac, Plus, Minus, Times, Div, Sum, Perm };
+  enum Lex {Bra, Ket, LPar, RPar, Oper, Param, Num, Frac, Plus, Minus, Times, Div, Sum, Perm };
   // enumerate types expressions in parantheses (Normal, Connected, Disconnected, ...)
   enum Conn {Normal, Connect, Disconnect }; 
   // constructor from name and Lex
@@ -135,5 +135,7 @@ private:
   //custom operators from \newop
   std::map< std::string, Product<Lelem> > _newops;
 };
+
+std::ostream & operator << (std::ostream & o, Equation const & inp);
 
 #endif

@@ -44,8 +44,8 @@ private:
   void InitInpars(std::string paramspath);
   // analyse all \newop's and save as a map in _eqn.newops
   void analyzenewops();
-  // analyze command coming after backslash
-  lui analyzecommand(std::string const & str, lui ipos);
+  // analyze command coming after backslash at position ipos-1
+  lui analyzecommand(lui ipos);
   // variables
   std::string _input;
   bool _eq;
