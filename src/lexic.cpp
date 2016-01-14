@@ -21,7 +21,7 @@ bool Lelem::operator==(const Lelem& lel) const
 { return _lex==lel._lex && _name==lel._name; }
 
 
-lui Equation::closbrack(const Product< Lelem >& eqn, lui ipos)
+lui LEquation::closbrack(const Product< Lelem >& eqn, lui ipos)
 {
   lui i,ipos1=ipos;
   Lelem::Lex rk=Lelem::RPar,lk=eqn[ipos].lex();
@@ -50,7 +50,7 @@ lui Equation::closbrack(const Product< Lelem >& eqn, lui ipos)
     error("Number of brackets is incosistent: "+any2str(nk),"Lexic::closbrack"); 
   return ipos1;
 }
-lui Equation::openbrack(const Product< Lelem >& eqn, lui ipos)
+lui LEquation::openbrack(const Product< Lelem >& eqn, lui ipos)
 {
   lui ipos1=ipos;
   Lelem::Lex lk=Lelem::LPar,rk=eqn[ipos].lex();
@@ -76,7 +76,7 @@ lui Equation::openbrack(const Product< Lelem >& eqn, lui ipos)
     error("Number of brackets is incosistent: "+any2str(nk),"Lexic::openbrack"); 
   return ipos1;
 }
-Product< long int > Equation::addconnections(const Product< Lelem >& aterm, lui beg, lui end)
+Product< long int > LEquation::addconnections(const Product< Lelem >& aterm, lui beg, lui end)
 {
   Product<long int> connection;
   if (aterm[end].conn()==Lelem::Normal) return connection;
@@ -91,7 +91,7 @@ Product< long int > Equation::addconnections(const Product< Lelem >& aterm, lui 
   return connection;
 }
 
-bool Equation::extractit()
+bool LEquation::extractit()
 {
   // expand custom operators
   _eqn = expandnewops(_eqn);
@@ -117,7 +117,7 @@ bool Equation::extractit()
     _xout2("final Connection " << k << ": " << _connections[k] << std::endl);
   return true;
 }
-Product< Lelem > Equation::expandnewops(const Product< Lelem >& eqn)
+Product< Lelem > LEquation::expandnewops(const Product< Lelem >& eqn)
 {
   Product<Lelem> result;
   for (lui i = 0; i < eqn.size(); ++i ){
@@ -137,7 +137,7 @@ Product< Lelem > Equation::expandnewops(const Product< Lelem >& eqn)
   return result;
 }
 
-lui Equation::elem(const Product< Lelem >& aterm, lui beg, bool bk)
+lui LEquation::elem(const Product< Lelem >& aterm, lui beg, bool bk)
 {
   lui i, end, nk=0;
   bool braket=false;
@@ -160,10 +160,10 @@ lui Equation::elem(const Product< Lelem >& aterm, lui beg, bool bk)
   return end;
 }
 
-lui Equation::term(const Product< Lelem >& eqn, lui beg)
+lui LEquation::term(const Product< Lelem >& eqn, lui beg)
 { return elem(eqn,beg,true); }
 
-Product< Lelem > Equation::expandeqn(const Product< Lelem >& eqn, std::vector< Product<long int> > & connections)
+Product< Lelem > LEquation::expandeqn(const Product< Lelem >& eqn, std::vector< Product<long int> > & connections)
 {
   Product<Lelem> result=eqn, res;
   Product<long int>  connect;
@@ -212,7 +212,7 @@ Product< Lelem > Equation::expandeqn(const Product< Lelem >& eqn, std::vector< P
   return result;
 }
 
-Product< Lelem > Equation::expandterm(const Product< Lelem >& aterm, std::vector< Product<long int> > & connections)
+Product< Lelem > LEquation::expandterm(const Product< Lelem >& aterm, std::vector< Product<long int> > & connections)
 {
   lui i;
 //  std::cout << "Term: " << aterm << std::endl;
@@ -223,7 +223,7 @@ Product< Lelem > Equation::expandterm(const Product< Lelem >& aterm, std::vector
       return expandpar(aterm,i,connections);
   return aterm;
 }
-Product< Lelem > Equation::expandpar(const Product< Lelem >& aterm, lui beg, 
+Product< Lelem > LEquation::expandpar(const Product< Lelem >& aterm, lui beg, 
                                    std::vector< Product< long int > >& connections)
 { // e.g., aterm=-a(b+c)d
   lui i=0, end,ipos,start=0,ijcon,iposres,lenb,ipar;//lena,
@@ -297,7 +297,7 @@ Product< Lelem > Equation::expandpar(const Product< Lelem >& aterm, lui beg,
   }
   return result;
 }
-bool Equation::expanded(const Product< Lelem >& eqn)
+bool LEquation::expanded(const Product< Lelem >& eqn)
 { 
   for (lui i=0; i<eqn.size(); i++) {
     if (eqn[i].lex()==Lelem::Bra && !eqn[i].expandedbra())
@@ -307,7 +307,7 @@ bool Equation::expanded(const Product< Lelem >& eqn)
   }
   return true;
 }
-bool Equation::do_sumterms(bool excopsonly )
+bool LEquation::do_sumterms(bool excopsonly )
 {
   lui i,beg=0,nterm=0;
   bool plus=true, ok=true, bra=false, ket=false;
@@ -365,7 +365,7 @@ bool Equation::do_sumterms(bool excopsonly )
   if(_eqn.size()>0) addterm(term,plus,beg,_eqn.size()-1,indxoperterm,nterm,excopsonly);
   return ok;
 }
-void Equation::reset_term(Term& term) const
+void LEquation::reset_term(Term& term) const
 {
   term=Term();
   term.addmatrix(Matrices());
@@ -379,7 +379,7 @@ void Equation::reset_term(Term& term) const
   }
 }
 
-void Equation::addterm(Term& term, bool plus, lui beg, lui end, 
+void LEquation::addterm(Term& term, bool plus, lui beg, lui end, 
                      Product<long int > const & indxoperterm, lui & nterm, bool excopsonly)
 {
   double minfac = Input::fPars["prog"]["minfac"];
@@ -428,7 +428,7 @@ void Equation::addterm(Term& term, bool plus, lui beg, lui end,
     _sumterms -= term;
 }
 
-Oper Equation::handle_braket(const Lelem& lel, Term& term, bool excopsonly)
+Oper LEquation::handle_braket(const Lelem& lel, Term& term, bool excopsonly)
 {
   const TParArray& refs = Input::aPars["syntax"]["ref"];
   const TParArray& csfs = Input::aPars["syntax"]["csf"];
@@ -446,7 +446,7 @@ Oper Equation::handle_braket(const Lelem& lel, Term& term, bool excopsonly)
     return handle_excitation(term,lelnam,(lel.lex()==Lelem::Bra),lm,excopsonly);
   }
 }
-Oper Equation::handle_explexcitation(Term& term, const std::string& name, bool dg, bool excopsonly, bool phi)
+Oper LEquation::handle_explexcitation(Term& term, const std::string& name, bool dg, bool excopsonly, bool phi)
 {
   lui ipos, ipos1;
   short excl;
@@ -503,7 +503,7 @@ Oper Equation::handle_explexcitation(Term& term, const std::string& name, bool d
   else
     return Oper(Ops::Exc0,excl,occs,virts,"",lmelec,&term);
 }
-void Equation::correct_orbs(Term& term, const Product<Orbital>& orbs)
+void LEquation::correct_orbs(Term& term, const Product<Orbital>& orbs)
 {
   if ( _orbs4excops.size() > 0 ){
     bool spinintegr = Input::iPars["prog"]["spinintegr"];
@@ -522,7 +522,7 @@ void Equation::correct_orbs(Term& term, const Product<Orbital>& orbs)
   }
 }
 
-Oper Equation::handle_excitation(Term& term, const std::string& name, bool dg, int lmel, bool excopsonly)
+Oper LEquation::handle_excitation(Term& term, const std::string& name, bool dg, int lmel, bool excopsonly)
 {
 //   bool multiref = ( Input::iPars["prog"]["multiref"] > 0 );
   long int ipos2;
@@ -534,11 +534,11 @@ Oper Equation::handle_excitation(Term& term, const std::string& name, bool dg, i
   bool updown=handle_namupdown(newname,excl,nameadd,namedown,newdg,lmelec,orbtypes,name);
   dg = (dg != newdg);
   if (lmelec != 0 && lmel != 0 && lmelec != lmel )
-    error("Mismatch in non-conserving class in "+name,"Equation::handle_excitation");
+    error("Mismatch in non-conserving class in "+name,"LEquation::handle_excitation");
   if (lmelec == 0 ) lmelec = lmel;
   // find excitation class
   if (!updown && excl == 0 && lmelec <= 0)
-    error("No excitation class in "+name,"Equation::handle_excitation");
+    error("No excitation class in "+name,"LEquation::handle_excitation");
   ipos2=_excops.find(name);
   TOrb4Type orb4t;
   if (ipos2<0) {// first run (don't distinguish terms)
@@ -577,7 +577,7 @@ Oper Equation::handle_excitation(Term& term, const std::string& name, bool dg, i
   }
 }
 
-TFactor Equation::handle_factor(const Lelem& lel)
+TFactor LEquation::handle_factor(const Lelem& lel)
 {
   TFactor fac;
   lui ipos=0, ipos1;
@@ -632,7 +632,7 @@ TFactor Equation::handle_factor(const Lelem& lel)
   }
   return fac;
 }
-Oper Equation::handle_operator(const Lelem& lel, Term& term, bool excopsonly)
+Oper LEquation::handle_operator(const Lelem& lel, Term& term, bool excopsonly)
 {
   const TParArray& bexcops = Input::aPars["syntax"]["bexcop"];
   TsPar& hms = Input::sPars["hamilton"];
@@ -655,7 +655,7 @@ Oper Equation::handle_operator(const Lelem& lel, Term& term, bool excopsonly)
   }
   // excitation class
   if (namedown=="")
-    error("No excitation class in operator "+lelnam,"Equation::handle_operator");
+    error("No excitation class in operator "+lelnam,"LEquation::handle_operator");
   IL::add2name(name,nameadd); // add nameadd to name (as superscript)
   if (InSet(name.substr(0,4), bexcops)) { // bare excitation operator
     assert(orbtypes.size() == 0);
@@ -663,7 +663,7 @@ Oper Equation::handle_operator(const Lelem& lel, Term& term, bool excopsonly)
   }
   if (excopsonly) return Oper();
   if (excl == 0 && lmelec <= 0)
-    error("Excitation class in "+lelnam,"Equation::handle_operator");
+    error("Excitation class in "+lelnam,"LEquation::handle_operator");
   if (orbtypes.size() == 0){
     if(dg)
       return Oper(Ops::Deexc,excl,name,lmelec,&term);
@@ -676,7 +676,7 @@ Oper Equation::handle_operator(const Lelem& lel, Term& term, bool excopsonly)
       return Oper(Ops::Exc,excl,orbtypes,name,lmelec,&term);
   }
 }
-bool Equation::handle_namupdown(std::string& name, short int& excl, std::string& nameup, std::string& namedown, bool& dg, 
+bool LEquation::handle_namupdown(std::string& name, short int& excl, std::string& nameup, std::string& namedown, bool& dg, 
                                 int& lmel, std::vector< Product< Orbital::Type > >& orbtypes, const std::string& lelnam)
 { 
   const TParArray& dgs = Input::aPars["syntax"]["dg"];
@@ -761,7 +761,7 @@ bool Equation::handle_namupdown(std::string& name, short int& excl, std::string&
   }
   return foundupdown;
 }
-bool Equation::handle_orbtypes(std::vector< Product< Orbital::Type > >& orbtypes, const std::string& string)
+bool LEquation::handle_orbtypes(std::vector< Product< Orbital::Type > >& orbtypes, const std::string& string)
 {
   bool foundorbtypes = false;
   lui up, down, ipos, ipos1;
@@ -800,7 +800,7 @@ bool Equation::handle_orbtypes(std::vector< Product< Orbital::Type > >& orbtypes
   return foundorbtypes;
 }
 
-void Equation::handle_sum(const Lelem& lel, Term& term)
+void LEquation::handle_sum(const Lelem& lel, Term& term)
 {
   lui ipos, ipos1, up, down;
   long int iposnam, iposexcn;
@@ -832,7 +832,7 @@ void Equation::handle_sum(const Lelem& lel, Term& term)
     ipos=ipos1;
   }
 }
-Permut Equation::handle_permutation(const Lelem& lel)
+Permut LEquation::handle_permutation(const Lelem& lel)
 {
   Product<Orbital> orbs1, orbs2;
   lui ipos=0, ipos1;
@@ -860,7 +860,7 @@ Permut Equation::handle_permutation(const Lelem& lel)
   return Permut(orbs1,orbs2);
 }
 
-void Equation::handle_parameters(Term& term, bool excopsonly)
+void LEquation::handle_parameters(Term& term, bool excopsonly)
 {
   if (!excopsonly) {// handle saved parameters
     lui ipos, ipos1, iposnam, up, down;
@@ -953,7 +953,7 @@ std::ostream& operator<<(std::ostream& o, const Lelem& lel)
   return o;
 }
 
-std::ostream& operator<<(std::ostream& o, const Equation& inp)
+std::ostream& operator<<(std::ostream& o, const LEquation& inp)
 {
   for (unsigned long int i=0; i<inp.eqn().size(); i++)
     o << inp.eqn().at(i);

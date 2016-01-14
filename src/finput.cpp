@@ -245,7 +245,7 @@ void Finput::analyzenewops()
 {
   assert( _input.size() == 0 );
   TsPar& newops = Input::sPars["newoperator"];
-  _eqn = Equation();
+  _eqn = LEquation();
   for ( TsPar::iterator iop = newops.begin(); iop != newops.end(); ++iop ){
     _input = iop->second;
     _eqn +=  Lelem("",Lelem::LPar);

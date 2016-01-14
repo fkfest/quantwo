@@ -43,12 +43,12 @@ std::ostream & operator << (std::ostream & o, Lelem const & lel);
 
 
 /*!
-    Equation
+    lexic Equation
  */
-class Equation {
+class LEquation {
 public:
   // add string
-  Equation & operator += (const Lelem & lel) { _eqn *= lel; return *this; };
+  LEquation & operator += (const Lelem & lel) { _eqn *= lel; return *this; };
   // clear _eqn
   void reseteq() { _eqn = Product<Lelem>();};
   // extract expression (remove parentheses and sums)
@@ -136,6 +136,6 @@ private:
   std::map< std::string, Product<Lelem> > _newops;
 };
 
-std::ostream & operator << (std::ostream & o, Equation const & inp);
+std::ostream & operator << (std::ostream & o, LEquation const & inp);
 
 #endif
