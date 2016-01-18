@@ -83,28 +83,28 @@ public:
   Sum<Term,TFactor> sumterms() const { return _sumterms;};
 private:
   // get position of the closing bracket in vector<Lelem> (which corresponds to the bracket on ipos)
-  lui closbrack(Product<Lelem> const & eqn, lui ipos);
+  lui closbrack(Product<Lelem> const & eqn, lui ipos) const;
   // get position of the opening bracket in vector<Lelem> (which corresponds to the bracket on ipos)
-  lui openbrack(Product<Lelem> const & eqn, lui ipos);
+  lui openbrack(Product<Lelem> const & eqn, lui ipos) const;
   // add connections: beg and end are positions of opening and closing parantheses in aterm
-  Product<long int> addconnections(const Product< Lelem >& aterm, lui beg, lui end);
+  Product<long int> addconnections(const Product< Lelem >& aterm, lui beg, lui end) const;
   // expand all newops
-  Product<Lelem> expandnewops(Product<Lelem> const & eqn);
+  Product<Lelem> expandnewops(Product<Lelem> const & eqn) const;
   // find the end position of current element in aterm, if bk==true: bra and ket are treated as brackets
-  lui elem(Product<Lelem> const & aterm, lui beg, bool bk=false);
+  lui elem(Product<Lelem> const & aterm, lui beg, bool bk=false) const;
   // find the end position of current term
-  lui term(Product<Lelem> const & eqn, lui beg);
+  lui term(Product<Lelem> const & eqn, lui beg) const { return elem(eqn,beg,true); };
   // expand equation
-  Product<Lelem> expandeqn(Product<Lelem> const & eqn, std::vector< Product<long int> > & connections);
+  Product<Lelem> expandeqn(Product<Lelem> const & eqn, std::vector< Product<long int> > & connections) const;
   // expand a term
-  Product<Lelem> expandterm(Product<Lelem> const & aterm, std::vector< Product<long int> > & connections);
+  Product<Lelem> expandterm(Product<Lelem> const & aterm, std::vector< Product<long int> > & connections) const;
   // expand parantheses pair
-  Product<Lelem>  expandpar(Product<Lelem> const & aterm, lui beg, std::vector< Product<long int> > & connections);
+  Product<Lelem>  expandpar(Product<Lelem> const & aterm, lui beg, std::vector< Product<long int> > & connections) const;
   // test if eqn is completely expanded
-  bool expanded(Product<Lelem> const & eqn);
+  bool expanded(Product<Lelem> const & eqn) const;
   // add connections to term, and term to _sumterms
   void addterm(Term& term, bool plus, lui beg, lui end, 
-               Product< long int > const & indxoperterm, lui & nterm,bool excopsonly);
+               Product< long int > const & indxoperterm, bool excopsonly);
   // handle bra/ket
   Oper handle_braket(Lelem const & lel, Term & term, bool excopsonly=false);
   // handle explicit excitation index (like ^{ab}_{ij})
@@ -112,22 +112,22 @@ private:
   // handle excitation index
   Oper handle_excitation( Term& term, std::string const & name, bool dg, int lmel = 0, bool excopsonly=false );
   // handle factor
-  TFactor handle_factor(Lelem const & lel);
+  TFactor handle_factor(Lelem const & lel) const;
   // handle operator
   Oper handle_operator(Lelem const & lel, Term & term, bool excopsonly=false);
   // handle name, ups and downs of operators 
   // (name, excitation class, name additions, dagger, non-conserving character, orbital types...)
   // returns true if found up or down
   bool handle_namupdown(std::string& name, short& excl, std::string& nameup, std::string& namedown, bool& dg, int& lmel, 
-                        std::vector< Product<Orbital::Type> >& orbtypes, const std::string& lelnam );
+                        std::vector< Product<Orbital::Type> >& orbtypes, const std::string& lelnam ) const;
   // returns true if explicit given orbtypes found
-  bool handle_orbtypes(std::vector< Product<Orbital::Type> >& orbtypes, const std::string& string);
+  bool handle_orbtypes(std::vector< Product<Orbital::Type> >& orbtypes, const std::string& string) const;
   // handle sum
-  void handle_sum(Lelem const & lel, Term & term);
+  void handle_sum(Lelem const & lel, Term & term) const;
   // handle parameter
   void handle_parameters(Term& term, bool excopsonly = false);
   // handle permutation
-  Permut handle_permutation(Lelem const & lel);
+  Permut handle_permutation(Lelem const & lel) const;
   // reset term (set to Term() and reset lastorbs)
   void reset_term(Term& term) const;
   // correct used orbitals
@@ -146,7 +146,8 @@ private:
   // e.g. ((-2,-3),(2,3,4)) --> elements 2 and 3 are disconnected, and element 4 is connected to 2 and/or 3
   std::vector< Product<long int> > _connections;
   //custom operators from \newop
-  std::map< std::string, Product<Lelem> > _newops;
+  typedef std::map< std::string, Product<Lelem> > NewOpMap;
+  NewOpMap _newops;
 };
 
 std::ostream & operator << (std::ostream & o, LEquation const & inp);

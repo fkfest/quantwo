@@ -21,7 +21,7 @@ bool Lelem::operator==(const Lelem& lel) const
 { return _lex==lel._lex && _name==lel._name; }
 
 
-lui LEquation::closbrack(const Product< Lelem >& eqn, lui ipos)
+lui LEquation::closbrack(const Product< Lelem >& eqn, lui ipos) const
 {
   lui i,ipos1=ipos;
   Lelem::Lex rk=Lelem::RPar,lk=eqn[ipos].lex();
@@ -50,7 +50,7 @@ lui LEquation::closbrack(const Product< Lelem >& eqn, lui ipos)
     error("Number of brackets is incosistent: "+any2str(nk),"Lexic::closbrack"); 
   return ipos1;
 }
-lui LEquation::openbrack(const Product< Lelem >& eqn, lui ipos)
+lui LEquation::openbrack(const Product< Lelem >& eqn, lui ipos) const
 {
   lui ipos1=ipos;
   Lelem::Lex lk=Lelem::LPar,rk=eqn[ipos].lex();
@@ -76,7 +76,7 @@ lui LEquation::openbrack(const Product< Lelem >& eqn, lui ipos)
     error("Number of brackets is incosistent: "+any2str(nk),"Lexic::openbrack"); 
   return ipos1;
 }
-Product< long int > LEquation::addconnections(const Product< Lelem >& aterm, lui beg, lui end)
+Product< long int > LEquation::addconnections(const Product< Lelem >& aterm, lui beg, lui end) const
 {
   Product<long int> connection;
   if (aterm[end].conn()==Lelem::Normal) return connection;
@@ -117,17 +117,20 @@ bool LEquation::extractit()
     _xout2("final Connection " << k << ": " << _connections[k] << std::endl);
   return true;
 }
-Product< Lelem > LEquation::expandnewops(const Product< Lelem >& eqn)
+Product< Lelem > LEquation::expandnewops(const Product< Lelem >& eqn) const
 {
   Product<Lelem> result;
   for (lui i = 0; i < eqn.size(); ++i ){
     result *= eqn[i];
     lui j = result.size()-1;
     do { 
-      if ( result[j].lex() == Lelem::Oper && _newops.count(result[j].name()) ) {
-        const Product<Lelem>& nop = _newops[result[j].name()];
-        result.erase(result.begin()+j);
-        result.insert(result.begin()+j,nop.begin(),nop.end());
+      if ( result[j].lex() == Lelem::Oper ) {
+        NewOpMap::const_iterator itnewop = _newops.find(result[j].name());
+        if ( itnewop != _newops.end() ) {
+          const Product<Lelem>& nop = itnewop->second;
+          result.erase(result.begin()+j);
+          result.insert(result.begin()+j,nop.begin(),nop.end());
+        }
       }
       ++j;
     } while( j < result.size() && result.size() < lui(Input::iPars["prog"]["maxlels"]) );
@@ -137,7 +140,7 @@ Product< Lelem > LEquation::expandnewops(const Product< Lelem >& eqn)
   return result;
 }
 
-lui LEquation::elem(const Product< Lelem >& aterm, lui beg, bool bk)
+lui LEquation::elem(const Product< Lelem >& aterm, lui beg, bool bk) const
 {
   lui i, end, nk=0;
   bool braket=false;
@@ -160,10 +163,7 @@ lui LEquation::elem(const Product< Lelem >& aterm, lui beg, bool bk)
   return end;
 }
 
-lui LEquation::term(const Product< Lelem >& eqn, lui beg)
-{ return elem(eqn,beg,true); }
-
-Product< Lelem > LEquation::expandeqn(const Product< Lelem >& eqn, std::vector< Product<long int> > & connections)
+Product< Lelem > LEquation::expandeqn(const Product< Lelem >& eqn, std::vector< Product<long int> > & connections) const
 {
   Product<Lelem> result=eqn, res;
   Product<long int>  connect;
@@ -212,7 +212,7 @@ Product< Lelem > LEquation::expandeqn(const Product< Lelem >& eqn, std::vector< 
   return result;
 }
 
-Product< Lelem > LEquation::expandterm(const Product< Lelem >& aterm, std::vector< Product<long int> > & connections)
+Product< Lelem > LEquation::expandterm(const Product< Lelem >& aterm, std::vector< Product<long int> > & connections) const
 {
   lui i;
 //  std::cout << "Term: " << aterm << std::endl;
@@ -224,7 +224,7 @@ Product< Lelem > LEquation::expandterm(const Product< Lelem >& aterm, std::vecto
   return aterm;
 }
 Product< Lelem > LEquation::expandpar(const Product< Lelem >& aterm, lui beg, 
-                                   std::vector< Product< long int > >& connections)
+                                   std::vector< Product< long int > >& connections) const
 { // e.g., aterm=-a(b+c)d
   lui i=0, end,ipos,start=0,ijcon,iposres,lenb,ipar;//lena,
   end=closbrack(aterm,beg);
@@ -297,7 +297,7 @@ Product< Lelem > LEquation::expandpar(const Product< Lelem >& aterm, lui beg,
   }
   return result;
 }
-bool LEquation::expanded(const Product< Lelem >& eqn)
+bool LEquation::expanded(const Product< Lelem >& eqn) const
 { 
   for (lui i=0; i<eqn.size(); i++) {
     if (eqn[i].lex()==Lelem::Bra && !eqn[i].expandedbra())
@@ -309,14 +309,14 @@ bool LEquation::expanded(const Product< Lelem >& eqn)
 }
 bool LEquation::do_sumterms(bool excopsonly )
 {
-  lui i,beg=0,nterm=0;
-  bool plus=true, ok=true, bra=false, ket=false;
+  lui beg=0;
+  bool plus=true, bra=false, ket=false;
   if (!expanded(_eqn))
     error("Expand the lexic equation first!","Lexic::do_sumterms");
   Term term;
   reset_term(term);
   Product<long int> indxoperterm;
-  for (i=0; i<_eqn.size(); i++) {
+  for (lui i=0; i<_eqn.size(); i++) {
     if(InSet(_eqn[i].lex(), Lelem::Bra,Lelem::Ket)) { // handle bra/ket
       if (_eqn[i].lex()==Lelem::Bra) {
         if (bra) 
@@ -328,21 +328,21 @@ bool LEquation::do_sumterms(bool excopsonly )
       else
         ket=true;
       term*=handle_braket(_eqn[i],term,excopsonly);
-      indxoperterm *= i+1;
+      indxoperterm.push_back(i+1);
     } else if (InSet(_eqn[i].lex(), Lelem::Minus,Lelem::Plus)) { // add current term and save the sign of the next term
       bra=ket=false; // reset bra and ket variables
       if (!excopsonly) {
-        if(i>0) addterm(term,plus,beg,i-1,indxoperterm,nterm,excopsonly);
+        if(i>0) addterm(term,plus,beg,i-1,indxoperterm,excopsonly);
         plus=(_eqn[i].lex()==Lelem::Plus);
         beg=i+1;
         reset_term(term);
-        indxoperterm=Product<long int>();
+        indxoperterm.clear();
       }
     } else if (InSet(_eqn[i].lex(), Lelem::Frac,Lelem::Num)) { // add prefactor
       term*=handle_factor(_eqn[i]);
     } else if (_eqn[i].lex()==Lelem::Oper) { // handle Operator
       term*=handle_operator(_eqn[i],term,excopsonly);
-      indxoperterm *= i+1;
+      indxoperterm.push_back(i+1);
     } else if (_eqn[i].lex()==Lelem::Sum) { // handle \sum
       if (!excopsonly)
         _sumsterm *= _eqn[i];
@@ -362,8 +362,8 @@ bool LEquation::do_sumterms(bool excopsonly )
     }
   }
   // add last term
-  if(_eqn.size()>0) addterm(term,plus,beg,_eqn.size()-1,indxoperterm,nterm,excopsonly);
-  return ok;
+  if(_eqn.size()>0) addterm(term,plus,beg,_eqn.size()-1,indxoperterm,excopsonly);
+  return true;
 }
 void LEquation::reset_term(Term& term) const
 {
@@ -384,7 +384,7 @@ void LEquation::reset_term(Term& term) const
 }
 
 void LEquation::addterm(Term& term, bool plus, lui beg, lui end, 
-                     Product<long int > const & indxoperterm, lui & nterm, bool excopsonly)
+                     Product<long int > const & indxoperterm, bool excopsonly)
 {
   double minfac = Input::fPars["prog"]["minfac"];
   if( excopsonly || term.term_is_0(minfac)) {
@@ -392,7 +392,6 @@ void LEquation::addterm(Term& term, bool plus, lui beg, lui end,
     handle_parameters(term,true);
     return; // dont add zero term
   }
-  ++nterm;
   // handle sums in term
   for ( uint i = 0; i < _sumsterm.size(); ++i ) handle_sum(_sumsterm[i],term);
   // reset sums information
@@ -418,7 +417,7 @@ void LEquation::addterm(Term& term, bool plus, lui beg, lui end,
         else
           connect*=-ipos-2;
       }
-      _xout2("Connections in Term #" << nterm << ": " <<connect<<std::endl);
+      _xout2("Connections in Term #" << _sumterms.size()+1 << ": " <<connect<<std::endl);
       term.addconnection(connect);
       connect=Product<long int>();
     }
@@ -580,7 +579,7 @@ Oper LEquation::handle_excitation(Term& term, const std::string& name, bool dg, 
   }
 }
 
-TFactor LEquation::handle_factor(const Lelem& lel)
+TFactor LEquation::handle_factor(const Lelem& lel) const
 {
   TFactor fac;
   lui ipos=0, ipos1;
@@ -680,7 +679,7 @@ Oper LEquation::handle_operator(const Lelem& lel, Term& term, bool excopsonly)
   }
 }
 bool LEquation::handle_namupdown(std::string& name, short int& excl, std::string& nameup, std::string& namedown, bool& dg, 
-                                int& lmel, std::vector< Product< Orbital::Type > >& orbtypes, const std::string& lelnam)
+                                int& lmel, std::vector< Product< Orbital::Type > >& orbtypes, const std::string& lelnam) const
 { 
   const TParArray& dgs = Input::aPars["syntax"]["dg"];
   const TParArray& lessmore = Input::aPars["syntax"]["lessmore"];
@@ -764,7 +763,7 @@ bool LEquation::handle_namupdown(std::string& name, short int& excl, std::string
   }
   return foundupdown;
 }
-bool LEquation::handle_orbtypes(std::vector< Product< Orbital::Type > >& orbtypes, const std::string& string)
+bool LEquation::handle_orbtypes(std::vector< Product< Orbital::Type > >& orbtypes, const std::string& string) const
 {
   bool foundorbtypes = false;
   lui up, down, ipos, ipos1;
@@ -803,7 +802,7 @@ bool LEquation::handle_orbtypes(std::vector< Product< Orbital::Type > >& orbtype
   return foundorbtypes;
 }
 
-void LEquation::handle_sum(const Lelem& lel, Term& term)
+void LEquation::handle_sum(const Lelem& lel, Term& term) const
 {
   lui ipos, ipos1, up, down;
   long int iposexcn;
@@ -835,7 +834,7 @@ void LEquation::handle_sum(const Lelem& lel, Term& term)
     ipos=ipos1;
   }
 }
-Permut LEquation::handle_permutation(const Lelem& lel)
+Permut LEquation::handle_permutation(const Lelem& lel) const
 {
   Product<Orbital> orbs1, orbs2;
   lui ipos=0, ipos1;
