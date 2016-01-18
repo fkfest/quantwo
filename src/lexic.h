@@ -11,6 +11,7 @@
 #include "term.h"
 #include "matrices.h"
 #include "globals.h"
+#include "equation.h"
 
 /*!
     Lexic elements
@@ -41,6 +42,26 @@ class Lelem {
 
 std::ostream & operator << (std::ostream & o, Lelem const & lel);
 
+typedef std::map< Orbital::Type,Orbital > TOrb4Type;
+/*
+ *  excitation info (for \mu_i etc) 
+ */
+class LExcitationInfo {
+public:
+  LExcitationInfo() {};
+  LExcitationInfo( const TOrb4Type& orbs, short exclass, Matrices::Spinsym spin, int termpos = -1 ) :
+    _orbs4excops(orbs), _exccls(exclass), _spinsymexcs(spin), _posexcopsterm(termpos){};
+    
+  void reset_term_info() { _posexcopsterm = -1; };
+  // save indices that the excitation (and deexcitation) operators have got.
+  TOrb4Type _orbs4excops;
+  // save excclass
+  short _exccls;
+  // save spinsymmetry
+  Matrices::Spinsym _spinsymexcs;
+  // save position of a Matrix of the _excops in term, if -1: the _excops is not present in this term
+  int _posexcopsterm;
+};
 
 /*!
     lexic Equation
@@ -113,18 +134,10 @@ private:
   void correct_orbs(Term& term, const Product<Orbital>& orbs);
   
   Product<Lelem> _eqn;
-  Sum<Term, TFactor> _sumterms;
-  // save names of pure excitation and deexciation operators
-  Product<std::string> _excops;
-  typedef std::map< Orbital::Type,Orbital > TOrb4Type;
-  // save indices that the excitation (and deexcitation) operators have got.
-  Product< TOrb4Type > _orbs4excops;
-  // save excclass
-  Product<short> _exccls;
-  // save spinsymmetry
-  Product<Matrices::Spinsym> _spinsymexcs;
-  // save position of a Matrix of the _excops in term, if -1: the _excops is not present in this term
-  Product<int> _posexcopsterm;
+  Equation _sumterms;
+  // save names and corresponding info of pure excitation and deexciation operators
+  typedef std::map<std::string, LExcitationInfo> LExcitationMap;
+  LExcitationMap _excops;
   // save parameters and sums in term
   Product<Lelem> _paramterm, _sumsterm;
   // connections "map" in _eqn (starts from 1)

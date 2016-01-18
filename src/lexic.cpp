@@ -372,9 +372,13 @@ void LEquation::reset_term(Term& term) const
   if (_excops.size()>0) {
     for ( uint it = Orbital::Occ; it < Orbital::MaxType; ++it ){
       Orbital::Type ot = static_cast<Orbital::Type>(it);
-      for ( int i = _orbs4excops.size()-1; i >= 0; --i )
-        if (_orbs4excops[i].count(ot))
-          term.set_lastorb(_orbs4excops[i].at(ot));
+      _foreach_cauto( LExcitationMap,itex,_excops) {
+        TOrb4Type::const_iterator ito4e = itex->second._orbs4excops.find(ot);
+        if ( ito4e != itex->second._orbs4excops.end() ) {
+          term.set_lastorb(ito4e->second);
+          break;
+        }
+      }
     }
   }
 }
@@ -505,17 +509,19 @@ Oper LEquation::handle_explexcitation(Term& term, const std::string& name, bool 
 }
 void LEquation::correct_orbs(Term& term, const Product<Orbital>& orbs)
 {
-  if ( _orbs4excops.size() > 0 ){
+  if ( _excops.size() > 0 ){
     bool spinintegr = Input::iPars["prog"]["spinintegr"];
     Spin::Type spintype = Spin::Gen;
     if (spinintegr) spintype = Spin::GenS;
     //make sure that we haven't used these orbital names already
     for ( uint i = 0; i < orbs.size(); ++i ){
-      for ( uint iex = 0; iex < _orbs4excops.size(); ++iex ){
+      _foreach_auto(LExcitationMap,itex,_excops){
         for ( uint it = Orbital::Occ; it < Orbital::MaxType; ++it ){
           Orbital::Type ot = static_cast<Orbital::Type>(it);
-          if ( _orbs4excops[iex][ot] == Orbital(orbs[i].letname(),spintype) )  // is there, change it
-            _orbs4excops[iex][ot] = term.freeorbname(ot);
+          TOrb4Type::iterator ito4e = itex->second._orbs4excops.find(ot);
+          if ( ito4e != itex->second._orbs4excops.end() &&
+               ito4e->second == Orbital(orbs[i].letname(),spintype) )  // is there, change it
+            ito4e->second = term.freeorbname(ot);
         }
       }
     }
@@ -525,7 +531,6 @@ void LEquation::correct_orbs(Term& term, const Product<Orbital>& orbs)
 Oper LEquation::handle_excitation(Term& term, const std::string& name, bool dg, int lmel, bool excopsonly)
 {
 //   bool multiref = ( Input::iPars["prog"]["multiref"] > 0 );
-  long int ipos2;
   std::string newname, nameadd,namedown;
   short excl;
   bool newdg;
@@ -539,10 +544,9 @@ Oper LEquation::handle_excitation(Term& term, const std::string& name, bool dg, 
   // find excitation class
   if (!updown && excl == 0 && lmelec <= 0)
     error("No excitation class in "+name,"LEquation::handle_excitation");
-  ipos2=_excops.find(name);
+  LExcitationMap::iterator itex = _excops.find(name);
   TOrb4Type orb4t;
-  if (ipos2<0) {// first run (don't distinguish terms)
-    _excops*=name;
+  if ( itex == _excops.end() ) {// first run (don't distinguish terms)
     if (orbtypes.size() > 0){
       for ( uint i = 0; i < orbtypes.size(); ++i ){
         _foreach_cauto(Product<Orbital::Type>,iot,orbtypes[i]){
@@ -554,13 +558,12 @@ Oper LEquation::handle_excitation(Term& term, const std::string& name, bool dg, 
       orb4t[Orbital::Occ] = term.freeorbname(Orbital::Occ);
       orb4t[Orbital::Virt] = term.freeorbname(Orbital::Virt);
     }
-    _orbs4excops.push_back(orb4t);
-    _exccls*=excl;
-    _spinsymexcs*=Matrices::Singlet; //TODO: implement Triplet!
-    _posexcopsterm*=-1; // initialize
+    //TODO: implement Triplet!
+    Matrices::Spinsym spinsym = Matrices::Singlet;
+    _excops[name] = LExcitationInfo(orb4t,excl,spinsym);
   } else {// may be second run...
-    orb4t = _orbs4excops[ipos2];
-    _posexcopsterm[ipos2]=term.mat().size(); //set position of this operator in the term
+    orb4t = itex->second._orbs4excops;
+    itex->second._posexcopsterm = term.mat().size(); //set position of this operator in the term
   }
   if (excopsonly) return Oper();
   // create \tau_{excl}
@@ -803,7 +806,7 @@ bool LEquation::handle_orbtypes(std::vector< Product< Orbital::Type > >& orbtype
 void LEquation::handle_sum(const Lelem& lel, Term& term)
 {
   lui ipos, ipos1, up, down;
-  long int iposnam, iposexcn;
+  long int iposexcn;
   std::string lelnam=lel.name(),name;
   down=IL::lexfind(lelnam,"_");
   up=IL::lexfind(lelnam,"^");
@@ -817,9 +820,9 @@ void LEquation::handle_sum(const Lelem& lel, Term& term)
     if (ipos==lelnam.size()) break;
     ipos1=IL::nextwordpos(lelnam,ipos);
     name=lelnam.substr(ipos,ipos1-ipos);
-    iposnam=_excops.find(name);
-    if (iposnam >= 0) {
-      iposexcn=_posexcopsterm[iposnam];
+    LExcitationMap::const_iterator itex = _excops.find(name);
+    if (itex != _excops.end()) {
+      iposexcn=itex->second._posexcopsterm;
       if (iposexcn>=0) {
         const Product<Matrices>& mats = term.mat();
         assert( uint(iposexcn) < mats.size() );
@@ -864,7 +867,7 @@ void LEquation::handle_parameters(Term& term, bool excopsonly)
 {
   if (!excopsonly) {// handle saved parameters
     lui ipos, ipos1, iposnam, up, down;
-    int iposexcn,indxexcn;
+    int iposexcn;
     std::string lelnam,name,nameadd,excn;
     for (unsigned int i=0; i<_paramterm.size(); i++) {
       lelnam=_paramterm[i].name();
@@ -894,14 +897,13 @@ void LEquation::handle_parameters(Term& term, bool excopsonly)
         ipos=IL::skip(lelnam,ipos,"{} ");
         ipos1=IL::nextwordpos(lelnam,ipos);
         excn=lelnam.substr(ipos,ipos1-ipos);
-        indxexcn=_excops.find(excn);
-        if (indxexcn>=0) {
-          iposexcn=_posexcopsterm[indxexcn];
+        LExcitationMap::const_iterator itex = _excops.find(excn);
+        if ( itex != _excops.end() ) {
+          iposexcn = itex->second._posexcopsterm;
           if (iposexcn>=0) {
             Matrices mat(Ops::Interm,
                          term.mat()[iposexcn].orbitals(),
-//                         Ops::genprodorb(_exccls[indxexcn],_orbs4excops[indxexcn][Orbital::Occ],_orbs4excops[indxexcn][Orbital::Virt]),
-                         _exccls[indxexcn], name,_spinsymexcs[indxexcn]);
+                         itex->second._exccls, name,itex->second._spinsymexcs);
             term.replacematrix(mat,iposexcn);
           } else
             say("Parameter is not present in this term: "+lelnam);
@@ -912,7 +914,9 @@ void LEquation::handle_parameters(Term& term, bool excopsonly)
     }
   }
   // reset all information
-  _posexcopsterm.assign(_excops.size(),-1);
+  _foreach_auto(LExcitationMap,itex,_excops) {
+    itex->second.reset_term_info();
+  }
   _paramterm=Product<Lelem>();
 }
 
