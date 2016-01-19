@@ -133,9 +133,8 @@ lui IL::endword(const std::string& line, lui& ipos)
   }else if ( line[ipos] == '{' ){
     end = '}'; ++ipos;
   }
-  lui ipend;
-  for ( ipend = ipos+1; ipend < line.size() && line[ipend] != end; ++ipend ){}
-  return ipend;
+  std::string ends(1,end);
+  return lexfind(line,ends,ipos);
 }
 lui IL::closbrack(const std::string& str, lui ipos)
 {

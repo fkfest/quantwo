@@ -903,6 +903,7 @@ void LEquation::handle_parameters(Term& term, bool excopsonly)
             Matrices mat(Ops::Interm,
                          term.mat()[iposexcn].orbitals(),
                          itex->second._exccls, name,itex->second._spinsymexcs);
+//             term.addmatrix(mat);
             term.replacematrix(mat,iposexcn);
           } else
             say("Parameter is not present in this term: "+lelnam);
