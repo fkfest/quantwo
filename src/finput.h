@@ -11,7 +11,7 @@
 #include "term.h"
 #include "globals.h"
 #include "inpline.h"
-#include "lexic.h"
+#include "equation.h"
 
 /*!
     Input analyzer 

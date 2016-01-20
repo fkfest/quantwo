@@ -10,7 +10,7 @@ Term::Term(Product<SQOp> const & opProd, Product<Kronecker> const & kProd) :
     
 Term::Term(const Product< SQOp >& opProd, const Product< Kronecker >& kProd, 
            const Product< Matrices >& mat, const TOrbSet& sumindx, const TOrbSet& realsumindx, 
-           const TFactor& prefac, const std::vector< Product<long int> >& connections) :
+           const TFactor& prefac, const ConnectionsMap& connections) :
     _opProd(opProd), _kProd(kProd), _mat(mat), _sumindx(sumindx), _realsumindx(realsumindx), 
     _prefac(prefac), _connections(connections), _lastel(0) {_nloops=_nintloops=_nocc=0;_perm+=Permut();}
 
@@ -230,7 +230,7 @@ TOrbSet Term::extcreaindx() const
 
 Sum< Permut, TFactor > Term::perm() const
 { return _perm; }
-std::vector< Product< long int > > Term::connections() const
+ConnectionsMap Term::connections() const
 { return _connections; }
 
 bool Term::term_is_0(double minfac) const

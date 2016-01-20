@@ -16,6 +16,9 @@
 
 #include <iostream>
 
+// connections. Move it?
+typedef std::vector< Product<long int> > ConnectionsMap;
+
 class SQOp;
 class Oper;
 /*!
@@ -32,7 +35,7 @@ class Term {
     //! construct from Product<SQOp>, Product<Kronecker>, Product<Matrices>, summation indices and prefactor
     Term(Product<SQOp> const & opProd, Product<Kronecker> const & kProd, 
          Product<Matrices> const & mat, const TOrbSet & sumindx, const TOrbSet & realsumindx, 
-         const TFactor& prefac, const std::vector< Product<long int> >& connections);
+         const TFactor& prefac, const ConnectionsMap& connections);
     //! validate term
     bool term_is_valid();
     //! append Operator
@@ -83,7 +86,7 @@ class Term {
     //! return Sum of Permutators
     Sum<Permut,TFactor> perm() const;
     //! return connections
-    std::vector< Product<long int> > connections() const;
+    ConnectionsMap connections() const;
     //! return true if term is zero
     bool term_is_0(double minfac) const;
     //! return true if term has to be removed 
@@ -198,7 +201,7 @@ class Term {
     // (abs(value)-1) gives the index of the corresponding matrix in _mat
     // positive sign: connected group of matrices Product<long int>
     // negative sign: disconnected --------------"-----------------
-    std::vector< Product<long int> > _connections;
+    ConnectionsMap _connections;
 
     std::map< Orbital::Type, Orbital > _lastorb;
     Electron _lastel;
