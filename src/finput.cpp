@@ -114,7 +114,7 @@ bool Finput::addline(const std::string& line)
 }
 std::string Finput::input() const
 { return _input; }
-Product< Lelem > Finput::eqn() const
+LelString Finput::eqn() const
 { return _eqn.eqn(); }
 Sum< Term, TFactor > Finput::sumterms() const
 { return _eqn.sumterms(); }

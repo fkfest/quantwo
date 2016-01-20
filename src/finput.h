@@ -28,7 +28,7 @@ public:
   bool analyzeq();
   // get input
   std::string input() const;
-  Product<Lelem> eqn() const;
+  LelString eqn() const;
   // get sum of terms
   Sum<Term,TFactor> sumterms() const;
   // analyze input

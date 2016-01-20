@@ -21,7 +21,7 @@ bool Lelem::operator==(const Lelem& lel) const
 { return _lex==lel._lex && _name==lel._name; }
 
 
-lui LEquation::closbrack(const Product< Lelem >& eqn, lui ipos) const
+lui LEquation::closbrack(const LelString& eqn, lui ipos) const
 {
   lui i,ipos1=ipos;
   Lelem::Lex rk=Lelem::RPar,lk=eqn[ipos].lex();
@@ -50,7 +50,7 @@ lui LEquation::closbrack(const Product< Lelem >& eqn, lui ipos) const
     error("Number of brackets is incosistent: "+any2str(nk),"Lexic::closbrack"); 
   return ipos1;
 }
-lui LEquation::openbrack(const Product< Lelem >& eqn, lui ipos) const
+lui LEquation::openbrack(const LelString& eqn, lui ipos) const
 {
   lui ipos1=ipos;
   Lelem::Lex lk=Lelem::LPar,rk=eqn[ipos].lex();
@@ -76,7 +76,7 @@ lui LEquation::openbrack(const Product< Lelem >& eqn, lui ipos) const
     error("Number of brackets is incosistent: "+any2str(nk),"Lexic::openbrack"); 
   return ipos1;
 }
-Product< long int > LEquation::addconnections(const Product< Lelem >& aterm, lui beg, lui end) const
+Product< long int > LEquation::addconnections(const LelString& aterm, lui beg, lui end) const
 {
   Product<long int> connection;
   if (aterm[end].conn()==Lelem::Normal) return connection;
@@ -117,17 +117,17 @@ bool LEquation::extractit()
     _xout2("final Connection " << k << ": " << _connections[k] << std::endl);
   return true;
 }
-Product< Lelem > LEquation::expandnewops(const Product< Lelem >& eqn) const
+LelString LEquation::expandnewops(const LelString& eqn) const
 {
-  Product<Lelem> result;
+  LelString result;
   for (lui i = 0; i < eqn.size(); ++i ){
-    result *= eqn[i];
+    result.add(eqn[i]);
     lui j = result.size()-1;
     do { 
       if ( result[j].lex() == Lelem::Oper ) {
         NewOpMap::const_iterator itnewop = _newops.find(result[j].name());
         if ( itnewop != _newops.end() ) {
-          const Product<Lelem>& nop = itnewop->second;
+          const LelString& nop = itnewop->second;
           result.erase(result.begin()+j);
           result.insert(result.begin()+j,nop.begin(),nop.end());
         }
@@ -140,7 +140,7 @@ Product< Lelem > LEquation::expandnewops(const Product< Lelem >& eqn) const
   return result;
 }
 
-lui LEquation::elem(const Product< Lelem >& aterm, lui beg, bool bk) const
+lui LEquation::elem(const LelString& aterm, lui beg, bool bk) const
 {
   lui i, end, nk=0;
   bool braket=false;
@@ -163,16 +163,16 @@ lui LEquation::elem(const Product< Lelem >& aterm, lui beg, bool bk) const
   return end;
 }
 
-Product< Lelem > LEquation::expandeqn(const Product< Lelem >& eqn, std::vector< Product<long int> > & connections) const
+LelString LEquation::expandeqn(const LelString& eqn, std::vector< Product<long int> > & connections) const
 {
-  Product<Lelem> result=eqn, res;
+  LelString result=eqn, res;
   Product<long int>  connect;
   std::vector< Product<long int> > con,con1;
   lui beg=0, end, i,j,conbeg,lastpos;
   
   while (!expanded(result)) {
     res=result;
-    result=Product<Lelem>();
+    result=LelString();
     beg=0;
     conbeg=0;
     con=connections;
@@ -195,7 +195,7 @@ Product< Lelem > LEquation::expandeqn(const Product< Lelem >& eqn, std::vector< 
       }
       // construct a term as a subvector and expand it:
       lastpos=result.size();
-      result*=expandterm(res.subprod(beg,end),con1);
+      result.add(expandterm(res.substring(beg,end),con1));
       // shift connections back
       for (i=0;i<con1.size();i++) {
         for (j=0;j<con1[i].size();j++)
@@ -212,7 +212,7 @@ Product< Lelem > LEquation::expandeqn(const Product< Lelem >& eqn, std::vector< 
   return result;
 }
 
-Product< Lelem > LEquation::expandterm(const Product< Lelem >& aterm, std::vector< Product<long int> > & connections) const
+LelString LEquation::expandterm(const LelString& aterm, std::vector< Product<long int> > & connections) const
 {
   lui i;
 //  std::cout << "Term: " << aterm << std::endl;
@@ -223,12 +223,12 @@ Product< Lelem > LEquation::expandterm(const Product< Lelem >& aterm, std::vecto
       return expandpar(aterm,i,connections);
   return aterm;
 }
-Product< Lelem > LEquation::expandpar(const Product< Lelem >& aterm, lui beg, 
+LelString LEquation::expandpar(const LelString& aterm, lui beg, 
                                    std::vector< Product< long int > >& connections) const
 { // e.g., aterm=-a(b+c)d
   lui i=0, end,ipos,start=0,ijcon,iposres,lenb,ipar;//lena,
   end=closbrack(aterm,beg);
-  Product<Lelem> result, inpar=aterm.subprod(beg+1,end-1);
+  LelString result, inpar=aterm.substring(beg+1,end-1);
   std::vector< Product<long int> > con(connections);
   con.push_back(addconnections(aterm,beg,end));
   connections=std::vector< Product<long int> >();
@@ -245,28 +245,28 @@ Product< Lelem > LEquation::expandpar(const Product< Lelem >& aterm, lui beg,
     //add sign
     if (inpar[i].lex()==Lelem::Minus) {// minus in parenthesis
       if (aterm[0].lex()==Lelem::Minus) 
-        result *= Lelem("",Lelem::Plus); // -1*-1 == +1
+        result.add(Lelem("",Lelem::Plus)); // -1*-1 == +1
       else
-        result *= inpar[i]; // +1*-1 == -1
+        result.add(inpar[i]); // +1*-1 == -1
       ++i;
     } else if (inpar[i].lex()==Lelem::Plus) {// plus in parenthesis
       if (aterm[0].lex()==Lelem::Minus) 
-        result *= aterm[0]; // -1*+1 == -1
+        result.add(aterm[0]); // -1*+1 == -1
       else
-        result *= inpar[i]; // +1*+1 == +1
+        result.add(inpar[i]); // +1*+1 == +1
       ++i;
     } else if (start>0) {// term has a sign, but no sign by expression in parenthesis
-      result *= aterm[0];
+      result.add(aterm[0]);
     }
     iposres=result.size()-start;
     // add "a" (without sign)
-    if (beg>start) result *= aterm.subprod(start,beg-1);
-    if (aterm[beg].lex()==Lelem::Bra) result *= aterm[beg].braexpanded();
+    if (beg>start) result.add(aterm.substring(start,beg-1));
+    if (aterm[beg].lex()==Lelem::Bra) result.add(aterm[beg].braexpanded());
     // add "b" (or "c")
-    result *= inpar.subprod(i,ipos);
+    result.add(inpar.substring(i,ipos));
     // add "d"
-    if (aterm[end].lex()==Lelem::Ket) result *= aterm[end];
-    if (end<aterm.size()-1) result *= aterm.subprod(end+1,aterm.size());
+    if (aterm[end].lex()==Lelem::Ket) result.add(aterm[end]);
+    if (end<aterm.size()-1) result.add(aterm.substring(end+1,aterm.size()));
     // handle connections
     lenb=ipos-i+1;
     for (lui k=0;k<con.size();k++) {
@@ -297,7 +297,7 @@ Product< Lelem > LEquation::expandpar(const Product< Lelem >& aterm, lui beg,
   }
   return result;
 }
-bool LEquation::expanded(const Product< Lelem >& eqn) const
+bool LEquation::expanded(const LelString& eqn) const
 { 
   for (lui i=0; i<eqn.size(); i++) {
     if (eqn[i].lex()==Lelem::Bra && !eqn[i].expandedbra())
@@ -345,10 +345,10 @@ bool LEquation::do_sumterms(bool excopsonly )
       indxoperterm.push_back(i+1);
     } else if (_eqn[i].lex()==Lelem::Sum) { // handle \sum
       if (!excopsonly)
-        _sumsterm *= _eqn[i];
+        _sumsterm.add(_eqn[i]);
     } else if (_eqn[i].lex()==Lelem::Param) { // handle Parameter
       if (!excopsonly)
-        _paramterm*=_eqn[i];
+        _paramterm.add(_eqn[i]);
     } else if (_eqn[i].lex()==Lelem::Perm) { // handle Permutation
       if (!excopsonly)
         term *= handle_permutation(_eqn[i]);
@@ -395,7 +395,7 @@ void LEquation::addterm(Term& term, bool plus, lui beg, lui end,
   // handle sums in term
   for ( uint i = 0; i < _sumsterm.size(); ++i ) handle_sum(_sumsterm[i],term);
   // reset sums information
-  _sumsterm=Product<Lelem>();
+  _sumsterm=LelString();
   // handle parameters
   handle_parameters(term);
 //   if( term.term_is_0(minfac) ) {
@@ -917,7 +917,7 @@ void LEquation::handle_parameters(Term& term, bool excopsonly)
   _foreach_auto(LExcitationMap,itex,_excops) {
     itex->second.reset_term_info();
   }
-  _paramterm=Product<Lelem>();
+  _paramterm=LelString();
 }
 
 

@@ -62,6 +62,24 @@ public:
   // save position of a Matrix of the _excops in term, if -1: the _excops is not present in this term
   int _posexcopsterm;
 };
+/*
+ * string of lexic elements
+ */
+// typedef Product<Lelem> LelString;
+class LelString : public Product<Lelem> {
+public:
+  LelString():Product< Lelem >(){};
+  LelString(const_iterator beg, const_iterator end):Product< Lelem >(beg,end){};
+  
+  LelString substring(lui beg, lui end) const {
+    lui end1=(end < this->size() ? end + 1 : this->size());
+    return LelString(this->begin()+beg,this->begin()+end1);
+  }; 
+  void add(const Lelem& a) { this->push_back(a);}
+  void add(const LelString& a) { this->operator*=(a);}
+  
+  
+};
 
 /*!
     lexic Equation
@@ -69,39 +87,39 @@ public:
 class LEquation {
 public:
   // add string
-  LEquation & operator += (const Lelem & lel) { _eqn *= lel; return *this; };
+  LEquation & operator += (const Lelem & lel) { _eqn.add(lel); return *this; };
   // clear _eqn
-  void reseteq() { _eqn = Product<Lelem>();};
+  void reseteq() { _eqn = LelString();};
   // extract expression (remove parentheses and sums)
   bool extractit();
-  // transform Product<Lelem> to Sum<Term>, if excopsonly: do only pure excitation operators (and bra/ket)
+  // transform LelString/ to Sum<Term>, if excopsonly: do only pure excitation operators (and bra/ket)
   bool do_sumterms(bool excopsonly=false);
   // add new operator
-  void addnewop(const std::string& name, const Product<Lelem>& oper){ _newops[name] = oper; };
-  Product<Lelem> eqn() const { return _eqn;};
+  void addnewop(const std::string& name, const LelString& oper){ _newops[name] = oper; };
+  LelString eqn() const { return _eqn;};
   // get sum of terms
   Sum<Term,TFactor> sumterms() const { return _sumterms;};
 private:
   // get position of the closing bracket in vector<Lelem> (which corresponds to the bracket on ipos)
-  lui closbrack(Product<Lelem> const & eqn, lui ipos) const;
+  lui closbrack(LelString const & eqn, lui ipos) const;
   // get position of the opening bracket in vector<Lelem> (which corresponds to the bracket on ipos)
-  lui openbrack(Product<Lelem> const & eqn, lui ipos) const;
+  lui openbrack(LelString const & eqn, lui ipos) const;
   // add connections: beg and end are positions of opening and closing parantheses in aterm
-  Product<long int> addconnections(const Product< Lelem >& aterm, lui beg, lui end) const;
+  Product<long int> addconnections(const LelString& aterm, lui beg, lui end) const;
   // expand all newops
-  Product<Lelem> expandnewops(Product<Lelem> const & eqn) const;
+  LelString expandnewops(LelString const & eqn) const;
   // find the end position of current element in aterm, if bk==true: bra and ket are treated as brackets
-  lui elem(Product<Lelem> const & aterm, lui beg, bool bk=false) const;
+  lui elem(LelString const & aterm, lui beg, bool bk=false) const;
   // find the end position of current term
-  lui term(Product<Lelem> const & eqn, lui beg) const { return elem(eqn,beg,true); };
+  lui term(LelString const & eqn, lui beg) const { return elem(eqn,beg,true); };
   // expand equation
-  Product<Lelem> expandeqn(Product<Lelem> const & eqn, std::vector< Product<long int> > & connections) const;
+  LelString expandeqn(LelString const & eqn, std::vector< Product<long int> > & connections) const;
   // expand a term
-  Product<Lelem> expandterm(Product<Lelem> const & aterm, std::vector< Product<long int> > & connections) const;
+  LelString expandterm(LelString const & aterm, std::vector< Product<long int> > & connections) const;
   // expand parantheses pair
-  Product<Lelem>  expandpar(Product<Lelem> const & aterm, lui beg, std::vector< Product<long int> > & connections) const;
+  LelString  expandpar(LelString const & aterm, lui beg, std::vector< Product<long int> > & connections) const;
   // test if eqn is completely expanded
-  bool expanded(Product<Lelem> const & eqn) const;
+  bool expanded(LelString const & eqn) const;
   // add connections to term, and term to _sumterms
   void addterm(Term& term, bool plus, lui beg, lui end, 
                Product< long int > const & indxoperterm, bool excopsonly);
@@ -133,20 +151,20 @@ private:
   // correct used orbitals
   void correct_orbs(Term& term, const Product<Orbital>& orbs);
   
-  Product<Lelem> _eqn;
+  LelString _eqn;
   Equation _sumterms;
   // save names and corresponding info of pure excitation and deexciation operators
   typedef std::map<std::string, LExcitationInfo> LExcitationMap;
   LExcitationMap _excops;
   // save parameters and sums in term
-  Product<Lelem> _paramterm, _sumsterm;
+  LelString _paramterm, _sumsterm;
   // connections "map" in _eqn (starts from 1)
   // positive: connected; negative: disconnected
   // the earlier the connection comes the more important it is:
   // e.g. ((-2,-3),(2,3,4)) --> elements 2 and 3 are disconnected, and element 4 is connected to 2 and/or 3
   std::vector< Product<long int> > _connections;
   //custom operators from \newop
-  typedef std::map< std::string, Product<Lelem> > NewOpMap;
+  typedef std::map< std::string, LelString > NewOpMap;
   NewOpMap _newops;
 };
 
