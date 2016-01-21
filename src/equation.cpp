@@ -38,48 +38,50 @@ bool LEquation::do_sumterms(bool excopsonly )
   reset_term(term);
   Product<long int> indxoperterm;
   for (lui i=0; i<_eqn.size(); i++) {
-    if(InSet(_eqn[i].lex(), Lelem::Bra,Lelem::Ket)) { // handle bra/ket
-      if (_eqn[i].lex()==Lelem::Bra) {
+    const Lelem & lel = _eqn[i];
+    Lelem::Lex lex = lel.lex();
+    if(InSet(lex, Lelem::Bra,Lelem::Ket)) { // handle bra/ket
+      if ( lex == Lelem::Bra ) {
         if (bra) 
           error("Cannot handle two BRAs in one term yet...");
         else
-          bra=true;
-      } else if (ket)
+          bra = true;
+      } else if (ket) {
         error("Cannot handle two KETs in one term yet...");
-      else
-        ket=true;
-      term*=handle_braket(_eqn[i],term,excopsonly);
+      } else
+        ket = true;
+      term *= handle_braket(lel,term,excopsonly);
       indxoperterm.push_back(i+1);
-    } else if (InSet(_eqn[i].lex(), Lelem::Minus,Lelem::Plus)) { // add current term and save the sign of the next term
-      bra=ket=false; // reset bra and ket variables
+    } else if (InSet(lex, Lelem::Minus,Lelem::Plus)) { // add current term and save the sign of the next term
+      bra = ket = false; // reset bra and ket variables
       if (!excopsonly) {
-        if(i>0) addterm(term,plus,beg,i-1,indxoperterm,excopsonly);
-        plus=(_eqn[i].lex()==Lelem::Plus);
-        beg=i+1;
+        if ( i > 0 ) addterm(term,plus,beg,i-1,indxoperterm,excopsonly);
+        plus = ( lex == Lelem::Plus );
+        beg = i+1;
         reset_term(term);
         indxoperterm.clear();
       }
-    } else if (InSet(_eqn[i].lex(), Lelem::Frac,Lelem::Num)) { // add prefactor
-      term*=handle_factor(_eqn[i]);
-    } else if (_eqn[i].lex()==Lelem::Oper) { // handle Operator
-      term*=handle_operator(_eqn[i],term,excopsonly);
+    } else if (InSet(lex, Lelem::Frac,Lelem::Num)) { // add prefactor
+      term *= handle_factor(lel);
+    } else if (lex == Lelem::Oper) { // handle Operator
+      term *= handle_operator(lel,term,excopsonly);
       indxoperterm.push_back(i+1);
-    } else if (_eqn[i].lex()==Lelem::Sum) { // handle \sum
+    } else if (lex == Lelem::Sum) { // handle \sum
       if (!excopsonly)
-        _sumsterm.add(_eqn[i]);
-    } else if (_eqn[i].lex()==Lelem::Param) { // handle Parameter
+        _sumsterm.add(lel);
+    } else if (lex == Lelem::Param) { // handle Parameter
       if (!excopsonly)
-        _paramterm.add(_eqn[i]);
-    } else if (_eqn[i].lex()==Lelem::Perm) { // handle Permutation
+        _paramterm.add(lel);
+    } else if (lex == Lelem::Perm) { // handle Permutation
       if (!excopsonly)
-        term *= handle_permutation(_eqn[i]);
-    } else if (_eqn[i].lex()==Lelem::Times) { // handle Multiplication
+        term *= handle_permutation(lel);
+    } else if (lex == Lelem::Times) { // handle Multiplication
       // don't do anything
-    } else if (_eqn[i].lex()==Lelem::Div) { // handle Division
+    } else if (lex == Lelem::Div) { // handle Division
       error("Sorry, cannot handle Division!","Lexic::do_sumterms");
     } else {
-      xout << _eqn[i] << std::endl;
-      error(_eqn[i].name()+" is not implemented yet...","Lexic::do_sumterms");
+      xout << lel << std::endl;
+      error(lel.name()+" is not implemented yet...","Lexic::do_sumterms");
     }
   }
   // add last term
@@ -500,7 +502,8 @@ bool LEquation::handle_orbtypes(std::vector< Product< Orbital::Type > >& orbtype
     while ( (ipos < down) == (up < down) && (ipos1 = IL::nextwordpos(string,ipos,true,false)) != ipos ){//non greedy
       Orbital orb(IL::plainname(string.substr(ipos,ipos1-ipos)),spintype);
       occtypes *= orb.type();
-      if ( orb.type() == Orbital::Virt ) xout << "WARNING: Do you really want to have orbital " << orb << " as occupied?" << std::endl;
+      if ( orb.type() == Orbital::Virt ) 
+        xout << "WARNING: Do you really want to have orbital " << orb << " as occupied?" << std::endl;
       ipos = IL::skip(string,ipos1,"{}_^ ");
     }
     if ( occtypes.size() > 0 ) foundorbtypes = true;
@@ -513,7 +516,8 @@ bool LEquation::handle_orbtypes(std::vector< Product< Orbital::Type > >& orbtype
     while ( (ipos < up) == (down < up) && (ipos1 = IL::nextwordpos(string,ipos,true,false)) != ipos ){//non greedy
       Orbital orb(IL::plainname(string.substr(ipos,ipos1-ipos)),spintype);
       virtypes *= orb.type();
-      if ( orb.type() == Orbital::Occ ) xout << "WARNING: Do you really want to have orbital " << orb << " as virtual?" << std::endl;
+      if ( orb.type() == Orbital::Occ ) 
+        xout << "WARNING: Do you really want to have orbital " << orb << " as virtual?" << std::endl;
       ipos = IL::skip(string,ipos1,"{}_^ ");
     }
     if ( virtypes.size() > 0 ) foundorbtypes = true;
