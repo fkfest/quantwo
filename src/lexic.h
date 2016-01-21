@@ -41,27 +41,6 @@ class Lelem {
 
 std::ostream & operator << (std::ostream & o, Lelem const & lel);
 
-typedef std::map< Orbital::Type,Orbital > TOrb4Type;
-/*
- *  excitation info (for \mu_i etc) 
- */
-class LExcitationInfo {
-public:
-  LExcitationInfo() {};
-  LExcitationInfo( const TOrb4Type& orbs, short exclass, Matrices::Spinsym spin, int termpos = -1 ) :
-    _orbs4excops(orbs), _exccls(exclass), _spinsymexcs(spin), _posexcopsterm(termpos){};
-    
-  void reset_term_info() { _posexcopsterm = -1; };
-  // save indices that the excitation (and deexcitation) operators have got.
-  TOrb4Type _orbs4excops;
-  // save excclass
-  short _exccls;
-  // save spinsymmetry
-  Matrices::Spinsym _spinsymexcs;
-  // save position of a Matrix of the _excops in term, if -1: the _excops is not present in this term
-  int _posexcopsterm;
-};
-
 class LelString;
 typedef std::map< std::string, LelString > NewOpMap;
 
