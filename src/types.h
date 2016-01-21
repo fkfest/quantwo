@@ -1,5 +1,7 @@
 #ifndef Types_H
 #define Types_H
+#include <vector>
+#include "product.h"
 // various types
 
 namespace SQOpT{
@@ -24,6 +26,9 @@ namespace Ops {
     Delta, // kronecker
     Number};
 }
+
+// connections
+typedef std::vector< Product<long int> > ConnectionsMap;
 
 
 #endif

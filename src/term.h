@@ -16,9 +16,6 @@
 
 #include <iostream>
 
-// connections. Move it?
-typedef std::vector< Product<long int> > ConnectionsMap;
-
 class SQOp;
 class Oper;
 /*!

@@ -1,0 +1,8 @@
+
+
+\beq
+&&<0| (\op T_1^\dg (\op H \op T_1)_C)_D \op T_2 |0>_C
+=\nl
+8*1\sum_{ijkabc}\prm T^{{\snam{\dg}}a}_{i}\prm \intg{jb}{kc}\prm T^{j}_{b}\prm T^{ki}_{ca} + (-4*1)\sum_{ijkabc_{1}}\prm T^{{\snam{\dg}}a}_{i}\prm \intg{jb}{kc_{1}}\prm T^{j}_{b}\prm T^{ki}_{ac_{1}}\nl
+ + (-4*1)\sum_{ijkabc}\prm T^{{\snam{\dg}}a}_{i}\prm \intg{jc}{kb}\prm T^{j}_{b}\prm T^{ki}_{ca} + 2*1\sum_{ijk_{1}abc}\prm T^{{\snam{\dg}}a}_{i}\prm \intg{jc}{k_{1}b}\prm T^{j}_{b}\prm T^{ik_{1}}_{ca}
+\eeq

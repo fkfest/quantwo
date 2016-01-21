@@ -1,0 +1,7 @@
+output,level=2
+
+
+\begin{eqnarray}
+<0| (\op T_1^\dg (\op H \op T_1)_C)_D \op T_2 |0>_C
+\end{eqnarray}
+

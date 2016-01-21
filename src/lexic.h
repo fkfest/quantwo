@@ -1,15 +1,10 @@
 #ifndef Lexic_H
 #define Lexic_H
 #include <string>
-#include <vector>
-#include <iostream>
-#include <fstream>
 #include <assert.h>
-#include <typeinfo>
 #include "utilities.h"
 #include "product.h"
-#include "term.h"
-#include "matrices.h"
+#include "types.h"
 #include "globals.h"
 
 /*!
