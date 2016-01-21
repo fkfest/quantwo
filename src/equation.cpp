@@ -1,5 +1,57 @@
 #include "equation.h"
 
+// LExcitationMap::iterator LExcitationMap::add(const std::string& name, bool dg, int lmel, bool excopsonly)
+// {
+//   std::string newname, nameadd,namedown;
+//   short excl;
+//   bool newdg;
+//   int lmelec;
+//   std::vector< Product<Orbital::Type> > orbtypes;
+//   bool updown=handle_namupdown(newname,excl,nameadd,namedown,newdg,lmelec,orbtypes,name);
+//   dg = (dg != newdg);
+//   if (lmelec != 0 && lmel != 0 && lmelec != lmel )
+//     error("Mismatch in non-conserving class in "+name,"LEquation::handle_excitation");
+//   if (lmelec == 0 ) lmelec = lmel;
+//   // find excitation class
+//   if (!updown && excl == 0 && lmelec <= 0)
+//     error("No excitation class in "+name,"LEquation::handle_excitation");
+//   LExcitationMap::iterator itex = _excops.find(name);
+//   TOrb4Type orb4t;
+//   if ( itex == _excops.end() ) {// first run (don't distinguish terms)
+//     if (orbtypes.size() > 0){
+//       for ( uint i = 0; i < orbtypes.size(); ++i ){
+//         _foreach_cauto(Product<Orbital::Type>,iot,orbtypes[i]){
+//           if (orb4t.count(*iot) == 0)
+//             orb4t[*iot] = term.freeorbname(*iot);
+//         }
+//       }
+//     } else {
+//       orb4t[Orbital::Occ] = term.freeorbname(Orbital::Occ);
+//       orb4t[Orbital::Virt] = term.freeorbname(Orbital::Virt);
+//     }
+//     //TODO: implement Triplet!
+//     Matrices::Spinsym spinsym = Matrices::Singlet;
+//     _excops[name] = LExcitationInfo(orb4t,excl,spinsym);
+//   } else {// may be second run...
+//     orb4t = itex->second._orbs4excops;
+//     itex->second._posexcopsterm = term.mat().size(); //set position of this operator in the term
+//   }
+//   if (excopsonly) return Oper();
+//   // create \tau_{excl}
+//   if (orbtypes.size() == 0){
+//     if (dg)
+//       return Oper(Ops::Deexc0,excl,orb4t[Orbital::Occ],orb4t[Orbital::Virt],"",lmelec,&term);  
+//     else
+//       return Oper(Ops::Exc0,excl,orb4t[Orbital::Occ],orb4t[Orbital::Virt],"",lmelec,&term);
+//   } else {
+//     if (dg)
+//       return Oper(Ops::Deexc0,excl,orb4t,orbtypes,"",lmelec,&term);  
+//     else
+//       return Oper(Ops::Exc0,excl,orb4t,orbtypes,"",lmelec,&term);
+//   }
+// }
+
+
 bool LEquation::extractit()
 {
   // expand custom operators
@@ -257,7 +309,7 @@ Oper LEquation::handle_excitation(Term& term, const std::string& name, bool dg, 
   short excl;
   bool newdg;
   int lmelec;
-  std::vector< Product<Orbital::Type> > orbtypes;
+  std::vector<OrbitalTypes> orbtypes;
   bool updown=handle_namupdown(newname,excl,nameadd,namedown,newdg,lmelec,orbtypes,name);
   dg = (dg != newdg);
   if (lmelec != 0 && lmel != 0 && lmelec != lmel )
@@ -271,7 +323,7 @@ Oper LEquation::handle_excitation(Term& term, const std::string& name, bool dg, 
   if ( itex == _excops.end() ) {// first run (don't distinguish terms)
     if (orbtypes.size() > 0){
       for ( uint i = 0; i < orbtypes.size(); ++i ){
-        _foreach_cauto(Product<Orbital::Type>,iot,orbtypes[i]){
+        _foreach_cauto(OrbitalTypes,iot,orbtypes[i]){
           if (orb4t.count(*iot) == 0)
             orb4t[*iot] = term.freeorbname(*iot);
         }
@@ -365,7 +417,7 @@ Oper LEquation::handle_operator(const Lelem& lel, Term& term, bool excopsonly)
   short excl;
   bool dg;
   int lmelec;
-  std::vector< Product<Orbital::Type> > orbtypes;
+  std::vector<OrbitalTypes> orbtypes;
   bool updown=handle_namupdown(name,excl,nameadd,namedown,dg,lmelec,orbtypes,lelnam);
   // parts of Hamilton operator
   if ( InSet(name, hms)) {
@@ -402,7 +454,7 @@ Oper LEquation::handle_operator(const Lelem& lel, Term& term, bool excopsonly)
   }
 }
 bool LEquation::handle_namupdown(std::string& name, short int& excl, std::string& nameup, std::string& namedown, bool& dg, 
-                                int& lmel, std::vector< Product< Orbital::Type > >& orbtypes, const std::string& lelnam) const
+                                int& lmel, std::vector<OrbitalTypes>& orbtypes, const std::string& lelnam) const
 { 
   const TParArray& dgs = Input::aPars["syntax"]["dg"];
   const TParArray& lessmore = Input::aPars["syntax"]["lessmore"];
@@ -486,45 +538,15 @@ bool LEquation::handle_namupdown(std::string& name, short int& excl, std::string
   }
   return foundupdown;
 }
-bool LEquation::handle_orbtypes(std::vector< Product< Orbital::Type > >& orbtypes, const std::string& string) const
+bool LEquation::handle_orbtypes(std::vector<OrbitalTypes>& orbtypes, const std::string& string) const
 {
-  bool foundorbtypes = false;
-  lui up, down, ipos, ipos1;
-  bool spinintegr = Input::iPars["prog"]["spinintegr"];
-  Spin::Type spintype = Spin::Gen;
-  if (spinintegr) spintype = Spin::GenS;
+  lui up, down;
   down=IL::lexfind(string,"_");
   up=IL::lexfind(string,"^");
-  if (up!=std::string::npos && up!=string.size()-1){
-    ipos = up;
-    ipos = IL::skip(string,ipos,"{}_^ ");
-    Product<Orbital::Type> occtypes;
-    while ( (ipos < down) == (up < down) && (ipos1 = IL::nextwordpos(string,ipos,true,false)) != ipos ){//non greedy
-      Orbital orb(IL::plainname(string.substr(ipos,ipos1-ipos)),spintype);
-      occtypes *= orb.type();
-      if ( orb.type() == Orbital::Virt ) 
-        xout << "WARNING: Do you really want to have orbital " << orb << " as occupied?" << std::endl;
-      ipos = IL::skip(string,ipos1,"{}_^ ");
-    }
-    if ( occtypes.size() > 0 ) foundorbtypes = true;
-    orbtypes.push_back(occtypes);
-  }
-  if (down!=std::string::npos && down!=string.size()-1){
-    ipos = down;
-    ipos = IL::skip(string,ipos,"{}_^ ");
-    Product<Orbital::Type> virtypes;
-    while ( (ipos < up) == (down < up) && (ipos1 = IL::nextwordpos(string,ipos,true,false)) != ipos ){//non greedy
-      Orbital orb(IL::plainname(string.substr(ipos,ipos1-ipos)),spintype);
-      virtypes *= orb.type();
-      if ( orb.type() == Orbital::Occ ) 
-        xout << "WARNING: Do you really want to have orbital " << orb << " as virtual?" << std::endl;
-      ipos = IL::skip(string,ipos1,"{}_^ ");
-    }
-    if ( virtypes.size() > 0 ) foundorbtypes = true;
-    orbtypes.push_back(virtypes);
-  }
-  if (!foundorbtypes) orbtypes.clear();
-  return foundorbtypes;
+  orbtypes.push_back(OrbitalTypes(string,up,(up<down)?down:string.size(),true));
+  orbtypes.push_back(OrbitalTypes(string,down,(down<up)?up:string.size(),false));
+  if ( orbtypes[0].empty() && orbtypes[1].empty()) orbtypes.clear();
+  return !orbtypes.empty();
 }
 
 void LEquation::handle_sum(const Lelem& lel, Term& term) const

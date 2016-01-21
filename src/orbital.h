@@ -7,6 +7,7 @@
 #include "utilities.h"
 #include "globals.h"
 #include "product.h"
+#include "inpline.h"
 
 typedef uint Electron;
 
@@ -118,6 +119,15 @@ class Orbital {
 };
 
 std::ostream & operator << (std::ostream & o, Orbital const & orb);
+
+/*
+ * list of orbital types
+ */
+class OrbitalTypes : public Product< Orbital::Type > {
+public:
+  OrbitalTypes() : Product< Orbital::Type >() {};
+  OrbitalTypes(const std::string& types, lui beg, lui end, bool occ);
+};
 
 /*
     Electrons

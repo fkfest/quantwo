@@ -236,6 +236,26 @@ std::ostream& operator<<(std::ostream& o, const Spin& spin)
   return o;
 }
 
+OrbitalTypes::OrbitalTypes(const std::string& types, lui beg, lui end, bool occ)
+{
+  if ( beg >= types.size()-1 ) return;
+  bool spinintegr = Input::iPars["prog"]["spinintegr"];
+  Spin::Type spintype = Spin::Gen;
+  if (spinintegr) spintype = Spin::GenS;
+  lui ipos = beg, ipos1;
+  ipos = beg;
+  ipos = IL::skip(types,ipos,"{}_^ ");
+  while ( (ipos < end) && (ipos1 = IL::nextwordpos(types,ipos,true,false)) != ipos ){//non greedy
+    Orbital orb(IL::plainname(types.substr(ipos,ipos1-ipos)),spintype);
+    this->push_back(orb.type());
+    if ( occ && orb.type() == Orbital::Virt ) {
+      xout << "WARNING: Do you really want to have orbital " << orb << " as occupied?" << std::endl;
+    } else if ( !occ && orb.type() == Orbital::Occ ) {
+      xout << "WARNING: Do you really want to have orbital " << orb << " as virtual?" << std::endl;
+    }
+    ipos = IL::skip(types,ipos1,"{}_^ ");
+  }
+}
 
 std::ostream & operator << (std::ostream & o, const Electrons& el)
 {

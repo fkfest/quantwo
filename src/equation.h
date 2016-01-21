@@ -41,6 +41,20 @@ public:
   // save position of a Matrix of the _excops in term, if -1: the _excops is not present in this term
   int _posexcopsterm;
 };
+/*
+ *  excitation map
+ */
+class LExcitationMap : public std::map<std::string, LExcitationInfo> {
+public:
+  // handle excitation index and add to the map. Return iterator to this excitation
+  LExcitationMap::iterator add( std::string const & name, bool dg, int lmel = 0, bool excopsonly=false );
+  
+  // correct used orbitals
+  void correct_orbs(const Product<Orbital>& orbs);
+  
+  // global "term" to generate orbitals for excitations 
+  Term globalterm;
+};
 
 /*!
     lexic Equation
@@ -50,7 +64,7 @@ public:
   // add string
   LEquation & operator += (const Lelem & lel) { _eqn.add(lel); return *this; };
   // clear _eqn
-  void reseteq() { _eqn = LelString();};
+  void reseteq() { _eqn = LelString(); _connections = ConnectionsMap(); };
   // extract expression (remove parentheses and sums)
   bool extractit();
   // transform LelString/ to Sum<Term>, if excopsonly: do only pure excitation operators (and bra/ket)
@@ -78,9 +92,9 @@ private:
   // (name, excitation class, name additions, dagger, non-conserving character, orbital types...)
   // returns true if found up or down
   bool handle_namupdown(std::string& name, short& excl, std::string& nameup, std::string& namedown, bool& dg, int& lmel, 
-                        std::vector< Product<Orbital::Type> >& orbtypes, const std::string& lelnam ) const;
+                        std::vector<OrbitalTypes>& orbtypes, const std::string& lelnam ) const;
   // returns true if explicit given orbtypes found
-  bool handle_orbtypes(std::vector< Product<Orbital::Type> >& orbtypes, const std::string& string) const;
+  bool handle_orbtypes(std::vector<OrbitalTypes>& orbtypes, const std::string& string) const;
   // handle sum
   void handle_sum(Lelem const & lel, Term & term) const;
   // handle parameter
@@ -95,7 +109,6 @@ private:
   LelString _eqn;
   Equation _sumterms;
   // save names and corresponding info of pure excitation and deexciation operators
-  typedef std::map<std::string, LExcitationInfo> LExcitationMap;
   LExcitationMap _excops;
   // save parameters and sums in term
   LelString _paramterm, _sumsterm;

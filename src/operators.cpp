@@ -95,7 +95,7 @@ Oper::Oper(Ops::Type type, short int exccl, Orbital occ, Orbital virt, std::stri
 //   xout << *this << std::endl;
 }
 Oper::Oper(Ops::Type type, short int exccl, const std::map< Orbital::Type, Orbital >& orbnames, 
-           const std::vector< Product< Orbital::Type > >& orbtypes, std::string name, int lm, Term* pTerm)
+           const std::vector<OrbitalTypes>& orbtypes, std::string name, int lm, Term* pTerm)
 {
   assert( !InSet(type, Ops::FluctP,Ops::Fock,Ops::OneEl,Ops::XPert) );
   assert( orbtypes.size() == 2 );
@@ -116,7 +116,7 @@ Oper::Oper(Ops::Type type, short int exccl, const Product< Orbital >& occs, cons
   p_Term = pTerm;
   create_Oper(occs,virts,name);
 }
-Oper::Oper(Ops::Type type, short int exccl, const std::vector< Product< Orbital::Type > >& orbtypes, 
+Oper::Oper(Ops::Type type, short int exccl, const std::vector<OrbitalTypes>& orbtypes, 
            std::string name, int lm, Term* pTerm)
 {
   assert( !InSet(type, Ops::FluctP,Ops::Fock,Ops::OneEl,Ops::XPert) );
@@ -129,7 +129,7 @@ Oper::Oper(Ops::Type type, short int exccl, const std::vector< Product< Orbital:
   std::map<Orbital::Type,Orbital> orbnames;
   if ( p_Term ){
     for ( uint i=0; i<orbtypes.size(); ++i ){
-      _foreach_cauto(Product<Orbital::Type>,iot,orbtypes[i]){
+      _foreach_cauto(OrbitalTypes,iot,orbtypes[i]){
         if ( orbnames.count(*iot) == 0 ){
           // new orb type
           orbnames[*iot] = p_Term->freeorbname(*iot);
@@ -183,7 +183,8 @@ void Oper::create_Oper(const std::string& name, bool antisym)
   short npairs = porbs.size()/2;
   _mat=Matrices(_type,porbs,npairs,name,spinsym,antisym);
 }
-void Oper::create_Oper(short int const & exccl,Orbital const & occ, Orbital const & virt, std::string const & name, int lm)
+void Oper::create_Oper(short int const & exccl,Orbital const & occ, Orbital const & virt, 
+                       std::string const & name, int lm)
 {
   assert( !InSet(_type, Ops::FluctP,Ops::Fock,Ops::OneEl,Ops::XPert) );
   std::string excl;
@@ -202,7 +203,7 @@ void Oper::create_Oper(short int const & exccl,Orbital const & occ, Orbital cons
   create_Oper(occs,virts,name);
 }
 void Oper::create_Oper(const short int& exccl, const std::map< Orbital::Type, Orbital >& orbnames, 
-                       const std::vector< Product< Orbital::Type > >& orbtypes, const std::string& name, int lm)
+                       const std::vector<OrbitalTypes>& orbtypes, const std::string& name, int lm)
 {
   assert( !InSet(_type, Ops::FluctP,Ops::Fock,Ops::OneEl,Ops::XPert) );
   std::string excl;
@@ -210,8 +211,8 @@ void Oper::create_Oper(const short int& exccl, const std::map< Orbital::Type, Or
   short 
     nocc = exccl,
     nvirt = exccl+lm;
-  const Product<Orbital::Type> & occtype(orbtypes[0]);
-  const Product<Orbital::Type> & virtype(orbtypes[1]);
+  const OrbitalTypes & occtype(orbtypes[0]);
+  const OrbitalTypes & virtype(orbtypes[1]);
   std::map< Orbital::Type, uint > num4type;
   assert(int(occtype.size()) == nocc);
   assert(int(virtype.size()) == nvirt);
