@@ -1,9 +1,10 @@
-%\documentclass[a4paper,floatfix,superscriptaddress]{article}
-%\documentclass[reprint,a4paper,floatfix,superscriptaddress]{revtex4}
-\documentclass[reprint,a4paper,floatfix,superscriptaddress]{revtex4-1}
+\documentclass[a4paper,floatfix,11pt]{article}
+\usepackage[margin=1.5cm]{geometry}
 \usepackage{graphicx}
 \usepackage{rotating}
-\usepackage{amsfonts,amsmath,amssymb,latexsym,bbm,dsfont}
+\usepackage{amsfonts,amsmath,amssymb,latexsym}
+
+\providecommand{\QuantwoInputFileName}{input}% fallback definition
 
 \def\blank{\par\noindent}
 \input{definitions}
@@ -11,22 +12,17 @@
 %\usepackage{tikz}
 %\include {ccdiag}
 %
-\parskip 6pt
 \begin{document}
 
 \author{Daniel Kats}
-\affiliation{Stuttgart}
 
 \title{Equations}
 
 \maketitle
-\begin{widetext}
 
-\input{input}
+\input{\QuantwoInputFileName}
 
 
 \bigskip
-\end{widetext}
-\bibliography{local,tripmp}
 \end{document}
 

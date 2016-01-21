@@ -45,6 +45,8 @@ make base
 
 It creates symbolic links to all needed files from quantwo directory. 
 With "make equation" you can create then equation.pdf from "input.q2"-file
+With "make equation out=<filename>" you can create <filename>.pdf from "input.q2"-file
+With "make equation in=<filename>" you can create equation.pdf from "<filename>.q2"-file
 
 COMMAND-LINE PARAMETERS
 

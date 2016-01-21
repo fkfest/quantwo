@@ -24,8 +24,10 @@ ifeq ($(UNAME_S),Darwin)
   # uses greadlink from coreutils
   BASE=$(shell dirname $$(greadlink -f Makefile))
 endif
+in=input
+out=equation
 # files to be linked to working-directory
-FILIN=definitions.tex equation.tex
+FILIN=definitions.tex $(out).tex
 DIR = src
 OBJ0 = main.o tensor.o action.o expression.o factorizer.o inpline.o finput.o equation.o lexic.o work.o orbital.o matrices.o operators.o kronecker.o term.o utilities.o globals.o
 OBJ = $(patsubst %,$(DIR)/%,$(OBJ0))
@@ -44,8 +46,10 @@ clean :
 veryclean :
 	rm -rf $(MAIN) $(OBJ) *.pdf *.aux *.bib *.dvi *.ps *.log *~ $(DIR)/*~  
 equation :
-	 $(MAIN) input.q2
-	 pdflatex equation.tex
+	 $(MAIN) $(in).q2
+	 @test -e $(out).tex || cp equation.tex $(out).tex
+	 pdflatex "\newcommand\QuantwoInputFileName{$(in)}\input{$(out)}"
+	 rm $(out).log $(out).aux
 
 base : $(FILIN)
 ifneq ($(BASE),$(PWD))
