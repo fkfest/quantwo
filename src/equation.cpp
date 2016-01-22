@@ -74,7 +74,7 @@ void LParsedName::parse_superscript(const std::string& up, uint try2set)
   for ( TParArray::const_iterator itlm = lessmore.begin(); itlm != lessmore.end(); ++itlm ){
     lmsize = itlm->size();
     if ( itlm != lessmore.begin() && lmsize != itlm->size() ) {
-      error("String length of less and more differ (syntax,lessmore)!","LEquation::handle_namupdown");
+      error("String length of less and more differ (syntax,lessmore)!","LParsedName::parse_superscript");
     }
   }
   lui last = std::string::npos;
@@ -491,7 +491,7 @@ Oper LEquation::handle_operator(const Lelem& lel, Term& term, bool excopsonly)
   TsPar& hms = Input::sPars["hamilton"];
   LParsedName op(lel.name(),LParsedName::Name);
   // bare excitation operator 
-  bool bare_excop = (InSet(op.name.substr(0,4), bexcops));
+  bool bare_excop = (InSet(op.name, bexcops));
 #define LPN LParsedName
   uint try2set = LPN::Lmel|LPN::Dg;
   if ( bare_excop ){
