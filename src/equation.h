@@ -53,7 +53,40 @@ public:
   void correct_orbs(const Product<Orbital>& orbs);
   
   // global "term" to generate orbitals for excitations 
-  Term globalterm;
+  Term _globalterm;
+};
+/* 
+ * name parsing
+   handle name, ups and downs of operators 
+   (name, excitation class, name additions, dagger, non-conserving character, orbital types...)
+ */
+struct LParsedName {
+  enum Type {
+    Name = 0x000,
+    Lmel = 0x001,
+    Nameadd = 0x002,
+    Dg = 0x004,
+    Orbs = 0x008,
+    Excl = 0x01,
+    Excitation = 0x02,
+    Orbtypes = 0x04
+  };
+  int lmel;
+  std::string name, nameadd, excitation;
+  bool foundsscipt, dg;
+  //occ (superscript) and virt (subscript) orbitals
+  Product<Orbital> occ,virt;
+  short int excl;
+  std::vector<OrbitalTypes> orbtypes;
+  Product<Orbital> orbs;
+  LParsedName() : lmel(0),dg(false),excl(0){};
+  // parse namein for name, subscript and superscript
+  // if try2set=Name - stop after setting the name
+  LParsedName( const std::string& namein, uint try2set );
+private:
+  void parse_superscript( const std::string& up,  uint try2set );
+  void parse_subscript( const std::string& down,  uint try2set );
+  bool gen_orbtypes(const std::string& string);
 };
 
 /*!
@@ -88,13 +121,6 @@ private:
   TFactor handle_factor(Lelem const & lel) const;
   // handle operator
   Oper handle_operator(Lelem const & lel, Term & term, bool excopsonly=false);
-  // handle name, ups and downs of operators 
-  // (name, excitation class, name additions, dagger, non-conserving character, orbital types...)
-  // returns true if found up or down
-  bool handle_namupdown(std::string& name, short& excl, std::string& nameup, std::string& namedown, bool& dg, int& lmel, 
-                        std::vector<OrbitalTypes>& orbtypes, const std::string& lelnam ) const;
-  // returns true if explicit given orbtypes found
-  bool handle_orbtypes(std::vector<OrbitalTypes>& orbtypes, const std::string& string) const;
   // handle sum
   void handle_sum(Lelem const & lel, Term & term) const;
   // handle parameter

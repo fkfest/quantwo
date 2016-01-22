@@ -223,6 +223,28 @@ lui IL::lexfind(const std::string& str, const std::string& sstr, const lui& ipos
     ires = std::string::npos;
   return ires;
 }
+bool IL::nameupdown(std::string& name, std::string& nameup, std::string& namedown, const std::string& lelnam)
+{
+  if ( lelnam.empty() ) return false;
+  lui down = IL::lexfind(lelnam,"_");
+  lui up = IL::lexfind(lelnam,"^");
+  // last position of name of operator
+  lui iposnam = std::min(up,down);
+  iposnam = std::min(std::size_t(iposnam),lelnam.size());
+  name = lelnam.substr(0,iposnam);
+  if (up < lelnam.size()-1){
+    nameup = lelnam.substr(up);
+  }  
+  if (down < lelnam.size()-1){
+    namedown = lelnam.substr(down);
+  }  
+  if (up < down){
+    nameup = nameup.substr(0,down-up);
+  } else if (down < up) {
+    namedown = namedown.substr(0,up-down);
+  }
+  return !(nameup.empty() && namedown.empty());
+}
 void IL::add2name(std::string& name, const std::string& nameadd, bool superscript, bool snam)
 {
   const std::string& supername = Input::sPars["command"]["supername"]; // environment for name addition 

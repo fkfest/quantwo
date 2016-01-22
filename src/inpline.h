@@ -39,6 +39,8 @@ namespace IL{
   std::string plainname(std::string name);
   // find position of a substring sstr on the current level of the string str (i.e. don't search inside of {})
   lui lexfind(const std::string& str, const std::string& sstr, const lui& ipos = 0);
+  // divide lelnam into name, superscript and subscript. returns true if up or down is there
+  bool nameupdown(std::string& name, std::string& nameup, std::string& namedown, const std::string& lelnam);
   // add nameadd to name (as superscript if superscript=true) (inside \snam{} if snam is true)
   void add2name(std::string & name, std::string const & nameadd, bool superscript = true, bool snam = true);
 }

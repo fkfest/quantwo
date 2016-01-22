@@ -126,7 +126,7 @@ std::ostream & operator << (std::ostream & o, Orbital const & orb);
 class OrbitalTypes : public Product< Orbital::Type > {
 public:
   OrbitalTypes() : Product< Orbital::Type >() {};
-  OrbitalTypes(const std::string& types, lui beg, lui end, bool occ);
+  OrbitalTypes(const std::string& types, bool occ);
 };
 
 /*
