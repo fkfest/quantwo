@@ -127,6 +127,7 @@ class OrbitalTypes : public Product< Orbital::Type > {
 public:
   OrbitalTypes() : Product< Orbital::Type >() {};
   OrbitalTypes(const std::string& types, bool occ);
+  OrbitalTypes( Orbital::Type type, uint nn ){ for ( uint i = 0; i < nn; ++i ) push_back(type);};
 };
 
 /*

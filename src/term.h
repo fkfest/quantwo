@@ -181,6 +181,8 @@ class Term {
     void set_lastel(Electron el, bool onlylarger = false);
     // set _lastorb using _sumindx
     void set_lastorbs();
+    // copy lastorbs from another term
+    void copy_lastorbs( const Term & term ){ _lastorb = term._lastorb;};
     // iterates over all orbitals in the term. Returns Orbital() if iorb > last one
     Orbital orb( uint iorb ) const;
     

@@ -94,7 +94,7 @@ e.g. \newop{H}{\op F + \op W} -> hamiltonian
 OPERATORS:
 
 1) Parts of Hamiltonian: \op H, \op F, \op W and \op X (1-electron perturbation) (hamilton:fock hamilton:flucpot hamilton:perturbation)
-2) Excitation operators: \op \tau_{<excitation>}, where <excitation> can be, e.g., \mu_1, \nu_3, etc
+2) Excitation operators: \op \tau_{<excitation>}, where <excitation> can be, e.g., \mu_1, \nu_3, \mu_2^{-1} (non-conserving) etc
 3) Cluster operators and intermediates: \op <name of operator>_<excitation class>^<addition to name and/or \dagger>, e.g., 
                                         \op T_2, \op U_3, \op S_4^{X}, \op Z^{bla}_1
    <name of operator> must not match name of a part of Hamiltonian (1)!

@@ -28,17 +28,32 @@ typedef std::map< Orbital::Type,Orbital > TOrb4Type;
 class LExcitationInfo {
 public:
   LExcitationInfo() {};
-  LExcitationInfo( const TOrb4Type& orbs, short exclass, Matrices::Spinsym spin, int termpos = -1 ) :
-    _orbs4excops(orbs), _exccls(exclass), _spinsymexcs(spin), _posexcopsterm(termpos){};
+  LExcitationInfo( const TOrb4Type& orbs, std::vector<OrbitalTypes> orbts, 
+                   short exclass, bool dgr, Matrices::Spinsym spin, int termpos = -1 ) :
+    _orbs4excops(orbs),_orbtypes(orbts), _exccls(exclass), _dg(dgr), 
+    _spinsymexcs(spin), _posexcopsterm(termpos){};
     
   void reset_term_info() { _posexcopsterm = -1; };
-  // save indices that the excitation (and deexcitation) operators have got.
+  TOrb4Type & orbs4excops() { return _orbs4excops; };
+  const std::vector<OrbitalTypes> & orbtypes() const { return _orbtypes; };
+  short exccls() const { return _exccls; };
+  bool dg() const { return _dg;};
+  int lmel() const { assert(_orbtypes.size() == 2); return _orbtypes[1].size()-_orbtypes[0].size(); };
+  Matrices::Spinsym spinsymexcs() const { return _spinsymexcs;};
+  int posexcopsterm() const { return _posexcopsterm;};
+  void set_posexcopsterm(int pos){ _posexcopsterm = pos;};
+private:
+  // indices that the excitation (and deexcitation) operators have got.
   TOrb4Type _orbs4excops;
-  // save excclass
+  // orbital types (first set for occ and second set for virt indices )
+  std::vector<OrbitalTypes> _orbtypes;
+  // excclass
   short _exccls;
-  // save spinsymmetry
+  // dagger
+  bool _dg;
+  // spinsymmetry
   Matrices::Spinsym _spinsymexcs;
-  // save position of a Matrix of the _excops in term, if -1: the _excops is not present in this term
+  // position of a Matrix of the _excops in term, if -1: the _excops is not present in this term
   int _posexcopsterm;
 };
 /*
@@ -46,12 +61,18 @@ public:
  */
 class LExcitationMap : public std::map<std::string, LExcitationInfo> {
 public:
-  // handle excitation index and add to the map. Return iterator to this excitation
-  LExcitationMap::iterator add( std::string const & name, bool dg, int lmel = 0, bool excopsonly=false );
+  // get excitation info corresponding to excitation index in name.
+  // if not there yet, handle excitation index and add to the map. 
+  // Return iterator to this excitation
+  LExcitationMap::iterator get_add( std::string const & name, int lmel = 0 );
   
+  // set lastorbs in globalterm (if smaller)
+  void set_lastorbs(const Product< Orbital >& orbs, Spin::Type spintype);
   // correct used orbitals
   void correct_orbs(const Product<Orbital>& orbs);
-  
+  // term to get lastorbs
+  const Term& orbsterm() const { return _globalterm;};
+private:  
   // global "term" to generate orbitals for excitations 
   Term _globalterm;
 };
@@ -129,8 +150,6 @@ private:
   Permut handle_permutation(Lelem const & lel) const;
   // reset term (set to Term() and reset lastorbs)
   void reset_term(Term& term) const;
-  // correct used orbitals
-  void correct_orbs(Term& term, const Product<Orbital>& orbs);
   
   LelString _eqn;
   Equation _sumterms;
