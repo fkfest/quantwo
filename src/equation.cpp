@@ -1,6 +1,6 @@
 #include "equation.h"
 
-Product< Orbital > LExcitationInfo::orbitals(bool dg)
+Product< Orbital > LExcitationInfo::orbitals(bool dg) const
 {
   if ( dg ) {
     // dagger
@@ -325,7 +325,7 @@ Oper LEquation::handle_braket(const Lelem& lel, Term& term, bool excopsonly)
     return handle_explexcitation(term,lelnam.substr(iend),(lel.lex()==Lelem::Bra),excopsonly);
   } else {
     int lm = 0;
-    return handle_excitation(term,lelnam,(lel.lex()==Lelem::Bra),lm,excopsonly);
+    return handle_excitation(lelnam,(lel.lex()==Lelem::Bra),lm,excopsonly);
   }
 }
 Oper LEquation::handle_explexcitation(Term& term, const std::string& name, bool dg, bool excopsonly, bool phi)
@@ -390,12 +390,11 @@ Oper LEquation::handle_explexcitation(Term& term, const std::string& name, bool 
     return Oper(Ops::Exc0,excl,occs,virts,"",lmelec,&term);
 }
 
-Oper LEquation::handle_excitation(Term& term, const std::string& name, bool dg, int lmel, bool excopsonly)
+Oper LEquation::handle_excitation(const std::string& name, bool dg, int lmel, bool excopsonly)
 {
   LExcitationMap::iterator itex = _excops.get_add(name,lmel);
   if (excopsonly) return Oper();
-  LExcitationInfo & info = itex->second;
-  info.set_posexcopsterm( term.mat().size() ); //set position of this operator in the term
+  const LExcitationInfo & info = itex->second;
   // create \tau_{excl}
   if (dg)
     return Oper(Ops::Deexc0, info.orbitals(dg),"",info.lmel(dg));  
@@ -493,7 +492,7 @@ Oper LEquation::handle_operator(const Lelem& lel, Term& term, bool excopsonly)
     error("No excitation class in operator "+lel.name(),"LEquation::handle_operator");
   IL::add2name(name,op.nameadd); // add nameadd to name (as superscript)
   if (bare_excop) { // bare excitation operator
-    return handle_excitation(term,op.excitation,op.dg,lmelec,excopsonly);
+    return handle_excitation(op.excitation,op.dg,lmelec,excopsonly);
   }
   if (excopsonly) return Oper();
   if (op.excl == 0 && lmelec <= 0)
@@ -514,7 +513,6 @@ Oper LEquation::handle_operator(const Lelem& lel, Term& term, bool excopsonly)
 void LEquation::handle_sum(const Lelem& lel, Term& term) const
 {
   lui ipos, ipos1, up, down;
-  long int iposexcn;
   std::string lelnam=lel.name(),name;
   down=IL::lexfind(lelnam,"_");
   up=IL::lexfind(lelnam,"^");
@@ -530,13 +528,7 @@ void LEquation::handle_sum(const Lelem& lel, Term& term) const
     name=lelnam.substr(ipos,ipos1-ipos);
     LExcitationMap::const_iterator itex = _excops.find(name);
     if (itex != _excops.end()) {
-      iposexcn=itex->second.posexcopsterm();
-      if (iposexcn>=0) {
-        const Product<Matrices>& mats = term.mat();
-        assert( uint(iposexcn) < mats.size() );
-        term.addsummation(mats[iposexcn].orbitals());
-      } else
-        say("Sum is not present in this term: "+lelnam);
+      term.addsummation(itex->second.orbitals());
     }
     else
       say("No excitation operator which would correspond to summation index "+name);
@@ -575,7 +567,6 @@ void LEquation::handle_parameters(Term& term, bool excopsonly)
 {
   if (!excopsonly) {// handle saved parameters
     lui ipos, ipos1, iposnam, up, down;
-    int iposexcn;
     std::string lelnam,name,nameadd,excn;
     for (unsigned int i=0; i<_paramterm.size(); i++) {
       lelnam=_paramterm[i].name();
@@ -607,24 +598,15 @@ void LEquation::handle_parameters(Term& term, bool excopsonly)
         excn=lelnam.substr(ipos,ipos1-ipos);
         LExcitationMap::const_iterator itex = _excops.find(excn);
         if ( itex != _excops.end() ) {
-          iposexcn = itex->second.posexcopsterm();
-          if (iposexcn>=0) {
-            Matrices mat(Ops::Interm,
-                         term.mat()[iposexcn].orbitals(),
-                         itex->second.exccls(), name,itex->second.spinsymexcs());
-//             term.addmatrix(mat);
-            term.replacematrix(mat,iposexcn);
-          } else
-            say("Parameter is not present in this term: "+lelnam);
+          // FIXME add dagger if needed to orbitals()!
+          Matrices mat(Ops::Interm,itex->second.orbitals(),
+                       itex->second.exccls(), name,itex->second.spinsymexcs());
+            term.addmatrix(mat);
         } else
         // TODO : add parameters with explicit excitations
           error("Unknown excitation in parameter "+excn);
       }
     }
-  }
-  // reset all information
-  _foreach_auto(LExcitationMap,itex,_excops) {
-    itex->second.reset_term_info();
   }
   _paramterm=LelString();
 }

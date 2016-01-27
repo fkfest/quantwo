@@ -34,17 +34,14 @@ public:
   LExcitationInfo( const Product<Orbital>& orbs, int lmelec, Matrices::Spinsym spin ) :
     _orbs(orbs), _lmel(lmelec), _spinsymexcs(spin){};
     
-  void reset_term_info() { _posexcopsterm = -1; };
   // excitation class
   short exccls(bool dg = false) const{ return (_orbs.size()-lmel(dg))/2; };
   // electron non-conserving number
   int lmel(bool dg = false) const { return dg ? -_lmel : _lmel; };
   // spin symmetry of the excitation
   Matrices::Spinsym spinsymexcs() const { return _spinsymexcs;};
-  int posexcopsterm() const { return _posexcopsterm;};
-  void set_posexcopsterm(int pos){ _posexcopsterm = pos;};
   // return orbitals of the excitation
-  Product<Orbital> orbitals(bool dg = false);
+  Product<Orbital> orbitals(bool dg = false) const;
 private:
   // orbitals for the excitation
   // FIXME will replace most of the other entries here!
@@ -53,8 +50,6 @@ private:
   int _lmel;
   // spinsymmetry
   Matrices::Spinsym _spinsymexcs;
-  // position of a Matrix of the _excops in term, if -1: the _excops is not present in this term
-  int _posexcopsterm;
 };
 /*
  *  excitation map FIXME \mu_1 vs \mu_1^dg = should have the same orbitals?
@@ -138,7 +133,7 @@ private:
   // handle explicit excitation index (like ^{ab}_{ij})
   Oper handle_explexcitation(Term& term, std::string const & name, bool dg, bool excopsonly=false, bool phi=true);
   // handle excitation index
-  Oper handle_excitation( Term& term, std::string const & name, bool dg, int lmel = 0, bool excopsonly=false );
+  Oper handle_excitation( std::string const & name, bool dg, int lmel = 0, bool excopsonly=false );
   // handle factor
   TFactor handle_factor(Lelem const & lel) const;
   // handle operator
