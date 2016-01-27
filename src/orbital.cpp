@@ -103,9 +103,15 @@ bool Orbital::operator<(const Orbital& orb) const
 }
 std::string Orbital::letname() const
 {
-  long int iend;
+  lui iend;
   for ( iend = this->_name.size(); iend > 0 && isdigit(this->_name[iend-1]); --iend ){}
   return _name.substr(0,iend);
+}
+void Orbital::replace_letname(const std::string& newname)
+{
+  lui iend;
+  for ( iend = this->_name.size(); iend > 0 && isdigit(this->_name[iend-1]); --iend ){}
+  _name.replace(0,iend,newname);
 }
 
 int Orbital::comp_letname(const Orbital& orb) const

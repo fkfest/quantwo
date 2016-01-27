@@ -10,6 +10,7 @@
 #include "product.h"
 #include "term.h"
 #include "matrices.h"
+#include "operators.h"
 #include "globals.h"
 #include "lexic.h"
 
@@ -22,42 +23,41 @@ public:
 };
 
 typedef std::map< Orbital::Type,Orbital > TOrb4Type;
+class LExcitationMap;
 /*
  *  excitation info (for \mu_i etc) 
  */
 class LExcitationInfo {
+  friend class LExcitationMap;
 public:
   LExcitationInfo() {};
-  LExcitationInfo( const TOrb4Type& orbs, std::vector<OrbitalTypes> orbts, 
-                   short exclass, bool dgr, Matrices::Spinsym spin, int termpos = -1 ) :
-    _orbs4excops(orbs),_orbtypes(orbts), _exccls(exclass), _dg(dgr), 
-    _spinsymexcs(spin), _posexcopsterm(termpos){};
+  LExcitationInfo( const Product<Orbital>& orbs, int lmelec, Matrices::Spinsym spin ) :
+    _orbs(orbs), _lmel(lmelec), _spinsymexcs(spin){};
     
   void reset_term_info() { _posexcopsterm = -1; };
-  TOrb4Type & orbs4excops() { return _orbs4excops; };
-  const std::vector<OrbitalTypes> & orbtypes() const { return _orbtypes; };
-  short exccls() const { return _exccls; };
-  bool dg() const { return _dg;};
-  int lmel() const { assert(_orbtypes.size() == 2); return _orbtypes[1].size()-_orbtypes[0].size(); };
+  // excitation class
+  short exccls(bool dg = false) const{ return (_orbs.size()-lmel(dg))/2; };
+  // electron non-conserving number
+  int lmel(bool dg = false) const { return dg ? -_lmel : _lmel; };
+  // spin symmetry of the excitation
   Matrices::Spinsym spinsymexcs() const { return _spinsymexcs;};
   int posexcopsterm() const { return _posexcopsterm;};
   void set_posexcopsterm(int pos){ _posexcopsterm = pos;};
+  // return orbitals of the excitation
+  Product<Orbital> orbitals(bool dg = false);
 private:
-  // indices that the excitation (and deexcitation) operators have got.
-  TOrb4Type _orbs4excops;
-  // orbital types (first set for occ and second set for virt indices )
-  std::vector<OrbitalTypes> _orbtypes;
-  // excclass
-  short _exccls;
-  // dagger
-  bool _dg;
+  // orbitals for the excitation
+  // FIXME will replace most of the other entries here!
+  Product<Orbital> _orbs;
+  // electron non-conserving number
+  int _lmel;
   // spinsymmetry
   Matrices::Spinsym _spinsymexcs;
   // position of a Matrix of the _excops in term, if -1: the _excops is not present in this term
   int _posexcopsterm;
 };
 /*
- *  excitation map
+ *  excitation map FIXME \mu_1 vs \mu_1^dg = should have the same orbitals?
  */
 class LExcitationMap : public std::map<std::string, LExcitationInfo> {
 public:
@@ -98,6 +98,7 @@ struct LParsedName {
   //occ (superscript) and virt (subscript) orbitals
   Product<Orbital> occ,virt;
   short int excl;
+  // orbital types (first set for occ and second set for virt indices )
   std::vector<OrbitalTypes> orbtypes;
   Product<Orbital> orbs;
   LParsedName() : lmel(0),dg(false),excl(0){};

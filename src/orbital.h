@@ -100,6 +100,7 @@ class Orbital {
   bool operator < (Orbital const & orb) const;
   // return letter-name of orbital
   std::string letname() const;
+  void replace_letname(const std::string& newname);
   // compare main (i.e. letter) names (e.g. i<j; ii>j, i23==i42 )
   // -1: <; 0: ==; 1: >
   int comp_letname( const Orbital& orb ) const;

@@ -70,6 +70,8 @@ class Oper {
   // constructor from excitation class, Type and product of orbitals (virts.size - occs.size  == lm; occs.size = exccl)
   Oper (Ops::Type type, short exccl,const Product<Orbital>& occs, const Product<Orbital>& virts ,
         std::string name="T", int lm=0, Term* pTerm = 0);
+  // constructor from orbitals (order and spins won't change)
+  Oper (Ops::Type type, const Product<Orbital>& orbs, std::string name="T", int lm=0 );
   //return matrix (integral or amplitude)
   Matrices mat() const;
   //return operator
@@ -89,6 +91,8 @@ class Oper {
   void create_Oper(const short int& exccl, const std::map<Orbital::Type,Orbital>& orbnames, 
                    const std::vector<OrbitalTypes>& orbtypes, const std::string& name, int lm);
   void create_Oper(const Product< Orbital >& occs, const Product< Orbital >& virts, const std::string& name);
+  // create operator using orbitals in orbs (in the given order and spins!)
+  void create_Oper(const Product<Orbital>& orbs, const std::string& name, int lm);
   Ops::Type _type;
   Product<SQOp> _SQprod;
   Matrices _mat;

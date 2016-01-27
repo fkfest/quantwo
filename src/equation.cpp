@@ -1,5 +1,25 @@
 #include "equation.h"
 
+Product< Orbital > LExcitationInfo::orbitals(bool dg)
+{
+  if ( dg ) {
+    // dagger
+    Product<Orbital> orbs;
+    assert( (_orbs.size()-std::abs(_lmel))%2 == 0 );
+    uint npairs = (_orbs.size()-std::abs(_lmel))/2;
+    for ( uint i = 0; i < npairs; ++i ){
+      orbs.push_back(_orbs[2*i+1]);
+      orbs.push_back(_orbs[2*i]);
+    }
+    for ( uint i = 2*npairs; i < _orbs.size(); ++i )
+      orbs.push_back(_orbs[i]);
+
+    return orbs;
+  } else {
+    return _orbs;
+  }
+}
+
 LExcitationMap::iterator LExcitationMap::get_add(const std::string& name, int lmel )
 {
   LExcitationMap::iterator itex = this->find(name);
@@ -20,6 +40,11 @@ LExcitationMap::iterator LExcitationMap::get_add(const std::string& name, int lm
   if (orbtypes.empty()) { // create default orbtypes (occ(excl), virt(excl+lmel))
     orbtypes.push_back(OrbitalTypes(Orbital::Occ,excl));
     orbtypes.push_back(OrbitalTypes(Orbital::Virt,excl+lmel));
+  } else {
+    assert(orbtypes.size() == 2);
+    if ( int(orbtypes[0].size()) != excl || int(orbtypes[1].size()) != excl+lmel ){
+      error("Inconsistency in orbital types and excitation class","LExcitationMap::get_add");
+    }
   }
   TOrb4Type orb4t;
   for ( uint i = 0; i < orbtypes.size(); ++i ){
@@ -30,7 +55,14 @@ LExcitationMap::iterator LExcitationMap::get_add(const std::string& name, int lm
   }
   //TODO: implement Triplet!
   Matrices::Spinsym spinsym = Matrices::Singlet;
-  return (this->insert(std::make_pair(name,LExcitationInfo(orb4t,orbtypes,excl,exc.dg,spinsym)))).first;
+  Ops::Type opstype;
+  if ( exc.dg )
+    opstype = Ops::Deexc0;
+  else
+    opstype = Ops::Exc0;
+  Oper op(opstype,excl,orb4t,orbtypes,"",lmel,&_globalterm);
+  
+  return (this->insert(std::make_pair(name,LExcitationInfo(op.mat().orbitals(),lmel,spinsym)))).first;
 }
 void LExcitationMap::set_lastorbs(const Product< Orbital >& orbs, Spin::Type spintype)
 {
@@ -42,18 +74,15 @@ void LExcitationMap::set_lastorbs(const Product< Orbital >& orbs, Spin::Type spi
 void LExcitationMap::correct_orbs(const Product< Orbital >& orbs)
 {
   if ( this->size() == 0 ) return;
-  bool spinintegr = Input::iPars["prog"]["spinintegr"];
-  Spin::Type spintype = Spin::Gen;
-  if (spinintegr) spintype = Spin::GenS;
   //make sure that we haven't used these orbital names already
   for ( uint i = 0; i < orbs.size(); ++i ){
+    std::string newname;
     _foreach_auto(LExcitationMap,itex,*this){
-      for ( uint it = Orbital::Occ; it < Orbital::MaxType; ++it ){
-        Orbital::Type ot = static_cast<Orbital::Type>(it);
-        TOrb4Type::iterator ito4e = itex->second.orbs4excops().find(ot);
-        if ( ito4e != itex->second.orbs4excops().end() &&
-             ito4e->second == Orbital(orbs[i].letname(),spintype) )  // is there, change it
-          ito4e->second = _globalterm.freeorbname(ot);
+      _foreach_auto(Product<Orbital>,itorb,itex->second._orbs){
+        if ( itorb->letname() == orbs[i].letname() ){
+          if (newname.empty()) newname = _globalterm.freeorbname(itorb->type()).letname();
+          itorb->replace_letname(newname);
+        }
       }
     }
   }
@@ -367,12 +396,11 @@ Oper LEquation::handle_excitation(Term& term, const std::string& name, bool dg, 
   if (excopsonly) return Oper();
   LExcitationInfo & info = itex->second;
   info.set_posexcopsterm( term.mat().size() ); //set position of this operator in the term
-  dg = (dg != info.dg());
   // create \tau_{excl}
   if (dg)
-    return Oper(Ops::Deexc0, info.exccls(),info.orbs4excops(),info.orbtypes(),"",info.lmel(),&term);  
+    return Oper(Ops::Deexc0, info.orbitals(dg),"",info.lmel(dg));  
   else
-    return Oper(Ops::Exc0,info.exccls(),info.orbs4excops(),info.orbtypes(),"",info.lmel(),&term);
+    return Oper(Ops::Exc0,info.orbitals(dg),"",info.lmel(dg));
 }
 
 TFactor LEquation::handle_factor(const Lelem& lel) const

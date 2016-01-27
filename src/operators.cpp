@@ -116,6 +116,14 @@ Oper::Oper(Ops::Type type, short int exccl, const Product< Orbital >& occs, cons
   p_Term = pTerm;
   create_Oper(occs,virts,name);
 }
+Oper::Oper(Ops::Type type, const Product< Orbital >& orbs, std::string name, int lm)
+{
+  assert( !InSet(type, Ops::FluctP,Ops::Fock,Ops::OneEl,Ops::XPert) );
+  _type=type;
+  p_Term = 0;
+  create_Oper(orbs,name,lm);
+}
+
 Oper::Oper(Ops::Type type, short int exccl, const std::vector<OrbitalTypes>& orbtypes, 
            std::string name, int lm, Term* pTerm)
 {
@@ -244,13 +252,8 @@ void Oper::create_Oper(const short int& exccl, const std::map< Orbital::Type, Or
 void Oper::create_Oper(const Product< Orbital >& occs, const Product< Orbital >& virts, const std::string& name)
 {
   assert( !InSet(_type, Ops::FluctP,Ops::Fock,Ops::OneEl,Ops::XPert) );
-  bool spinintegr = Input::iPars["prog"]["spinintegr"];
-  bool noprefac = (Input::iPars["prog"]["nobrafac"]) && InSet(_type, Ops::Exc0,Ops::Deexc0);
-  bool contrexcop = Input::iPars["prog"]["contrexcop"];
-//  assert( occs.size() == virts.size() );
   Matrices::Spinsym spinsym = Matrices::Singlet;
   Product<Orbital> porbs;
-  Product<SQOp> anniSQprod;
   // excitation and deexcitation operators
   const Product<Orbital> 
     * p_orb0 = &virts,
@@ -259,13 +262,7 @@ void Oper::create_Oper(const Product< Orbital >& occs, const Product< Orbital >&
   short 
     ncrea = p_orb0->size(),
     nanni = p_orb1->size(),
-    nmax = std::max(ncrea,nanni),
-    npairs = std::min(ncrea,nanni);
-  // symmetry (hash of orbital-type -> number of such electrons) (for prefactor calculation)
-  std::map<uint,uint> sym;
-  std::map<uint,uint> symel;
-  uint hash;
-  _prefac = 1;
+    nmax = std::max(ncrea,nanni);
   Electron el;
   for (unsigned short i = 0; i < nmax; ++i) {  
     Spin spin(Spin::No);
@@ -274,7 +271,6 @@ void Oper::create_Oper(const Product< Orbital >& occs, const Product< Orbital >&
       el = p_Term->nextelectron();
     else
       el = i+1;
-    uint elhash = 0;
     if ( i < ncrea ) {
       Orbital orb = (*p_orb0)[i];
       spin = orb.spin();
@@ -284,16 +280,7 @@ void Oper::create_Oper(const Product< Orbital >& occs, const Product< Orbital >&
       }
       spin.setel(el);
       orb.setspin(spin);
-      _SQprod*=SQOp(SQOpT::Creator, orb);
       porbs *= orb;
-      _sumindx.insert(orb);
-      if (InSet(_type, Ops::Exc0,Ops::Deexc0)) 
-        _fakesumindx.insert(orb);
-      // add this type of electron-orbital
-      hash = uint(orb.type()) + 2*Orbital::MaxType*orb.spin().spinhash();
-      sym[hash] += 1;
-      // hash for (any) electron
-      elhash += uint(orb.type()) + Orbital::MaxType*Orbital::MaxType*orb.spin().spinhash(false);
     }
     if ( i < nanni ) {
       Orbital orb = (*p_orb1)[i];
@@ -304,19 +291,66 @@ void Oper::create_Oper(const Product< Orbital >& occs, const Product< Orbital >&
       }
       spin.setel(el);
       orb.setspin(spin);
-      if (contrexcop)
-        anniSQprod *= SQOp(SQOpT::Annihilator, orb);
-      else
-        _SQprod *= SQOp(SQOpT::Annihilator, orb);
       porbs *= orb;
-      _sumindx.insert(orb);
+    }
+  }
+  create_Oper(porbs,name,p_orb0->size()-p_orb1->size());
+}
+
+void Oper::create_Oper(const Product< Orbital >& orbs, const std::string& name, int lm)
+{
+  assert( !InSet(_type, Ops::FluctP,Ops::Fock,Ops::OneEl,Ops::XPert) );
+  bool spinintegr = Input::iPars["prog"]["spinintegr"];
+  bool noprefac = (Input::iPars["prog"]["nobrafac"]) && InSet(_type, Ops::Exc0,Ops::Deexc0);
+  bool contrexcop = Input::iPars["prog"]["contrexcop"];
+  Matrices::Spinsym spinsym = Matrices::Singlet;
+  Product<SQOp> anniSQprod;
+  // excitation and deexcitation operators
+  assert( (orbs.size()-lm)%2 == 0 && (orbs.size()+lm)%2 == 0 );
+  short 
+    ncrea = (orbs.size()+lm)/2,
+    nanni = (orbs.size()-lm)/2,
+    nmax = std::max(ncrea,nanni),
+    npairs = std::min(ncrea,nanni);
+  // symmetry (hash of orbital-type -> number of such electrons) (for prefactor calculation)
+  std::map<uint,uint> sym;
+  std::map<uint,uint> symel;
+  uint hash;
+  _prefac = 1;
+  Product<Orbital>::const_iterator itorb = orbs.begin();
+  for (unsigned short i = 0; i < nmax; ++i) {  
+    Electron el = 0;
+    uint elhash = 0;
+    if ( i < ncrea ) {
+      _SQprod*=SQOp(SQOpT::Creator, *itorb);
+      _sumindx.insert(*itorb);
       if (InSet(_type, Ops::Exc0,Ops::Deexc0)) 
-        _fakesumindx.insert(orb);
+        _fakesumindx.insert(*itorb);
+      el = itorb->spin().el();
       // add this type of electron-orbital
-      hash = Orbital::MaxType + uint(orb.type()) + 2*Orbital::MaxType*orb.spin().spinhash();
+      hash = uint(itorb->type()) + 2*Orbital::MaxType*itorb->spin().spinhash();
       sym[hash] += 1;
       // hash for (any) electron
-      elhash += Orbital::MaxType*uint(orb.type()) + Orbital::MaxType*Orbital::MaxType*Spin::MaxType*orb.spin().spinhash(false);
+      elhash += uint(itorb->type()) + Orbital::MaxType*Orbital::MaxType*itorb->spin().spinhash(false);
+      ++itorb;
+    }
+    if ( i < nanni ) {
+      if (contrexcop)
+        anniSQprod *= SQOp(SQOpT::Annihilator, *itorb);
+      else
+        _SQprod *= SQOp(SQOpT::Annihilator, *itorb);
+      _sumindx.insert(*itorb);
+      if (InSet(_type, Ops::Exc0,Ops::Deexc0)) 
+        _fakesumindx.insert(*itorb);
+      if ( el != 0 && el != itorb->spin().el() )
+        error("Different electrons in the product!","Oper::create_Oper");
+      // add this type of electron-orbital
+      hash = Orbital::MaxType + uint(itorb->type()) + 2*Orbital::MaxType*itorb->spin().spinhash();
+      sym[hash] += 1;
+      // hash for (any) electron
+      elhash += Orbital::MaxType*uint(itorb->type()) + 
+                Orbital::MaxType*Orbital::MaxType*Spin::MaxType*itorb->spin().spinhash(false);
+      ++itorb;
     }
     symel[elhash] += 1;
   }
@@ -342,8 +376,10 @@ void Oper::create_Oper(const Product< Orbital >& occs, const Product< Orbital >&
     }
     _prefac = 1/_prefac;
   }
-  _mat=Matrices(_type,porbs,npairs,name,spinsym);
+  _mat=Matrices(_type,orbs,npairs,name,spinsym);
+
 }
+
 
 Matrices Oper::mat() const
 { return _mat;}
