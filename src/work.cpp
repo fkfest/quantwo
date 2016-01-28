@@ -65,6 +65,7 @@ Sum< Term, TFactor > Q2::reduceSum(Sum< Term, TFactor > s)
     }
     sum += std::make_pair(term,i->second);
   }
+  _xout3(sum << std::endl);
   if (quan3) {
     say("count electrons (a posteriori)...");
     s = sum;

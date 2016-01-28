@@ -4,6 +4,6 @@ MP2 Lagrangian
 \beq
 &&\sum_{\mu_2} \prm \Lambda_{\mu_2}<\mu_2| \op W + \op F \op T_2 |0>_C
 =\nl
-(-4*1)\sum_{ii_{1}jaa_{1}}\prm f_{ji}\prm T^{ji_{1}}_{aa_{1}}\prm \Lambda^{ii_{1}}_{aa_{1}} + 4*1\sum_{ii_{1}aa_{1}b}\prm f_{ab}\prm T^{ii_{1}}_{ba_{1}}\prm \Lambda^{ii_{1}}_{aa_{1}} + 2*1\sum_{ii_{1}aa_{1}}\prm \intg{ai}{a_{1}i_{1}}\prm \Lambda^{ii_{1}}_{aa_{1}}\nl
- + 2*1\sum_{ii_{1}jaa_{1}}\prm f_{ji_{1}}\prm T^{ji}_{aa_{1}}\prm \Lambda^{ii_{1}}_{aa_{1}} + (-2*1)\sum_{ii_{1}aa_{1}b}\prm f_{a_{1}b}\prm T^{ii_{1}}_{ba}\prm \Lambda^{ii_{1}}_{aa_{1}} + (-1)\sum_{ii_{1}aa_{1}}\prm \intg{a_{1}i}{ai_{1}}\prm \Lambda^{ii_{1}}_{aa_{1}}
+(-4*1)\sum_{ii_{1}jaa_{1}}\prm \Lambda^{ii_{1}}_{aa_{1}}\prm f_{ji}\prm T^{ji_{1}}_{aa_{1}} + 4*1\sum_{ii_{1}aa_{1}b}\prm \Lambda^{ii_{1}}_{aa_{1}}\prm f_{ab}\prm T^{ii_{1}}_{ba_{1}} + 2*1\sum_{ii_{1}aa_{1}}\prm \Lambda^{ii_{1}}_{aa_{1}}\prm \intg{ai}{a_{1}i_{1}}\nl
+ + 2*1\sum_{ii_{1}jaa_{1}}\prm \Lambda^{ii_{1}}_{aa_{1}}\prm f_{ji_{1}}\prm T^{ji}_{aa_{1}} + (-2*1)\sum_{ii_{1}aa_{1}b}\prm \Lambda^{ii_{1}}_{aa_{1}}\prm f_{a_{1}b}\prm T^{ii_{1}}_{ba} + (-1)\sum_{ii_{1}aa_{1}}\prm \Lambda^{ii_{1}}_{aa_{1}}\prm \intg{a_{1}i}{ai_{1}}
 \eeq

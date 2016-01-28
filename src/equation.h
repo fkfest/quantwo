@@ -141,7 +141,7 @@ private:
   // handle sum
   void handle_sum(Lelem const & lel, Term & term) const;
   // handle parameter
-  void handle_parameters(Term& term, bool excopsonly = false);
+  Matrices handle_parameter(Lelem const & lel);
   // handle permutation
   Permut handle_permutation(Lelem const & lel) const;
   // reset term (set to Term() and reset lastorbs)
@@ -152,7 +152,7 @@ private:
   // save names and corresponding info of pure excitation and deexciation operators
   LExcitationMap _excops;
   // save parameters and sums in term
-  LelString _paramterm, _sumsterm;
+  LelString _sumsterm;
   // connections "map" in _eqn (starts from 1)
   // positive: connected; negative: disconnected
   // the earlier the connection comes the more important it is:

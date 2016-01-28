@@ -1389,7 +1389,7 @@ void Term::spinintegration(bool notfake)
 bool Term::properconnect() const
 {
   long int imat;
-  for (lui i=0; i<_connections.size(); i++) { 
+  for (lui i=0; i<_connections.size(); i++) {
     TCon2 notfound;
     Product<long int> found;
     for (lui j=0; j<_connections[i].size(); j++)

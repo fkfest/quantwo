@@ -10,6 +10,6 @@
 \beq
 &&\sum_{\mu_1}\prm T^{\dg}_{\mu_1}<0| (\op \tau_{\mu_1}^\dg (\op H \op T_1)_C)_D \op T_2 |0>_C
 =\nl
-8*1\sum_{ijkabc}\prm \intg{jb}{kc}\prm T^{j}_{b}\prm T^{ki}_{ca}\prm T^{{\snam{\dg}}i}_{a} + (-4*1)\sum_{ijkabc_{1}}\prm \intg{jb}{kc_{1}}\prm T^{j}_{b}\prm T^{ki}_{ac_{1}}\prm T^{{\snam{\dg}}i}_{a}\nl
- + (-4*1)\sum_{ijkabc}\prm \intg{jc}{kb}\prm T^{j}_{b}\prm T^{ki}_{ca}\prm T^{{\snam{\dg}}i}_{a} + 2*1\sum_{ijk_{1}abc}\prm \intg{jc}{k_{1}b}\prm T^{j}_{b}\prm T^{ik_{1}}_{ca}\prm T^{{\snam{\dg}}i}_{a}
+8*1\sum_{ijkabc}\prm T^{{\snam{\dg}}a}_{i}\prm \intg{jb}{kc}\prm T^{j}_{b}\prm T^{ki}_{ca} + (-4*1)\sum_{ijkabc_{1}}\prm T^{{\snam{\dg}}a}_{i}\prm \intg{jb}{kc_{1}}\prm T^{j}_{b}\prm T^{ki}_{ac_{1}}\nl
+ + (-4*1)\sum_{ijkabc}\prm T^{{\snam{\dg}}a}_{i}\prm \intg{jc}{kb}\prm T^{j}_{b}\prm T^{ki}_{ca} + 2*1\sum_{ijk_{1}abc}\prm T^{{\snam{\dg}}a}_{i}\prm \intg{jc}{k_{1}b}\prm T^{j}_{b}\prm T^{ik_{1}}_{ca}
 \eeq

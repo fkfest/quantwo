@@ -236,7 +236,8 @@ bool LEquation::do_sumterms(bool excopsonly )
         _sumsterm.add(lel);
     } else if (lex == Lelem::Param) { // handle Parameter
       if (!excopsonly)
-        _paramterm.add(lel);
+        term.addmatrix(handle_parameter(lel));
+      indxoperterm.push_back(i+1);
     } else if (lex == Lelem::Perm) { // handle Permutation
       if (!excopsonly)
         term *= handle_permutation(lel);
@@ -266,22 +267,11 @@ void LEquation::addterm(Term& term, bool plus, lui beg, lui end,
                      Product<long int > const & indxoperterm, bool excopsonly)
 {
   double minfac = Input::fPars["prog"]["minfac"];
-  if( excopsonly || term.term_is_0(minfac)) {
-    //reset parameter-info
-    handle_parameters(term,true);
-    return; // dont add zero term
-  }
+  if( excopsonly || term.term_is_0(minfac)) return; // dont add zero term
   // handle sums in term
   for ( uint i = 0; i < _sumsterm.size(); ++i ) handle_sum(_sumsterm[i],term);
   // reset sums information
   _sumsterm=LelString();
-  // handle parameters
-  handle_parameters(term);
-//   if( term.term_is_0(minfac) ) {
-//     //reset parameter-info
-//     handle_parameters(term,true);
-//     return; // dont add zero term
-//   }
   //add connections to term
   Product<long int> connect;
   long int ipos;
@@ -290,7 +280,7 @@ void LEquation::addterm(Term& term, bool plus, lui beg, lui end,
       for (unsigned long int j=0;j<_connections[i].size();j++) {
         ipos=indxoperterm.find(abs(_connections[i][j]));
         if (ipos<0)
-          error("Connected operator is not in indxoperterm","Lexic::addterm");
+          error("Connected operator is not in indxoperterm","LEquation::addterm");
         if (_connections[i][j]>0)
           connect*=ipos+2;
         else
@@ -562,53 +552,21 @@ Permut LEquation::handle_permutation(const Lelem& lel) const
   }
   return Permut(orbs1,orbs2);
 }
-
-void LEquation::handle_parameters(Term& term, bool excopsonly)
+Matrices LEquation::handle_parameter(const Lelem& lel)
 {
-  if (!excopsonly) {// handle saved parameters
-    lui ipos, ipos1, iposnam, up, down;
-    std::string lelnam,name,nameadd,excn;
-    for (unsigned int i=0; i<_paramterm.size(); i++) {
-      lelnam=_paramterm[i].name();
-      down=IL::lexfind(lelnam,"_");
-      up=IL::lexfind(lelnam,"^");
-      // last position of name of parameter
-      iposnam=std::min(up,down)-1;
-      name=lelnam.substr(0,iposnam+1);
-      if (up==std::string::npos || up==lelnam.size()-1) {
-        // no superscript
-      } else {
-        ipos=up+1;
-        ipos=IL::skip(lelnam,ipos,"{} ");
-        while((ipos1=IL::nextwordpos(lelnam,ipos))!=ipos) {
-          if (lelnam[ipos]!='}')
-            nameadd+=lelnam.substr(ipos,ipos1-ipos);
-          ipos=ipos1;
-        }
-      } 
-      IL::add2name(name,nameadd); // add nameadd to name (as superscript)
-      
-      // handle subscript
-      if (down==std::string::npos || down==lelnam.size()-1) { // no subscript, parameter is a "number"
-        term.addmatrix(Matrices(Ops::Number,Product<Orbital>(),0,name));
-      } else {
-        ipos=down+1;
-        ipos=IL::skip(lelnam,ipos,"{} ");
-        ipos1=IL::nextwordpos(lelnam,ipos);
-        excn=lelnam.substr(ipos,ipos1-ipos);
-        LExcitationMap::const_iterator itex = _excops.find(excn);
-        if ( itex != _excops.end() ) {
-          // FIXME add dagger if needed to orbitals()!
-          Matrices mat(Ops::Interm,itex->second.orbitals(),
-                       itex->second.exccls(), name,itex->second.spinsymexcs());
-            term.addmatrix(mat);
-        } else
-        // TODO : add parameters with explicit excitations
-          error("Unknown excitation in parameter "+excn);
-      }
-    }
-  }
-  _paramterm=LelString();
+#define _LPN LParsedName
+  LParsedName op(lel.name(),_LPN::Lmel|_LPN::Dg|_LPN::Orbs|_LPN::Excitation|_LPN::Nameadd);
+#undef _LPN
+  std::string name = op.name;
+  IL::add2name(name,op.nameadd); // add nameadd to name (as superscript)
+  if ( op.excitation.empty() ) // no subscript, parameter is a "number"
+    return Matrices(Ops::Number,Product<Orbital>(),0,name);
+  // TODO check for orbitals here
+  //
+  LExcitationMap::const_iterator itex = _excops.get_add(op.excitation,op.lmel);
+  
+  return Matrices(Ops::Interm,itex->second.orbitals(op.dg),itex->second.exccls(op.dg), 
+                  name,itex->second.spinsymexcs());
 }
 
 
