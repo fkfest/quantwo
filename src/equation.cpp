@@ -233,7 +233,7 @@ bool LEquation::do_sumterms(bool excopsonly )
       indxoperterm.push_back(i+1);
     } else if (lex == Lelem::Sum) { // handle \sum
       if (!excopsonly)
-        _sumsterm.add(lel);
+        term.addsummation(handle_sum(lel));
     } else if (lex == Lelem::Param) { // handle Parameter
       if (!excopsonly)
         term.addmatrix(handle_parameter(lel));
@@ -268,10 +268,6 @@ void LEquation::addterm(Term& term, bool plus, lui beg, lui end,
 {
   double minfac = Input::fPars["prog"]["minfac"];
   if( excopsonly || term.term_is_0(minfac)) return; // dont add zero term
-  // handle sums in term
-  for ( uint i = 0; i < _sumsterm.size(); ++i ) handle_sum(_sumsterm[i],term);
-  // reset sums information
-  _sumsterm=LelString();
   //add connections to term
   Product<long int> connect;
   long int ipos;
@@ -500,30 +496,32 @@ Oper LEquation::handle_operator(const Lelem& lel, Term& term, bool excopsonly)
   }
 }
 
-void LEquation::handle_sum(const Lelem& lel, Term& term) const
+Product<Orbital> LEquation::handle_sum(const Lelem& lel)
 {
-  lui ipos, ipos1, up, down;
-  std::string lelnam=lel.name(),name;
-  down=IL::lexfind(lelnam,"_");
-  up=IL::lexfind(lelnam,"^");
-  if (up!=std::string::npos)
-    error("Sum from-to is not implemented yet: "+lelnam);
-  if (down==std::string::npos)
-    error("Sum without summation indices: "+lelnam);
-  ipos=down+1;
-  while (ipos<lelnam.size()) {
-    ipos=IL::skip(lelnam,ipos,"{}, ");
-    if (ipos==lelnam.size()) break;
-    ipos1=IL::nextwordpos(lelnam,ipos);
-    name=lelnam.substr(ipos,ipos1-ipos);
-    LExcitationMap::const_iterator itex = _excops.find(name);
+#define _LPN LParsedName
+  LParsedName op(lel.name(),_LPN::Orbs|_LPN::Excitation|_LPN::Nameadd);
+#undef _LPN
+  if (!op.nameadd.empty())
+    error("Sum from-to is not implemented yet: "+lel.name());
+  if (op.excitation.empty())
+    error("Sum without summation indices: "+lel.name());
+  const std::string& excs = op.excitation;
+  Product<Orbital> orbs(op.orbs);
+  // iterate through excitations
+  lui ipos = 0;
+  while (ipos < excs.size()) {
+    ipos = IL::skip(excs,ipos,"{}, ");
+    if (ipos == excs.size()) break;
+    lui ipos1 = IL::nextwordpos(excs,ipos);
+    std::string name = excs.substr(ipos,ipos1-ipos);
+    LExcitationMap::const_iterator itex = _excops.get_add(name);
     if (itex != _excops.end()) {
-      term.addsummation(itex->second.orbitals());
+      orbs *= itex->second.orbitals();
+//      term.addsummation(itex->second.orbitals());
     }
-    else
-      say("No excitation operator which would correspond to summation index "+name);
     ipos=ipos1;
   }
+  return orbs;
 }
 Permut LEquation::handle_permutation(const Lelem& lel) const
 {

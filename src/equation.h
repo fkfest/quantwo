@@ -139,7 +139,7 @@ private:
   // handle operator
   Oper handle_operator(Lelem const & lel, Term & term, bool excopsonly=false);
   // handle sum
-  void handle_sum(Lelem const & lel, Term & term) const;
+  Product<Orbital> handle_sum(const Lelem& lel);
   // handle parameter
   Matrices handle_parameter(Lelem const & lel);
   // handle permutation
@@ -151,8 +151,6 @@ private:
   Equation _sumterms;
   // save names and corresponding info of pure excitation and deexciation operators
   LExcitationMap _excops;
-  // save parameters and sums in term
-  LelString _sumsterm;
   // connections "map" in _eqn (starts from 1)
   // positive: connected; negative: disconnected
   // the earlier the connection comes the more important it is:
