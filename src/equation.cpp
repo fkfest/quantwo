@@ -99,6 +99,14 @@ LParsedName::LParsedName(const std::string& namein, uint try2set)
   
   if (!downname.empty()) 
     this->parse_subscript(downname,try2set);
+
+  // few checks
+  if (!orbtypes.empty() &&
+      ( int(orbtypes[0].size()) != excl ||
+        int(orbtypes[1].size()) != lmel+excl )) {
+    error(namein+": Inconsistency in the number of orbital types and the excitation class!", 
+          "LParsedName");
+  }
 }
 
 void LParsedName::parse_superscript(const std::string& up, uint try2set)
@@ -145,10 +153,7 @@ void LParsedName::parse_subscript(const std::string& down, uint try2set)
   ipos1=IL::nextwordpos(down,ipos,false);
   excitation = down.substr(ipos,ipos1-ipos);
   if ( try2set&Excl && str2num<short>(excl,excitation,std::dec) ) {
-    if ( gen_orbtypes(down.substr(ipos1))){
-      assert(int(orbtypes[0].size()) == excl);
-      assert(int(orbtypes[1].size()) == lmel+excl);
-    }
+    gen_orbtypes(down.substr(ipos1));
   } else {
     // subscript is not an excitation class, probably rather something like \mu_2
     ipos1 = IL::closbrack(down,1);
@@ -195,6 +200,17 @@ bool LEquation::extractit()
 
 bool LEquation::do_sumterms(bool excopsonly )
 {
+  //BEGIN TEST
+//   std::string testname("\\dg{\\snam{a}}ij_1");
+//   LParsedName op(testname,LParsedName::Orbs|LParsedName::Dg|LParsedName::Nameadd);
+//   xout << testname << " parsed: "<< std::endl;
+//   if (op.dg) xout << "dagger" << std::endl;
+//   xout << op.nameadd << std::endl;
+//   xout << op.orbs << std::endl;
+  //END TEST
+  
+  
+  
   lui beg=0;
   bool plus=true, bra=false, ket=false;
   if (!_eqn.expanded())
@@ -316,6 +332,11 @@ Oper LEquation::handle_braket(const Lelem& lel, Term& term, bool excopsonly)
 }
 Oper LEquation::handle_explexcitation(Term& term, const std::string& name, bool dg, bool excopsonly, bool phi)
 {
+#define _LPN LParsedName
+  LParsedName op(name,_LPN::Orbs|_LPN::Nameadd);
+#undef _LPN
+  
+  
   lui ipos, ipos1;
   short excl;
   Product<Orbital> occs, virts;

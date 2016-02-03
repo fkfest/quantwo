@@ -79,13 +79,13 @@ private:
 struct LParsedName {
   enum Type {
     Name = 0x000,
-    Lmel = 0x001,
-    Nameadd = 0x002,
-    Dg = 0x004,
-    Orbs = 0x008,
-    Excl = 0x01,
-    Excitation = 0x02,
-    Orbtypes = 0x04
+    Lmel = 0x001,       // +-1
+    Nameadd = 0x002,    // \snam{blabla} or just blabla
+    Dg = 0x004,         // \dg
+    Orbs = 0x008,       // ij_1
+    Excl = 0x01,        // 1, 2, 3...
+    Excitation = 0x02,  // \mu_1, \nu_3
+    Orbtypes = 0x04     // ^{ii}_{ta}
   };
   int lmel;
   std::string name, nameadd, excitation;
