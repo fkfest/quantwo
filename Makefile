@@ -44,7 +44,7 @@ $(MAIN) : $(OBJ)
 clean : 
 	rm -rf $(MAIN) $(OBJ) 
 veryclean :
-	rm -rf $(MAIN) $(OBJ) *.pdf *.aux *.bib *.dvi *.ps *.log *~ $(DIR)/*~  
+	git clean -dfx  
 equation :
 	 $(MAIN) $(in).q2
 	 @test -e $(out).tex || cp equation.tex $(out).tex
