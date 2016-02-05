@@ -32,6 +32,11 @@ namespace IL{
   // get positions of next word (begin and end)
   // use gluer if glue is true, otherwise a gluer is a separator too
   // greedy: only separators will separate words, otherwise only gluer and {} can glue symbols together
+  // example: \+\cmd_ab_{cd}ef
+  // glue=true, greedy=true:    \+ ;  \cmd_ab_{cd} ; ef
+  //      false        true:    \+ ; \cmd ; _ ; ab ; _ ; {cd} ; ef
+  //      true         false:   \+ ; \cmd_a ; b_{cd} ; e ; f 
+  //      false        false:   \+ ; \cmd ; _ ; a ; b ; _ ; {cd} ; e ; f
   lui nextwordpos(const std::string& str, lui& ipos, bool glue = true, bool greedy = true);
   // get position of the closing bracket (which corresponds to the bracket on ipos)
   lui closbrack(const std::string& str, lui ipos);

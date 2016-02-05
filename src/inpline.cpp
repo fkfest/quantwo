@@ -144,16 +144,20 @@ lui IL::closbrack(const std::string& str, lui ipos)
     error(any2str(str[ipos])+"is not a bracket!","IL::closbrack"); 
   char lk(brackets[i]), rk(brackets[i+1]); // left and right brackets
   int nk=1;
+  bool backslashed = false;
   for ( i=ipos+1;i<str.size();++i) {
-    if (str[i]==lk) 
+    if ( backslashed ) {
+      // don't count backslashed brackets
+    } if (str[i]==lk) {
       ++nk; // count number of "("
-    else if (str[i]==rk) {
+    } else if (str[i]==rk) {
       --nk; // count number of ")"
       if (nk==0) {
         ipos1=i;
         break;
       }
     }
+    backslashed = !backslashed && ( str[i] == '\\' );
   }
   if ( nk != 0 ) 
     error("Number of brackets is incosistent: "+any2str(nk),"IL::closbrack"); 
@@ -167,26 +171,52 @@ lui IL::nextwordpos(const std::string& str, lui& ipos, bool glue, bool greedy)
   lui nwpos;
   ipos=IL::skip(str,ipos," "); // remove spaces
   if ( ipos < str.size() && str[ipos] == '%' ) return ipos+1; // comment sign is one word
-  // e.g. from ab_{cd}ef
-  if ( greedy && glue ){
-    // ab_{cd}
-    for (nwpos=ipos ;nwpos < str.size() && (separator.find(str[nwpos])==std::string::npos || 
-                    nwpos==ipos || gluer.find(str[nwpos-1])!=std::string::npos); ++nwpos) 
-      if (char(str[nwpos])=='{') nwpos=closbrack(str,nwpos);
-  } else if ( greedy && !glue ) {
-    // ab
-    for (nwpos=ipos ;nwpos < str.size() && ((separator.find(str[nwpos])==std::string::npos && 
-                    gluer.find(str[nwpos])==std::string::npos) || nwpos==ipos); ++nwpos) 
-      if (char(str[nwpos])=='{') nwpos=closbrack(str,nwpos);
-  } else if ( !greedy && glue ){
-    // a (and b_{cd})
-    for (nwpos=ipos ;nwpos < str.size() && (gluer.find(str[nwpos])!=std::string::npos ||
-                   nwpos==ipos || gluer.find(str[nwpos-1])!=std::string::npos); ++nwpos) 
-      if (char(str[nwpos])=='{') nwpos=closbrack(str,nwpos);
-  } else {
-    // a (and b and {cd} )
-    for (nwpos=ipos ;nwpos < str.size() && nwpos==ipos; ++nwpos) //stupid construction... :)
-      if (char(str[nwpos])=='{') nwpos=closbrack(str,nwpos);
+  
+  bool
+    glued = false,
+    is_command = false,
+    backslashed = false,
+    breaknext = false;
+  for (nwpos=ipos ;nwpos < str.size(); ++nwpos){
+    bool
+      is_separator = (separator.find(str[nwpos]) != std::string::npos),
+      is_gluer = (gluer.find(str[nwpos]) != std::string::npos);
+    if ( !glue && is_gluer ) {
+      // gluer is a separator, too
+      is_separator = true;
+      is_gluer = false;
+    }
+    if ( is_gluer ) breaknext = false;
+    if ( breaknext ) break; 
+    
+    if ( nwpos == ipos || glued ) {
+      if ( glued && is_gluer ) error("Two consecutive gluers in "+str,"IL::nextwordpos");
+      if ( char(str[nwpos])=='{' ) {
+        nwpos=closbrack(str,nwpos);
+        breaknext = true;
+      } else if ( char(str[nwpos])=='\\' ) {
+        backslashed = true;
+      } else if ( is_separator || !greedy ) {
+        breaknext = true;
+      }
+    } else if ( backslashed ) {
+      backslashed = false;
+      if ( is_separator || is_gluer ) {
+        breaknext = true;
+      } else {
+        is_command = true;
+      }
+    } else if ( is_separator ) {
+      break;  
+    } else if ( is_command ) {
+      if ( is_gluer ) {
+        is_command = false;
+      }
+    } else if ( !greedy && !is_gluer ) {
+      breaknext = true;
+    }
+    
+    glued = is_gluer;
   }
   return nwpos;
 }

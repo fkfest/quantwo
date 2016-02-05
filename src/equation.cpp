@@ -133,12 +133,15 @@ void LParsedName::parse_superscript(const std::string& up, uint try2set)
       nameadd += dgs.front();
     } else if (up[ipos]!='}') {
       nameadd += nampart;
-      if (try2set&Lmel && nampart.size() > lmsize ){
-        // is it less/more?
-        std::string lmstr(nampart.substr(0,lmsize));
-        if ( InSet(lmstr,lessmore) && str2num<int>(lmel,nampart.substr(lmsize),std::dec)){
+      if (try2set&Lmel && InSet(nampart,lessmore)){
+        // it is less/more
+        ipos=ipos1;
+        ipos1=IL::nextwordpos(up,ipos,false);
+        std::string lmstr = up.substr(ipos,ipos1-ipos);
+        nameadd += lmstr;
+        if ( str2num<int>(lmel,lmstr,std::dec) ){
           // it is a non-conserving operator
-          if ( lmstr == lessmore.front() ) lmel = -lmel;
+          if ( nampart == lessmore.front() ) lmel = -lmel;
         }
       }
     }

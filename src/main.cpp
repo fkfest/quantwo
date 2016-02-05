@@ -139,7 +139,41 @@ int main(int argc, char **argv) {
   MyOut::pcurout = &MyOut::defout;
   fout.close();
   
-    
+//   // test nextwordpos
+//   std::string
+//     test("\\+\\cmd_ab_{cd}ef");
+// 
+//   lui ipos = 0;
+//   for (uint ii = 0; ii < 10 && ipos < test.size(); ++ii ){
+//     lui ipos1 = IL::nextwordpos(test,ipos,true,true);
+//     xout << test.substr(ipos,ipos1-ipos) << "  ";
+//     ipos = ipos1;
+//   }
+//   xout << std::endl;
+//   
+//   ipos = 0;
+//   for (uint ii = 0; ii < 10 && ipos < test.size(); ++ii ){
+//     lui ipos1 = IL::nextwordpos(test,ipos,false,true);
+//     xout << test.substr(ipos,ipos1-ipos) << "  ";
+//     ipos = ipos1;
+//   }
+//   xout << std::endl;
+//   
+//   ipos = 0;
+//   for (uint ii = 0; ii < 10 && ipos < test.size(); ++ii ){
+//     lui ipos1 = IL::nextwordpos(test,ipos,true,false);
+//     xout << test.substr(ipos,ipos1-ipos) << "  ";
+//     ipos = ipos1;
+//   }
+//   xout << std::endl;
+//   
+//   ipos = 0;
+//   for (uint ii = 0; ii < 10 && ipos < test.size(); ++ii ){
+//     lui ipos1 = IL::nextwordpos(test,ipos,false,false);
+//     xout << test.substr(ipos,ipos1-ipos) << "  ";
+//     ipos = ipos1;
+//   }
+//   xout << std::endl;
   
 //  // test permutation multiplication
 //  Orbital i("i"),j("j"),k("k");
