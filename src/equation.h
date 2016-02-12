@@ -96,10 +96,11 @@ struct LParsedName {
   // orbital types (first set for occ and second set for virt indices )
   std::vector<OrbitalTypes> orbtypes;
   Product<Orbital> orbs;
-  LParsedName() : lmel(0),dg(false),excl(0){};
+  LParsedName() : lmel(0),dg(false),excl(-1){};
   // parse namein for name, subscript and superscript
   // if try2set=Name - stop after setting the name
   LParsedName( const std::string& namein, uint try2set );
+  bool found_excitation() const { return !excitation.empty() || excl >= 0;}
 private:
   void parse_superscript( const std::string& up,  uint try2set );
   void parse_subscript( const std::string& down,  uint try2set );

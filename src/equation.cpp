@@ -89,7 +89,7 @@ void LExcitationMap::correct_orbs(const Product< Orbital >& orbs)
 }
 
 LParsedName::LParsedName(const std::string& namein, uint try2set)
-              : lmel(0),dg(false),excl(0)
+              : lmel(0),dg(false),excl(-1)
 {
   std::string upname, downname;
   foundsscipt = IL::nameupdown(name,upname,downname,namein);
@@ -150,18 +150,52 @@ void LParsedName::parse_superscript(const std::string& up, uint try2set)
 }
 void LParsedName::parse_subscript(const std::string& down, uint try2set)
 {
+  const TParArray& excits = Input::aPars["syntax"]["excitation"];
   lui ipos, ipos1;
-  ipos=1;
-  ipos=IL::skip(down,ipos,"{} ");
+  ipos = 1;
+  ipos = IL::skip(down,ipos,"{} ");
+//   xout << "down: " << down << std::endl;
+  while( (ipos1=IL::nextwordpos(down,ipos,true,false))!=ipos && ipos < down.size() ) {
+    std::string word(down.substr(ipos,ipos1-ipos));
+    lui 
+      iposw = 0, 
+      iposw1 = IL::nextwordpos(word,iposw,false,false);
+    std::string mainpart(word.substr(iposw,iposw1-iposw));
+//     xout << "word: " << word << " mainpart " << mainpart << std::endl;
+    short exclass;
+    if ( try2set&Excl && str2num<short>(exclass,mainpart,std::dec) ) {
+      // excitation class
+      excl = exclass;
+      gen_orbtypes(word.substr(iposw1));
+    } else if ( try2set&Excitation && InSet(mainpart,excits) ){
+      // something like \mu_2
+      if (found_excitation()) Error("Two excitations in "+down);
+      excitation = word; 
+    } else if ( try2set&Orbs ){
+      
+    } else {
+      Error("Unknown part "+word+" in subscript "+down);
+    }
+    ipos = ipos1;
+    ipos = IL::skip(down,ipos,"} ");
+  }
+  
+  
+  /*
   ipos1=IL::nextwordpos(down,ipos,false);
   excitation = down.substr(ipos,ipos1-ipos);
   if ( try2set&Excl && str2num<short>(excl,excitation,std::dec) ) {
     gen_orbtypes(down.substr(ipos1));
-  } else {
+    excitation.clear();
+  } else if ( try2set&Excitation ){
     // subscript is not an excitation class, probably rather something like \mu_2
     ipos1 = IL::closbrack(down,1);
     excitation = down.substr(ipos,ipos1-ipos);
   }
+  */
+  // check
+  if ( excl > 0 && !excitation.empty() ) 
+    error("Found excitation class and explicit excitation in "+down,"LParsedName::parse_subscript"); 
 }
 bool LParsedName::gen_orbtypes(const std::string& string)
 {
@@ -204,12 +238,14 @@ bool LEquation::extractit()
 bool LEquation::do_sumterms(bool excopsonly )
 {
   //BEGIN TEST
-//   std::string testname("\\dg{\\snam{a}}ij_1");
-//   LParsedName op(testname,LParsedName::Orbs|LParsedName::Dg|LParsedName::Nameadd);
+//   std::string testname("X^{\\dg{\\snam{a}}ij_1}_{11\\mu_1a_2b_1}");
+//   LParsedName op(testname,LParsedName::Orbs|LParsedName::Dg|LParsedName::Nameadd|LParsedName::Excl);
 //   xout << testname << " parsed: "<< std::endl;
 //   if (op.dg) xout << "dagger" << std::endl;
 //   xout << op.nameadd << std::endl;
 //   xout << op.orbs << std::endl;
+//   xout << op.excl << std::endl;
+//   xout << op.excitation << std::endl;
   //END TEST
   
   
@@ -498,15 +534,15 @@ Oper LEquation::handle_operator(const Lelem& lel, Term& term, bool excopsonly)
     if ( name==hms["perturbation"] ) return Oper(Ops::XPert,true,&term);
   }
   // excitation class
-  if (op.excitation == "")
-    error("No excitation class in operator "+lel.name(),"LEquation::handle_operator");
+  if (!op.found_excitation())
+    Error("No excitation class in operator "+lel.name());
   IL::add2name(name,op.nameadd); // add nameadd to name (as superscript)
   if (bare_excop) { // bare excitation operator
     return handle_excitation(op.excitation,op.dg,lmelec,excopsonly);
   }
   if (excopsonly) return Oper();
   if (op.excl == 0 && lmelec <= 0)
-    error("Excitation class in "+lel.name(),"LEquation::handle_operator");
+    Error("Excitation class in "+lel.name());
   if (op.orbtypes.size() == 0){
     if(op.dg)
       return Oper(Ops::Deexc,op.excl,name,lmelec,&term);

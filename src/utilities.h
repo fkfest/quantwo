@@ -67,6 +67,8 @@ std::string any2str(const T& t)
   return oss.str();
 }
 
+#define Error(what) error(what,"file "+std::string(__FILE__)+" line "+any2str<int>(__LINE__))
+
 template<typename string_t>
 string_t DirName(string_t source)
 {
