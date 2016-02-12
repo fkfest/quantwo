@@ -63,6 +63,28 @@ Orbital::Orbital(const std::string& name, Orbital::Type type, Spin::Type spint, 
   _name=name;
   _name[0] = std::tolower(name[0]);
 }
+Orbital::Orbital(Orbital::Type type)
+{
+  TsPar& orbs = Input::sPars["syntax"];
+  _spin = Spin(Spin::No);
+  _type = type;
+  switch( type ){
+    case Occ:
+      _name = orbs["occorb"][0];
+      break;
+    case Virt:
+      _name = orbs["virorb"][0];
+      break;
+    case GenT:
+      _name = orbs["genorb"][0];
+      break;
+    case Act:
+      _name = orbs["actorb"][0];
+      break;
+    default:
+      Error("Unknown type of orbital!");
+  }
+}
 
 
 void Orbital::gentype()
@@ -262,6 +284,13 @@ OrbitalTypes::OrbitalTypes(const std::string& types, bool occ)
   }
 }
 
+std::ostream & operator << (std::ostream & o, const OrbitalTypes& orbt)
+{
+  _foreach_cauto( OrbitalTypes, iot, orbt ){
+    o << Orbital(*iot);
+  }
+  return o;
+}
 std::ostream & operator << (std::ostream & o, const Electrons& el)
 {
   o << el.name().at(0);

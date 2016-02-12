@@ -83,9 +83,9 @@ struct LParsedName {
     Nameadd = 0x002,    // \snam{blabla} or just blabla
     Dg = 0x004,         // \dg
     Orbs = 0x008,       // ij_1
-    Excl = 0x01,        // 1, 2, 3...
-    Excitation = 0x02,  // \mu_1, \nu_3
-    Orbtypes = 0x04     // ^{ii}_{ta}
+    Excl = 0x010,        // 1, 2, 3...
+    Excitation = 0x020,  // \mu_1, \nu_3
+    Orbtypes = 0x040     // ^{ii}_{ta}
   };
   int lmel;
   std::string name, nameadd, excitation;

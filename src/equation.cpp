@@ -165,8 +165,11 @@ void LParsedName::parse_subscript(const std::string& down, uint try2set)
     short exclass;
     if ( try2set&Excl && str2num<short>(exclass,mainpart,std::dec) ) {
       // excitation class
+      if (found_excitation()) Error("Two excitations in "+down+
+        "\n Cannot handle more than one digit in the excitation class.");
       excl = exclass;
-      gen_orbtypes(word.substr(iposw1));
+      if( gen_orbtypes(word.substr(iposw1)) && !(try2set&Orbtypes) )
+        Error("Orbtypes present although not asked for in "+down);
     } else if ( try2set&Excitation && InSet(mainpart,excits) ){
       // something like \mu_2
       if (found_excitation()) Error("Two excitations in "+down);
@@ -238,14 +241,19 @@ bool LEquation::extractit()
 bool LEquation::do_sumterms(bool excopsonly )
 {
   //BEGIN TEST
-//   std::string testname("X^{\\dg{\\snam{a}}ij_1}_{11\\mu_1a_2b_1}");
-//   LParsedName op(testname,LParsedName::Orbs|LParsedName::Dg|LParsedName::Nameadd|LParsedName::Excl);
+// //   std::string testname("X^{\\dg{\\snam{a}}ij_1}_{11\\mu_1a_2b_1}");
+//   std::string testname("X^{\\dg{\\snam{a}}ij_1}_{2^{ii}_{at}a_2b_1}");
+//   LParsedName op(testname,LParsedName::Orbs|LParsedName::Orbtypes|LParsedName::Dg|LParsedName::Nameadd|LParsedName::Excl);
 //   xout << testname << " parsed: "<< std::endl;
 //   if (op.dg) xout << "dagger" << std::endl;
 //   xout << op.nameadd << std::endl;
 //   xout << op.orbs << std::endl;
 //   xout << op.excl << std::endl;
 //   xout << op.excitation << std::endl;
+//   if (!op.orbtypes.empty()){
+//     xout << "orbtypes: ";
+//     xout << "^" << op.orbtypes[0] << "_" << op.orbtypes[1] << std::endl;
+//   }
   //END TEST
   
   

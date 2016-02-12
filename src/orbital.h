@@ -82,6 +82,8 @@ class Orbital {
   // full constructor
   Orbital (const std::string& name, Type type, Spin spin);
   Orbital (const std::string& name, Type type, Spin::Type spint, Electron el = 0);
+  // constructor from type (for printing of types)
+  Orbital ( Type type );
   // return orbital
   std::string name() const;
   Type type() const;
@@ -130,7 +132,7 @@ public:
   OrbitalTypes(const std::string& types, bool occ);
   OrbitalTypes( Orbital::Type type, uint nn ){ for ( uint i = 0; i < nn; ++i ) push_back(type);};
 };
-
+std::ostream & operator << (std::ostream & o, OrbitalTypes const & orbt);
 /*
     Electrons
 */
