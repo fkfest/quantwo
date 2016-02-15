@@ -99,7 +99,7 @@ LParsedName::LParsedName(const std::string& namein, uint try2set, bool strict)
   if ( InSet(name,csfs) ) dg = true;
   
   if (!upname.empty()) 
-    this->parse_superscript(upname,try2set,strict);
+    this->parse_superscript(upname,try2set);
   
   if (!downname.empty()) 
     this->parse_subscript(downname,try2set,strict);
@@ -132,7 +132,7 @@ LParsedName::LParsedName(const std::string& namein, uint try2set, bool strict)
   }
 }
 
-void LParsedName::parse_superscript(const std::string& up, uint try2set, bool strict)
+void LParsedName::parse_superscript(const std::string& up, uint try2set)
 {
   const TParArray& dgs = Input::aPars["syntax"]["dg"];
   const TParArray& lessmore = Input::aPars["syntax"]["lessmore"];
@@ -166,9 +166,7 @@ void LParsedName::parse_superscript(const std::string& up, uint try2set, bool st
       } else {
         Error("Number of non-conserved electrons not recognized in "+up);
       }
-    } else if ( try2set&Orbs && mainpart != "\\"+supername &&
-                ( found_orbs() || !found_excitation() || !(try2set&Nameadd) )){
-      if (strict && found_excitation()) Error("Orbitals together with excitations in "+up);
+    } else if ( try2set&Orbs && mainpart != "\\"+supername && !found_excitation() ){
       Orbital orb(IL::plainname(word),spintype);
       occ.push_back(orb);
       

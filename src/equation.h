@@ -103,7 +103,7 @@ struct LParsedName {
   bool found_orbs() const { return !occ.empty() || !virt.empty();}
   Product<Orbital> orbs() const { Product<Orbital> orb(occ); orb *= virt; return orb;}
 private:
-  void parse_superscript( const std::string& up, uint try2set, bool strict );
+  void parse_superscript( const std::string& up, uint try2set );
   void parse_subscript( const std::string& down, uint try2set, bool strict );
   bool gen_orbtypes(const std::string& string);
 };
