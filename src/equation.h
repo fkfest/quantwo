@@ -95,15 +95,16 @@ struct LParsedName {
   short int excl;
   // orbital types (first set for occ and second set for virt indices )
   std::vector<OrbitalTypes> orbtypes;
-  Product<Orbital> orbs;
   LParsedName() : lmel(0),dg(false),excl(-1){};
   // parse namein for name, subscript and superscript
   // if try2set=Name - stop after setting the name
-  LParsedName( const std::string& namein, uint try2set );
+  LParsedName( const std::string& namein, uint try2set, bool strict = true );
   bool found_excitation() const { return !excitation.empty() || excl >= 0;}
+  bool found_orbs() const { return !occ.empty() || !virt.empty();}
+  Product<Orbital> orbs() const { Product<Orbital> orb(occ); orb *= virt; return orb;}
 private:
-  void parse_superscript( const std::string& up,  uint try2set );
-  void parse_subscript( const std::string& down,  uint try2set );
+  void parse_superscript( const std::string& up, uint try2set, bool strict );
+  void parse_subscript( const std::string& down, uint try2set, bool strict );
   bool gen_orbtypes(const std::string& string);
 };
 
@@ -132,7 +133,7 @@ private:
   // handle bra/ket
   Oper handle_braket(Lelem const & lel, Term & term, bool excopsonly=false);
   // handle explicit excitation index (like ^{ab}_{ij})
-  Oper handle_explexcitation(Term& term, std::string const & name, bool dg, bool excopsonly=false, bool phi=true);
+  Oper handle_explexcitation(Term& term, std::string const & name, bool dg, bool excopsonly=false);
   // handle excitation index
   Oper handle_excitation( std::string const & name, bool dg, int lmel = 0, bool excopsonly=false );
   // handle factor

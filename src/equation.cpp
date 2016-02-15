@@ -88,18 +88,33 @@ void LExcitationMap::correct_orbs(const Product< Orbital >& orbs)
   }
 }
 
-LParsedName::LParsedName(const std::string& namein, uint try2set)
+LParsedName::LParsedName(const std::string& namein, uint try2set, bool strict)
               : lmel(0),dg(false),excl(-1)
 {
   std::string upname, downname;
   foundsscipt = IL::nameupdown(name,upname,downname,namein);
   if ( try2set == Name ) return;
+  
+  const TParArray& csfs = Input::aPars["syntax"]["csf"];
+  if ( InSet(name,csfs) ) dg = true;
+  
   if (!upname.empty()) 
-    this->parse_superscript(upname,try2set);
+    this->parse_superscript(upname,try2set,strict);
   
   if (!downname.empty()) 
-    this->parse_subscript(downname,try2set);
+    this->parse_subscript(downname,try2set,strict);
 
+  if ( found_orbs() && dg ){
+    // swap
+    Product<Orbital> tmp(occ);
+    occ = virt;
+    virt = tmp;
+  }
+  if ( found_orbs() ) {
+    assert( excl == -1 );
+    excl = occ.size();
+    lmel = virt.size() - occ.size();
+  }
   // few checks
   if (!orbtypes.empty() &&
       ( int(orbtypes[0].size()) != excl ||
@@ -107,74 +122,106 @@ LParsedName::LParsedName(const std::string& namein, uint try2set)
     error(namein+": Inconsistency in the number of orbital types and the excitation class!", 
           "LParsedName");
   }
+  _foreach_cauto(Product<Orbital>,itorb,occ){
+    if (itorb->type() == Orbital::Virt )
+      warning("Do you really want to have orbital " << *itorb << " as occupied?");
+  }
+  _foreach_cauto(Product<Orbital>,itorb,virt){
+    if (itorb->type() == Orbital::Occ )
+      warning("Do you really want to have orbital " << *itorb << " as virtual?");
+  }
 }
 
-void LParsedName::parse_superscript(const std::string& up, uint try2set)
+void LParsedName::parse_superscript(const std::string& up, uint try2set, bool strict)
 {
   const TParArray& dgs = Input::aPars["syntax"]["dg"];
   const TParArray& lessmore = Input::aPars["syntax"]["lessmore"];
+  bool spinintegr = Input::iPars["prog"]["spinintegr"];
+  const std::string& supername = Input::sPars["command"]["supername"];
+  Spin::Type spintype = Spin::Gen;
+  if (spinintegr) spintype = Spin::GenS;
   lui ipos, ipos1;
-  uint lmsize = 0;
-  // less (negative number) or more (positive) electrons after the operator
-  for ( TParArray::const_iterator itlm = lessmore.begin(); itlm != lessmore.end(); ++itlm ){
-    lmsize = itlm->size();
-    if ( itlm != lessmore.begin() && lmsize != itlm->size() ) {
-      error("String length of less and more differ (syntax,lessmore)!","LParsedName::parse_superscript");
-    }
-  }
-  lui last = std::string::npos;
-  ipos=1;
-  ipos=IL::skip(up,ipos,"{} ");
-  while((ipos1=IL::nextwordpos(up,ipos,false))!=ipos && ipos < last ) {
-    std::string nampart(up.substr(ipos,ipos1-ipos));
+  ipos=0;
+  while((ipos1=IL::nextwordpos(up,ipos,true,false))!=ipos && ipos < up.size() ) {
+    std::string word(up.substr(ipos,ipos1-ipos));
+    IL::delbrack(word);
+    lui 
+      iposw = 0, 
+      iposw1 = IL::nextwordpos(word,iposw,false,true);
+    std::string mainpart(word.substr(iposw,iposw1-iposw));
     if ( nameadd.size() > 0 && up[ipos]!='}' ) nameadd += " ";
-    if(InSet(nampart, dgs)) {
+    if( try2set&Dg && InSet(word, dgs) ) {
       dg=true;
       nameadd += dgs.front();
-    } else if (up[ipos]!='}') {
-      nameadd += nampart;
-      if (try2set&Lmel && InSet(nampart,lessmore)){
-        // it is less/more
-        ipos=ipos1;
-        ipos1=IL::nextwordpos(up,ipos,false);
-        std::string lmstr = up.substr(ipos,ipos1-ipos);
-        nameadd += lmstr;
-        if ( str2num<int>(lmel,lmstr,std::dec) ){
-          // it is a non-conserving operator
-          if ( nampart == lessmore.front() ) lmel = -lmel;
-        }
+    
+    } else if ( try2set&Lmel && InSet(word,lessmore) ){
+      // it is less/more
+      ipos=ipos1;
+      ipos1=IL::nextwordpos(up,ipos,false);
+      std::string lmstr = up.substr(ipos,ipos1-ipos);
+      nameadd += word+lmstr;
+      if ( str2num<int>(lmel,lmstr,std::dec) ){
+        // it is a non-conserving operator
+        if ( word == lessmore.front() ) lmel = -lmel;
+      } else {
+        Error("Number of non-conserved electrons not recognized in "+up);
       }
+    } else if ( try2set&Orbs && mainpart != "\\"+supername &&
+                ( found_orbs() || !found_excitation() || !(try2set&Nameadd) )){
+      if (strict && found_excitation()) Error("Orbitals together with excitations in "+up);
+      Orbital orb(IL::plainname(word),spintype);
+      occ.push_back(orb);
+      
+    } else if ( try2set&Nameadd ){
+      if ( mainpart == "\\"+supername && mainpart == word){
+        // \snam{sfd}: add next word
+        ipos1 = IL::nextwordpos(up,ipos1,true,false);
+        word = up.substr(ipos,ipos1-ipos);
+      }
+      nameadd += word;
+    } else {
+      Error("Unknown part "+word+" in superscript "+up);
     }
     ipos=ipos1;
   }
 }
-void LParsedName::parse_subscript(const std::string& down, uint try2set)
+void LParsedName::parse_subscript(const std::string& down, uint try2set, bool strict)
 {
   const TParArray& excits = Input::aPars["syntax"]["excitation"];
+  bool spinintegr = Input::iPars["prog"]["spinintegr"];
+  Spin::Type spintype = Spin::Gen;
+  if (spinintegr) spintype = Spin::GenS;
   lui ipos, ipos1;
-  ipos = 1;
-  ipos = IL::skip(down,ipos,"{} ");
+  ipos = 0;
 //   xout << "down: " << down << std::endl;
   while( (ipos1=IL::nextwordpos(down,ipos,true,false))!=ipos && ipos < down.size() ) {
     std::string word(down.substr(ipos,ipos1-ipos));
+    IL::delbrack(word);
     lui 
       iposw = 0, 
-      iposw1 = IL::nextwordpos(word,iposw,false,false);
+      iposw1 = IL::nextwordpos(word,iposw,false,true);
     std::string mainpart(word.substr(iposw,iposw1-iposw));
+    IL::delbrack(mainpart);
 //     xout << "word: " << word << " mainpart " << mainpart << std::endl;
     short exclass;
+    
     if ( try2set&Excl && str2num<short>(exclass,mainpart,std::dec) ) {
       // excitation class
-      if (found_excitation()) Error("Two excitations in "+down+
-        "\n Cannot handle more than one digit in the excitation class.");
+      if (strict && (found_excitation() || found_orbs())) Error("Two excitations in "+down+
+        "\n Use {} if there is more than one digit in the excitation class.");
       excl = exclass;
       if( gen_orbtypes(word.substr(iposw1)) && !(try2set&Orbtypes) )
         Error("Orbtypes present although not asked for in "+down);
+      
     } else if ( try2set&Excitation && InSet(mainpart,excits) ){
       // something like \mu_2
-      if (found_excitation()) Error("Two excitations in "+down);
+      if (strict && (found_excitation() || found_orbs())) Error("Two excitations in "+down);
       excitation = word; 
+      
     } else if ( try2set&Orbs ){
+      if (strict && found_excitation()) Error("Excitations and orbitals at the same time in "+down);
+      Orbital orb(IL::plainname(word),spintype);
+      virt.push_back(orb);
       
     } else {
       Error("Unknown part "+word+" in subscript "+down);
@@ -183,19 +230,6 @@ void LParsedName::parse_subscript(const std::string& down, uint try2set)
     ipos = IL::skip(down,ipos,"} ");
   }
   
-  
-  /*
-  ipos1=IL::nextwordpos(down,ipos,false);
-  excitation = down.substr(ipos,ipos1-ipos);
-  if ( try2set&Excl && str2num<short>(excl,excitation,std::dec) ) {
-    gen_orbtypes(down.substr(ipos1));
-    excitation.clear();
-  } else if ( try2set&Excitation ){
-    // subscript is not an excitation class, probably rather something like \mu_2
-    ipos1 = IL::closbrack(down,1);
-    excitation = down.substr(ipos,ipos1-ipos);
-  }
-  */
   // check
   if ( excl > 0 && !excitation.empty() ) 
     error("Found excitation class and explicit excitation in "+down,"LParsedName::parse_subscript"); 
@@ -240,21 +274,21 @@ bool LEquation::extractit()
 
 bool LEquation::do_sumterms(bool excopsonly )
 {
-  //BEGIN TEST
-// //   std::string testname("X^{\\dg{\\snam{a}}ij_1}_{11\\mu_1a_2b_1}");
-//   std::string testname("X^{\\dg{\\snam{a}}ij_1}_{2^{ii}_{at}a_2b_1}");
-//   LParsedName op(testname,LParsedName::Orbs|LParsedName::Orbtypes|LParsedName::Dg|LParsedName::Nameadd|LParsedName::Excl);
+//   //BEGIN TEST
+//   std::string testname("X^{\\snam{\\dg a}ij_1}_{a_2b_1}");
+// //   std::string testname("X^{\\dg{\\snam{a}}ij_1}_{{2}a_2b_1}");
+//   LParsedName op(testname,LParsedName::Orbs|LParsedName::Excitation|LParsedName::Orbtypes|LParsedName::Dg|LParsedName::Nameadd|LParsedName::Excl);
 //   xout << testname << " parsed: "<< std::endl;
 //   if (op.dg) xout << "dagger" << std::endl;
 //   xout << op.nameadd << std::endl;
-//   xout << op.orbs << std::endl;
+//   xout << "^" << op.occ <<"_"<< op.virt << std::endl;
 //   xout << op.excl << std::endl;
 //   xout << op.excitation << std::endl;
 //   if (!op.orbtypes.empty()){
 //     xout << "orbtypes: ";
 //     xout << "^" << op.orbtypes[0] << "_" << op.orbtypes[1] << std::endl;
 //   }
-  //END TEST
+//   //END TEST
   
   
   
@@ -366,82 +400,43 @@ Oper LEquation::handle_braket(const Lelem& lel, Term& term, bool excopsonly)
   std::string lelnam=lel.name();
   if (InSet(lelnam, refs))
     return Oper(); // Reference, blank operator
-    
-  lui 
-    ibeg = 0,
-    iend = IL::nextwordpos(lelnam,ibeg,false);
-  if (InSet(lelnam.substr(ibeg,iend-ibeg), csfs)){
-    return handle_explexcitation(term,lelnam.substr(iend),(lel.lex()==Lelem::Bra),excopsonly);
+  
+  LParsedName op(lelnam,LParsedName::Name);
+  if (InSet(op.name, csfs)){
+    return handle_explexcitation(term,lelnam,(lel.lex()==Lelem::Bra),excopsonly);
   } else {
     int lm = 0;
     return handle_excitation(lelnam,(lel.lex()==Lelem::Bra),lm,excopsonly);
   }
 }
-Oper LEquation::handle_explexcitation(Term& term, const std::string& name, bool dg, bool excopsonly, bool phi)
+Oper LEquation::handle_explexcitation(Term& term, const std::string& name, bool dg, bool excopsonly)
 {
+  bool spinintegr = Input::iPars["prog"]["spinintegr"];
+  Spin::Type spintype = Spin::Gen;
+  if (spinintegr) spintype = Spin::GenS;
 #define _LPN LParsedName
   LParsedName op(name,_LPN::Orbs|_LPN::Nameadd);
 #undef _LPN
   
-  
-  lui ipos, ipos1;
-  short excl;
-  Product<Orbital> occs, virts;
-  if ( name[0] != '_' && name[0] != '^' )
-    error("Doesn't start with _ or ^ :"+name,"Lexic::handle_explexcitation");
-  bool spinintegr = Input::iPars["prog"]["spinintegr"];
-  Spin::Type spintype = Spin::Gen;
-  if (spinintegr) spintype = Spin::GenS;
-  lui up, down;
-  down=IL::lexfind(name,"_");
-  up=IL::lexfind(name,"^");
-  if (phi){ // in phi we have an opposite order of indices!
-    std::swap(up,down);
-  }
-  if (up!=std::string::npos && up!=name.size()-1){
-    ipos = up;
-    ipos = IL::skip(name,ipos,"{}_^ ");
-    while ( (ipos < down) == (up < down) && (ipos1 = IL::nextwordpos(name,ipos,true,false)) != ipos ){//non greedy
-      if (ipos < down && ipos1 >= down) ipos1 = down;
-      Orbital orb(IL::plainname(name.substr(ipos,ipos1-ipos)),spintype);
-      occs *= orb;
-      if ( orb.type() == Orbital::Virt ) 
-        warning("Do you really want to have orbital " << orb << " as occupied?");
-      ipos = IL::skip(name,ipos1,"{}_^ ");
-    }
-  }
-  if (down!=std::string::npos && down!=name.size()-1){
-    ipos = down;
-    ipos = IL::skip(name,ipos,"{}_^ ");
-    while ( (ipos < up) == (down < up) && (ipos1 = IL::nextwordpos(name,ipos,true,false)) != ipos ){//non greedy
-      if (ipos < up && ipos1 >= up) ipos1 = up;
-      Orbital orb(IL::plainname(name.substr(ipos,ipos1-ipos)),spintype);
-      virts *= orb;
-      if ( orb.type() == Orbital::Occ ) warning("Do you really want to have orbital " << orb << " as virtual?");
-      ipos = IL::skip(name,ipos1,"{}_^ ");
-    }
-  }
   if (excopsonly) {
     // update orbitals in excops
-    _excops.set_lastorbs(occs,spintype);
-    _excops.set_lastorbs(virts,spintype);
+    _excops.set_lastorbs(op.occ,spintype);
+    _excops.set_lastorbs(op.virt,spintype);
     //make sure that we haven't used these orbital names already
-    _excops.correct_orbs(occs);
-    _excops.correct_orbs(virts);
+    _excops.correct_orbs(op.occ);
+    _excops.correct_orbs(op.virt);
     return Oper();
   }
-  excl = occs.size();
   // set lastorb (if smaller)
-  for ( uint i = 0; i < occs.size(); ++i )
-    term.set_lastorb(Orbital(occs[i].letname(),spintype),true);
-  for ( uint i = 0; i < virts.size(); ++i )
-    term.set_lastorb(Orbital(virts[i].letname(),spintype),true);
-  int lmelec = virts.size()-occs.size();
+  for ( uint i = 0; i < op.occ.size(); ++i )
+    term.set_lastorb(Orbital(op.occ[i].letname(),spintype),true);
+  for ( uint i = 0; i < op.virt.size(); ++i )
+    term.set_lastorb(Orbital(op.virt[i].letname(),spintype),true);
   // create \tau_{excl}
   if (dg)
-    return Oper(Ops::Deexc0,excl,occs,virts,"",lmelec,&term);  
+    return Oper(Ops::Deexc0,op.excl,op.occ,op.virt,"",op.lmel,&term);  
   else
-    return Oper(Ops::Exc0,excl,occs,virts,"",lmelec,&term);
+    return Oper(Ops::Exc0,op.excl,op.occ,op.virt,"",op.lmel,&term);
 }
 
 Oper LEquation::handle_excitation(const std::string& name, bool dg, int lmel, bool excopsonly)
@@ -567,14 +562,14 @@ Oper LEquation::handle_operator(const Lelem& lel, Term& term, bool excopsonly)
 Product<Orbital> LEquation::handle_sum(const Lelem& lel)
 {
 #define _LPN LParsedName
-  LParsedName op(lel.name(),_LPN::Orbs|_LPN::Excitation|_LPN::Nameadd);
+  LParsedName op(lel.name(),_LPN::Orbs|_LPN::Excitation|_LPN::Nameadd,false);
 #undef _LPN
   if (!op.nameadd.empty())
     error("Sum from-to is not implemented yet: "+lel.name());
   if (op.excitation.empty())
     error("Sum without summation indices: "+lel.name());
   const std::string& excs = op.excitation;
-  Product<Orbital> orbs(op.orbs);
+  Product<Orbital> orbs(op.orbs());
   // iterate through excitations
   lui ipos = 0;
   while (ipos < excs.size()) {

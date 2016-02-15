@@ -122,6 +122,18 @@ lui IL::skipr(const std::string& str, const lui& ipos, const std::string& what)
     --ires;
   return ires;
 }
+void IL::delbrack(std::string& str, lui ipos, std::string brackets)
+{
+  lui endstr = str.size();
+  for ( ; ipos < endstr; ++ipos, --endstr ) {
+    if ( brackets.find(str[ipos]) == std::string::npos ||
+         closbrack(str,ipos)+1 != endstr ) {
+      break;
+    }
+  }
+  if ( str.size() > ipos ) str = str.substr(ipos,endstr-ipos);
+}
+
 lui IL::endword(const std::string& line, lui& ipos)
 {
 //  assert(ipos < line.size());
@@ -273,6 +285,9 @@ bool IL::nameupdown(std::string& name, std::string& nameup, std::string& namedow
   } else if (down < up) {
     namedown = namedown.substr(0,up-down);
   }
+  // get rid of ^ _ and left-right {}
+  delbrack(nameup,1);
+  delbrack(namedown,1);
   return !(nameup.empty() && namedown.empty());
 }
 void IL::add2name(std::string& name, const std::string& nameadd, bool superscript, bool snam)
