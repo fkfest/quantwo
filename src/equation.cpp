@@ -32,18 +32,18 @@ LExcitationMap::iterator LExcitationMap::get_add(const std::string& name, int lm
   std::vector<OrbitalTypes> orbtypes = exc.orbtypes;
   
   if ( lmel != 0 && exc.lmel != lmel )
-    error("Mismatch in non-conserving class in "+name,"LEquation::handle_excitation");
+    Error("Mismatch in non-conserving class in "+name);
   if (lmel == 0 ) lmel = exc.lmel;
   // find excitation class
   if (!exc.foundsscipt && excl == 0 && lmel <= 0)
-    error("No excitation class in "+name,"LEquation::handle_excitation");
+    Error("No excitation class in "+name);
   if (orbtypes.empty()) { // create default orbtypes (occ(excl), virt(excl+lmel))
     orbtypes.push_back(OrbitalTypes(Orbital::Occ,excl));
     orbtypes.push_back(OrbitalTypes(Orbital::Virt,excl+lmel));
   } else {
     assert(orbtypes.size() == 2);
     if ( int(orbtypes[0].size()) != excl || int(orbtypes[1].size()) != excl+lmel ){
-      error("Inconsistency in orbital types and excitation class","LExcitationMap::get_add");
+      Error("Inconsistency in orbital types and excitation class");
     }
   }
   TOrb4Type orb4t;
@@ -94,9 +94,10 @@ LParsedName::LParsedName(const std::string& namein, uint try2set, bool strict)
   std::string upname, downname;
   foundsscipt = IL::nameupdown(name,upname,downname,namein);
   if ( try2set == Name ) return;
-  
+ 
   const TParArray& csfs = Input::aPars["syntax"]["csf"];
-  if ( InSet(name,csfs) ) dg = true;
+  // we swap sub- and superscript indices in Phi
+  bool phi = InSet(name,csfs);
   
   if (!upname.empty()) 
     this->parse_superscript(upname,try2set);
@@ -104,8 +105,8 @@ LParsedName::LParsedName(const std::string& namein, uint try2set, bool strict)
   if (!downname.empty()) 
     this->parse_subscript(downname,try2set,strict);
 
-  if ( found_orbs() && dg ){
-    // swap
+  if ( found_orbs() && ( dg != phi ) ){
+    // swap for \dg xor \phi 
     Product<Orbital> tmp(occ);
     occ = virt;
     virt = tmp;
@@ -390,63 +391,81 @@ void LEquation::addterm(Term& term, bool plus, lui beg, lui end,
   else
     _sumterms -= term;
 }
+void LEquation::correct_orbs(Term& term, const Product< Orbital >& occs, 
+                             const Product< Orbital >& virts, Spin::Type spintype, bool excopsonly)
+{
+  if (excopsonly) {
+    // update orbitals in excops
+    _excops.set_lastorbs(occs,spintype);
+    _excops.set_lastorbs(virts,spintype);
+    //make sure that we haven't used these orbital names already
+    _excops.correct_orbs(occs);
+    _excops.correct_orbs(virts);
+  } else {
+    // set lastorb (if smaller)
+    _foreach_cauto( Product<Orbital>,itorb,occs)
+      term.set_lastorb(Orbital(itorb->letname(),spintype),true);
+    _foreach_cauto( Product<Orbital>,itorb,occs)
+      term.set_lastorb(Orbital(itorb->letname(),spintype),true);
+  }
+}
 
 Oper LEquation::handle_braket(const Lelem& lel, Term& term, bool excopsonly)
 {
   const TParArray& refs = Input::aPars["syntax"]["ref"];
-  const TParArray& csfs = Input::aPars["syntax"]["csf"];
   std::string lelnam=lel.name();
   if (InSet(lelnam, refs))
     return Oper(); // Reference, blank operator
-  
-  LParsedName op(lelnam,LParsedName::Name);
-  if (InSet(op.name, csfs)){
-    return handle_explexcitation(term,lelnam,(lel.lex()==Lelem::Bra),excopsonly);
-  } else {
-    int lm = 0;
-    return handle_excitation(lelnam,(lel.lex()==Lelem::Bra),lm,excopsonly);
-  }
+  return handle_excitation(term,lelnam,(lel.lex()==Lelem::Bra),0,excopsonly);
 }
-Oper LEquation::handle_explexcitation(Term& term, const std::string& name, bool dg, bool excopsonly)
+Oper LEquation::handle_excitation(Term& term, const std::string& name, 
+                                  bool dg, int lmel, bool excopsonly)
 {
+  const TParArray& excits = Input::aPars["syntax"]["excitation"];
   bool spinintegr = Input::iPars["prog"]["spinintegr"];
   Spin::Type spintype = Spin::Gen;
   if (spinintegr) spintype = Spin::GenS;
+  LParsedName op(name,LParsedName::Name);
+  std::string excit;
+  if ( InSet(op.name,excits) ){
+    // name is already the excitation-name
+    excit = name;
+  } else {
 #define _LPN LParsedName
-  LParsedName op(name,_LPN::Orbs|_LPN::Nameadd);
+    op = LParsedName(name,_LPN::Orbs|_LPN::Nameadd|_LPN::Excitation|_LPN::Dg|_LPN::Lmel);
 #undef _LPN
-  
-  if (excopsonly) {
-    // update orbitals in excops
-    _excops.set_lastorbs(op.occ,spintype);
-    _excops.set_lastorbs(op.virt,spintype);
-    //make sure that we haven't used these orbital names already
-    _excops.correct_orbs(op.occ);
-    _excops.correct_orbs(op.virt);
-    return Oper();
+    if (op.found_orbs()){
+      correct_orbs(term,op.occ,op.virt,spintype,excopsonly);
+    } else if (op.found_excitation()){
+      excit = op.excitation;
+    } else {
+      Error("Neither orbitals nor excitations in the excitation operator "+name);
+    }
+    if (op.lmel != lmel) {
+      if (lmel == 0) {
+        lmel = op.lmel;
+      } else {
+        Error("Inconsistency in number of non-conserved electrons in "+name);
+      }
+    }
+    dg = ( dg != op.dg );
   }
-  // set lastorb (if smaller)
-  for ( uint i = 0; i < op.occ.size(); ++i )
-    term.set_lastorb(Orbital(op.occ[i].letname(),spintype),true);
-  for ( uint i = 0; i < op.virt.size(); ++i )
-    term.set_lastorb(Orbital(op.virt[i].letname(),spintype),true);
+  LExcitationMap::iterator itex;
+  if ( !excit.empty() ){ // add this \mu_i
+    itex = _excops.get_add(excit,lmel);
+  }
   // create \tau_{excl}
-  if (dg)
-    return Oper(Ops::Deexc0,op.excl,op.occ,op.virt,"",op.lmel,&term);  
-  else
-    return Oper(Ops::Exc0,op.excl,op.occ,op.virt,"",op.lmel,&term);
-}
-
-Oper LEquation::handle_excitation(const std::string& name, bool dg, int lmel, bool excopsonly)
-{
-  LExcitationMap::iterator itex = _excops.get_add(name,lmel);
-  if (excopsonly) return Oper();
-  const LExcitationInfo & info = itex->second;
-  // create \tau_{excl}
-  if (dg)
-    return Oper(Ops::Deexc0, info.orbitals(dg),"",info.lmel(dg));  
-  else
-    return Oper(Ops::Exc0,info.orbitals(dg),"",info.lmel(dg));
+  if (excopsonly) {
+    return Oper();
+  } else if (dg && op.found_orbs()) {
+    return Oper(Ops::Deexc0,op.excl,op.occ,op.virt,"",lmel,&term);
+  } else if (dg) {
+    return Oper(Ops::Deexc0, itex->second.orbitals(dg),"",itex->second.lmel(dg));
+  } else if (op.found_orbs()) {
+    return Oper(Ops::Exc0,op.excl,op.occ,op.virt,"",lmel,&term);
+  } else {
+    return Oper(Ops::Exc0,itex->second.orbitals(dg),"",itex->second.lmel(dg));
+  }
 }
 
 TFactor LEquation::handle_factor(const Lelem& lel) const
@@ -539,7 +558,7 @@ Oper LEquation::handle_operator(const Lelem& lel, Term& term, bool excopsonly)
     Error("No excitation class in operator "+lel.name());
   IL::add2name(name,op.nameadd); // add nameadd to name (as superscript)
   if (bare_excop) { // bare excitation operator
-    return handle_excitation(op.excitation,op.dg,lmelec,excopsonly);
+    return handle_excitation(term,op.excitation,op.dg,lmelec,excopsonly);
   }
   if (excopsonly) return Oper();
   if (op.excl == 0 && lmelec <= 0)

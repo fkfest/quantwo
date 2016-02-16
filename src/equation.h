@@ -132,10 +132,8 @@ private:
                Product< long int > const & indxoperterm, bool excopsonly);
   // handle bra/ket
   Oper handle_braket(Lelem const & lel, Term & term, bool excopsonly=false);
-  // handle explicit excitation index (like ^{ab}_{ij})
-  Oper handle_explexcitation(Term& term, std::string const & name, bool dg, bool excopsonly=false);
-  // handle excitation index
-  Oper handle_excitation( std::string const & name, bool dg, int lmel = 0, bool excopsonly=false );
+  // handle excitation index (like \mu_1 or ^{ab}_{ij} or \tau_{\mu_1})
+  Oper handle_excitation(Term& term, const std::string& name, bool dg, int lmel=0, bool excopsonly=false);
   // handle factor
   TFactor handle_factor(Lelem const & lel) const;
   // handle operator
@@ -146,6 +144,9 @@ private:
   Matrices handle_parameter(Lelem const & lel);
   // handle permutation
   Permut handle_permutation(Lelem const & lel) const;
+  // correct explicit orbs
+  void correct_orbs(Term& term, const Product<Orbital>& occs, const Product<Orbital>& virts, 
+                    Spin::Type spintype, bool excopsonly);
   // reset term (set to Term() and reset lastorbs)
   void reset_term(Term& term) const;
   
