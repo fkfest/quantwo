@@ -124,11 +124,11 @@ LParsedName::LParsedName(const std::string& namein, uint try2set, bool strict)
           "LParsedName");
   }
   _foreach_cauto(Product<Orbital>,itorb,occ){
-    if (itorb->type() == Orbital::Virt )
+    if (itorb->type() == Orbital::Virt && strict )
       warning("Do you really want to have orbital " << *itorb << " as occupied?");
   }
   _foreach_cauto(Product<Orbital>,itorb,virt){
-    if (itorb->type() == Orbital::Occ )
+    if (itorb->type() == Orbital::Occ && strict )
       warning("Do you really want to have orbital " << *itorb << " as virtual?");
   }
 }
@@ -528,17 +528,12 @@ Oper LEquation::handle_operator(const Lelem& lel, Term& term, bool excopsonly)
   const TParArray& bexcops = Input::aPars["syntax"]["bexcop"];
   TsPar& hms = Input::sPars["hamilton"];
   LParsedName op(lel.name(),LParsedName::Name);
-  // bare excitation operator 
-  bool bare_excop = (InSet(op.name, bexcops));
-#define _LPN LParsedName
-  uint try2set = _LPN::Lmel|_LPN::Dg;
-  if ( bare_excop ){
-    try2set |= _LPN::Orbs|_LPN::Excitation;
-  } else {
-    try2set |= _LPN::Nameadd|_LPN::Excl|_LPN::Orbtypes;
+  if (InSet(op.name, bexcops)) { // bare excitation operator
+    return handle_excitation(term,lel.name(),false,0,excopsonly);
   }
+#define _LPN LParsedName
+  op = LParsedName(lel.name(),_LPN::Lmel|_LPN::Dg|_LPN::Nameadd|_LPN::Excl|_LPN::Orbtypes);
 #undef _LPN
-  op = LParsedName(lel.name(),try2set);
   std::string name = op.name;
   int lmelec = op.lmel;
   
@@ -554,12 +549,9 @@ Oper LEquation::handle_operator(const Lelem& lel, Term& term, bool excopsonly)
     if ( name==hms["perturbation"] ) return Oper(Ops::XPert,true,&term);
   }
   // excitation class
-  if (!op.found_excitation() && !op.found_orbs())
+  if (op.excl < 0)
     Error("No excitation class in operator "+lel.name());
   IL::add2name(name,op.nameadd); // add nameadd to name (as superscript)
-  if (bare_excop) { // bare excitation operator
-    return handle_excitation(term,lel.name(),false,0,excopsonly);
-  }
   if (excopsonly) return Oper();
   if (op.excl == 0 && lmelec <= 0)
     Error("Excitation class in "+lel.name());
@@ -583,7 +575,7 @@ Product<Orbital> LEquation::handle_sum(const Lelem& lel)
 #undef _LPN
   if (!op.nameadd.empty())
     error("Sum from-to is not implemented yet: "+lel.name());
-  if (op.excitation.empty())
+  if (op.excitation.empty() && !op.found_orbs())
     error("Sum without summation indices: "+lel.name());
   const std::string& excs = op.excitation;
   Product<Orbital> orbs(op.orbs());
@@ -637,10 +629,9 @@ Matrices LEquation::handle_parameter(const Lelem& lel)
 #undef _LPN
   std::string name = op.name;
   IL::add2name(name,op.nameadd); // add nameadd to name (as superscript)
-  if ( op.excitation.empty() ) // no subscript, parameter is a "number"
+  if ( op.excitation.empty() && !op.found_orbs() ) // no subscript, parameter is a "number"
     return Matrices(Ops::Number,Product<Orbital>(),0,name);
-  // TODO check for orbitals here
-  //
+  
   LExcitationMap::const_iterator itex = _excops.get_add(op.excitation,op.lmel);
   
   return Matrices(Ops::Interm,itex->second.orbitals(op.dg),itex->second.exccls(op.dg), 
