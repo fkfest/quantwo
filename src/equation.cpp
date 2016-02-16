@@ -105,8 +105,8 @@ LParsedName::LParsedName(const std::string& namein, uint try2set, bool strict)
   if (!downname.empty()) 
     this->parse_subscript(downname,try2set,strict);
 
-  if ( found_orbs() && ( dg != phi ) ){
-    // swap for \dg xor \phi 
+  if ( found_orbs() && phi ){
+    // swap for \phi 
     Product<Orbital> tmp(occ);
     occ = virt;
     virt = tmp;
@@ -554,11 +554,11 @@ Oper LEquation::handle_operator(const Lelem& lel, Term& term, bool excopsonly)
     if ( name==hms["perturbation"] ) return Oper(Ops::XPert,true,&term);
   }
   // excitation class
-  if (!op.found_excitation())
+  if (!op.found_excitation() && !op.found_orbs())
     Error("No excitation class in operator "+lel.name());
   IL::add2name(name,op.nameadd); // add nameadd to name (as superscript)
   if (bare_excop) { // bare excitation operator
-    return handle_excitation(term,op.excitation,op.dg,lmelec,excopsonly);
+    return handle_excitation(term,lel.name(),false,0,excopsonly);
   }
   if (excopsonly) return Oper();
   if (op.excl == 0 && lmelec <= 0)
