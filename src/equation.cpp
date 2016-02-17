@@ -273,24 +273,6 @@ bool LEquation::extractit()
 
 bool LEquation::do_sumterms(bool excopsonly )
 {
-//   //BEGIN TEST
-//   std::string testname("X^{\\snam{\\dg a}ij_1}_{a_2b_1}");
-// //   std::string testname("X^{\\dg{\\snam{a}}ij_1}_{{2}a_2b_1}");
-//   LParsedName op(testname,LParsedName::Orbs|LParsedName::Excitation|LParsedName::Orbtypes|LParsedName::Dg|LParsedName::Nameadd|LParsedName::Excl);
-//   xout << testname << " parsed: "<< std::endl;
-//   if (op.dg) xout << "dagger" << std::endl;
-//   xout << op.nameadd << std::endl;
-//   xout << "^" << op.occ <<"_"<< op.virt << std::endl;
-//   xout << op.excl << std::endl;
-//   xout << op.excitation << std::endl;
-//   if (!op.orbtypes.empty()){
-//     xout << "orbtypes: ";
-//     xout << "^" << op.orbtypes[0] << "_" << op.orbtypes[1] << std::endl;
-//   }
-//   //END TEST
-  
-  
-  
   lui beg=0;
   bool plus=true, bra=false, ket=false;
   if (!_eqn.expanded())

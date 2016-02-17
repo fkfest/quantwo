@@ -31,7 +31,7 @@ class Term {
     Term(Product<SQOp> const & opProd, Product<Kronecker> const & kProd);
     //! construct from Product<SQOp>, Product<Kronecker>, Product<Matrices>, summation indices and prefactor
     Term(Product<SQOp> const & opProd, Product<Kronecker> const & kProd, 
-         Product<Matrices> const & mat, const TOrbSet & sumindx, const TOrbSet & realsumindx, 
+         Product<Matrices> const & mat, const TOrbSet & orbs, const TOrbSet & sumorbs, 
          const TFactor& prefac, const ConnectionsMap& connections);
     //! validate term
     bool term_is_valid();
@@ -72,10 +72,10 @@ class Term {
     TFactor prefac() const;
     //! return matrices
     const Product<Matrices>& mat() const;
+    //! return orbitals
+    const TOrbSet& orbs() const;
     //! return summation indices
-    const TOrbSet& sumindx() const;
-    //! return real summation indices
-    const TOrbSet& realsumindx() const;
+    const TOrbSet& sumorbs() const;
     //! generate set of external-lines orbitals
     TOrbSet extindx() const;
     //! generate set of orbitals that correspond to external-creation lines
@@ -179,7 +179,7 @@ class Term {
     //! set last orbital (onlylarger: only if it's larger than current one)
     void set_lastorb(Orbital orb, bool onlylarger = false);
     void set_lastel(Electron el, bool onlylarger = false);
-    // set _lastorb using _sumindx
+    // set _lastorb using _orbs
     void set_lastorbs();
     // copy lastorbs and last electron from another term
     void copy_lastorbs( const Term & term ){ _lastorb = term._lastorb; _lastel = term._lastel;};
@@ -193,7 +193,7 @@ class Term {
     Product<SQOp> _opProd;
     Product<Kronecker>  _kProd;
     Product<Matrices> _mat;
-    TOrbSet _sumindx,_realsumindx;
+    TOrbSet _orbs,_sumorbs;
     TFactor _prefac;
     Sum<Permut,TFactor> _perm;
     // connections of matrices in term
@@ -217,7 +217,7 @@ public:
     Termel(){};
     Termel(const Term& term) : Term(term){};
 private:
-  TElSet _sumel, _realsumel;
+  TElSet _els, _sumels;
 };
 
 namespace Q2

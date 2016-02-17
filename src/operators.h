@@ -78,10 +78,10 @@ class Oper {
   Product<SQOp> SQprod() const;
   //return prefactor
   TFactor prefac() const;
+  // return orbitals
+  const TOrbSet & orbs() const;
   // return summation indices
-  const TOrbSet & sumindx() const;
-  // return real summation indices (without summations over bare excitations)
-  TOrbSet realsumindx() const;
+  TOrbSet sumorbs() const;
 
   private:
   // for hamiltonian-parts
@@ -97,9 +97,8 @@ class Oper {
   Product<SQOp> _SQprod;
   Matrices _mat;
   TFactor _prefac;
-  TOrbSet _sumindx, _fakesumindx;
+  TOrbSet _orbs, _sumorbs;
   Term * p_Term;
-//   Product <Orbital> _sumindx, _fakesumindx;
 };
 
 std::ostream & operator << (std::ostream & o, Oper const & op);

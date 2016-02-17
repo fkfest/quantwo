@@ -165,10 +165,12 @@ void Oper::create_Oper(const std::string& name, bool antisym)
   Orbital orb(std::string("P"),el);
   _SQprod*=SQOp(SQOpT::Creator,orb);
   porbs*=orb;
-  _sumindx.insert(orb);
+  _orbs.insert(orb);
+  _sumorbs.insert(orb);
   orb=Orbital(std::string("Q"),el);//same electron as in P
   porbs*=orb;
-  _sumindx.insert(orb);
+  _orbs.insert(orb);
+  _sumorbs.insert(orb);
   _prefac=1;
   if ( InSet(_type, Ops::Fock,Ops::OneEl,Ops::XPert) ) {
     _SQprod*=SQOp(SQOpT::Annihilator,orb);
@@ -179,11 +181,13 @@ void Oper::create_Oper(const std::string& name, bool antisym)
     orb=Orbital(std::string("R"),el);
     _SQprod*=SQOp(SQOpT::Creator,orb);
     porbs*=orb;
-    _sumindx.insert(orb);
+    _orbs.insert(orb);
+    _sumorbs.insert(orb);
     orb=Orbital(std::string("S"),el);//same electron as in R
     _SQprod*=SQOp(SQOpT::Annihilator,orb);
     porbs*=orb;
-    _sumindx.insert(orb);
+    _orbs.insert(orb);
+    _sumorbs.insert(orb);
     orb=porbs[1];
     _SQprod*=SQOp(SQOpT::Annihilator,orb);
     _prefac /= 4;
@@ -323,9 +327,9 @@ void Oper::create_Oper(const Product< Orbital >& orbs, const std::string& name, 
     uint elhash = 0;
     if ( i < ncrea ) {
       _SQprod*=SQOp(SQOpT::Creator, *itorb);
-      _sumindx.insert(*itorb);
-      if (InSet(_type, Ops::Exc0,Ops::Deexc0)) 
-        _fakesumindx.insert(*itorb);
+      _orbs.insert(*itorb);
+      if (!InSet(_type, Ops::Exc0,Ops::Deexc0)) 
+        _sumorbs.insert(*itorb);
       el = itorb->spin().el();
       // add this type of electron-orbital
       hash = uint(itorb->type()) + 2*Orbital::MaxType*itorb->spin().spinhash();
@@ -339,9 +343,9 @@ void Oper::create_Oper(const Product< Orbital >& orbs, const std::string& name, 
         anniSQprod *= SQOp(SQOpT::Annihilator, *itorb);
       else
         _SQprod *= SQOp(SQOpT::Annihilator, *itorb);
-      _sumindx.insert(*itorb);
-      if (InSet(_type, Ops::Exc0,Ops::Deexc0)) 
-        _fakesumindx.insert(*itorb);
+      _orbs.insert(*itorb);
+      if (!InSet(_type, Ops::Exc0,Ops::Deexc0)) 
+        _sumorbs.insert(*itorb);
       if ( el != 0 && el != itorb->spin().el() )
         error("Different electrons in the product!","Oper::create_Oper");
       // add this type of electron-orbital
@@ -387,23 +391,17 @@ Product< SQOp > Oper::SQprod() const
 { return _SQprod;}
 TFactor Oper::prefac() const
 { return _prefac;}
-const TOrbSet & Oper::sumindx() const
-{ return _sumindx;}
-TOrbSet Oper::realsumindx() const
-{
-  TOrbSet realsum;
-  for (TOrbSet::const_iterator it = _sumindx.begin(); it != _sumindx.end(); ++it )  
-    if (_fakesumindx.count(*it) == 0)
-      realsum.insert(*it);
-  return realsum;
-}
+const TOrbSet & Oper::orbs() const
+{ return _orbs;}
+TOrbSet Oper::sumorbs() const
+{ return _sumorbs;}
 
 
 
 std::ostream & operator << (std::ostream & o, Oper const & op)
 {
   if ( _todouble(_abs(_abs(op.prefac()) - 1)) > MyOut::pcurout->small) o << op.prefac();
-  if (op.realsumindx().size()>0) o <<"\\sum_{"<<op.realsumindx()<<"}";
+  if (op.sumorbs().size()>0) o <<"\\sum_{"<<op.sumorbs()<<"}";
   o <<op.mat() << op.SQprod();
   return o;
 }
