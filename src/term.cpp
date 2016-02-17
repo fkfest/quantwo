@@ -252,12 +252,29 @@ bool Term::removeit() const
 
 bool Term::term_is_valid()
 {
+  Product<Spin> from, to;
   for ( TOrbSet::const_iterator it = _sumorbs.begin(); it != _sumorbs.end(); ++it ) {
     if(_orbs.count(*it) == 0) {
-      std::cout << *this << std::endl;
-      error("Problem with summation index! May be a summation over excitations in a term without this excitaions?");
+      bool found = false;
+      if ( it->getel() == 0 ) {
+        // electron is not set
+        _foreach_cauto(TOrbSet,itorb,_orbs){
+          if ( it->equal(*itorb) ){
+            from.push_back(it->spin());
+            to.push_back(itorb->spin());
+            found = true;
+            break;
+          }
+        }
+      }
+      if (!found) {
+        std::cout << *this << std::endl;
+        error("Problem with summation index! May be a summation over excitations in a term without this excitaions?");
+      }
     }
   }
+  for ( uint i = 0; i < from.size(); ++i )
+    this->replace(from[i],to[i]);
   return true;
 }
 

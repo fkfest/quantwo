@@ -89,7 +89,7 @@ void LExcitationMap::correct_orbs(const Product< Orbital >& orbs)
 }
 
 LParsedName::LParsedName(const std::string& namein, uint try2set, bool strict)
-              : lmel(0),dg(false),excl(-1)
+              : lmel(0),dg(false),excl(-1),spinsym(Matrices::Singlet)
 {
   std::string upname, downname;
   foundsscipt = IL::nameupdown(name,upname,downname,namein);
@@ -241,6 +241,16 @@ bool LParsedName::gen_orbtypes(const std::string& string)
   orbtypes.push_back(OrbitalTypes(down,false));
   if ( orbtypes[0].empty() && orbtypes[1].empty()) orbtypes.clear();
   return !orbtypes.empty();
+}
+Product< Orbital > LParsedName::orbs() const
+{
+  Product<Orbital> orb;
+  uint nels = std::max(occ.size(),virt.size());
+  for ( uint iel = 0; iel < nels; ++iel ){
+    if ( iel < virt.size() ) orb *= virt[iel];
+    if ( iel < occ.size() ) orb *= occ[iel];
+  }
+  return orb;
 }
 
 bool LEquation::extractit()
@@ -571,7 +581,6 @@ Product<Orbital> LEquation::handle_sum(const Lelem& lel)
     LExcitationMap::const_iterator itex = _excops.get_add(name);
     if (itex != _excops.end()) {
       orbs *= itex->second.orbitals();
-//      term.addsummation(itex->second.orbitals());
     }
     ipos=ipos1;
   }
@@ -611,13 +620,19 @@ Matrices LEquation::handle_parameter(const Lelem& lel)
 #undef _LPN
   std::string name = op.name;
   IL::add2name(name,op.nameadd); // add nameadd to name (as superscript)
-  if ( op.excitation.empty() && !op.found_orbs() ) // no subscript, parameter is a "number"
+  if ( op.found_orbs() ){
+    // orbitals
+    return Matrices(Ops::Interm,op.orbs(),op.excl,name,op.spinsym);
+  } else if ( !op.excitation.empty() ){
+    // something like \mu_1
+    LExcitationMap::const_iterator itex = _excops.get_add(op.excitation,op.lmel);
+  
+    return Matrices(Ops::Interm,itex->second.orbitals(op.dg),itex->second.exccls(op.dg), 
+                    name,itex->second.spinsymexcs());
+  } else { 
+    // no subscript, parameter is a "number"
     return Matrices(Ops::Number,Product<Orbital>(),0,name);
-  
-  LExcitationMap::const_iterator itex = _excops.get_add(op.excitation,op.lmel);
-  
-  return Matrices(Ops::Interm,itex->second.orbitals(op.dg),itex->second.exccls(op.dg), 
-                  name,itex->second.spinsymexcs());
+  }
 }
 
 

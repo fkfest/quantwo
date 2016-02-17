@@ -83,9 +83,10 @@ struct LParsedName {
     Nameadd = 0x002,    // \snam{blabla} or just blabla
     Dg = 0x004,         // \dg
     Orbs = 0x008,       // ij_1
-    Excl = 0x010,        // 1, 2, 3...
-    Excitation = 0x020,  // \mu_1, \nu_3
-    Orbtypes = 0x040     // ^{ii}_{ta}
+    Excl = 0x010,       // 1, 2, 3...
+    Excitation = 0x020, // \mu_1, \nu_3
+    Orbtypes = 0x040,   // ^{ii}_{ta}
+    Spinsym = 0x080     // singlet or triplet
   };
   int lmel;
   std::string name, nameadd, excitation;
@@ -95,13 +96,15 @@ struct LParsedName {
   short int excl;
   // orbital types (first set for occ and second set for virt indices )
   std::vector<OrbitalTypes> orbtypes;
-  LParsedName() : lmel(0),dg(false),excl(-1){};
+  Matrices::Spinsym spinsym;
+  LParsedName() : lmel(0),dg(false),excl(-1),spinsym(Matrices::Singlet){};
   // parse namein for name, subscript and superscript
   // if try2set=Name - stop after setting the name
   LParsedName( const std::string& namein, uint try2set, bool strict = true );
   bool found_excitation() const { return !excitation.empty() || excl >= 0;}
   bool found_orbs() const { return !occ.empty() || !virt.empty();}
-  Product<Orbital> orbs() const { Product<Orbital> orb(occ); orb *= virt; return orb;}
+  // combine occ and virt electron-wise
+  Product<Orbital> orbs() const;
 private:
   void parse_superscript( const std::string& up, uint try2set );
   void parse_subscript( const std::string& down, uint try2set, bool strict );

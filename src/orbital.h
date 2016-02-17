@@ -37,6 +37,8 @@ public:
   bool operator != (const Spin& spin) const {return !(*this == spin);};
   // check ordering relation (for sorting)
   bool operator < (const Spin& spin) const;
+  // check equality without checking electrons
+  bool equal(const Spin& spin) const {return _type == spin._type;};
   // replace s1 with s2. 
   // correct handling of Ups and Downs. If the current value is Up or Down and the new one is general - return Return::Repeat
   // By GenS and GenD intesection --> Return::Delete
@@ -100,6 +102,8 @@ class Orbital {
   bool operator != (Orbital const & orb) const;
   // check ordering relation (for sorting)
   bool operator < (Orbital const & orb) const;
+  // check equality without checking electrons
+  bool equal(const Orbital& orb) const;
   // return letter-name of orbital
   std::string letname() const;
   void replace_letname(const std::string& newname);

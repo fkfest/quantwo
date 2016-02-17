@@ -123,6 +123,9 @@ bool Orbital::operator<(const Orbital& orb) const
 //  assert( _type == orb._type );
   return _spin<orb._spin;
 }
+bool Orbital::equal(const Orbital& orb) const
+{ return _spin.equal(orb._spin) && _type==orb._type && _name==orb._name; }
+
 std::string Orbital::letname() const
 {
   lui iend;
@@ -205,6 +208,7 @@ bool Spin::operator<(const Spin& spin) const
   if (spin._el < _el) return false;
   return  (_type < spin._type);
 }
+
 Return Spin::replace(const Spin& s1, const Spin& s2)
 {
   assert( _type != No );
