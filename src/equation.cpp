@@ -53,8 +53,6 @@ LExcitationMap::iterator LExcitationMap::get_add(const std::string& name, int lm
         orb4t[*iot] = _globalterm.freeorbname(*iot);
     }
   }
-  //TODO: implement Triplet!
-  Matrices::Spinsym spinsym = Matrices::Singlet;
   Ops::Type opstype;
   if ( exc.dg )
     opstype = Ops::Deexc0;
@@ -62,7 +60,7 @@ LExcitationMap::iterator LExcitationMap::get_add(const std::string& name, int lm
     opstype = Ops::Exc0;
   Oper op(opstype,excl,orb4t,orbtypes,"",lmel,&_globalterm);
   
-  return (this->insert(std::make_pair(name,LExcitationInfo(op.mat().orbitals(),lmel,spinsym)))).first;
+  return (this->insert(std::make_pair(name,LExcitationInfo(op.mat().orbitals(),lmel,exc.spinsym)))).first;
 }
 void LExcitationMap::set_lastorbs(const Product< Orbital >& orbs, Spin::Type spintype)
 {
