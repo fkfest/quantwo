@@ -252,7 +252,7 @@ bool Term::removeit() const
 
 bool Term::term_is_valid()
 {
-  Product<Spin> from, to;
+  Product<Orbital> from, to;
   for ( TOrbSet::const_iterator it = _sumorbs.begin(); it != _sumorbs.end(); ++it ) {
     if(_orbs.count(*it) == 0) {
       bool found = false;
@@ -260,8 +260,8 @@ bool Term::term_is_valid()
         // electron is not set
         _foreach_cauto(TOrbSet,itorb,_orbs){
           if ( it->equal(*itorb) ){
-            from.push_back(it->spin());
-            to.push_back(itorb->spin());
+            from.push_back(*it);
+            to.push_back(*itorb);
             found = true;
             break;
           }
@@ -273,8 +273,8 @@ bool Term::term_is_valid()
       }
     }
   }
-  for ( uint i = 0; i < from.size(); ++i )
-    this->replace(from[i],to[i]);
+  for ( uint i = 0; i < from.size(); ++i ) 
+    this->replace(from[i],to[i],false);
   return true;
 }
 
