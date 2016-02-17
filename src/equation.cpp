@@ -614,7 +614,7 @@ Permut LEquation::handle_permutation(const Lelem& lel) const
 Matrices LEquation::handle_parameter(const Lelem& lel)
 {
 #define _LPN LParsedName
-  LParsedName op(lel.name(),_LPN::Lmel|_LPN::Dg|_LPN::Orbs|_LPN::Excitation|_LPN::Nameadd);
+  LParsedName op(lel.name(),_LPN::Lmel|_LPN::Dg|_LPN::Orbs|_LPN::Excitation|_LPN::Nameadd,false);
 #undef _LPN
   std::string name = op.name;
   IL::add2name(name,op.nameadd); // add nameadd to name (as superscript)
