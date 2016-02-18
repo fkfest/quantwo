@@ -27,7 +27,7 @@ namespace IL{
   // skip all characters in str to the left from ipos, which are present in what
   // ipos and result are end()-like, i.e. one-based
   lui skipr(const std::string& str, const lui& ipos, const std::string& what);
-  // delete left and right brackets (if they correspond to each other!)
+  // delete left and right brackets (if they correspond to each other!) and empty space
   // {{a}_2{b}} -> {a}_2{b}
   void delbrack( std::string& str, lui ipos = 0, std::string brackets = "{" );
   // end of word (may be in " )

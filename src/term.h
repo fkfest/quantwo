@@ -60,8 +60,6 @@ class Term {
     //! add summation indices
     void addsummation (Orbital const & orb, short excl);
     void addsummation (const Product<Orbital> & orbs);
-    //! add matrix
-    void addmatrix (Matrices const & mat);
     //! replace matrix on position ipos
     void replacematrix (Matrices const & mat, unsigned long int ipos);
     //! return contained Product<SQOp>

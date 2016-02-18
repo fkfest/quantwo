@@ -238,7 +238,7 @@ Sum< Term, TFactor > Q2::EqualTerms(Sum< Term, TFactor > s, double minfac)
       if (term.equal(term1,perm)) {
         sum.erase(k);
         term1+=std::make_pair<Permut,TFactor>(perm,prefac);
-        //std::cout<<"term old" << term1 <<std::endl;
+//         std::cout<<"term old" << term1 <<std::endl;
         if ( !term1.term_is_0(minfac) ) sum+=term1;
         added=true;
         break;
@@ -247,7 +247,7 @@ Sum< Term, TFactor > Q2::EqualTerms(Sum< Term, TFactor > s, double minfac)
     if (!added) {
       term+=std::make_pair<Permut,TFactor>(Permut(),prefac);
       if ( !term.term_is_0(minfac) ) sum+=term;
-      //std::cout<<"term new" << term <<std::endl;
+//       std::cout<<"term new" << term <<std::endl;
     }
   }
   return sum;

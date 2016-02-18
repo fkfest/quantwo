@@ -126,6 +126,9 @@ void IL::delbrack(std::string& str, lui ipos, std::string brackets)
 {
   lui endstr = str.size();
   for ( ; ipos < endstr; ++ipos, --endstr ) {
+    //skip empty spaces
+    ipos = skip(str,ipos," ");
+    endstr = skipr(str,endstr," ");
     if ( brackets.find(str[ipos]) == std::string::npos ||
          closbrack(str,ipos)+1 != endstr ) {
       break;

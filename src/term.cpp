@@ -148,10 +148,6 @@ void Term::addsummation (const Product<Orbital> & orbs)
       say("Strange, summation runs already over "+orbs[i].name());
   }
 }
-void Term::addmatrix(const Matrices& mat)
-{
-  _mat *= mat;
-}
 void Term::replacematrix(const Matrices& mat, lui ipos)
 {
   if (ipos >= _mat.size())
@@ -304,6 +300,7 @@ bool Term::equal(Term& t, Permut& perm)
       _orbs.size() != t._orbs.size() ||
       _sumorbs.size() != t._sumorbs.size() ||
       _nintloops != t._nintloops || _nocc != t._nocc) return false;
+//   xout << "compare " << *this << "  and  " << t << std::endl;
   // generate Product of all orbitals and external-lines orbitals
   TOrbSet peo(extindx()), peot(t.extindx()), 
           // external creator lines

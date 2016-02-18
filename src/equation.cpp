@@ -148,17 +148,17 @@ void LParsedName::parse_superscript(const std::string& up, uint try2set)
       iposw = 0, 
       iposw1 = IL::nextwordpos(word,iposw,false,true);
     std::string mainpart(word.substr(iposw,iposw1-iposw));
-    if ( nameadd.size() > 0 && up[ipos]!='}' ) nameadd += " ";
+//     xout << "word " << word << " mainpart " << mainpart << std::endl;
     if( try2set&Dg && InSet(word, dgs) ) {
       dg=true;
-      nameadd += dgs.front();
+      nameadd += dgs.front()+" ";
     
     } else if ( try2set&Lmel && InSet(word,lessmore) ){
       // it is less/more
       ipos=ipos1;
       ipos1=IL::nextwordpos(up,ipos,false);
       std::string lmstr = up.substr(ipos,ipos1-ipos);
-      nameadd += word+lmstr;
+      nameadd += word+lmstr+" ";
       if ( str2num<int>(lmel,lmstr,std::dec) ){
         // it is a non-conserving operator
         if ( word == lessmore.front() ) lmel = -lmel;
@@ -170,17 +170,28 @@ void LParsedName::parse_superscript(const std::string& up, uint try2set)
       occ.push_back(orb);
       
     } else if ( try2set&Nameadd ){
-      if ( mainpart == "\\"+supername && mainpart == word){
-        // \snam{sfd}: add next word
-        ipos1 = IL::nextwordpos(up,ipos1,true,false);
-        word = up.substr(ipos,ipos1-ipos);
+      if ( mainpart == "\\"+supername ){
+        if ( mainpart == word){
+          // \snam{sfd}: add next word
+          ipos = ipos1;
+          ipos1 = IL::nextwordpos(up,ipos,true,false);
+          word = up.substr(ipos,ipos1-ipos);
+          IL::delbrack(word);
+        } else {
+          // it's part of the current word
+          iposw = iposw1;
+          iposw1 = IL::nextwordpos(word,iposw,true,false);
+          word = word.substr(iposw,iposw1-iposw);
+          IL::delbrack(word);
+        }
       }
-      nameadd += word;
+      nameadd += word+" ";
     } else {
       Error("Unknown part "+word+" in superscript "+up);
     }
     ipos=ipos1;
   }
+  IL::delbrack(nameadd);
 }
 void LParsedName::parse_subscript(const std::string& down, uint try2set, bool strict)
 {
@@ -322,7 +333,7 @@ bool LEquation::do_sumterms(bool excopsonly )
         term.addsummation(handle_sum(lel));
     } else if (lex == Lelem::Param) { // handle Parameter
       if (!excopsonly)
-        term.addmatrix(handle_parameter(lel));
+        term *= handle_parameter(lel);
       indxoperterm.push_back(i+1);
     } else if (lex == Lelem::Perm) { // handle Permutation
       if (!excopsonly)
@@ -343,7 +354,7 @@ bool LEquation::do_sumterms(bool excopsonly )
 void LEquation::reset_term(Term& term) const
 {
   term=Term();
-  term.addmatrix(Matrices());
+  term *= Matrices();
   if (_excops.size()>0) {
     term.copy_lastorbs(_excops.orbsterm());
   }
