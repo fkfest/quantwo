@@ -49,6 +49,8 @@ class Matrices {
   std::string name() const;
   // return true if antisymmetrized form
   bool antisymform() const;
+  // combine with mat, in dontorbs: orbital indices in mat to let out
+  void combine(const Matrices& mat, const Set<uint>& dontorbs = Set<uint>() );
   // replace orbital orb1 with orb2
   Return replace(Orbital orb1, Orbital orb2, bool smart);
   // replace spin spin1 with spin2
@@ -73,13 +75,13 @@ class Matrices {
   // return excitation class (has to be set previously!)
   short exccl() const {return _exccl;};
   // get the position of second orbital for the same electron (from position) 
-  long iorbel(lui ipos);
+  long iorbel(lui ipos) const;
   // get the second orbital for the same electron (if not found return blank orbital)
-  Orbital orbel(Orbital const & orb);
+  Orbital orbel(Orbital const & orb) const;
   // get the second orbital for the same electron (from position) 
-  Orbital orbel(long int const & ipos);
+  Orbital orbel(long int const & ipos) const;
   // get the spin symmetry of the electron, which corresponds to the orbital on position ipos
-  Spinsym spinsym(long int ipos);
+  Spinsym spinsym(long int ipos) const;
   // returns gender of the creation/annihilation operator that corresponds to the orbital on position ipos
   // information is either taken from _cranorder or guessed 
   SQOpT::Gender genderguess(uint ipos) const;
@@ -118,7 +120,7 @@ class Matrices {
   Product<SQOpT::Gender> _cranorder; // sets creator or annihilator type for every orbital (for density matrices only!)
   bool _antisymform; // W is constructed in antisymmetrized form, but can be expanded later.
   // number of orbital pairs (== electrons for number-conserving operators and otherwise == conserved particles)
-  short _npairs;
+  uint _npairs;
   // needed for comparison of terms:
   long int _indx;
   // connected to (index of matrix in term (start from 1!!!)):

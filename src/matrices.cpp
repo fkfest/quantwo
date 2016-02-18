@@ -27,7 +27,7 @@ Matrices::Matrices(Ops::Type t, Product< Orbital > p, short npairs, std::string 
   _type=t;
   _orbs=p;
   _npairs=npairs;
-  assert(_npairs <= int(_orbs.size()/2));
+  assert(_npairs <= _orbs.size()/2);
   std::string exc0 = Input::sPars["output"]["exc0"];
   switch (t) {
     case Ops::Fock:
@@ -84,6 +84,30 @@ std::string Matrices::name() const
 { return _name; }
 bool Matrices::antisymform() const
 { return _antisymform; }
+
+void Matrices::combine(const Matrices& mat, const Set< uint >& dontorbs)
+{
+  if ( InSet(_type,Ops::Deexc0,Ops::Exc0) )
+    _name = mat._name;
+  else if ( !InSet(mat._type,Ops::Deexc0,Ops::Exc0) )
+    IL::add2name(_name,mat._name);
+  if ( dontorbs.size() == mat._orbs.size() )
+    // don't have to unite anything
+    return;
+  if ( _matspinsym != mat._matspinsym || _matspinsym != Singlet )
+    Error("Cannot combine non-Singlet matrices yet");
+  if ( 2*_npairs != _orbs.size() || 2*mat._npairs != mat._orbs.size() )
+    Error("Cannot combine non-conserving matrices yet");
+  // combine orbitals (excluding those in dontorbs)
+  for ( uint io = 0; io < mat._orbs.size(); ++io ){
+    if ( dontorbs.count(io) == 0 ){
+      _orbs.push_back(mat._orbs[io]);
+      // make sure that we have both orbitals belonging to the same electron
+      assert( dontorbs.count(mat.iorbel(io)) == 0 );
+    }
+  }
+  _npairs = _orbs.size()/2;
+}
 
 Return Matrices::replace(Orbital orb1, Orbital orb2, bool smart)
 {
@@ -243,7 +267,7 @@ void Matrices::setkind(short int exccl, short int intlines, short int intvirt)
   _intlines=intlines;
   _intvirt=intvirt;
 }
-long int Matrices::iorbel(lui ipos)
+long int Matrices::iorbel(lui ipos) const
 { 
   assert( ipos < _orbs.size() );
   lui ipos1;
@@ -253,13 +277,13 @@ long int Matrices::iorbel(lui ipos)
   else
     ipos1 = ipos%2==0?ipos+1:ipos-1;
   
-  if ( (short)ipos1 >= 2*_npairs )
+  if ( ipos1 >= 2*_npairs )
     // one of the non-conserved electrons
     return -1;
   return ipos1;
 }
 
-Orbital Matrices::orbel(const Orbital& orb)
+Orbital Matrices::orbel(const Orbital& orb) const
 {
   long int ipos = _orbs.find(orb);
   if ( ipos >= 0 )
@@ -267,7 +291,7 @@ Orbital Matrices::orbel(const Orbital& orb)
   else
     return Orbital();
 }
-Orbital Matrices::orbel(const long int& ipos)
+Orbital Matrices::orbel(const long int& ipos) const
 {
   long ipos1 = iorbel(ipos);
   if (ipos1 >= 0 )
@@ -276,7 +300,7 @@ Orbital Matrices::orbel(const long int& ipos)
     return Orbital();
 }
 
-Matrices::Spinsym Matrices::spinsym(long int ipos)
+Matrices::Spinsym Matrices::spinsym(long int ipos) const
 {
   if (_matspinsym==Triplet && ipos-2 <0) //first electron is triplet
     return Triplet;
@@ -286,7 +310,7 @@ SQOpT::Gender Matrices::genderguess(uint ipos) const
 {
   if (_cranorder.size() > 0) return _cranorder[ipos];
   // can't guess for non-conserved electrons, so return a placeholder
-  if ((short)ipos >= 2*_npairs) return SQOpT::Gen;
+  if (ipos >= 2*_npairs) return SQOpT::Gen;
   // first creators, second annihilators
   return (ipos%2 == 0)? SQOpT::Creator : SQOpT::Annihilator;
 }

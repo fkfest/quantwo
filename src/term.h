@@ -122,7 +122,11 @@ class Term {
     //! replace spin spin1 with spin2
     void replace(Spin spin1, Spin spin2, bool smart = true);
     // delete "None" matrices (caution, the order of matrices can be important, so do it AFTER connection stuff!)
-    void deleteNoneMats();
+    // if unite_exc0 is true: remove all exc0 and dexc0 matrices and create one single exc0 (and/or dexc0) 
+    void deleteNoneMats(bool unite_exc0 = true);
+    // if pMat is zero - sets pMat to the it-matrix and increments it (it has to be from _mat)
+    // if not zero - combines pMat and it (using skipping norbs-orbitals in *it) and deletes *it
+    void combineMats(Matrices *& pMat, Product<Matrices>::iterator& it, const Set<uint>& norbs);
     // brilloin condition (return true for terms with occ-virt fock)
     bool brilloin() const;
     //! Determine connections (in reduced term!)

@@ -248,6 +248,7 @@ bool Term::removeit() const
 
 bool Term::term_is_valid()
 {
+  // orbitals
   Product<Orbital> from, to;
   for ( TOrbSet::const_iterator it = _sumorbs.begin(); it != _sumorbs.end(); ++it ) {
     if(_orbs.count(*it) == 0) {
@@ -1102,8 +1103,56 @@ void Term::replace(Spin spin1, Spin spin2, bool smart)
 
 static bool matisnone(const Matrices& mat)
 { return (mat.type() == Ops::None); }
-void Term::deleteNoneMats()
-{ _mat.erase(std::remove_if(_mat.begin(),_mat.end(),matisnone),_mat.end()); }
+void Term::combineMats(Matrices*& pMat, Product< Matrices >::iterator& it, const Set< uint >& norbs)
+{
+  if ( norbs.size() == it->orbitals().size() ){
+    // all orbitals have to be removed
+    it = _mat.erase(it);
+  } else if ( pMat == 0 ){
+    if ( norbs.size() > 0 ){
+      // some of the orbitals have to be removed
+      Matrices mat(it->type(),Product<Orbital>(),0);
+      mat.combine(*it,norbs);
+      *it = mat;
+    }
+    pMat = &(*it);
+    ++it;
+  } else {
+    pMat->combine(*it,norbs);
+    it = _mat.erase(it);
+  }
+}
+
+void Term::deleteNoneMats(bool unite_exc0)
+{ 
+  _mat.erase(std::remove_if(_mat.begin(),_mat.end(),matisnone),_mat.end()); 
+  if (unite_exc0) {
+    Matrices 
+      * pExc0 = 0,
+      * pDexc0 = 0;
+    Product<Matrices>::iterator it = _mat.begin();
+    while ( it != _mat.end() ){
+      if ( !InSet(it->type(),Ops::Deexc0,Ops::Exc0) ){
+        ++it;
+        continue;
+      }
+      Set<uint> norbs;
+      const Product<Orbital> & orbs = it->orbitals();
+      for ( uint io = 0; io < orbs.size(); ++io ){
+        if ( _sumorbs.count(orbs[io]) ){
+          // orbital is not really external
+          norbs.insert(io);
+        }
+      }
+      if ( it->type() == Ops::Deexc0 ) {
+        combineMats(pDexc0,it,norbs);
+      } else {
+        combineMats(pExc0,it,norbs);
+      }
+    }
+    matrixkind();
+  }
+}
 bool Term::brilloin() const
 {
   for ( Product<Matrices>::const_iterator it = _mat.begin(); it != _mat.end(); ++it )
