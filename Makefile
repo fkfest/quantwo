@@ -29,7 +29,7 @@ out=equation
 # files to be linked to working-directory
 FILIN=definitions.tex $(out).tex
 DIR = src
-OBJ0 = main.o tensor.o action.o expression.o factorizer.o inpline.o finput.o equation.o lexic.o work.o orbital.o matrices.o operators.o kronecker.o term.o utilities.o globals.o
+OBJ0 = main.o tensor.o action.o expression.o factorizer.o unigraph.o inpline.o finput.o equation.o lexic.o work.o orbital.o matrices.o operators.o kronecker.o term.o utilities.o globals.o
 OBJ = $(patsubst %,$(DIR)/%,$(OBJ0))
 SRC = $(OBJ:.o=.cpp)
 

@@ -59,7 +59,6 @@ typedef Set<Electrons> TElSet;
 /*
     Orbitals (occ, virt, general) with spin (nospin, alpha, beta, general) 
 */
-
 class Orbital {
   public:
   // enumerate orbital types. The numbers are important, since we iterate over them

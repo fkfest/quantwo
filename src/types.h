@@ -30,5 +30,6 @@ namespace Ops {
 // connections
 typedef std::vector< Product<long int> > ConnectionsMap;
 
+typedef std::vector< unsigned int > Order;
 
 #endif

@@ -321,7 +321,7 @@ bool Term::equal(Term& t, Permut& perm)
   bool equal=false,exter,extert,exter1,extert1,loop,loopt,
        // is it an external creator line?
        extcr,extcrt;
-  std::vector< unsigned int > ordmat, ordmatt, oordmat, oordmatt;
+  Order ordmat, ordmatt, oordmat, oordmatt;
   for (i=0; i<_mat.size(); i++) {
     _mat[i].reset_vertices();
     t._mat[i].reset_vertices();

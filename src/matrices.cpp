@@ -21,6 +21,7 @@ Matrices::Matrices() // : _type(Interm)
 {
   _antisymform=false;
   _type = Ops::None;
+  _exccl = _intlines = _intvirt = _orbtypeshash = 0;
 }
 Matrices::Matrices(Ops::Type t, Product< Orbital > p, short npairs, std::string name, Matrices::Spinsym matspinsym, bool antisymW)
 {
@@ -63,6 +64,7 @@ Matrices::Matrices(Ops::Type t, Product< Orbital > p, short npairs, std::string 
     _antisymform=true;
   } else
     _antisymform=false;
+  _exccl = _intlines = _intvirt = _orbtypeshash = 0;
 }
 Matrices::Matrices(const Kronecker& d)
 {
@@ -73,6 +75,7 @@ Matrices::Matrices(const Kronecker& d)
   _name = "delta";
   _matspinsym = Singlet;
   _antisymform = false;
+  _exccl = _intlines = _intvirt = _orbtypeshash = 0;
 }
 
 Ops::Type Matrices::type() const
@@ -170,6 +173,8 @@ bool Matrices::operator<(const Matrices& t) const
   if ( t._type < _type ) return false;
   if ( _name < t._name ) return true;
   if ( t._name < _name ) return false;
+  if ( _npairs < t._npairs ) return true;
+  if ( t._npairs < _npairs ) return false;
   if (_type == Ops::FluctP) { // electron-symmetry
     if ( *this == t ) return false; // the Matrices are the same
   }
@@ -178,7 +183,7 @@ bool Matrices::operator<(const Matrices& t) const
 bool Matrices::operator==(const Matrices& t) const
 {
   if ( _type != t._type || _name != t._name ) return false;
-  if ( _orbs.size() != t._orbs.size() ) return false;
+  if ( _orbs.size() != t._orbs.size() || _npairs != t._npairs ) return false;
   if ( _orbs == t._orbs ) return true;
   if (_type == Ops::FluctP) { // electron-symmetry
     if (_orbs.subprod(0,1) == t._orbs.subprod(2,3) && _orbs.subprod(2,3) == t._orbs.subprod(0,1) ) return true;
@@ -191,6 +196,27 @@ bool Matrices::operator==(const Matrices& t) const
    // }
   //}
   return false;
+}
+bool Matrices::equivalent(const Matrices& mat) const
+{
+  return ( _type == mat._type && _name == mat._name &&
+           _npairs == mat._npairs && _orbs.size() == mat._orbs.size() &&
+           _orbtypeshash == mat._orbtypeshash &&
+           _exccl == mat._exccl && _intlines == mat._intlines && _intvirt == mat._intvirt );
+}
+Equivalents Matrices::equivertices(uint offs) const
+{
+  Equivalents everts;
+  EquiVertices ev;
+  for ( uint vert = 0; vert < _npairs; ++vert )
+    if ( spinsym(vert*2) == Singlet )
+      ev.add(vert+offs);
+  if ( !ev.empty() ) everts.push_back(ev);
+  ev.clear();
+  for ( uint vert = _npairs; vert < nvertices(); ++vert )
+    ev.add(vert+offs);
+  if ( !ev.empty() ) everts.push_back(ev);
+  return everts;
 }
 
 void Matrices::reset_vertices()
@@ -261,11 +287,28 @@ void Matrices::set_cran(const Product< SQOpT::Gender >& cran)
   _cranorder = cran;
 }
 
+void Matrices::calc_orbtypeshash()
+{
+  _orbtypeshash = 0;
+  std::vector<uint> ots; 
+  _foreach_cauto(Product<Orbital>,ito,_orbs){
+    uint itype = uint(ito->type());
+    if (ots.size() < itype+1)
+      ots.resize(itype+1);
+    ots[itype] += 1;
+  }
+  lui off = 1;
+  for ( uint io = 0; io < ots.size(); ++io ){
+    _orbtypeshash += ots[io]*off;
+    off *= _orbs.size();
+  }
+}
 void Matrices::setkind(short int exccl, short int intlines, short int intvirt)
 {
   _exccl=exccl;
   _intlines=intlines;
   _intvirt=intvirt;
+  calc_orbtypeshash();
 }
 long int Matrices::iorbel(lui ipos) const
 { 

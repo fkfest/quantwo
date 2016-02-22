@@ -12,6 +12,7 @@
 #include "inpline.h" // for name-handling
 #include "sum.h"
 #include "kronecker.h"
+#include "evertices.h"
 // #include "operators.h" // for Creator/Annihilator types
 
 namespace Ops {
@@ -65,12 +66,19 @@ class Matrices {
   bool operator < (Matrices const & t) const;
   // equality of two Matrices (including symmetry properties)
   bool operator == (Matrices const & t) const;
+  // equivalence of two matrices (i.e., without orbital names)
+  bool equivalent( const Matrices& mat) const; 
+  // number of vertices ("electrons") in the matrix
+  uint nvertices() const { return _npairs+(_orbs.size()-2*_npairs);};
+  // equivalent vertices (starting from 0+offs to nvertices-1+offs) (indistinguishability of electrons...)
+  Equivalents equivertices(uint offs = 0) const;
   // return true if the matrix is zero
   bool is0() const;
   // set cranorder for density matrix
   void set_cran( const Product<SQOpT::Gender>& cran );
   const Product<SQOpT::Gender>& get_cran() const {return _cranorder;};
-  // set "kind" of matrix (_exccl, _intlines, _intvirt)
+  void calc_orbtypeshash();
+  // set "kind" of matrix (_exccl, _intlines, _intvirt) and _orbtypeshash
   void setkind(short exccl, short intlines, short intvirt);
   // return excitation class (has to be set previously!)
   short exccl() const {return _exccl;};
@@ -129,6 +137,8 @@ class Matrices {
   Product<ConLine> _conlines;
   // following variables will be set by Term::matrixkind (according to Kallay and Surjan, JCP, 115 (2001), 2945)
   short _exccl, _intlines, _intvirt;
+  // hash of types of all orbitals
+  lui _orbtypeshash;
     
 };
 
