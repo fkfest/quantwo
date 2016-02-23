@@ -631,16 +631,16 @@ Matrices LEquation::handle_parameter(const Lelem& lel)
   IL::add2name(name,op.nameadd); // add nameadd to name (as superscript)
   if ( op.found_orbs() ){
     // orbitals
-    return Matrices(Ops::Interm,op.orbs(),op.excl,name,op.spinsym);
+    return Matrices(Ops::Interm,op.orbs(),op.excl,op.lmel,name,op.spinsym);
   } else if ( !op.excitation.empty() ){
     // something like \mu_1
     LExcitationMap::const_iterator itex = _excops.get_add(op.excitation,op.lmel);
   
     return Matrices(Ops::Interm,itex->second.orbitals(op.dg),itex->second.exccls(op.dg), 
-                    name,itex->second.spinsymexcs());
+                    itex->second.lmel(op.dg),name,itex->second.spinsymexcs());
   } else { 
     // no subscript, parameter is a "number"
-    return Matrices(Ops::Number,Product<Orbital>(),0,name);
+    return Matrices(Ops::Number,Product<Orbital>(),0,0,name);
   }
 }
 

@@ -193,7 +193,7 @@ void Oper::create_Oper(const std::string& name, bool antisym)
     _prefac /= 4;
   }
   short npairs = porbs.size()/2;
-  _mat=Matrices(_type,porbs,npairs,name,spinsym,antisym);
+  _mat=Matrices(_type,porbs,npairs,0,name,spinsym,antisym);
 }
 void Oper::create_Oper(short int const & exccl,Orbital const & occ, Orbital const & virt, 
                        std::string const & name, int lm)
@@ -380,7 +380,7 @@ void Oper::create_Oper(const Product< Orbital >& orbs, const std::string& name, 
     }
     _prefac = 1/_prefac;
   }
-  _mat=Matrices(_type,orbs,npairs,name,spinsym);
+  _mat=Matrices(_type,orbs,npairs,lm,name,spinsym);
 
 }
 

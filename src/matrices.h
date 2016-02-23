@@ -38,7 +38,7 @@ class Matrices {
   enum Spinsym {Singlet, Triplet};
   Matrices();
   // construct from type and orbitals and name
-  Matrices(Ops::Type t, Product<Orbital> p, short npairs, std::string name="T", 
+  Matrices(Ops::Type t, Product<Orbital> p, short npairs, short lmel=0, std::string name="T", 
            Spinsym matspinsym=Singlet, bool antisymW=true);
   // construct from kronecker
   Matrices(const Kronecker& d);
@@ -50,6 +50,8 @@ class Matrices {
   std::string name() const;
   // return true if antisymmetrized form
   bool antisymform() const;
+  // non-conserved electrons
+  short lmel() const { return _lmel;};
   // combine with mat, in dontorbs: orbital indices in mat to let out
   void combine(const Matrices& mat, const Set<uint>& dontorbs = Set<uint>() );
   // replace orbital orb1 with orb2
@@ -72,6 +74,8 @@ class Matrices {
   uint nvertices() const { return _npairs+(_orbs.size()-2*_npairs);};
   // equivalent vertices (starting from 0+offs to nvertices-1+offs) (indistinguishability of electrons...)
   Equivalents equivertices(uint offs = 0) const;
+  // creators orbitals (if anni=true - annihilators orbitals) (in the same order of electrons!)
+  Product<Orbital> crobs(bool anni=false) const;
   // return true if the matrix is zero
   bool is0() const;
   // set cranorder for density matrix
@@ -129,6 +133,8 @@ class Matrices {
   bool _antisymform; // W is constructed in antisymmetrized form, but can be expanded later.
   // number of orbital pairs (== electrons for number-conserving operators and otherwise == conserved particles)
   uint _npairs;
+  // non-conserved electrons
+  short _lmel;
   // needed for comparison of terms:
   long int _indx;
   // connected to (index of matrix in term (start from 1!!!)):

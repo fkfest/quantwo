@@ -21,14 +21,19 @@ Matrices::Matrices() // : _type(Interm)
 {
   _antisymform=false;
   _type = Ops::None;
+  _lmel = 0;
   _exccl = _intlines = _intvirt = _orbtypeshash = 0;
 }
-Matrices::Matrices(Ops::Type t, Product< Orbital > p, short npairs, std::string name, Matrices::Spinsym matspinsym, bool antisymW)
+Matrices::Matrices(Ops::Type t, Product< Orbital > p, short npairs, short lmel, 
+                   std::string name, Matrices::Spinsym matspinsym, bool antisymW)
 {
   _type=t;
   _orbs=p;
   _npairs=npairs;
   assert(_npairs <= _orbs.size()/2);
+  _lmel = lmel;
+  assert(2*_npairs+std::abs(_lmel) == _orbs.size());
+  assert((_orbs.size()-_lmel)%2 == 0 && (_orbs.size()+_lmel)%2 == 0 );
   std::string exc0 = Input::sPars["output"]["exc0"];
   switch (t) {
     case Ops::Fock:
@@ -72,6 +77,7 @@ Matrices::Matrices(const Kronecker& d)
   _orbs.push_back(d.orb1());
   _orbs.push_back(d.orb2());
   _npairs = 1;
+  _lmel = 0;
   _name = "delta";
   _matspinsym = Singlet;
   _antisymform = false;
@@ -183,7 +189,7 @@ bool Matrices::operator<(const Matrices& t) const
 bool Matrices::operator==(const Matrices& t) const
 {
   if ( _type != t._type || _name != t._name ) return false;
-  if ( _orbs.size() != t._orbs.size() || _npairs != t._npairs ) return false;
+  if ( _orbs.size() != t._orbs.size() || _npairs != t._npairs || _lmel != t._lmel ) return false;
   if ( _orbs == t._orbs ) return true;
   if (_type == Ops::FluctP) { // electron-symmetry
     if (_orbs.subprod(0,1) == t._orbs.subprod(2,3) && _orbs.subprod(2,3) == t._orbs.subprod(0,1) ) return true;
@@ -200,7 +206,7 @@ bool Matrices::operator==(const Matrices& t) const
 bool Matrices::equivalent(const Matrices& mat) const
 {
   return ( _type == mat._type && _name == mat._name &&
-           _npairs == mat._npairs && _orbs.size() == mat._orbs.size() &&
+           _npairs == mat._npairs && _lmel == mat._lmel && _orbs.size() == mat._orbs.size() &&
            _orbtypeshash == mat._orbtypeshash &&
            _exccl == mat._exccl && _intlines == mat._intlines && _intvirt == mat._intvirt );
 }
@@ -208,15 +214,48 @@ Equivalents Matrices::equivertices(uint offs) const
 {
   Equivalents everts;
   EquiVertices ev;
+  // electrons (orbital pairs)
   for ( uint vert = 0; vert < _npairs; ++vert )
     if ( spinsym(vert*2) == Singlet )
       ev.add(vert+offs);
   if ( !ev.empty() ) everts.push_back(ev);
   ev.clear();
+  // non-conserved electrons (single orbitals)
   for ( uint vert = _npairs; vert < nvertices(); ++vert )
     ev.add(vert+offs);
   if ( !ev.empty() ) everts.push_back(ev);
   return everts;
+}
+Product< Orbital > Matrices::crobs(bool anni) const
+{
+  Product<Orbital> orbs;
+  // first indices - creators
+  uint
+    mult = 2, 
+    offs = anni ? 1 : 0, 
+    begin = 0, 
+    end = _npairs,
+    add = 1;
+  if ( _type == Ops::DensM && Input::iPars["prog"]["dmsort"] > 0 ) {
+    // different order of electrons: 1,2,...2, 1
+    mult = 1;
+    offs = 0;
+    if ( anni ){
+      begin = 2*_npairs-1;
+      end = _npairs-1;
+      add = -1;
+    }
+  }
+  for ( uint vert = begin; vert != end; vert+=add ){
+    orbs.push_back(_orbs[mult*vert+offs]);
+  }
+  // non-conserved electrons
+  if ( anni == (_lmel < 0) ){
+    for ( uint vert = 2*_npairs; vert < _orbs.size(); ++vert ){
+      orbs.push_back(_orbs[vert]);
+    }
+  }
+  return orbs;
 }
 
 void Matrices::reset_vertices()
@@ -461,19 +500,14 @@ std::ostream & operator << (std::ostream & o, Matrices const & mat)
     case Ops::Exc:
     case Ops::Deexc:
     case Ops::Interm: {
-      Product<Orbital> orbs(mat.orbitals());
       std::string name(mat.name());
       std::ostringstream oss;
       // occ.indices
-      for ( uint i = 1; i < orbs.size(); i += 2 ){
-        oss << orbs[i];
-      }
+      oss << mat.crobs(true);
       IL::add2name(name,oss.str(),true,false);
       oss.str("");
       //virt. indices
-      for ( uint i = 0; i < orbs.size(); i += 2 ){
-        oss << orbs[i];
-      }
+      oss << mat.crobs(false);
       IL::add2name(name,oss.str(),false,false);
       o << param << name;
       MyOut::pcurout->lenbuf += 1+mat.orbitals().size()/MyOut::pcurout->wsi;
