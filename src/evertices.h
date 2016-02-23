@@ -24,4 +24,6 @@ struct EquiVertices : public std::vector<JointVertices> {
 /// T_2 (0,1) T_2 (2,3) --> [ (0,1)(2,3) ][ (0)(1) ][ (2)(3) ] 
 typedef std::list<EquiVertices> Equivalents;
 
+std::ostream & operator << (std::ostream & o, const EquiVertices& ev);
+std::ostream & operator << (std::ostream & o, const Equivalents& eqv);
 #endif

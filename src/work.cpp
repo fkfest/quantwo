@@ -231,6 +231,12 @@ Sum< Term, TFactor > Q2::EqualTerms(Sum< Term, TFactor > s, double minfac)
     prefac=j->second*term.prefac();
     // remove prefactors in terms
     term.reset_prefac();
+    
+//     xout << "Term: " << term << std::endl;
+//     UniGraph ug(term);
+//     xout << ug << std::endl;
+    
+    
     added=false;
     for ( Sum<Term,TFactor>::iterator k=sum.begin();k!=sum.end(); ++k) {
       Permut perm;

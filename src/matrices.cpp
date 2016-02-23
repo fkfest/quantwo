@@ -206,24 +206,25 @@ bool Matrices::operator==(const Matrices& t) const
 bool Matrices::equivalent(const Matrices& mat) const
 {
   return ( _type == mat._type && _name == mat._name &&
-           _npairs == mat._npairs && _lmel == mat._lmel && _orbs.size() == mat._orbs.size() &&
-           _orbtypeshash == mat._orbtypeshash &&
-           _exccl == mat._exccl && _intlines == mat._intlines && _intvirt == mat._intvirt );
+           _npairs == mat._npairs && _lmel == mat._lmel && 
+           _orbs.size() == mat._orbs.size() && _orbtypeshash == mat._orbtypeshash );
 }
 Equivalents Matrices::equivertices(uint offs) const
 {
   Equivalents everts;
+  // no symmetry in the residual
+  if ( InSet(_type,Ops::Deexc0,Ops::Exc0) ) return everts;
   EquiVertices ev;
   // electrons (orbital pairs)
   for ( uint vert = 0; vert < _npairs; ++vert )
     if ( spinsym(vert*2) == Singlet )
       ev.add(vert+offs);
-  if ( !ev.empty() ) everts.push_back(ev);
+  if ( ev.size() > 1 ) everts.push_back(ev);
   ev.clear();
   // non-conserved electrons (single orbitals)
   for ( uint vert = _npairs; vert < nvertices(); ++vert )
     ev.add(vert+offs);
-  if ( !ev.empty() ) everts.push_back(ev);
+  if ( ev.size() > 1 ) everts.push_back(ev);
   return everts;
 }
 Product< Orbital > Matrices::crobs(bool anni) const
@@ -658,5 +659,23 @@ std::ostream & operator << (std::ostream & o, Permut const & p)
     //o << "[" << MyOut::pcurout->lenbuf << "]";
   } else 
     o << "1";
+  return o;
+}
+
+std::ostream & operator << (std::ostream & o, const EquiVertices& ev){
+  _foreach_cauto(EquiVertices,it,ev){
+    o << "(";
+    _foreach_cauto(JointVertices,jv,*it){
+      if (jv != it->begin())
+        o << " ";
+      o << *jv ;
+    }
+    o << ")";
+  }
+  return o;
+}
+std::ostream & operator << (std::ostream & o, const Equivalents& eqv){
+  _foreach_cauto(Equivalents,it,eqv)
+    o << "[" << *it << "]";
   return o;
 }

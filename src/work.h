@@ -12,6 +12,7 @@
 #include "sum.h"
 #include "globals.h"
 #include "term.h"
+#include "unigraph.h"
 #include "finput.h"
 #include "factorizer.h"
 #include <iostream>

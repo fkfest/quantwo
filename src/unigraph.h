@@ -18,7 +18,10 @@
 class UniGraph {
 public:
   UniGraph(const Term& term);
-  
+  // ordered matrices
+  Product<Matrices> ordmats() const;
+  const Order& connections() const { return _vertconn;};
+  const Equivalents& equivals() const { return _equivs;};
 private:
   typedef std::map<uint,uint> Permutation;
   // canonical order of matrices
@@ -37,5 +40,7 @@ private:
   Permutations _eqperms;
   const Term * pTerm;
 };
+
+std::ostream & operator << (std::ostream & o, const UniGraph& ug);
 
 #endif
