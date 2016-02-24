@@ -81,6 +81,13 @@ Product< Matrices > UniGraph::ordmats() const
   return mats;
 }
 
+void UniGraph::minimize()
+{
+  std::vector<Order> vertorders;
+  
+  
+}
+
 
 std::ostream& operator<<(std::ostream& o, const UniGraph& ug)
 {

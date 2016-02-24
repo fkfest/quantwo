@@ -22,6 +22,8 @@ public:
   Product<Matrices> ordmats() const;
   const Order& connections() const { return _vertconn;};
   const Equivalents& equivals() const { return _equivs;};
+  // search for the minimal _vertconn using _equivs and _eqperms
+  void minimize();
 private:
   typedef std::map<uint,uint> Permutation;
   // canonical order of matrices

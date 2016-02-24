@@ -1,7 +1,7 @@
 CC = g++ 
 PROFILE =
 #PROFILE = -pg
-CFLAGS := -c -Wall -Wextra -pedantic -Ofast $(PROFILE)
+CFLAGS := -c -Wall -Wextra -pedantic -std=c++11 -Ofast $(PROFILE)
 LDFLAGS = $(PROFILE)
 #comment out to deactivate debug and asserts
 #CFLAGS := $(CFLAGS) -D NDEBUG
