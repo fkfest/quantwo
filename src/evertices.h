@@ -19,6 +19,36 @@ struct EquiVertices : public std::vector<JointVertices> {
     assert(size()==0 || begin()->size() == 1 );
     push_back(JointVertices(1,vert));
   };
+  // next permutation in vord using JointVertices
+  // relies on the fact that vord[j->front()] < vord[i->front()] is a valid check
+  bool next_permutation( Order& vord )
+  {
+    const_iterator i = begin(), j = i;
+    for ( ; ++i != end() && !( vord[j->front()] < vord[i->front()]); ++j ) {}
+    if ( i != end() ) { 
+      for ( j = begin(); !(vord[j->front()] < vord[i->front()]); ++j ) {}
+      swap(vord,i,j);
+      reverse(vord,begin(),i);
+      return true;
+    }
+    reverse(vord,begin(),end());
+    return false;
+  };
+  // swap vertices in vord from JointVertices sets it and jt 
+  void swap( Order& vord, const_iterator it, const_iterator jt )
+  {
+    for ( uint i = 0; i < it->size(); ++i )
+      std::swap(vord[(*it)[i]],vord[(*jt)[i]]);
+  };
+  // reverse vertices in vord from JointVertices first to last
+  void reverse( Order& vord, const_iterator first, const_iterator last )
+  {
+    while ((first!=last)&&(first!=--last)) {
+      swap (vord,first,last);
+      ++first;
+    }
+  };
+
 };
 
 /// T_2 (0,1) T_2 (2,3) --> [ (0,1)(2,3) ][ (0)(1) ][ (2)(3) ] 

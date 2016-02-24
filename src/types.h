@@ -33,6 +33,9 @@ typedef std::vector< Product<long int> > ConnectionsMap;
 struct Order : public std::vector< unsigned int > {
   typedef std::vector< unsigned int > Base;
   using Base::Base;
+  // initialize with 0,1,2,3...n-1
+  void init(uint n) { resize(n); for (uint i=0;i<n;++i) (*this)[i]=i;};
 };
 
+std::ostream & operator << (std::ostream & o, const Order& ord);
 #endif

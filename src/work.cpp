@@ -235,6 +235,7 @@ Sum< Term, TFactor > Q2::EqualTerms(Sum< Term, TFactor > s, double minfac)
 //     xout << "Term: " << term << std::endl;
 //     UniGraph ug(term);
 //     xout << ug << std::endl;
+//     ug.minimize();
     
     
     added=false;

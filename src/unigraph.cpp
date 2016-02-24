@@ -28,9 +28,6 @@ UniGraph::UniGraph(const Term& term)
     }
     if ( creators.size() < nextvert ) creators.resize(nextvert);
     if ( annihilators.size() < nextvert ) annihilators.resize(nextvert);
-    // equivalent vertices?
-    Equivalents equivs( mat.equivertices(currvert) );
-    _equivs.insert(_equivs.end(),equivs.begin(),equivs.end());
     // equivalent matrices?
     if ( verts.size() > 0 && mat.equivalent(mats[prev]) ) {
       equimat.push_back(verts);
@@ -44,6 +41,9 @@ UniGraph::UniGraph(const Term& term)
       verts.push_back(vert);
     }
     prev = *im;
+    // equivalent vertices?
+    Equivalents equivs( mat.equivertices(currvert) );
+    _equivs.insert(_equivs.end(),equivs.begin(),equivs.end());
     currvert = nextvert;
   }
   if ( equimat.size() > 0 ){
@@ -81,11 +81,43 @@ Product< Matrices > UniGraph::ordmats() const
   return mats;
 }
 
+// static void printEqVertOrders( const std::vector<Order>& eqvertorders ){
+//   xout << "<";
+//   _foreach_cauto(std::vector<Order>,ivo,eqvertorders){
+//     xout << "(";
+//     _foreach_cauto(Order,io,*ivo){
+//       if ( io != ivo->begin() ) xout << " ";
+//       xout << *io;
+//     }
+//     xout << ")";
+//   }
+//   xout << ">" << std::endl;
+// }
+
 void UniGraph::minimize()
 {
-  std::vector<Order> vertorders;
-  
-  
+// TODO remove eqvertorders
+//   // permutation orders for every EquiVertices in _equivs
+//   std::vector<Order> eqvertorders(_equivs.size());
+//   for ( uint ieqv = 0; ieqv < _equivs.size(); ++ieqv )
+//     eqvertorders[ieqv].init(_equivs[ieqv].size());
+  Order vertorder;
+  vertorder.init(_vertconn.size());
+  bool nextperm;
+  do {
+    // next permutation of ieqv'th equivalent vertices
+    nextperm = false;
+    for ( uint ieqv = 0; ieqv < _equivs.size() && !nextperm; ++ieqv ) {
+      nextperm = _equivs[ieqv].next_permutation(vertorder);
+//       nextperm = std::next_permutation(eqvertorders[ieqv].begin(),eqvertorders[ieqv].end());
+    }
+    if ( nextperm ) {
+      xout << vertorder << std::endl;
+//       printEqVertOrders(eqvertorders);
+      // create new connection vector and compare to the old one
+      
+    }
+  } while (nextperm); 
 }
 
 
