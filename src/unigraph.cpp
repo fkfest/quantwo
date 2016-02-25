@@ -81,26 +81,8 @@ Product< Matrix > UniGraph::ordmats() const
   return mats;
 }
 
-// static void printEqVertOrders( const std::vector<Order>& eqvertorders ){
-//   xout << "<";
-//   _foreach_cauto(std::vector<Order>,ivo,eqvertorders){
-//     xout << "(";
-//     _foreach_cauto(Order,io,*ivo){
-//       if ( io != ivo->begin() ) xout << " ";
-//       xout << *io;
-//     }
-//     xout << ")";
-//   }
-//   xout << ">" << std::endl;
-// }
-
 void UniGraph::minimize()
 {
-// TODO remove eqvertorders
-//   // permutation orders for every EquiVertices in _equivs
-//   std::vector<Order> eqvertorders(_equivs.size());
-//   for ( uint ieqv = 0; ieqv < _equivs.size(); ++ieqv )
-//     eqvertorders[ieqv].init(_equivs[ieqv].size());
   // order of vertices
   Order vertorder;
   vertorder.init(_vertconn.size());
@@ -114,11 +96,9 @@ void UniGraph::minimize()
     nextperm = false;
     for ( uint ieqv = 0; ieqv < _equivs.size() && !nextperm; ++ieqv ) {
       nextperm = _equivs[ieqv].next_permutation(vertorder);
-//       nextperm = std::next_permutation(eqvertorders[ieqv].begin(),eqvertorders[ieqv].end());
     }
     if ( nextperm ) {
       ++iord;
-//       printEqVertOrders(eqvertorders);
       // create new connection vector and compare to the old one
       for ( uint i = 0; i < _vertconn.size(); ++i )
         connections[vertorder[i]] = vertorder[_vertconn[i]];
