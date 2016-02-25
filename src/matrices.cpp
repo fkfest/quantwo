@@ -21,7 +21,8 @@ Matrices::Matrices() // : _type(Interm)
 {
   _antisymform=false;
   _type = Ops::None;
-  _lmel = 0;
+  _matspinsym = Singlet;
+  _npairs = _lmel = 0;
   _exccl = _intlines = _intvirt = _orbtypeshash = 0;
 }
 Matrices::Matrices(Ops::Type t, Product< Orbital > p, short npairs, short lmel, 
