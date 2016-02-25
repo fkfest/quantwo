@@ -10,7 +10,7 @@
 #include "types.h"
 #include "product.h"
 #include "operators.h"
-#include "matrices.h"
+#include "matrix.h"
 #include "kronecker.h"
 #include "sum.h"
 
@@ -29,9 +29,9 @@ class Term {
     Term(Product<SQOp> const & opProd);
     //! construct from Product<SQOp> and Product<Kronecker>
     Term(Product<SQOp> const & opProd, Product<Kronecker> const & kProd);
-    //! construct from Product<SQOp>, Product<Kronecker>, Product<Matrices>, summation indices and prefactor
+    //! construct from Product<SQOp>, Product<Kronecker>, Product<Matrix>, summation indices and prefactor
     Term(Product<SQOp> const & opProd, Product<Kronecker> const & kProd, 
-         Product<Matrices> const & mat, const TOrbSet & orbs, const TOrbSet & sumorbs, 
+         Product<Matrix> const & mat, const TOrbSet & orbs, const TOrbSet & sumorbs, 
          const TFactor& prefac, const ConnectionsMap& connections);
     //! validate term
     bool term_is_valid();
@@ -46,11 +46,11 @@ class Term {
     // TODO: replace with a template
     Term & operator *= (Term const & t);
     //! multiply by a matrix
-    Term & operator *= (const Matrices & mat);
+    Term & operator *= (const Matrix & mat);
     //! multiply a term by a sum
     Sum<Term,TFactor> times(const Sum<Term,TFactor>& s) const;
     //! multiply a term by a sum of matrices
-    Sum<Term,TFactor> times(const Sum<Matrices,TFactor>& s) const;
+    Sum<Term,TFactor> times(const Sum<Matrix,TFactor>& s) const;
     //! add permutator
     Term & operator += (Permut const & perm);
     //! add permutator with a factor
@@ -61,7 +61,7 @@ class Term {
     void addsummation (Orbital const & orb, short excl);
     void addsummation (const Product<Orbital> & orbs);
     //! replace matrix on position ipos
-    void replacematrix (Matrices const & mat, unsigned long int ipos);
+    void replacematrix (Matrix const & mat, unsigned long int ipos);
     //! return contained Product<SQOp>
     Product<SQOp> opProd() const;
     //! return contained Product<Kronecker>
@@ -69,7 +69,7 @@ class Term {
     //! return prefactor
     TFactor prefac() const;
     //! return matrices
-    const Product<Matrices>& mat() const;
+    const Product<Matrix>& mat() const;
     //! return orbitals
     const TOrbSet& orbs() const;
     //! return summation indices
@@ -126,7 +126,7 @@ class Term {
     void deleteNoneMats(bool unite_exc0 = true);
     // if pMat is zero - sets pMat to the it-matrix and increments it (it has to be from _mat)
     // if not zero - combines pMat and it (using skipping norbs-orbitals in *it) and deletes *it
-    void combineMats(Matrices *& pMat, Product<Matrices>::iterator& it, const Set<uint>& norbs);
+    void combineMats(Matrix *& pMat, Product<Matrix>::iterator& it, const Set<uint>& norbs);
     // brilloin condition (return true for terms with occ-virt fock)
     bool brilloin() const;
     //! Determine connections (in reduced term!)
@@ -149,8 +149,8 @@ class Term {
     Sum<Term, TFactor> dm2singlet();
     //! check electrons in DMs and make electron-deltas (returns true if replaced electrons in term)
     bool dmelectrons(uint imat);
-    Sum<Term, TFactor> dmwickstheorem(const Matrices& dm) const;
-    Sum<Term, TFactor> dmwick( Term::TWMats& opers, const Term::TWMats& krons, const Matrices& dm ) const;
+    Sum<Term, TFactor> dmwickstheorem(const Matrix& dm) const;
+    Sum<Term, TFactor> dmwick( Term::TWMats& opers, const Term::TWMats& krons, const Matrix& dm ) const;
     //! true if has general indices
     bool has_generalindices() const;
     //! replace remaining general indices by occupied (and active) orbitals
@@ -194,7 +194,7 @@ class Term {
 
     Product<SQOp> _opProd;
     Product<Kronecker>  _kProd;
-    Product<Matrices> _mat;
+    Product<Matrix> _mat;
     TOrbSet _orbs,_sumorbs;
     TFactor _prefac;
     Sum<Permut,TFactor> _perm;
@@ -233,7 +233,7 @@ namespace Q2
   template <class T, class Q>
   Return replace(T &orb, Q orb1, Q orb2, bool smart);
   template <class T>
-  Return replace(Matrices &mat, T orb1, T orb2, bool smart);
+  Return replace(Matrix &mat, T orb1, T orb2, bool smart);
   template <class T>
   Return replace(Kronecker &kron, T orb1, T orb2, bool smart);
   template < class T >

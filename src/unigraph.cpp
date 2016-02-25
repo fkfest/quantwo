@@ -3,7 +3,7 @@
 UniGraph::UniGraph(const Term& term)
 {
   pTerm = &term;
-  const Product<Matrices> & mats = term.mat();
+  const Product<Matrix> & mats = term.mat();
   for ( uint i = 0; i < mats.size(); ++i )
     _matsord.push_back(i);
   InsertionSort(&*mats.begin(),&*_matsord.begin(),mats.size());
@@ -16,7 +16,7 @@ UniGraph::UniGraph(const Term& term)
   JointVertices verts;
   
   _foreach_cauto(Order,im,_matsord){
-    const Matrices mat = mats[*im];
+    const Matrix mat = mats[*im];
     uint nextvert = currvert+mat.nvertices();
     // creators and annihilators orbitals
     creators *= mat.crobs();
@@ -70,11 +70,11 @@ UniGraph::UniGraph(const Term& term)
   
 }
 
-Product< Matrices > UniGraph::ordmats() const
+Product< Matrix > UniGraph::ordmats() const
 {
-  Product<Matrices> mats;
+  Product<Matrix> mats;
   assert( pTerm );
-  const Product<Matrices>& origmats = pTerm->mat();
+  const Product<Matrix>& origmats = pTerm->mat();
   assert( _matsord.size() == origmats.size());
   _foreach_cauto(Order,im,_matsord)
     mats.push_back(origmats[*im]);
@@ -136,7 +136,7 @@ void UniGraph::minimize()
 std::ostream& operator<<(std::ostream& o, const UniGraph& ug)
 {
   const Order& conns = ug.connections();
-  Product<Matrices> mats = ug.ordmats();
+  Product<Matrix> mats = ug.ordmats();
   const Equivalents& equivs = ug.equivals();
   o << mats;
   o << equivs;

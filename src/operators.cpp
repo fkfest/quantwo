@@ -158,7 +158,7 @@ void Oper::create_Oper(const std::string& name, bool antisym)
 {
   assert( InSet(_type, Ops::FluctP,Ops::Fock,Ops::OneEl,Ops::XPert) );
   Product<Orbital> porbs;
-  Matrices::Spinsym spinsym = Matrices::Singlet;
+  Matrix::Spinsym spinsym = Matrix::Singlet;
   Electron el = 1;
   if (p_Term) el = p_Term->nextelectron();
   // operators with general indices
@@ -193,7 +193,7 @@ void Oper::create_Oper(const std::string& name, bool antisym)
     _prefac /= 4;
   }
   short npairs = porbs.size()/2;
-  _mat=Matrices(_type,porbs,npairs,0,name,spinsym,antisym);
+  _mat=Matrix(_type,porbs,npairs,0,name,spinsym,antisym);
 }
 void Oper::create_Oper(short int const & exccl,Orbital const & occ, Orbital const & virt, 
                        std::string const & name, int lm)
@@ -256,7 +256,7 @@ void Oper::create_Oper(const short int& exccl, const std::map< Orbital::Type, Or
 void Oper::create_Oper(const Product< Orbital >& occs, const Product< Orbital >& virts, const std::string& name)
 {
   assert( !InSet(_type, Ops::FluctP,Ops::Fock,Ops::OneEl,Ops::XPert) );
-  Matrices::Spinsym spinsym = Matrices::Singlet;
+  Matrix::Spinsym spinsym = Matrix::Singlet;
   Product<Orbital> porbs;
   // excitation and deexcitation operators
   const Product<Orbital> 
@@ -270,7 +270,7 @@ void Oper::create_Oper(const Product< Orbital >& occs, const Product< Orbital >&
   Electron el;
   for (unsigned short i = 0; i < nmax; ++i) {  
     Spin spin(Spin::No);
-    bool setspindiff = (i == nmax-1 && spinsym != Matrices::Singlet);
+    bool setspindiff = (i == nmax-1 && spinsym != Matrix::Singlet);
     if ( p_Term ) 
       el = p_Term->nextelectron();
     else
@@ -307,7 +307,7 @@ void Oper::create_Oper(const Product< Orbital >& orbs, const std::string& name, 
   bool spinintegr = Input::iPars["prog"]["spinintegr"];
   bool noprefac = (Input::iPars["prog"]["nobrafac"]) && InSet(_type, Ops::Exc0,Ops::Deexc0);
   bool contrexcop = Input::iPars["prog"]["contrexcop"];
-  Matrices::Spinsym spinsym = Matrices::Singlet;
+  Matrix::Spinsym spinsym = Matrix::Singlet;
   Product<SQOp> anniSQprod;
   // excitation and deexcitation operators
   assert( (orbs.size()-lm)%2 == 0 && (orbs.size()+lm)%2 == 0 );
@@ -380,12 +380,12 @@ void Oper::create_Oper(const Product< Orbital >& orbs, const std::string& name, 
     }
     _prefac = 1/_prefac;
   }
-  _mat=Matrices(_type,orbs,npairs,lm,name,spinsym);
+  _mat=Matrix(_type,orbs,npairs,lm,name,spinsym);
 
 }
 
 
-Matrices Oper::mat() const
+Matrix Oper::mat() const
 { return _mat;}
 Product< SQOp > Oper::SQprod() const
 { return _SQprod;}

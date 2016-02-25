@@ -9,7 +9,7 @@
 #include "globals.h"
 #include "term.h"
 #include "evertices.h"
-#include "matrices.h"
+#include "matrix.h"
 
 /// The graphs have a canonical order of operators (neglecting orbital names),
 /// sets of equivalent vertices for permutational symmetry handling, 
@@ -19,7 +19,7 @@ class UniGraph {
 public:
   UniGraph(const Term& term);
   // ordered matrices
-  Product<Matrices> ordmats() const;
+  Product<Matrix> ordmats() const;
   const Order& connections() const { return _vertconn;};
   const Equivalents& equivals() const { return _equivs;};
   // search for the minimal _vertconn using _equivs and _eqperms

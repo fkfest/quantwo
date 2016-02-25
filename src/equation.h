@@ -9,7 +9,7 @@
 #include "utilities.h"
 #include "product.h"
 #include "term.h"
-#include "matrices.h"
+#include "matrix.h"
 #include "operators.h"
 #include "globals.h"
 #include "lexic.h"
@@ -31,7 +31,7 @@ class LExcitationInfo {
   friend class LExcitationMap;
 public:
   LExcitationInfo() {};
-  LExcitationInfo( const Product<Orbital>& orbs, int lmelec, Matrices::Spinsym spin ) :
+  LExcitationInfo( const Product<Orbital>& orbs, int lmelec, Matrix::Spinsym spin ) :
     _orbs(orbs), _lmel(lmelec), _spinsymexcs(spin){};
     
   // excitation class
@@ -39,7 +39,7 @@ public:
   // electron non-conserving number
   int lmel(bool dg = false) const { return dg ? -_lmel : _lmel; };
   // spin symmetry of the excitation
-  Matrices::Spinsym spinsymexcs() const { return _spinsymexcs;};
+  Matrix::Spinsym spinsymexcs() const { return _spinsymexcs;};
   // return orbitals of the excitation
   Product<Orbital> orbitals(bool dg = false) const;
 private:
@@ -49,7 +49,7 @@ private:
   // electron non-conserving number
   int _lmel;
   // spinsymmetry
-  Matrices::Spinsym _spinsymexcs;
+  Matrix::Spinsym _spinsymexcs;
 };
 /*
  *  excitation map FIXME \mu_1 vs \mu_1^dg = should have the same orbitals?
@@ -96,8 +96,8 @@ struct LParsedName {
   short int excl;
   // orbital types (first set for occ and second set for virt indices )
   std::vector<OrbitalTypes> orbtypes;
-  Matrices::Spinsym spinsym;
-  LParsedName() : lmel(0),dg(false),excl(-1),spinsym(Matrices::Singlet){};
+  Matrix::Spinsym spinsym;
+  LParsedName() : lmel(0),dg(false),excl(-1),spinsym(Matrix::Singlet){};
   // parse namein for name, subscript and superscript
   // if try2set=Name - stop after setting the name
   LParsedName( const std::string& namein, uint try2set, bool strict = true );
@@ -144,7 +144,7 @@ private:
   // handle sum
   Product<Orbital> handle_sum(const Lelem& lel);
   // handle parameter
-  Matrices handle_parameter(Lelem const & lel);
+  Matrix handle_parameter(Lelem const & lel);
   // handle permutation
   Permut handle_permutation(Lelem const & lel) const;
   // correct explicit orbs

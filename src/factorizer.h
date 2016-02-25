@@ -19,7 +19,7 @@
 
 namespace Translators{
   SlotType orb2slot(const Orbital& orb);
-  Tensor mat2tensor(const Matrices& mat, const std::map<Orbital,const SlotType*>& slotorbs);
+  Tensor mat2tensor(const Matrix& mat, const std::map<Orbital,const SlotType*>& slotorbs);
   Diagram term2diagram(const Term& term, Factor fact, const std::map<Orbital,const SlotType*>& slotorbs, const Expression& expr);
 }
 

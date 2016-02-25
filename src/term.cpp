@@ -9,7 +9,7 @@ Term::Term(Product<SQOp> const & opProd, Product<Kronecker> const & kProd) :
     _opProd(opProd), _kProd(kProd), _prefac(1), _lastel(0) {_nloops=_nintloops=_nocc=0;_perm+=Permut();}
     
 Term::Term(const Product< SQOp >& opProd, const Product< Kronecker >& kProd, 
-           const Product< Matrices >& mat, const TOrbSet& orbs, const TOrbSet& sumorbs, 
+           const Product< Matrix >& mat, const TOrbSet& orbs, const TOrbSet& sumorbs, 
            const TFactor& prefac, const ConnectionsMap& connections) :
     _opProd(opProd), _kProd(kProd), _mat(mat), _orbs(orbs), _sumorbs(sumorbs), 
     _prefac(prefac), _connections(connections), _lastel(0) {_nloops=_nintloops=_nocc=0;_perm+=Permut();}
@@ -76,7 +76,7 @@ Term& Term::operator*=(const Term& t)
   *this *= t._perm;
   return *this;
 }
-Term& Term::operator*=(const Matrices& mat)
+Term& Term::operator*=(const Matrix& mat)
 {
   _mat *= mat;
   return *this;
@@ -93,10 +93,10 @@ Sum< Term, TFactor > Term::times(const Sum< Term, TFactor >& s) const
   }
   return sum;
 }
-Sum< Term, TFactor > Term::times(const Sum< Matrices, TFactor >& s) const
+Sum< Term, TFactor > Term::times(const Sum< Matrix, TFactor >& s) const
 {
   Sum< Term, TFactor > sum;
-  for ( Sum<Matrices,TFactor>::const_iterator is = s.begin(); is != s.end(); ++is) {
+  for ( Sum<Matrix,TFactor>::const_iterator is = s.begin(); is != s.end(); ++is) {
     Term tt(*this);
     tt *= is->first;
     tt *= is->second;
@@ -148,7 +148,7 @@ void Term::addsummation (const Product<Orbital> & orbs)
       say("Strange, summation runs already over "+orbs[i].name());
   }
 }
-void Term::replacematrix(const Matrices& mat, lui ipos)
+void Term::replacematrix(const Matrix& mat, lui ipos)
 {
   if (ipos >= _mat.size())
     error("The position is outside of this term: "+any2str(ipos),"Term::replacematrix");
@@ -171,7 +171,7 @@ void Term::reset_prefac()
 void Term::permute(const Permut& p)
 {
   assert(_opProd.size() == 0 && _kProd.size() == 0 );
-  for ( Product<Matrices>::iterator it = _mat.begin(); it != _mat.end(); ++it ){
+  for ( Product<Matrix>::iterator it = _mat.begin(); it != _mat.end(); ++it ){
     it->permute(p);
   }
 }
@@ -189,7 +189,7 @@ Sum< Term, TFactor > Term::resolve_permutations() const
   return sum;
 }
 
-const Product< Matrices >& Term::mat() const
+const Product< Matrix >& Term::mat() const
 { return _mat; }
 const TOrbSet& Term::orbs() const
 { return _orbs; }
@@ -211,7 +211,7 @@ TOrbSet Term::extindx() const
 TOrbSet Term::extcreaindx() const
 {
   TOrbSet peo;
-  _foreach_cauto(Product<Matrices>,im,_mat){
+  _foreach_cauto(Product<Matrix>,im,_mat){
     if (!InSet(im->type(),Ops::Exc0,Ops::Deexc0)) continue;
     const Product<Orbital> orbs = im->orbitals();
     for ( uint i = 0; i < orbs.size(); ++i ){
@@ -310,7 +310,7 @@ bool Term::equal(Term& t, Permut& perm)
   po*=_sumorbs; // internal indices
   pot*=t._sumorbs; // internal indices
   if (po.size() != pot.size()) return false;
-  Product<Matrices> mat, tmat;
+  Product<Matrix> mat, tmat;
   Product<Orbital> por, port;
   Permut perm1;
   Orbital orb,orb1,orbt,orb1t;
@@ -492,7 +492,7 @@ std::ostream & operator << (std::ostream & o, Term const & t)
     MyOut::pcurout->lenbuf += std::max(3,int(t.sumorbs().size())/MyOut::pcurout->wsi);
     MyOut::pcurout->hbufline = MyOut::pcurout->hsum;// set height of line to the height of \sum
   }
-  o << t.mat(); //lenbuf will be handled in Matrices
+  o << t.mat(); //lenbuf will be handled in Matrix
   o << t.kProd(); //lenbuf will be handled in Kronecker
   if ( t.kProd().size()>0 && t.opProd().size()>0 )
     o << "*";
@@ -607,7 +607,7 @@ Sum< Term, TFactor > Term::wickstheorem(bool genw, int noord) const
   }
   if ( cran != 0 ) return Sum< Term, TFactor>();
   for (unsigned int i=0; i<_opProd.size(); i++) {
-    if (m==_mat.size()) { // all SQops, which are not in Matrices have to be added as individual vectors
+    if (m==_mat.size()) { // all SQops, which are not in Matrix have to be added as individual vectors
       opermat.push_back(i);
       opers.push_back(opermat);
       opermat=TWMats();
@@ -739,9 +739,9 @@ Sum< Term, TFactor > Term::genwick(Term::TWOps& opers, const Term::TWMats& krons
       dmcran.push_back(_opProd[*dm].gender());
     }
     if (dmorbs.size() > 0){
-      Product<Matrices> mat(_mat);
+      Product<Matrix> mat(_mat);
       short npair = dmorbs.size()/2;
-      mat *= Matrices(Ops::DensM,dmorbs,npair);
+      mat *= Matrix(Ops::DensM,dmorbs,npair);
       mat.back().set_cran(dmcran);
       sum += Term(p,d,mat, _orbs, _sumorbs, _prefac, _connections);
     } else {
@@ -824,7 +824,7 @@ Sum<Term, TFactor> Term::change2fock(uint imat, bool multiref) const
   Product<Orbital> orbs = _mat[imat].orbitals();
   TCon2 connected2 = _mat[imat].connected2();
   // f_PQ
-  term._mat[imat] = Matrices(Ops::Fock,orbs,1);
+  term._mat[imat] = Matrix(Ops::Fock,orbs,1);
   term._mat[imat].set_connect(connected2);
   sum += term;
   // (PQ||KJ)\delta_{KJ}
@@ -837,7 +837,7 @@ Sum<Term, TFactor> Term::change2fock(uint imat, bool multiref) const
   orb2.setel(el);
   orbs *= orb1;
   orbs *= orb2;
-  term._mat[imat] = Matrices(Ops::FluctP,orbs,2);
+  term._mat[imat] = Matrix(Ops::FluctP,orbs,2);
   term._mat[imat].set_connect(connected2);
   term._kProd.push_back(Kronecker(orb1,orb2));
   term._sumorbs.insert(orb1);
@@ -856,12 +856,12 @@ Sum<Term, TFactor> Term::change2fock(uint imat, bool multiref) const
     uorb.setel(el);
     orbs *= torb;
     orbs *= uorb;
-    term._mat[imat] = Matrices(Ops::FluctP,orbs,2);
+    term._mat[imat] = Matrix(Ops::FluctP,orbs,2);
     term._mat[imat].set_connect(connected2);
     orbs.clear();
     orbs *= torb;
     orbs *= uorb;
-    term._mat.push_back(Matrices(Ops::DensM,orbs,1));
+    term._mat.push_back(Matrix(Ops::DensM,orbs,1));
     Product< SQOpT::Gender > cran;
     cran *= SQOpT::Creator;
     cran *= SQOpT::Annihilator;
@@ -874,7 +874,7 @@ Sum<Term, TFactor> Term::change2fock(uint imat, bool multiref) const
   }
   return sum;
 }
-Sum< Term, TFactor > Term::dmwickstheorem(const Matrices& dm) const
+Sum< Term, TFactor > Term::dmwickstheorem(const Matrix& dm) const
 {
   assert( dm.type() == Ops::DensM );
   // generate "matrix" of indices to SQops
@@ -890,7 +890,7 @@ Sum< Term, TFactor > Term::dmwickstheorem(const Matrices& dm) const
   assert(dm.get_cran().size() == dm.orbitals().size());
   return dmwick(opers,krons,dm);
 }
-Sum< Term, TFactor > Term::dmwick(Term::TWMats& opers, const Term::TWMats& krons, const Matrices& dm) const
+Sum< Term, TFactor > Term::dmwick(Term::TWMats& opers, const Term::TWMats& krons, const Matrix& dm) const
 {
   Sum<Term, TFactor>  sum;
   const Product<Orbital>& orbs(dm.orbitals());
@@ -979,7 +979,7 @@ Sum< Term, TFactor > Term::dmwick(Term::TWMats& opers, const Term::TWMats& krons
     d *= Kronecker(orbs[*kr0],orbs[*kr]);
   }
   // add density matrix
-  Product<Matrices> mat(_mat);
+  Product<Matrix> mat(_mat);
   if ( opers.size() > 0 ){
     Product<Orbital> dmorbs;
     Product<SQOpT::Gender> dmcran;
@@ -988,7 +988,7 @@ Sum< Term, TFactor > Term::dmwick(Term::TWMats& opers, const Term::TWMats& krons
       dmcran.push_back(cranorder[*dm]);
     }
     short npair = dmorbs.size()/2;
-    mat *= Matrices(Ops::DensM,dmorbs,npair);
+    mat *= Matrix(Ops::DensM,dmorbs,npair);
     mat.back().set_cran(dmcran);
 //    if( !mat.back().nonsingldm() ) xout << "nonsingl" << mat << std::endl;
   }
@@ -1079,7 +1079,7 @@ void Term::reduceElectronsInTerm()
 void Term::krons2mats()
 {
   _foreach_cauto(Product<Kronecker>,ik,_kProd){
-    _mat.push_back(Matrices(*ik));
+    _mat.push_back(Matrix(*ik));
   }
   _kProd = Product<Kronecker>();
 }
@@ -1101,9 +1101,9 @@ void Term::replace(Spin spin1, Spin spin2, bool smart)
   Q2::replace(_orbs,spin1,spin2,smart);
 }
 
-static bool matisnone(const Matrices& mat)
+static bool matisnone(const Matrix& mat)
 { return (mat.type() == Ops::None); }
-void Term::combineMats(Matrices*& pMat, Product< Matrices >::iterator& it, const Set< uint >& norbs)
+void Term::combineMats(Matrix*& pMat, Product< Matrix >::iterator& it, const Set< uint >& norbs)
 {
   if ( norbs.size() == it->orbitals().size() ){
     // all orbitals have to be removed
@@ -1111,7 +1111,7 @@ void Term::combineMats(Matrices*& pMat, Product< Matrices >::iterator& it, const
   } else if ( pMat == 0 ){
     if ( norbs.size() > 0 ){
       // some of the orbitals have to be removed
-      Matrices mat(it->type(),Product<Orbital>(),0);
+      Matrix mat(it->type(),Product<Orbital>(),0);
       mat.combine(*it,norbs);
       *it = mat;
     }
@@ -1127,10 +1127,10 @@ void Term::deleteNoneMats(bool unite_exc0)
 { 
   _mat.erase(std::remove_if(_mat.begin(),_mat.end(),matisnone),_mat.end()); 
   if (unite_exc0) {
-    Matrices 
+    Matrix 
       * pExc0 = 0,
       * pDexc0 = 0;
-    Product<Matrices>::iterator it = _mat.begin();
+    Product<Matrix>::iterator it = _mat.begin();
     while ( it != _mat.end() ){
       if ( !InSet(it->type(),Ops::Deexc0,Ops::Exc0) ){
         ++it;
@@ -1155,7 +1155,7 @@ void Term::deleteNoneMats(bool unite_exc0)
 }
 bool Term::brilloin() const
 {
-  for ( Product<Matrices>::const_iterator it = _mat.begin(); it != _mat.end(); ++it )
+  for ( Product<Matrix>::const_iterator it = _mat.begin(); it != _mat.end(); ++it )
     if ( it->type() == Ops::Fock && 
          (( it->orbitals()[0].type() == Orbital::Occ && it->orbitals()[1].type() == Orbital::Virt ) ||
           ( it->orbitals()[1].type() == Orbital::Occ && it->orbitals()[0].type() == Orbital::Virt )) )
@@ -1252,7 +1252,7 @@ Sum< Term, TFactor > Term::dm2singlet()
   for ( uint i = 0; i < _mat.size(); ++i ){
     if (_mat[i].nonsingldm()){
       this->dmelectrons(i);
-      Matrices mat(_mat[i]);
+      Matrix mat(_mat[i]);
       // bring into singlet order
       _mat.erase(_mat.begin()+i);
       sum = this->dmwickstheorem(mat);
@@ -1265,7 +1265,7 @@ Sum< Term, TFactor > Term::dm2singlet()
 }
 bool Term::dmelectrons(uint imat)
 {
-  const Matrices & dm = _mat[imat];
+  const Matrix & dm = _mat[imat];
   assert( dm.type() == Ops::DensM );
   const Product<Orbital>& orbs(dm.orbitals());
   assert( orbs.size()%2 == 0 );
@@ -1358,7 +1358,7 @@ void Term::spinintegration(bool notfake)
   Spin nospin(Spin::No);
   bool nonconserve = true, already_done = false;
   Orbital orb,orb1;
-  Matrices::Spinsym spinsym=Matrices::Singlet;
+  Matrix::Spinsym spinsym=Matrix::Singlet;
   lui ithis = 0;
   long int ipos, iorb = 0;
   TOrbSet::iterator it;
@@ -1488,8 +1488,8 @@ void Term::printdiag(Output* pout) const
   *(pout->pout) << diag["bdiag"] << std::endl;
   
 // "numbers"
-  Product<Matrices> nums;
-  for ( Product<Matrices>::const_iterator it = _mat.begin(); it != _mat.end(); ++it)
+  Product<Matrix> nums;
+  for ( Product<Matrix>::const_iterator it = _mat.begin(); it != _mat.end(); ++it)
     if ( it->type() == Ops::Number ){
       nums.push_back(*it);
     }
@@ -1506,7 +1506,7 @@ void Term::printdiag(Output* pout) const
   
   // put tensors
   lui im = 0;
-  for ( Product<Matrices>::const_iterator it = _mat.begin(); it != _mat.end(); ++it, ++im ){
+  for ( Product<Matrix>::const_iterator it = _mat.begin(); it != _mat.end(); ++it, ++im ){
     switch ( it->type() ){
       case Ops::Fock:
         if ( verb > 1 )
@@ -1559,7 +1559,7 @@ void Term::printdiag(Output* pout) const
   // put connection lines
   TOrbSet orbs;
   im = 0;
-  for ( Product<Matrices>::const_iterator it = _mat.begin(); it != _mat.end(); ++it, ++im ){
+  for ( Product<Matrix>::const_iterator it = _mat.begin(); it != _mat.end(); ++it, ++im ){
     assert( it->conlines().size() == it->orbitals().size() );
     for ( lui iorb = 0; iorb < it->conlines().size(); ++iorb ){
       if (orbs.insert(it->orbitals()[iorb]).second) {// is new
@@ -1723,7 +1723,7 @@ Return Q2::replace(T &orb, Q orb1, Q orb2, bool smart)
   //if (orb == orb1) orb=orb2; 
 }
 template <class T>
-Return Q2::replace(Matrices &mat, T orb1, T orb2, bool smart)
+Return Q2::replace(Matrix &mat, T orb1, T orb2, bool smart)
 { return mat.replace(orb1,orb2,smart); }
 template <class T>
 Return Q2::replace(Kronecker& kron, T orb1, T orb2, bool smart)

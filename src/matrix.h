@@ -1,5 +1,5 @@
-#ifndef Matrices_H
-#define Matrices_H
+#ifndef Matrix_H
+#define Matrix_H
 
 #include <string>
 #include <set>
@@ -32,16 +32,16 @@ class Permut;
 /*! 
     Implements class matrices (e.g. amplitudes, integrals etc)
 */
-class Matrices {
+class Matrix {
   public:
   // enumerate vertices types
   enum Spinsym {Singlet, Triplet};
-  Matrices();
+  Matrix();
   // construct from type and orbitals and name
-  Matrices(Ops::Type t, Product<Orbital> p, short npairs, short lmel=0, std::string name="T", 
+  Matrix(Ops::Type t, Product<Orbital> p, short npairs, short lmel=0, std::string name="T", 
            Spinsym matspinsym=Singlet, bool antisymW=true);
   // construct from kronecker
-  Matrices(const Kronecker& d);
+  Matrix(const Kronecker& d);
   // return Type
   Ops::Type type() const;
   // return const reference to Product of orbitals
@@ -53,7 +53,7 @@ class Matrices {
   // non-conserved electrons
   short lmel() const { return _lmel;};
   // combine with mat, in dontorbs: orbital indices in mat to let out
-  void combine(const Matrices& mat, const Set<uint>& dontorbs = Set<uint>() );
+  void combine(const Matrix& mat, const Set<uint>& dontorbs = Set<uint>() );
   // replace orbital orb1 with orb2
   Return replace(Orbital orb1, Orbital orb2, bool smart);
   // replace spin spin1 with spin2
@@ -65,11 +65,11 @@ class Matrices {
   // returns true if this is a non-singlet density matrix
   bool nonsingldm() const;
   // artificial ordering
-  bool operator < (Matrices const & t) const;
-  // equality of two Matrices (including symmetry properties)
-  bool operator == (Matrices const & t) const;
+  bool operator < (Matrix const & t) const;
+  // equality of two Matrix (including symmetry properties)
+  bool operator == (Matrix const & t) const;
   // equivalence of two matrices (i.e., without orbital names)
-  bool equivalent( const Matrices& mat) const; 
+  bool equivalent( const Matrix& mat) const; 
   // number of vertices ("electrons") in the matrix
   uint nvertices() const { return _npairs+(_orbs.size()-2*_npairs);};
   // equivalent vertices (starting from 0+offs to nvertices-1+offs) (indistinguishability of electrons...)
@@ -102,7 +102,7 @@ class Matrices {
   // reset vertices
   void reset_vertices();
   // compare vertices
-  bool vertices(long int ipos, Matrices & mat, long int ipos1, unsigned int indx);
+  bool vertices(long int ipos, Matrix & mat, long int ipos1, unsigned int indx);
   // set connections
   void set_connect(TCon2 connected2);
   // add connection
@@ -148,7 +148,7 @@ class Matrices {
     
 };
 
-std::ostream & operator << (std::ostream & o, Matrices const & mat);
+std::ostream & operator << (std::ostream & o, Matrix const & mat);
 
 /*! 
     Implements class permutators (\Perm{ia,jb}(ia|jb)=(jb|ia))

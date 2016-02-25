@@ -329,7 +329,7 @@ Sum< Term, TFactor > Q2::postaction(Sum< Term, TFactor > s)
     Sum<Term,TFactor> sum1;
     Sum<Permut,TFactor> divperm, divpermadd;
     sum1 = div.sumterms();
-    Matrices OneMat;
+    Matrix OneMat;
     for ( Sum<Term,TFactor>::const_iterator it=sum1.begin();it!=sum1.end(); ++it) {
       if ( it->first.mat().size() != 1 && !(it->first.mat().front() == OneMat) )
         error("Not an One-Matrix in divide!");

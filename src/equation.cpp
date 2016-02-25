@@ -87,7 +87,7 @@ void LExcitationMap::correct_orbs(const Product< Orbital >& orbs)
 }
 
 LParsedName::LParsedName(const std::string& namein, uint try2set, bool strict)
-              : lmel(0),dg(false),excl(-1),spinsym(Matrices::Singlet)
+              : lmel(0),dg(false),excl(-1),spinsym(Matrix::Singlet)
 {
   std::string upname, downname;
   foundsscipt = IL::nameupdown(name,upname,downname,namein);
@@ -354,7 +354,7 @@ bool LEquation::do_sumterms(bool excopsonly )
 void LEquation::reset_term(Term& term) const
 {
   term=Term();
-  term *= Matrices();
+  term *= Matrix();
   if (_excops.size()>0) {
     term.copy_lastorbs(_excops.orbsterm());
   }
@@ -622,7 +622,7 @@ Permut LEquation::handle_permutation(const Lelem& lel) const
   }
   return Permut(orbs1,orbs2);
 }
-Matrices LEquation::handle_parameter(const Lelem& lel)
+Matrix LEquation::handle_parameter(const Lelem& lel)
 {
 #define _LPN LParsedName
   LParsedName op(lel.name(),_LPN::Lmel|_LPN::Dg|_LPN::Orbs|_LPN::Excitation|_LPN::Nameadd,false);
@@ -631,16 +631,16 @@ Matrices LEquation::handle_parameter(const Lelem& lel)
   IL::add2name(name,op.nameadd); // add nameadd to name (as superscript)
   if ( op.found_orbs() ){
     // orbitals
-    return Matrices(Ops::Interm,op.orbs(),op.excl,op.lmel,name,op.spinsym);
+    return Matrix(Ops::Interm,op.orbs(),op.excl,op.lmel,name,op.spinsym);
   } else if ( !op.excitation.empty() ){
     // something like \mu_1
     LExcitationMap::const_iterator itex = _excops.get_add(op.excitation,op.lmel);
   
-    return Matrices(Ops::Interm,itex->second.orbitals(op.dg),itex->second.exccls(op.dg), 
+    return Matrix(Ops::Interm,itex->second.orbitals(op.dg),itex->second.exccls(op.dg), 
                     itex->second.lmel(op.dg),name,itex->second.spinsymexcs());
   } else { 
     // no subscript, parameter is a "number"
-    return Matrices(Ops::Number,Product<Orbital>(),0,0,name);
+    return Matrix(Ops::Number,Product<Orbital>(),0,0,name);
   }
 }
 

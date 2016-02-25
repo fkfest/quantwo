@@ -4,7 +4,7 @@
 Factorizer::Factorizer(const Sum< Term, TFactor >& s)
 {
   std::map<Orbital,const SlotType*> slotorbs;
-  std::map<Matrices,const Tensor*> tensormats;
+  std::map<Matrix,const Tensor*> tensormats;
 
   // create an expression from the sum
   for ( Sum<Term,TFactor>::const_iterator i=s.begin();i!=s.end(); ++i) {
@@ -21,7 +21,7 @@ Factorizer::Factorizer(const Sum< Term, TFactor >& s)
       slotorbs[orb] = _expression.add(Translators::orb2slot(orb));
       ++iorb;
     }
-//    _foreach_cauto(Product<Matrices>,im,term.mat()){
+//    _foreach_cauto(Product<Matrix>,im,term.mat()){
 //      tensormats[*im] = _expression.add(Translators::mat2tensor(*im,slotorbs));
 //    }
     Sum<Term,TFactor> sumt = term.resolve_permutations();
@@ -67,7 +67,7 @@ SlotType Translators::orb2slot(const Orbital& orb)
   return SlotType();
 }
 
-Tensor Translators::mat2tensor(const Matrices& mat, const std::map< Orbital, const SlotType* >& slotorbs)
+Tensor Translators::mat2tensor(const Matrix& mat, const std::map< Orbital, const SlotType* >& slotorbs)
 {
   SlotTs sts;
   const Product<Orbital>& orbs = mat.orbitals();
@@ -111,7 +111,7 @@ Diagram Translators::term2diagram(const Term& term, Factor fact, const std::map<
   orbitals = orbitals.refarr(slotorder); 
 
   uint nbareops = 0;
-  _foreach_cauto(Product<Matrices>,im,term.mat()){
+  _foreach_cauto(Product<Matrix>,im,term.mat()){
     const Product<Orbital>& orbs = im->orbitals();
     SlotTs sts;
     Connections con;

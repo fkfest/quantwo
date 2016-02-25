@@ -10,7 +10,7 @@
 #include "globals.h"
 #include "types.h"
 #include "orbital.h"
-#include "matrices.h"
+#include "matrix.h"
 #include "product.h"
 #include "term.h"
 #include "assert.h"
@@ -73,7 +73,7 @@ class Oper {
   // constructor from orbitals (order and spins won't change)
   Oper (Ops::Type type, const Product<Orbital>& orbs, std::string name="T", int lm=0 );
   //return matrix (integral or amplitude)
-  Matrices mat() const;
+  Matrix mat() const;
   //return operator
   Product<SQOp> SQprod() const;
   //return prefactor
@@ -95,7 +95,7 @@ class Oper {
   void create_Oper(const Product<Orbital>& orbs, const std::string& name, int lm);
   Ops::Type _type;
   Product<SQOp> _SQprod;
-  Matrices _mat;
+  Matrix _mat;
   TFactor _prefac;
   TOrbSet _orbs, _sumorbs;
   Term * p_Term;

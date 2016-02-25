@@ -1,4 +1,4 @@
-#include "matrices.h"
+#include "matrix.h"
 
 Product< Orbital > Ops::genprodorb(short int exccl, const Orbital& occ, const Orbital& virt)
 {
@@ -17,7 +17,7 @@ Product< Orbital > Ops::genprodorb(short int exccl, const Orbital& occ, const Or
   return porbs;
 }
 
-Matrices::Matrices() // : _type(Interm)
+Matrix::Matrix() // : _type(Interm)
 {
   _antisymform=false;
   _type = Ops::None;
@@ -25,8 +25,8 @@ Matrices::Matrices() // : _type(Interm)
   _npairs = _lmel = 0;
   _exccl = _intlines = _intvirt = _orbtypeshash = 0;
 }
-Matrices::Matrices(Ops::Type t, Product< Orbital > p, short npairs, short lmel, 
-                   std::string name, Matrices::Spinsym matspinsym, bool antisymW)
+Matrix::Matrix(Ops::Type t, Product< Orbital > p, short npairs, short lmel, 
+                   std::string name, Matrix::Spinsym matspinsym, bool antisymW)
 {
   _type=t;
   _orbs=p;
@@ -72,7 +72,7 @@ Matrices::Matrices(Ops::Type t, Product< Orbital > p, short npairs, short lmel,
     _antisymform=false;
   _exccl = _intlines = _intvirt = _orbtypeshash = 0;
 }
-Matrices::Matrices(const Kronecker& d)
+Matrix::Matrix(const Kronecker& d)
 {
   _type = Ops::Delta;
   _orbs.push_back(d.orb1());
@@ -85,17 +85,17 @@ Matrices::Matrices(const Kronecker& d)
   _exccl = _intlines = _intvirt = _orbtypeshash = 0;
 }
 
-Ops::Type Matrices::type() const
+Ops::Type Matrix::type() const
 { return _type; }
-const Product< Orbital >& Matrices::orbitals() const
+const Product< Orbital >& Matrix::orbitals() const
 { return _orbs; }
 
-std::string Matrices::name() const
+std::string Matrix::name() const
 { return _name; }
-bool Matrices::antisymform() const
+bool Matrix::antisymform() const
 { return _antisymform; }
 
-void Matrices::combine(const Matrices& mat, const Set< uint >& dontorbs)
+void Matrix::combine(const Matrix& mat, const Set< uint >& dontorbs)
 {
   if ( InSet(_type,Ops::Deexc0,Ops::Exc0) )
     _name = mat._name;
@@ -119,7 +119,7 @@ void Matrices::combine(const Matrices& mat, const Set< uint >& dontorbs)
   _npairs = _orbs.size()/2;
 }
 
-Return Matrices::replace(Orbital orb1, Orbital orb2, bool smart)
+Return Matrix::replace(Orbital orb1, Orbital orb2, bool smart)
 {
   Return rpl;
   for ( unsigned int i=0; i<_orbs.size(); ++i )
@@ -128,7 +128,7 @@ Return Matrices::replace(Orbital orb1, Orbital orb2, bool smart)
   }
   return rpl;
 }
-Return Matrices::replace(Spin spin1, Spin spin2, bool smart)
+Return Matrix::replace(Spin spin1, Spin spin2, bool smart)
 {
   Return rpl;
   for ( unsigned int i=0; i<_orbs.size(); ++i )
@@ -137,15 +137,15 @@ Return Matrices::replace(Spin spin1, Spin spin2, bool smart)
   }
   return rpl;
 }
-bool Matrices::expandantisym(bool firstpart)
+bool Matrix::expandantisym(bool firstpart)
 {
   if (_antisymform) {
     // works atm for doubles only!
     assert(_orbs.size() == 4);
     if (_type!=Ops::FluctP && !( _type==Ops::Exc && Input::iPars["prog"]["quan3"] > 0 ))
-      error("Can not expand antisymmetrical non-integral","Matrices::expandantisym");
+      error("Can not expand antisymmetrical non-integral","Matrix::expandantisym");
     if (_orbs[0].spin().type()==Spin::No)
-      error("Can not expand antisymmetrical integral in space orbitals","Matrices::expandantisym");
+      error("Can not expand antisymmetrical integral in space orbitals","Matrix::expandantisym");
     _antisymform=false;
     if (!firstpart) { // (PQ|RS) -> (PS|RQ)
       std::swap(_orbs[1],_orbs[3]);
@@ -155,7 +155,7 @@ bool Matrices::expandantisym(bool firstpart)
     return false;
   return true;
 }
-bool Matrices::nonsingldm() const
+bool Matrix::nonsingldm() const
 {
   if ( _type != Ops::DensM ) return false;
   assert( _orbs.size()%2 == 0 );
@@ -174,7 +174,7 @@ bool Matrices::nonsingldm() const
   }
   return false;
 }
-bool Matrices::operator<(const Matrices& t) const
+bool Matrix::operator<(const Matrix& t) const
 {
   if ( _type < t._type ) return true;
   if ( t._type < _type ) return false;
@@ -183,11 +183,11 @@ bool Matrices::operator<(const Matrices& t) const
   if ( _npairs < t._npairs ) return true;
   if ( t._npairs < _npairs ) return false;
   if (_type == Ops::FluctP) { // electron-symmetry
-    if ( *this == t ) return false; // the Matrices are the same
+    if ( *this == t ) return false; // the Matrix are the same
   }
   return _orbs < t._orbs;
 }
-bool Matrices::operator==(const Matrices& t) const
+bool Matrix::operator==(const Matrix& t) const
 {
   if ( _type != t._type || _name != t._name ) return false;
   if ( _orbs.size() != t._orbs.size() || _npairs != t._npairs || _lmel != t._lmel ) return false;
@@ -204,13 +204,13 @@ bool Matrices::operator==(const Matrices& t) const
   //}
   return false;
 }
-bool Matrices::equivalent(const Matrices& mat) const
+bool Matrix::equivalent(const Matrix& mat) const
 {
   return ( _type == mat._type && _name == mat._name &&
            _npairs == mat._npairs && _lmel == mat._lmel && 
            _orbs.size() == mat._orbs.size() && _orbtypeshash == mat._orbtypeshash );
 }
-Equivalents Matrices::equivertices(uint offs) const
+Equivalents Matrix::equivertices(uint offs) const
 {
   Equivalents everts;
   // no symmetry in the residual
@@ -228,7 +228,7 @@ Equivalents Matrices::equivertices(uint offs) const
   if ( ev.size() > 1 ) everts.push_back(ev);
   return everts;
 }
-Product< Orbital > Matrices::crobs(bool anni) const
+Product< Orbital > Matrix::crobs(bool anni) const
 {
   Product<Orbital> orbs;
   // first indices - creators
@@ -260,10 +260,10 @@ Product< Orbital > Matrices::crobs(bool anni) const
   return orbs;
 }
 
-void Matrices::reset_vertices()
+void Matrix::reset_vertices()
 { _indx=-1; }
 
-bool Matrices::vertices(long int ipos, Matrices& mat, long int ipos1, unsigned int indx)
+bool Matrix::vertices(long int ipos, Matrix& mat, long int ipos1, unsigned int indx)
 {
   // compare types, excitation classes and index of matrix 
   if (_type != mat._type || _name != mat._name || _orbs.size() != mat._orbs.size() || _indx != mat._indx) return false;
@@ -275,32 +275,32 @@ bool Matrices::vertices(long int ipos, Matrices& mat, long int ipos1, unsigned i
   if (_indx < 0) _indx=mat._indx=indx;
   return true;
 }
-void Matrices::set_connect(TCon2 connected2 )
+void Matrix::set_connect(TCon2 connected2 )
 { _connected2=connected2; }
-void Matrices::add_connect(long int con)
+void Matrix::add_connect(long int con)
 { _connected2.insert(con); }
-TCon2 Matrices::connected2() const
+TCon2 Matrix::connected2() const
 { return _connected2; }
 
-void Matrices::set_conlines(Product< ConLine > conlines)
+void Matrix::set_conlines(Product< ConLine > conlines)
 { _conlines = conlines; }
-void Matrices::set_conline(lui iorb, lui imat, lui idx)
+void Matrix::set_conline(lui iorb, lui imat, lui idx)
 {
   assert( iorb < _orbs.size() );
   if ( _conlines.size() == 0 )// first resize _conlines
     _conlines.resize(_orbs.size());
   _conlines[iorb] = ConLine(imat,idx);
 }
-void Matrices::add_conline(lui imat, lui idx)
+void Matrix::add_conline(lui imat, lui idx)
 { _conlines.push_back(ConLine(imat,idx)); }
-const Product< ConLine >& Matrices::conlines() const
+const Product< ConLine >& Matrix::conlines() const
 { return _conlines; }
-const ConLine& Matrices::conline(lui iorb) const
+const ConLine& Matrix::conline(lui iorb) const
 {
   assert( iorb < _conlines.size() );
   return _conlines[iorb]; 
 }
-bool Matrices::is0() const
+bool Matrix::is0() const
 {
   if (_type == Ops::DensM){
     if ( _orbs.size()%2 != 0 ) return true;
@@ -321,14 +321,14 @@ bool Matrices::is0() const
   return false;
 }
 
-void Matrices::set_cran(const Product< SQOpT::Gender >& cran)
+void Matrix::set_cran(const Product< SQOpT::Gender >& cran)
 {
   assert( _type == Ops::DensM );
   assert( cran.size() == _orbs.size() );
   _cranorder = cran;
 }
 
-void Matrices::calc_orbtypeshash()
+void Matrix::calc_orbtypeshash()
 {
   _orbtypeshash = 0;
   std::vector<uint> ots; 
@@ -344,14 +344,14 @@ void Matrices::calc_orbtypeshash()
     off *= _orbs.size();
   }
 }
-void Matrices::setkind(short int exccl, short int intlines, short int intvirt)
+void Matrix::setkind(short int exccl, short int intlines, short int intvirt)
 {
   _exccl=exccl;
   _intlines=intlines;
   _intvirt=intvirt;
   calc_orbtypeshash();
 }
-long int Matrices::iorbel(lui ipos) const
+long int Matrix::iorbel(lui ipos) const
 { 
   assert( ipos < _orbs.size() );
   lui ipos1;
@@ -367,7 +367,7 @@ long int Matrices::iorbel(lui ipos) const
   return ipos1;
 }
 
-Orbital Matrices::orbel(const Orbital& orb) const
+Orbital Matrix::orbel(const Orbital& orb) const
 {
   long int ipos = _orbs.find(orb);
   if ( ipos >= 0 )
@@ -375,7 +375,7 @@ Orbital Matrices::orbel(const Orbital& orb) const
   else
     return Orbital();
 }
-Orbital Matrices::orbel(const long int& ipos) const
+Orbital Matrix::orbel(const long int& ipos) const
 {
   long ipos1 = iorbel(ipos);
   if (ipos1 >= 0 )
@@ -384,13 +384,13 @@ Orbital Matrices::orbel(const long int& ipos) const
     return Orbital();
 }
 
-Matrices::Spinsym Matrices::spinsym(long int ipos) const
+Matrix::Spinsym Matrix::spinsym(long int ipos) const
 {
   if (_matspinsym==Triplet && ipos-2 <0) //first electron is triplet
     return Triplet;
   return Singlet;
 }
-SQOpT::Gender Matrices::genderguess(uint ipos) const
+SQOpT::Gender Matrix::genderguess(uint ipos) const
 {
   if (_cranorder.size() > 0) return _cranorder[ipos];
   // can't guess for non-conserved electrons, so return a placeholder
@@ -399,19 +399,19 @@ SQOpT::Gender Matrices::genderguess(uint ipos) const
   return (ipos%2 == 0)? SQOpT::Creator : SQOpT::Annihilator;
 }
 
-void Matrices::set_no_spin()
+void Matrix::set_no_spin()
 {
   Spin nospin(Spin::No);
   for (unsigned int i=0; i<_orbs.size(); ++i)
     _orbs[i].setspin(nospin);
 }
-void Matrices::permute(const Permut& p)
+void Matrix::permute(const Permut& p)
 {
   for (unsigned int i=0; i<_orbs.size(); ++i){
     _orbs[i] = p.permutorb(_orbs[i]);
   }
 }
-std::string Matrices::plainname() const
+std::string Matrix::plainname() const
 {
   const std::string& plainsymbols = Input::sPars["syntax"]["plainsymb"];
   std::string plainnam;
@@ -423,7 +423,7 @@ std::string Matrices::plainname() const
   return plainnam;
 }
 
-std::ostream & operator << (std::ostream & o, Matrices const & mat)
+std::ostream & operator << (std::ostream & o, Matrix const & mat)
 {
   short clean = Input::iPars["output"]["clean"];
   std::string exc0 = Input::sPars["output"]["exc0"];

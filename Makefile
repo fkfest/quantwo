@@ -30,7 +30,7 @@ out=equation
 # files to be linked to working-directory
 FILIN=definitions.tex $(out).tex
 DIR = src
-OBJ0 = main.o tensor.o action.o expression.o factorizer.o unigraph.o inpline.o finput.o equation.o lexic.o work.o orbital.o matrices.o operators.o kronecker.o term.o utilities.o globals.o
+OBJ0 = main.o tensor.o action.o expression.o factorizer.o unigraph.o inpline.o finput.o equation.o lexic.o work.o orbital.o matrix.o operators.o kronecker.o term.o utilities.o globals.o
 OBJ = $(patsubst %,$(DIR)/%,$(OBJ0))
 SRC = $(OBJ:.o=.cpp)
 
@@ -69,11 +69,10 @@ depend:
 
 src/main.o: src/utilities.h src/globals.h src/term.h src/types.h
 src/main.o: src/product.h src/product.cpp src/operators.h src/orbital.h
-src/main.o: src/inpline.h src/matrices.h src/sum.h src/sum.cpp
-src/main.o: src/kronecker.h src/evertices.h src/finput.h src/equation.h
-src/main.o: src/lexic.h src/work.h src/unigraph.h src/factorizer.h
-src/main.o: src/tensor.h src/arrays.h src/arrays.cpp src/action.h
-src/main.o: src/expression.h
+src/main.o: src/inpline.h src/matrix.h src/sum.h src/sum.cpp src/kronecker.h
+src/main.o: src/evertices.h src/finput.h src/equation.h src/lexic.h
+src/main.o: src/work.h src/unigraph.h src/factorizer.h src/tensor.h
+src/main.o: src/arrays.h src/arrays.cpp src/action.h src/expression.h
 src/tensor.o: src/tensor.h src/globals.h src/utilities.h src/types.h
 src/tensor.o: src/product.h src/product.cpp src/arrays.h src/arrays.cpp
 src/action.o: src/action.h src/globals.h src/utilities.h src/types.h
@@ -85,45 +84,43 @@ src/expression.o: src/arrays.cpp src/action.h src/sum.h src/sum.cpp
 src/factorizer.o: src/factorizer.h src/globals.h src/types.h src/product.h
 src/factorizer.o: src/utilities.h src/product.cpp src/orbital.h src/inpline.h
 src/factorizer.o: src/sum.h src/sum.cpp src/term.h src/operators.h
-src/factorizer.o: src/matrices.h src/kronecker.h src/evertices.h src/tensor.h
+src/factorizer.o: src/matrix.h src/kronecker.h src/evertices.h src/tensor.h
 src/factorizer.o: src/arrays.h src/arrays.cpp src/action.h src/expression.h
 src/unigraph.o: src/unigraph.h src/types.h src/product.h src/utilities.h
 src/unigraph.o: src/globals.h src/product.cpp src/term.h src/operators.h
-src/unigraph.o: src/orbital.h src/inpline.h src/matrices.h src/sum.h
+src/unigraph.o: src/orbital.h src/inpline.h src/matrix.h src/sum.h
 src/unigraph.o: src/sum.cpp src/kronecker.h src/evertices.h
 src/inpline.o: src/inpline.h src/utilities.h src/globals.h
 src/finput.o: src/finput.h src/utilities.h src/globals.h src/product.h
 src/finput.o: src/product.cpp src/term.h src/types.h src/operators.h
-src/finput.o: src/orbital.h src/inpline.h src/matrices.h src/sum.h
-src/finput.o: src/sum.cpp src/kronecker.h src/evertices.h src/equation.h
-src/finput.o: src/lexic.h
+src/finput.o: src/orbital.h src/inpline.h src/matrix.h src/sum.h src/sum.cpp
+src/finput.o: src/kronecker.h src/evertices.h src/equation.h src/lexic.h
 src/equation.o: src/equation.h src/utilities.h src/globals.h src/product.h
 src/equation.o: src/product.cpp src/term.h src/types.h src/operators.h
-src/equation.o: src/orbital.h src/inpline.h src/matrices.h src/sum.h
+src/equation.o: src/orbital.h src/inpline.h src/matrix.h src/sum.h
 src/equation.o: src/sum.cpp src/kronecker.h src/evertices.h src/lexic.h
 src/lexic.o: src/lexic.h src/utilities.h src/globals.h src/product.h
 src/lexic.o: src/product.cpp src/types.h
 src/work.o: src/work.h src/utilities.h src/globals.h src/product.h
 src/work.o: src/product.cpp src/operators.h src/types.h src/orbital.h
-src/work.o: src/inpline.h src/matrices.h src/sum.h src/sum.cpp
-src/work.o: src/kronecker.h src/evertices.h src/term.h src/unigraph.h
-src/work.o: src/finput.h src/equation.h src/lexic.h src/factorizer.h
-src/work.o: src/tensor.h src/arrays.h src/arrays.cpp src/action.h
-src/work.o: src/expression.h
+src/work.o: src/inpline.h src/matrix.h src/sum.h src/sum.cpp src/kronecker.h
+src/work.o: src/evertices.h src/term.h src/unigraph.h src/finput.h
+src/work.o: src/equation.h src/lexic.h src/factorizer.h src/tensor.h
+src/work.o: src/arrays.h src/arrays.cpp src/action.h src/expression.h
 src/orbital.o: src/orbital.h src/utilities.h src/globals.h src/product.h
 src/orbital.o: src/product.cpp src/inpline.h
-src/matrices.o: src/matrices.h src/globals.h src/types.h src/product.h
-src/matrices.o: src/utilities.h src/product.cpp src/orbital.h src/inpline.h
-src/matrices.o: src/sum.h src/sum.cpp src/kronecker.h src/evertices.h
+src/matrix.o: src/matrix.h src/globals.h src/types.h src/product.h
+src/matrix.o: src/utilities.h src/product.cpp src/orbital.h src/inpline.h
+src/matrix.o: src/sum.h src/sum.cpp src/kronecker.h src/evertices.h
 src/operators.o: src/operators.h src/utilities.h src/globals.h src/types.h
 src/operators.o: src/product.h src/product.cpp src/orbital.h src/inpline.h
-src/operators.o: src/matrices.h src/sum.h src/sum.cpp src/kronecker.h
+src/operators.o: src/matrix.h src/sum.h src/sum.cpp src/kronecker.h
 src/operators.o: src/evertices.h src/term.h
 src/kronecker.o: src/kronecker.h src/orbital.h src/utilities.h src/globals.h
 src/kronecker.o: src/product.h src/product.cpp src/inpline.h
 src/term.o: src/term.h src/utilities.h src/globals.h src/types.h
 src/term.o: src/product.h src/product.cpp src/operators.h src/orbital.h
-src/term.o: src/inpline.h src/matrices.h src/sum.h src/sum.cpp
-src/term.o: src/kronecker.h src/evertices.h
+src/term.o: src/inpline.h src/matrix.h src/sum.h src/sum.cpp src/kronecker.h
+src/term.o: src/evertices.h
 src/utilities.o: src/utilities.h src/globals.h
 src/globals.o: src/globals.h
