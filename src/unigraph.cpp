@@ -101,9 +101,14 @@ void UniGraph::minimize()
 //   std::vector<Order> eqvertorders(_equivs.size());
 //   for ( uint ieqv = 0; ieqv < _equivs.size(); ++ieqv )
 //     eqvertorders[ieqv].init(_equivs[ieqv].size());
+  // order of vertices
   Order vertorder;
   vertorder.init(_vertconn.size());
+  // last value for not connected vertices
+  vertorder.push_back(_vertconn.size());
+  Order connections(_vertconn), minconn(_vertconn);
   bool nextperm;
+  uint minorder = 0, iord = 0;
   do {
     // next permutation of ieqv'th equivalent vertices
     nextperm = false;
@@ -112,12 +117,19 @@ void UniGraph::minimize()
 //       nextperm = std::next_permutation(eqvertorders[ieqv].begin(),eqvertorders[ieqv].end());
     }
     if ( nextperm ) {
-      xout << vertorder << std::endl;
+      ++iord;
 //       printEqVertOrders(eqvertorders);
       // create new connection vector and compare to the old one
-      
+      for ( uint i = 0; i < _vertconn.size(); ++i )
+        connections[vertorder[i]] = vertorder[_vertconn[i]];
+//       xout << vertorder << " --> " << connections << std::endl;
+      if ( connections < minconn ) {
+        minconn = connections;
+        minorder = iord;
+      }
     }
   } while (nextperm); 
+  xout << "Smallest connection vector (" << minorder<< "): " << minconn << std::endl;
 }
 
 

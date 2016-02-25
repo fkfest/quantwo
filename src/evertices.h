@@ -23,10 +23,16 @@ struct EquiVertices : public std::vector<JointVertices> {
   // relies on the fact that vord[j->front()] < vord[i->front()] is a valid check
   bool next_permutation( Order& vord )
   {
-    const_iterator i = begin(), j = i;
-    for ( ; ++i != end() && !( vord[j->front()] < vord[i->front()]); ++j ) {}
+    assert( size() > 1 );
+    const_iterator i = begin(), j;
+    uint vordi = vord[i->front()];
+    for ( ++i ; i != end(); ++i ) {
+      uint vordj = vordi;
+      vordi = vord[i->front()];
+      if ( vordj < vordi ) break;
+    }
     if ( i != end() ) { 
-      for ( j = begin(); !(vord[j->front()] < vord[i->front()]); ++j ) {}
+      for ( j = begin(); vordi <= vord[j->front()]; ++j ) {}
       swap(vord,i,j);
       reverse(vord,begin(),i);
       return true;
