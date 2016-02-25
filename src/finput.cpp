@@ -208,14 +208,14 @@ lui Finput::analyzecommand(lui ipos)
   if (str==commands["operator"]) { // operators
     ipos1=IL::nextwordpos(_input,ipos);
     _eqn += Lelem(_input.substr(ipos,ipos1-ipos),Lelem::Oper);
-  } else if (str==commands["parameter"]) { // parameters
+  } else if (str==commands["tensor"]) { // tensor
     ipos1=IL::nextwordpos(_input,ipos);
     std::string name = _input.substr(ipos,ipos1-ipos);
     if ( name == "\\"+commands["integral"] ){ // two sets of indices {pq}{rs}
        ipos1=IL::nextwordpos(_input,ipos1);
        ipos1=IL::nextwordpos(_input,ipos1);
     } 
-    _eqn += Lelem(_input.substr(ipos,ipos1-ipos),Lelem::Param);
+    _eqn += Lelem(_input.substr(ipos,ipos1-ipos),Lelem::Tensor);
   } else if (str==commands["fraction"]) { // fraction
     ipos1=IL::nextwordpos(_input,ipos);
     ipos2=ipos1;

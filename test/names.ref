@@ -1,4 +1,4 @@
 \beq
-&&(-4*1)\sum_{ii_{1}jaa_{1}}\prm T^{{\snam{Y \dg}}aa_{1}}_{ii_{1}}\prm X_{ji}\prm T^{{\snam{X}}ji_{1}}_{aa_{1}} + 4*1\sum_{ii_{1}aa_{1}b}\prm T^{{\snam{Y \dg}}aa_{1}}_{ii_{1}}\prm X_{ab}\prm T^{{\snam{X}}ii_{1}}_{ba_{1}} + 2*1\sum_{ii_{1}jaa_{1}}\prm T^{{\snam{Y \dg}}aa_{1}}_{ii_{1}}\prm X_{ji_{1}}\prm T^{{\snam{X}}ji}_{aa_{1}}\nl
- + (-2*1)\sum_{ii_{1}aa_{1}b}\prm T^{{\snam{Y \dg}}aa_{1}}_{ii_{1}}\prm X_{a_{1}b}\prm T^{{\snam{X}}ii_{1}}_{ba}
+&&(-4*1)\sum_{ii_{1}jaa_{1}}\tnsr T^{{\snam{Y \dg}}aa_{1}}_{ii_{1}}\tnsr X_{ji}\tnsr T^{{\snam{X}}ji_{1}}_{aa_{1}} + 4*1\sum_{ii_{1}aa_{1}b}\tnsr T^{{\snam{Y \dg}}aa_{1}}_{ii_{1}}\tnsr X_{ab}\tnsr T^{{\snam{X}}ii_{1}}_{ba_{1}} + 2*1\sum_{ii_{1}jaa_{1}}\tnsr T^{{\snam{Y \dg}}aa_{1}}_{ii_{1}}\tnsr X_{ji_{1}}\tnsr T^{{\snam{X}}ji}_{aa_{1}}\nl
+ + (-2*1)\sum_{ii_{1}aa_{1}b}\tnsr T^{{\snam{Y \dg}}aa_{1}}_{ii_{1}}\tnsr X_{a_{1}b}\tnsr T^{{\snam{X}}ii_{1}}_{ba}
 \eeq

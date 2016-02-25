@@ -3,5 +3,5 @@ output,level=2
 MP2 Lagrangian
 
 \beq
-\sum_{\mu_2} \prm \Lambda_{\mu_2}<\mu_2| \op W + \op F \op T_2 |0>_C
+\sum_{\mu_2} \tnsr \Lambda_{\mu_2}<\mu_2| \op W + \op F \op T_2 |0>_C
 \eeq

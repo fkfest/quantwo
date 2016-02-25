@@ -1,11 +1,11 @@
 \beq
 &&<\mu_{2^{ii}_{at}}|\op F \op T_{2^{ii}_{at}} |0>
 =\nl
-(8*1 - 4*\Perm{ii_{1}}{i_{1}i})\sum_{j}\prm f_{jj}\prm T^{ii_{1}}_{at} + (-4*1 + 2*\Perm{ii_{1}}{i_{1}i})\sum_{ju}\prm f_{jj}\prm T^{ii_{1}}_{au}\prm \gamma^{u}_{t} + (4*1\nl
- - 2*\Perm{ii_{1}}{i_{1}i})\sum_{uv}\prm f_{uv}\prm T^{ii_{1}}_{at}\prm \gamma^{u}_{v} + (-2*1 + \Perm{ii_{1}}{i_{1}i})\sum_{uvw}\prm f_{vw}\prm T^{ii_{1}}_{au}\prm \gamma^{uv}_{tw} + (-4*1\nl
- + 2*\Perm{ii_{1}}{i_{1}i})\sum_{j}\prm f_{ji}\prm T^{ji_{1}}_{at} + (2*1 - \Perm{ii_{1}}{i_{1}i})\sum_{ju}\prm f_{ji}\prm T^{ji_{1}}_{au}\prm \gamma^{u}_{t} + (-4*1\nl
- + 2*\Perm{ii_{1}}{i_{1}i})\sum_{j_{1}}\prm f_{j_{1}i_{1}}\prm T^{ij_{1}}_{at} + (2*1 - \Perm{ii_{1}}{i_{1}i})\sum_{j_{1}u}\prm f_{j_{1}i_{1}}\prm T^{ij_{1}}_{au}\prm \gamma^{u}_{t} + (4*1\nl
- - 2*\Perm{ii_{1}}{i_{1}i})\sum_{b}\prm f_{ab}\prm T^{ii_{1}}_{bt} + (-2*1 + \Perm{ii_{1}}{i_{1}i})\sum_{bu}\prm f_{ab}\prm T^{ii_{1}}_{bu}\prm \gamma^{u}_{t} + (4*1\nl
- - 2*\Perm{ii_{1}}{i_{1}i})\sum_{u}\prm f_{tu}\prm T^{ii_{1}}_{au} + (-2*1 + \Perm{ii_{1}}{i_{1}i})\sum_{uv}\prm f_{tv}\prm T^{ii_{1}}_{au}\prm \gamma^{u}_{v} + (-2*1\nl
- + \Perm{ii_{1}}{i_{1}i})\sum_{uv}\prm f_{vu}\prm T^{ii_{1}}_{au}\prm \gamma^{v}_{t}
+(8*1 - 4*\Perm{ii_{1}}{i_{1}i})\sum_{j}\tnsr f_{jj}\tnsr T^{ii_{1}}_{at} + (-4*1 + 2*\Perm{ii_{1}}{i_{1}i})\sum_{ju}\tnsr f_{jj}\tnsr T^{ii_{1}}_{au}\tnsr \gamma^{u}_{t} + (4*1\nl
+ - 2*\Perm{ii_{1}}{i_{1}i})\sum_{uv}\tnsr f_{uv}\tnsr T^{ii_{1}}_{at}\tnsr \gamma^{u}_{v} + (-2*1 + \Perm{ii_{1}}{i_{1}i})\sum_{uvw}\tnsr f_{vw}\tnsr T^{ii_{1}}_{au}\tnsr \gamma^{uv}_{tw} + (-4*1\nl
+ + 2*\Perm{ii_{1}}{i_{1}i})\sum_{j}\tnsr f_{ji}\tnsr T^{ji_{1}}_{at} + (2*1 - \Perm{ii_{1}}{i_{1}i})\sum_{ju}\tnsr f_{ji}\tnsr T^{ji_{1}}_{au}\tnsr \gamma^{u}_{t} + (-4*1\nl
+ + 2*\Perm{ii_{1}}{i_{1}i})\sum_{j_{1}}\tnsr f_{j_{1}i_{1}}\tnsr T^{ij_{1}}_{at} + (2*1 - \Perm{ii_{1}}{i_{1}i})\sum_{j_{1}u}\tnsr f_{j_{1}i_{1}}\tnsr T^{ij_{1}}_{au}\tnsr \gamma^{u}_{t} + (4*1\nl
+ - 2*\Perm{ii_{1}}{i_{1}i})\sum_{b}\tnsr f_{ab}\tnsr T^{ii_{1}}_{bt} + (-2*1 + \Perm{ii_{1}}{i_{1}i})\sum_{bu}\tnsr f_{ab}\tnsr T^{ii_{1}}_{bu}\tnsr \gamma^{u}_{t} + (4*1\nl
+ - 2*\Perm{ii_{1}}{i_{1}i})\sum_{u}\tnsr f_{tu}\tnsr T^{ii_{1}}_{au} + (-2*1 + \Perm{ii_{1}}{i_{1}i})\sum_{uv}\tnsr f_{tv}\tnsr T^{ii_{1}}_{au}\tnsr \gamma^{u}_{v} + (-2*1\nl
+ + \Perm{ii_{1}}{i_{1}i})\sum_{uv}\tnsr f_{vu}\tnsr T^{ii_{1}}_{au}\tnsr \gamma^{v}_{t}
 \eeq

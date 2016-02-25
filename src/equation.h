@@ -143,8 +143,8 @@ private:
   Oper handle_operator(Lelem const & lel, Term & term, bool excopsonly=false);
   // handle sum
   Product<Orbital> handle_sum(const Lelem& lel);
-  // handle parameter
-  Matrix handle_parameter(Lelem const & lel);
+  // handle tensor
+  Matrix handle_tensor(Lelem const & lel);
   // handle permutation
   Permut handle_permutation(Lelem const & lel) const;
   // correct explicit orbs

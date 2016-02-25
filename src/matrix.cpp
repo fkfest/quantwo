@@ -427,27 +427,27 @@ std::ostream & operator << (std::ostream & o, Matrix const & mat)
 {
   short clean = Input::iPars["output"]["clean"];
   std::string exc0 = Input::sPars["output"]["exc0"];
-  std::string param("");
-  if ( clean <= 0 ) param = "\\"+Input::sPars["command"]["parameter"] + " ";
+  std::string tensor("");
+  if ( clean <= 0 ) tensor = "\\"+Input::sPars["command"]["tensor"] + " ";
   switch ( mat.type() ){
     case Ops::Fock:
-      o << param << "f_{" << mat.orbitals() << "}";
+      o << tensor << "f_{" << mat.orbitals() << "}";
       MyOut::pcurout->lenbuf += 1+mat.orbitals().size()/MyOut::pcurout->wsi;
       break;
     case Ops::OneEl:
-      o << param << "h_{" << mat.orbitals() << "}";
+      o << tensor << "h_{" << mat.orbitals() << "}";
       MyOut::pcurout->lenbuf += 1+mat.orbitals().size()/MyOut::pcurout->wsi;
       break;
     case Ops::FluctP:
       if ( clean > 1 )
         o << "(" << mat.orbitals().subprod(0,1) << "|" << mat.orbitals().subprod(2,3) << ")";
       else 
-        o << param << "\\" << Input::sPars["command"]["integral"] << "{" 
+        o << tensor << "\\" << Input::sPars["command"]["integral"] << "{" 
                    << mat.orbitals().subprod(0,1) << "}{" << mat.orbitals().subprod(2,3) << "}";
       MyOut::pcurout->lenbuf += 7;
       break;
     case Ops::XPert:
-      o << param << "X_{" << mat.orbitals() << "}";
+      o << tensor << "X_{" << mat.orbitals() << "}";
       MyOut::pcurout->lenbuf += 1+mat.orbitals().size()/MyOut::pcurout->wsi;
       break;
     case Ops::DensM: {
@@ -488,13 +488,13 @@ std::ostream & operator << (std::ostream & o, Matrix const & mat)
           }
         }
         IL::add2name(name,oss.str(),false,false);
-        o << param << name;
+        o << tensor << name;
         MyOut::pcurout->lenbuf += 1+mat.orbitals().size()/MyOut::pcurout->wsi;
       }
       break;
     }
     case Ops::Delta:
-      o << param << "\\delta_{" << mat.orbitals() << "}";
+      o << tensor << "\\delta_{" << mat.orbitals() << "}";
       break;
     case Ops::Exc0:
     case Ops::Deexc0:
@@ -511,12 +511,12 @@ std::ostream & operator << (std::ostream & o, Matrix const & mat)
       //virt. indices
       oss << mat.crobs(false);
       IL::add2name(name,oss.str(),false,false);
-      o << param << name;
+      o << tensor << name;
       MyOut::pcurout->lenbuf += 1+mat.orbitals().size()/MyOut::pcurout->wsi;
       break;
     }
     case Ops::Number:
-      o << param << mat.name();
+      o << tensor << mat.name();
       MyOut::pcurout->lenbuf += 2;
       break;
     case Ops::None:

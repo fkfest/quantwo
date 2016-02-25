@@ -1,31 +1,31 @@
 \beq
 &&(8*1 - 4*\Perm{ii_{1}}{i_{1}i} - 4*\Perm{aa_{1}}{a_{1}a} - 8*\Perm{aa_{2}}{a_{2}a} - 8*\Perm{a_{1}a_{2}}{a_{2}a_{1}} + 4*\Perm{aa_{1}a_{2}}{a_{1}a_{2}a} + 8*\Perm{aa_{1}a_{2}}{a_{2}aa_{1}}\nl
  + 8*\Perm{ii_{1}aa_{1}}{i_{1}ia_{1}a} + 4*\Perm{ii_{1}aa_{2}}{i_{1}ia_{2}a} + 8*\Perm{ii_{1}a_{1}a_{2}}{i_{1}ia_{2}a_{1}} - 8*\Perm{ii_{1}aa_{1}a_{2}}{i_{1}ia_{1}a_{2}a}\nl
- - 8*\Perm{ii_{1}aa_{1}a_{2}}{i_{1}ia_{2}aa_{1}})\sum_{jb}\prm \intg{jb}{ai}\prm T^{{\snam{+1}}ji_{1}}_{ba_{1}a_{2}} + (-4*1 + 2*\Perm{ii_{1}}{i_{1}i} + 2*\Perm{aa_{1}}{a_{1}a} + 4*\Perm{aa_{2}}{a_{2}a}\nl
+ - 8*\Perm{ii_{1}aa_{1}a_{2}}{i_{1}ia_{2}aa_{1}})\sum_{jb}\tnsr \intg{jb}{ai}\tnsr T^{{\snam{+1}}ji_{1}}_{ba_{1}a_{2}} + (-4*1 + 2*\Perm{ii_{1}}{i_{1}i} + 2*\Perm{aa_{1}}{a_{1}a} + 4*\Perm{aa_{2}}{a_{2}a}\nl
  + 4*\Perm{a_{1}a_{2}}{a_{2}a_{1}} - 2*\Perm{aa_{1}a_{2}}{a_{1}a_{2}a} - 4*\Perm{aa_{1}a_{2}}{a_{2}aa_{1}} - 4*\Perm{ii_{1}aa_{1}}{i_{1}ia_{1}a} - 2*\Perm{ii_{1}aa_{2}}{i_{1}ia_{2}a}\nl
- - 4*\Perm{ii_{1}a_{1}a_{2}}{i_{1}ia_{2}a_{1}} + 4*\Perm{ii_{1}aa_{1}a_{2}}{i_{1}ia_{1}a_{2}a} + 4*\Perm{ii_{1}aa_{1}a_{2}}{i_{1}ia_{2}aa_{1}})\sum_{j}\prm f_{ji}\prm T^{{\snam{+1}}ji_{1}}_{aa_{1}a_{2}} + (4*1\nl
+ - 4*\Perm{ii_{1}a_{1}a_{2}}{i_{1}ia_{2}a_{1}} + 4*\Perm{ii_{1}aa_{1}a_{2}}{i_{1}ia_{1}a_{2}a} + 4*\Perm{ii_{1}aa_{1}a_{2}}{i_{1}ia_{2}aa_{1}})\sum_{j}\tnsr f_{ji}\tnsr T^{{\snam{+1}}ji_{1}}_{aa_{1}a_{2}} + (4*1\nl
  - 2*\Perm{ii_{1}}{i_{1}i} - 2*\Perm{aa_{1}}{a_{1}a} - 4*\Perm{aa_{2}}{a_{2}a} - 4*\Perm{a_{1}a_{2}}{a_{2}a_{1}} + 2*\Perm{aa_{1}a_{2}}{a_{1}a_{2}a} + 4*\Perm{aa_{1}a_{2}}{a_{2}aa_{1}}\nl
  + 4*\Perm{ii_{1}aa_{1}}{i_{1}ia_{1}a} + 2*\Perm{ii_{1}aa_{2}}{i_{1}ia_{2}a} + 4*\Perm{ii_{1}a_{1}a_{2}}{i_{1}ia_{2}a_{1}} - 4*\Perm{ii_{1}aa_{1}a_{2}}{i_{1}ia_{1}a_{2}a}\nl
- - 4*\Perm{ii_{1}aa_{1}a_{2}}{i_{1}ia_{2}aa_{1}})\sum_{b}\prm f_{ab}\prm T^{{\snam{+1}}ii_{1}}_{ba_{1}a_{2}} + (-4*1 + 4*\Perm{aa_{1}}{a_{1}a} + 4*\Perm{aa_{2}}{a_{2}a} + 2*\Perm{a_{1}a_{2}}{a_{2}a_{1}}\nl
- - 4*\Perm{aa_{1}a_{2}}{a_{1}a_{2}a} - 2*\Perm{aa_{1}a_{2}}{a_{2}aa_{1}})\sum_{b_{2}}\prm f_{ab_{2}}\prm T^{{\snam{+1}}i_{1}i}_{a_{1}a_{2}b_{2}} + (4*1 - 2*\Perm{aa_{1}}{a_{1}a} - 4*\Perm{aa_{2}}{a_{2}a}\nl
- - 4*\Perm{a_{1}a_{2}}{a_{2}a_{1}} + 2*\Perm{aa_{1}a_{2}}{a_{1}a_{2}a} + 4*\Perm{aa_{1}a_{2}}{a_{2}aa_{1}})\sum_{jj_{1}}\prm \intg{ji}{j_{1}i_{1}}\prm T^{{\snam{+1}}jj_{1}}_{aa_{1}a_{2}} + (-4*1 + 2*\Perm{ii_{1}}{i_{1}i}\nl
+ - 4*\Perm{ii_{1}aa_{1}a_{2}}{i_{1}ia_{2}aa_{1}})\sum_{b}\tnsr f_{ab}\tnsr T^{{\snam{+1}}ii_{1}}_{ba_{1}a_{2}} + (-4*1 + 4*\Perm{aa_{1}}{a_{1}a} + 4*\Perm{aa_{2}}{a_{2}a} + 2*\Perm{a_{1}a_{2}}{a_{2}a_{1}}\nl
+ - 4*\Perm{aa_{1}a_{2}}{a_{1}a_{2}a} - 2*\Perm{aa_{1}a_{2}}{a_{2}aa_{1}})\sum_{b_{2}}\tnsr f_{ab_{2}}\tnsr T^{{\snam{+1}}i_{1}i}_{a_{1}a_{2}b_{2}} + (4*1 - 2*\Perm{aa_{1}}{a_{1}a} - 4*\Perm{aa_{2}}{a_{2}a}\nl
+ - 4*\Perm{a_{1}a_{2}}{a_{2}a_{1}} + 2*\Perm{aa_{1}a_{2}}{a_{1}a_{2}a} + 4*\Perm{aa_{1}a_{2}}{a_{2}aa_{1}})\sum_{jj_{1}}\tnsr \intg{ji}{j_{1}i_{1}}\tnsr T^{{\snam{+1}}jj_{1}}_{aa_{1}a_{2}} + (-4*1 + 2*\Perm{ii_{1}}{i_{1}i}\nl
  + 2*\Perm{aa_{1}}{a_{1}a} + 4*\Perm{aa_{2}}{a_{2}a} + 4*\Perm{a_{1}a_{2}}{a_{2}a_{1}} - 2*\Perm{aa_{1}a_{2}}{a_{1}a_{2}a} - 4*\Perm{aa_{1}a_{2}}{a_{2}aa_{1}} - 4*\Perm{ii_{1}aa_{1}}{i_{1}ia_{1}a}\nl
  - 2*\Perm{ii_{1}aa_{2}}{i_{1}ia_{2}a} - 4*\Perm{ii_{1}a_{1}a_{2}}{i_{1}ia_{2}a_{1}} + 4*\Perm{ii_{1}aa_{1}a_{2}}{i_{1}ia_{1}a_{2}a}\nl
- + 4*\Perm{ii_{1}aa_{1}a_{2}}{i_{1}ia_{2}aa_{1}})\sum_{jb}\prm \intg{ji}{ab}\prm T^{{\snam{+1}}ji_{1}}_{ba_{1}a_{2}} + (-4*1 + 4*\Perm{ii_{1}}{i_{1}i} + 4*\Perm{aa_{1}}{a_{1}a} + 4*\Perm{aa_{2}}{a_{2}a}\nl
+ + 4*\Perm{ii_{1}aa_{1}a_{2}}{i_{1}ia_{2}aa_{1}})\sum_{jb}\tnsr \intg{ji}{ab}\tnsr T^{{\snam{+1}}ji_{1}}_{ba_{1}a_{2}} + (-4*1 + 4*\Perm{ii_{1}}{i_{1}i} + 4*\Perm{aa_{1}}{a_{1}a} + 4*\Perm{aa_{2}}{a_{2}a}\nl
  + 2*\Perm{a_{1}a_{2}}{a_{2}a_{1}} - 4*\Perm{aa_{1}a_{2}}{a_{1}a_{2}a} - 2*\Perm{aa_{1}a_{2}}{a_{2}aa_{1}} - 2*\Perm{ii_{1}aa_{1}}{i_{1}ia_{1}a} - 4*\Perm{ii_{1}aa_{2}}{i_{1}ia_{2}a}\nl
- - 4*\Perm{ii_{1}a_{1}a_{2}}{i_{1}ia_{2}a_{1}} + 2*\Perm{ii_{1}aa_{1}a_{2}}{i_{1}ia_{1}a_{2}a} + 4*\Perm{ii_{1}aa_{1}a_{2}}{i_{1}ia_{2}aa_{1}})\sum_{jb_{1}}\prm \intg{ji}{ab_{1}}\prm T^{{\snam{+1}}ji_{1}}_{a_{2}b_{1}a_{1}} + (4*1\nl
+ - 4*\Perm{ii_{1}a_{1}a_{2}}{i_{1}ia_{2}a_{1}} + 2*\Perm{ii_{1}aa_{1}a_{2}}{i_{1}ia_{1}a_{2}a} + 4*\Perm{ii_{1}aa_{1}a_{2}}{i_{1}ia_{2}aa_{1}})\sum_{jb_{1}}\tnsr \intg{ji}{ab_{1}}\tnsr T^{{\snam{+1}}ji_{1}}_{a_{2}b_{1}a_{1}} + (4*1\nl
  - 2*\Perm{ii_{1}}{i_{1}i} - 4*\Perm{aa_{1}}{a_{1}a} - 4*\Perm{aa_{2}}{a_{2}a} - 2*\Perm{a_{1}a_{2}}{a_{2}a_{1}} + 4*\Perm{aa_{1}a_{2}}{a_{1}a_{2}a} + 2*\Perm{aa_{1}a_{2}}{a_{2}aa_{1}}\nl
  + 4*\Perm{ii_{1}aa_{1}}{i_{1}ia_{1}a} + 2*\Perm{ii_{1}aa_{2}}{i_{1}ia_{2}a} + 4*\Perm{ii_{1}a_{1}a_{2}}{i_{1}ia_{2}a_{1}} - 4*\Perm{ii_{1}aa_{1}a_{2}}{i_{1}ia_{1}a_{2}a}\nl
- - 4*\Perm{ii_{1}aa_{1}a_{2}}{i_{1}ia_{2}aa_{1}})\sum_{jb_{2}}\prm \intg{ji}{ab_{2}}\prm T^{{\snam{+1}}ji_{1}}_{a_{2}a_{1}b_{2}} + (-4*1 + 2*\Perm{ii_{1}}{i_{1}i} + 2*\Perm{aa_{1}}{a_{1}a} + 4*\Perm{aa_{2}}{a_{2}a}\nl
+ - 4*\Perm{ii_{1}aa_{1}a_{2}}{i_{1}ia_{2}aa_{1}})\sum_{jb_{2}}\tnsr \intg{ji}{ab_{2}}\tnsr T^{{\snam{+1}}ji_{1}}_{a_{2}a_{1}b_{2}} + (-4*1 + 2*\Perm{ii_{1}}{i_{1}i} + 2*\Perm{aa_{1}}{a_{1}a} + 4*\Perm{aa_{2}}{a_{2}a}\nl
  + 4*\Perm{a_{1}a_{2}}{a_{2}a_{1}} - 2*\Perm{aa_{1}a_{2}}{a_{1}a_{2}a} - 4*\Perm{aa_{1}a_{2}}{a_{2}aa_{1}} - 4*\Perm{ii_{1}aa_{1}}{i_{1}ia_{1}a} - 2*\Perm{ii_{1}aa_{2}}{i_{1}ia_{2}a}\nl
- - 4*\Perm{ii_{1}a_{1}a_{2}}{i_{1}ia_{2}a_{1}} + 4*\Perm{ii_{1}aa_{1}a_{2}}{i_{1}ia_{1}a_{2}a} + 4*\Perm{ii_{1}aa_{1}a_{2}}{i_{1}ia_{2}aa_{1}})\sum_{jb_{1}}\prm \intg{jb_{1}}{ai}\prm T^{{\snam{+1}}ji_{1}}_{a_{1}b_{1}a_{2}} + (4*1\nl
+ - 4*\Perm{ii_{1}a_{1}a_{2}}{i_{1}ia_{2}a_{1}} + 4*\Perm{ii_{1}aa_{1}a_{2}}{i_{1}ia_{1}a_{2}a} + 4*\Perm{ii_{1}aa_{1}a_{2}}{i_{1}ia_{2}aa_{1}})\sum_{jb_{1}}\tnsr \intg{jb_{1}}{ai}\tnsr T^{{\snam{+1}}ji_{1}}_{a_{1}b_{1}a_{2}} + (4*1\nl
  - 4*\Perm{ii_{1}}{i_{1}i} - 2*\Perm{aa_{1}}{a_{1}a} - 4*\Perm{aa_{2}}{a_{2}a} - 4*\Perm{a_{1}a_{2}}{a_{2}a_{1}} + 2*\Perm{aa_{1}a_{2}}{a_{1}a_{2}a} + 4*\Perm{aa_{1}a_{2}}{a_{2}aa_{1}}\nl
  + 4*\Perm{ii_{1}aa_{1}}{i_{1}ia_{1}a} + 4*\Perm{ii_{1}aa_{2}}{i_{1}ia_{2}a} + 2*\Perm{ii_{1}a_{1}a_{2}}{i_{1}ia_{2}a_{1}} - 4*\Perm{ii_{1}aa_{1}a_{2}}{i_{1}ia_{1}a_{2}a} \newpg
 \eeq
 \beq
-&& - 2*\Perm{ii_{1}aa_{1}a_{2}}{i_{1}ia_{2}aa_{1}})\sum_{jb_{2}}\prm \intg{jb_{2}}{ai}\prm T^{{\snam{+1}}ji_{1}}_{a_{1}a_{2}b_{2}} + (4*1 - 2*\Perm{aa_{1}}{a_{1}a} - 4*\Perm{aa_{2}}{a_{2}a} - 4*\Perm{a_{1}a_{2}}{a_{2}a_{1}}\nl
- + 2*\Perm{aa_{1}a_{2}}{a_{1}a_{2}a} + 4*\Perm{aa_{1}a_{2}}{a_{2}aa_{1}})\sum_{bb_{1}}\prm \intg{ab}{a_{1}b_{1}}\prm T^{{\snam{+1}}ii_{1}}_{bb_{1}a_{2}} + (-4*1 + 4*\Perm{ii_{1}}{i_{1}i} + 2*\Perm{aa_{1}}{a_{1}a}\nl
+&& - 2*\Perm{ii_{1}aa_{1}a_{2}}{i_{1}ia_{2}aa_{1}})\sum_{jb_{2}}\tnsr \intg{jb_{2}}{ai}\tnsr T^{{\snam{+1}}ji_{1}}_{a_{1}a_{2}b_{2}} + (4*1 - 2*\Perm{aa_{1}}{a_{1}a} - 4*\Perm{aa_{2}}{a_{2}a} - 4*\Perm{a_{1}a_{2}}{a_{2}a_{1}}\nl
+ + 2*\Perm{aa_{1}a_{2}}{a_{1}a_{2}a} + 4*\Perm{aa_{1}a_{2}}{a_{2}aa_{1}})\sum_{bb_{1}}\tnsr \intg{ab}{a_{1}b_{1}}\tnsr T^{{\snam{+1}}ii_{1}}_{bb_{1}a_{2}} + (-4*1 + 4*\Perm{ii_{1}}{i_{1}i} + 2*\Perm{aa_{1}}{a_{1}a}\nl
  + 4*\Perm{aa_{2}}{a_{2}a} + 4*\Perm{a_{1}a_{2}}{a_{2}a_{1}} - 2*\Perm{aa_{1}a_{2}}{a_{1}a_{2}a} - 4*\Perm{aa_{1}a_{2}}{a_{2}aa_{1}} - 4*\Perm{ii_{1}aa_{1}}{i_{1}ia_{1}a}\nl
  - 4*\Perm{ii_{1}aa_{2}}{i_{1}ia_{2}a} - 2*\Perm{ii_{1}a_{1}a_{2}}{i_{1}ia_{2}a_{1}} + 4*\Perm{ii_{1}aa_{1}a_{2}}{i_{1}ia_{1}a_{2}a}\nl
- + 2*\Perm{ii_{1}aa_{1}a_{2}}{i_{1}ia_{2}aa_{1}})\sum_{bb_{2}}\prm \intg{ab}{a_{1}b_{2}}\prm T^{{\snam{+1}}ii_{1}}_{ba_{2}b_{2}}
+ + 2*\Perm{ii_{1}aa_{1}a_{2}}{i_{1}ia_{2}aa_{1}})\sum_{bb_{2}}\tnsr \intg{ab}{a_{1}b_{2}}\tnsr T^{{\snam{+1}}ii_{1}}_{ba_{2}b_{2}}
 \eeq

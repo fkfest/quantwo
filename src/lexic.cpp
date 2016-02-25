@@ -289,8 +289,8 @@ std::ostream& operator<<(std::ostream& o, const Lelem& lel)
     o << ")";
   else if (lel.lex()==Lelem::Oper)
     o << "\\"<< commands["operator"]<<" ";
-  else if (lel.lex()==Lelem::Param)
-    o << "\\"<< commands["parameter"]<<" ";
+  else if (lel.lex()==Lelem::Tensor)
+    o << "\\"<< commands["tensor"]<<" ";
   else if (lel.lex()==Lelem::Perm)
     o << "\\"<< commands["permutation"];
   else if (lel.lex()==Lelem::Plus)

@@ -3,16 +3,16 @@ CCSD doubles amplitude equation with $\exp(\op T_1)$-similiarity transformed $\o
 \beq
 &&\bracd \op H (1+\op T_2 + \half \op T_2 \op T_2) |0>_C
 =\nl
-4*1\sum_{klcd}\prm \intg{kc}{ld}\prm T^{ki}_{ca}\prm T^{lj}_{db} + (-2*1 - 2*\Perm{ijab}{jiba})\sum_{kk_{1}cd}\prm \intg{kc}{k_{1}d}\prm T^{kk_{1}}_{ca}\prm T^{ij}_{db} + (-2*1\nl
- - 2*\Perm{ijab}{jiba})\sum_{klcc_{1}}\prm \intg{kc}{lc_{1}}\prm T^{ki}_{cc_{1}}\prm T^{lj}_{ab} + (-2*1\nl
- - 2*\Perm{ijab}{jiba})\sum_{klcd_{1}}\prm \intg{kc}{ld_{1}}\prm T^{ki}_{ca}\prm T^{lj}_{bd_{1}} + (2*1 + 2*\Perm{ijab}{jiba})\sum_{kc}\prm \intg{kc}{ai}\prm T^{kj}_{cb}\nl
- + (-2*1)\sum_{klcd}\prm \intg{kd}{lc}\prm T^{ki}_{ca}\prm T^{lj}_{db} + (-1 - \Perm{ijab}{jiba})\sum_{k}\prm f_{ki}\prm T^{kj}_{ab} + (1\nl
- + \Perm{ijab}{jiba})\sum_{c}\prm f_{ac}\prm T^{ij}_{cb} + \sum_{kk_{1}}\prm \intg{ki}{k_{1}j}\prm T^{kk_{1}}_{ab} + (-1 - \Perm{ijab}{jiba})\sum_{kc}\prm \intg{ki}{ac}\prm T^{kj}_{cb}\nl
- + (-1 - \Perm{ijab}{jiba})\sum_{kc_{1}}\prm \intg{ki}{bc_{1}}\prm T^{kj}_{ac_{1}} + (1 + \Perm{ijab}{jiba})\sum_{kk_{1}c_{1}d}\prm \intg{kc_{1}}{k_{1}d}\prm T^{kk_{1}}_{ac_{1}}\prm T^{ij}_{db} + (1\nl
- + \Perm{ijab}{jiba})\sum_{klcc_{1}}\prm \intg{kc_{1}}{lc}\prm T^{ki}_{cc_{1}}\prm T^{lj}_{ab} + \sum_{klc_{1}d_{1}}\prm \intg{kc_{1}}{ld_{1}}\prm T^{ki}_{ac_{1}}\prm T^{lj}_{bd_{1}} + (-1\nl
- - \Perm{ijab}{jiba})\sum_{kc_{1}}\prm \intg{kc_{1}}{ai}\prm T^{kj}_{bc_{1}} + \sum_{kk_{1}dd_{1}}\prm \intg{kd}{k_{1}d_{1}}\prm T^{kk_{1}}_{ab}\prm T^{ij}_{dd_{1}} + (1\nl
- + \Perm{ijab}{jiba})\sum_{klc_{1}d}\prm \intg{kd}{lc_{1}}\prm T^{ki}_{ac_{1}}\prm T^{lj}_{db} + \sum_{kl_{1}c_{1}d}\prm \intg{kd}{l_{1}c_{1}}\prm T^{kj}_{ac_{1}}\prm T^{il_{1}}_{db} + \prm \intg{ai}{bj}\nl
- + \sum_{cc_{1}}\prm \intg{ac}{bc_{1}}\prm T^{ij}_{cc_{1}}
+4*1\sum_{klcd}\tnsr \intg{kc}{ld}\tnsr T^{ki}_{ca}\tnsr T^{lj}_{db} + (-2*1 - 2*\Perm{ijab}{jiba})\sum_{kk_{1}cd}\tnsr \intg{kc}{k_{1}d}\tnsr T^{kk_{1}}_{ca}\tnsr T^{ij}_{db} + (-2*1\nl
+ - 2*\Perm{ijab}{jiba})\sum_{klcc_{1}}\tnsr \intg{kc}{lc_{1}}\tnsr T^{ki}_{cc_{1}}\tnsr T^{lj}_{ab} + (-2*1\nl
+ - 2*\Perm{ijab}{jiba})\sum_{klcd_{1}}\tnsr \intg{kc}{ld_{1}}\tnsr T^{ki}_{ca}\tnsr T^{lj}_{bd_{1}} + (2*1 + 2*\Perm{ijab}{jiba})\sum_{kc}\tnsr \intg{kc}{ai}\tnsr T^{kj}_{cb}\nl
+ + (-2*1)\sum_{klcd}\tnsr \intg{kd}{lc}\tnsr T^{ki}_{ca}\tnsr T^{lj}_{db} + (-1 - \Perm{ijab}{jiba})\sum_{k}\tnsr f_{ki}\tnsr T^{kj}_{ab} + (1\nl
+ + \Perm{ijab}{jiba})\sum_{c}\tnsr f_{ac}\tnsr T^{ij}_{cb} + \sum_{kk_{1}}\tnsr \intg{ki}{k_{1}j}\tnsr T^{kk_{1}}_{ab} + (-1 - \Perm{ijab}{jiba})\sum_{kc}\tnsr \intg{ki}{ac}\tnsr T^{kj}_{cb}\nl
+ + (-1 - \Perm{ijab}{jiba})\sum_{kc_{1}}\tnsr \intg{ki}{bc_{1}}\tnsr T^{kj}_{ac_{1}} + (1 + \Perm{ijab}{jiba})\sum_{kk_{1}c_{1}d}\tnsr \intg{kc_{1}}{k_{1}d}\tnsr T^{kk_{1}}_{ac_{1}}\tnsr T^{ij}_{db} + (1\nl
+ + \Perm{ijab}{jiba})\sum_{klcc_{1}}\tnsr \intg{kc_{1}}{lc}\tnsr T^{ki}_{cc_{1}}\tnsr T^{lj}_{ab} + \sum_{klc_{1}d_{1}}\tnsr \intg{kc_{1}}{ld_{1}}\tnsr T^{ki}_{ac_{1}}\tnsr T^{lj}_{bd_{1}} + (-1\nl
+ - \Perm{ijab}{jiba})\sum_{kc_{1}}\tnsr \intg{kc_{1}}{ai}\tnsr T^{kj}_{bc_{1}} + \sum_{kk_{1}dd_{1}}\tnsr \intg{kd}{k_{1}d_{1}}\tnsr T^{kk_{1}}_{ab}\tnsr T^{ij}_{dd_{1}} + (1\nl
+ + \Perm{ijab}{jiba})\sum_{klc_{1}d}\tnsr \intg{kd}{lc_{1}}\tnsr T^{ki}_{ac_{1}}\tnsr T^{lj}_{db} + \sum_{kl_{1}c_{1}d}\tnsr \intg{kd}{l_{1}c_{1}}\tnsr T^{kj}_{ac_{1}}\tnsr T^{il_{1}}_{db} + \tnsr \intg{ai}{bj}\nl
+ + \sum_{cc_{1}}\tnsr \intg{ac}{bc_{1}}\tnsr T^{ij}_{cc_{1}}
 \eeq
  Diagrams: 
 
@@ -283,31 +283,31 @@ LCCSD doubles amplitude equation:
 \beq
 &&\bracd \op H (1+\op T_1 + \half \op T_1 \op T_1 + \frac{1}{6}\op T_1 \op T_1 \op T_1 + \frac{1}{24}\op T_1 \op T_1 \op T_1 \op T_1)(1 +\op T_2 ) |0>_C
 =\nl
-(-2*1 - 2*\Perm{ijab}{jiba})\sum_{kld}\prm \intg{ki}{ld}\prm T^{k}_{a}\prm T^{lj}_{db} + (-2*1\nl
- - 2*\Perm{ijab}{jiba})\sum_{klc}\prm \intg{kc}{li}\prm T^{k}_{c}\prm T^{lj}_{ab} + (-2*1\nl
- - 2*\Perm{ijab}{jiba})\sum_{klce}\prm \intg{kc}{le}\prm T^{k}_{c}\prm T^{l}_{a}\prm T^{ij}_{eb} + (-2*1\nl
- - 2*\Perm{ijab}{jiba})\sum_{kmcd}\prm \intg{kc}{md}\prm T^{k}_{c}\prm T^{i}_{d}\prm T^{mj}_{ab} + (2*1 + 2*\Perm{ijab}{jiba})\sum_{kc}\prm \intg{kc}{ai}\prm T^{kj}_{cb}\nl
- + (2*1 + 2*\Perm{ijab}{jiba})\sum_{kcd}\prm \intg{kc}{ad}\prm T^{k}_{c}\prm T^{ij}_{db} + (-2*1\nl
- - 2*\Perm{ijab}{jiba})\sum_{kmde}\prm \intg{kd}{me}\prm T^{k}_{a}\prm T^{i}_{d}\prm T^{mj}_{eb} + (2*1 + 2*\Perm{ijab}{jiba})\sum_{lcd}\prm \intg{ld}{ac}\prm T^{i}_{c}\prm T^{lj}_{db}\nl
- + (-1 - \Perm{ijab}{jiba})\sum_{k}\prm f_{ki}\prm T^{kj}_{ab} + (-1 - \Perm{ijab}{jiba})\sum_{kd}\prm f_{kd}\prm T^{k}_{a}\prm T^{ij}_{db} + (-1 \newpg
+(-2*1 - 2*\Perm{ijab}{jiba})\sum_{kld}\tnsr \intg{ki}{ld}\tnsr T^{k}_{a}\tnsr T^{lj}_{db} + (-2*1\nl
+ - 2*\Perm{ijab}{jiba})\sum_{klc}\tnsr \intg{kc}{li}\tnsr T^{k}_{c}\tnsr T^{lj}_{ab} + (-2*1\nl
+ - 2*\Perm{ijab}{jiba})\sum_{klce}\tnsr \intg{kc}{le}\tnsr T^{k}_{c}\tnsr T^{l}_{a}\tnsr T^{ij}_{eb} + (-2*1\nl
+ - 2*\Perm{ijab}{jiba})\sum_{kmcd}\tnsr \intg{kc}{md}\tnsr T^{k}_{c}\tnsr T^{i}_{d}\tnsr T^{mj}_{ab} + (2*1 + 2*\Perm{ijab}{jiba})\sum_{kc}\tnsr \intg{kc}{ai}\tnsr T^{kj}_{cb}\nl
+ + (2*1 + 2*\Perm{ijab}{jiba})\sum_{kcd}\tnsr \intg{kc}{ad}\tnsr T^{k}_{c}\tnsr T^{ij}_{db} + (-2*1\nl
+ - 2*\Perm{ijab}{jiba})\sum_{kmde}\tnsr \intg{kd}{me}\tnsr T^{k}_{a}\tnsr T^{i}_{d}\tnsr T^{mj}_{eb} + (2*1 + 2*\Perm{ijab}{jiba})\sum_{lcd}\tnsr \intg{ld}{ac}\tnsr T^{i}_{c}\tnsr T^{lj}_{db}\nl
+ + (-1 - \Perm{ijab}{jiba})\sum_{k}\tnsr f_{ki}\tnsr T^{kj}_{ab} + (-1 - \Perm{ijab}{jiba})\sum_{kd}\tnsr f_{kd}\tnsr T^{k}_{a}\tnsr T^{ij}_{db} + (-1 \newpg
 \eeq
 \beq
-&& - \Perm{ijab}{jiba})\sum_{lc}\prm f_{lc}\prm T^{i}_{c}\prm T^{lj}_{ab} + (1 + \Perm{ijab}{jiba})\sum_{c}\prm f_{ac}\prm T^{ij}_{cb} + \sum_{kk_{1}}\prm \intg{ki}{k_{1}j}\prm T^{kk_{1}}_{ab}\nl
- + \sum_{kl}\prm \intg{ki}{lj}\prm T^{k}_{a}\prm T^{l}_{b} + (1 + \Perm{ijab}{jiba})\sum_{klc}\prm \intg{ki}{lc}\prm T^{k}_{c}\prm T^{lj}_{ab} + (1\nl
- + \Perm{ijab}{jiba})\sum_{kld_{1}}\prm \intg{ki}{ld_{1}}\prm T^{k}_{a}\prm T^{lj}_{bd_{1}} + (1 + \Perm{ijab}{jiba})\sum_{kle}\prm \intg{ki}{le}\prm T^{k}_{a}\prm T^{l}_{b}\prm T^{j}_{e} + (-1\nl
- - \Perm{ijab}{jiba})\sum_{kc}\prm \intg{ki}{ac}\prm T^{kj}_{cb} + (-1 - \Perm{ijab}{jiba})\sum_{k}\prm \intg{ki}{bj}\prm T^{k}_{a} + (-1\nl
- - \Perm{ijab}{jiba})\sum_{kc_{1}}\prm \intg{ki}{bc_{1}}\prm T^{kj}_{ac_{1}} + (-1 - \Perm{ijab}{jiba})\sum_{kd}\prm \intg{ki}{bd}\prm T^{k}_{a}\prm T^{j}_{d} + (-1\nl
- - \Perm{ijab}{jiba})\sum_{kc_{1}}\prm \intg{kc_{1}}{ai}\prm T^{kj}_{bc_{1}} + (1 + \Perm{ijab}{jiba})\sum_{kld}\prm \intg{kd}{li}\prm T^{k}_{a}\prm T^{lj}_{db} + (1\nl
- + \Perm{ijab}{jiba})\sum_{klde}\prm \intg{kd}{le}\prm T^{k}_{a}\prm T^{l}_{d}\prm T^{ij}_{eb} + (1 + \Perm{ijab}{jiba})\sum_{kl_{1}d}\prm \intg{kd}{l_{1}i}\prm T^{k}_{b}\prm T^{jl_{1}}_{da} + (1\nl
- + \Perm{ijab}{jiba})\sum_{kmcd}\prm \intg{kd}{mc}\prm T^{k}_{c}\prm T^{i}_{d}\prm T^{mj}_{ab} + (1 + \Perm{ijab}{jiba})\sum_{kmde_{1}}\prm \intg{kd}{me_{1}}\prm T^{k}_{a}\prm T^{i}_{d}\prm T^{mj}_{be_{1}}\nl
- + \sum_{kmdf}\prm \intg{kd}{mf}\prm T^{k}_{a}\prm T^{i}_{d}\prm T^{m}_{b}\prm T^{j}_{f} + (-1 - \Perm{ijab}{jiba})\sum_{kd}\prm \intg{kd}{ai}\prm T^{k}_{b}\prm T^{j}_{d} + (-1\nl
- - \Perm{ijab}{jiba})\sum_{kcd}\prm \intg{kd}{ac}\prm T^{k}_{c}\prm T^{ij}_{db} + (-1 - \Perm{ijab}{jiba})\sum_{kdd_{1}}\prm \intg{kd}{ad_{1}}\prm T^{k}_{b}\prm T^{ji}_{dd_{1}} + (-1\nl
- - \Perm{ijab}{jiba})\sum_{kde}\prm \intg{kd}{ae}\prm T^{k}_{b}\prm T^{j}_{d}\prm T^{i}_{e} + \sum_{klee_{1}}\prm \intg{ke}{le_{1}}\prm T^{k}_{a}\prm T^{l}_{b}\prm T^{ij}_{ee_{1}} + (1\nl
- + \Perm{ijab}{jiba})\sum_{kmde}\prm \intg{ke}{md}\prm T^{k}_{a}\prm T^{i}_{d}\prm T^{mj}_{eb} + (1 + \Perm{ijab}{jiba})\sum_{km_{1}de}\prm \intg{ke}{m_{1}d}\prm T^{k}_{a}\prm T^{j}_{d}\prm T^{im_{1}}_{eb}\nl
- + (1 + \Perm{ijab}{jiba})\sum_{ll_{1}c}\prm \intg{li}{l_{1}c}\prm T^{j}_{c}\prm T^{ll_{1}}_{ab} + (-1 - \Perm{ijab}{jiba})\sum_{lcd}\prm \intg{lc}{ad}\prm T^{i}_{c}\prm T^{lj}_{db} + (-1\nl
- - \Perm{ijab}{jiba})\sum_{lcd_{1}}\prm \intg{lc}{ad_{1}}\prm T^{j}_{c}\prm T^{li}_{bd_{1}} + (-1 - \Perm{ijab}{jiba})\sum_{lcd_{1}}\prm \intg{ld_{1}}{ac}\prm T^{i}_{c}\prm T^{lj}_{bd_{1}}\nl
- + \sum_{mm_{1}cd}\prm \intg{mc}{m_{1}d}\prm T^{i}_{c}\prm T^{j}_{d}\prm T^{mm_{1}}_{ab} + \prm \intg{ai}{bj} + (1 + \Perm{ijab}{jiba})\sum_{c}\prm \intg{ai}{bc}\prm T^{j}_{c}\nl
- + \sum_{cc_{1}}\prm \intg{ac}{bc_{1}}\prm T^{ij}_{cc_{1}} + \sum_{cd}\prm \intg{ac}{bd}\prm T^{i}_{c}\prm T^{j}_{d}
+&& - \Perm{ijab}{jiba})\sum_{lc}\tnsr f_{lc}\tnsr T^{i}_{c}\tnsr T^{lj}_{ab} + (1 + \Perm{ijab}{jiba})\sum_{c}\tnsr f_{ac}\tnsr T^{ij}_{cb} + \sum_{kk_{1}}\tnsr \intg{ki}{k_{1}j}\tnsr T^{kk_{1}}_{ab}\nl
+ + \sum_{kl}\tnsr \intg{ki}{lj}\tnsr T^{k}_{a}\tnsr T^{l}_{b} + (1 + \Perm{ijab}{jiba})\sum_{klc}\tnsr \intg{ki}{lc}\tnsr T^{k}_{c}\tnsr T^{lj}_{ab} + (1\nl
+ + \Perm{ijab}{jiba})\sum_{kld_{1}}\tnsr \intg{ki}{ld_{1}}\tnsr T^{k}_{a}\tnsr T^{lj}_{bd_{1}} + (1 + \Perm{ijab}{jiba})\sum_{kle}\tnsr \intg{ki}{le}\tnsr T^{k}_{a}\tnsr T^{l}_{b}\tnsr T^{j}_{e} + (-1\nl
+ - \Perm{ijab}{jiba})\sum_{kc}\tnsr \intg{ki}{ac}\tnsr T^{kj}_{cb} + (-1 - \Perm{ijab}{jiba})\sum_{k}\tnsr \intg{ki}{bj}\tnsr T^{k}_{a} + (-1\nl
+ - \Perm{ijab}{jiba})\sum_{kc_{1}}\tnsr \intg{ki}{bc_{1}}\tnsr T^{kj}_{ac_{1}} + (-1 - \Perm{ijab}{jiba})\sum_{kd}\tnsr \intg{ki}{bd}\tnsr T^{k}_{a}\tnsr T^{j}_{d} + (-1\nl
+ - \Perm{ijab}{jiba})\sum_{kc_{1}}\tnsr \intg{kc_{1}}{ai}\tnsr T^{kj}_{bc_{1}} + (1 + \Perm{ijab}{jiba})\sum_{kld}\tnsr \intg{kd}{li}\tnsr T^{k}_{a}\tnsr T^{lj}_{db} + (1\nl
+ + \Perm{ijab}{jiba})\sum_{klde}\tnsr \intg{kd}{le}\tnsr T^{k}_{a}\tnsr T^{l}_{d}\tnsr T^{ij}_{eb} + (1 + \Perm{ijab}{jiba})\sum_{kl_{1}d}\tnsr \intg{kd}{l_{1}i}\tnsr T^{k}_{b}\tnsr T^{jl_{1}}_{da} + (1\nl
+ + \Perm{ijab}{jiba})\sum_{kmcd}\tnsr \intg{kd}{mc}\tnsr T^{k}_{c}\tnsr T^{i}_{d}\tnsr T^{mj}_{ab} + (1 + \Perm{ijab}{jiba})\sum_{kmde_{1}}\tnsr \intg{kd}{me_{1}}\tnsr T^{k}_{a}\tnsr T^{i}_{d}\tnsr T^{mj}_{be_{1}}\nl
+ + \sum_{kmdf}\tnsr \intg{kd}{mf}\tnsr T^{k}_{a}\tnsr T^{i}_{d}\tnsr T^{m}_{b}\tnsr T^{j}_{f} + (-1 - \Perm{ijab}{jiba})\sum_{kd}\tnsr \intg{kd}{ai}\tnsr T^{k}_{b}\tnsr T^{j}_{d} + (-1\nl
+ - \Perm{ijab}{jiba})\sum_{kcd}\tnsr \intg{kd}{ac}\tnsr T^{k}_{c}\tnsr T^{ij}_{db} + (-1 - \Perm{ijab}{jiba})\sum_{kdd_{1}}\tnsr \intg{kd}{ad_{1}}\tnsr T^{k}_{b}\tnsr T^{ji}_{dd_{1}} + (-1\nl
+ - \Perm{ijab}{jiba})\sum_{kde}\tnsr \intg{kd}{ae}\tnsr T^{k}_{b}\tnsr T^{j}_{d}\tnsr T^{i}_{e} + \sum_{klee_{1}}\tnsr \intg{ke}{le_{1}}\tnsr T^{k}_{a}\tnsr T^{l}_{b}\tnsr T^{ij}_{ee_{1}} + (1\nl
+ + \Perm{ijab}{jiba})\sum_{kmde}\tnsr \intg{ke}{md}\tnsr T^{k}_{a}\tnsr T^{i}_{d}\tnsr T^{mj}_{eb} + (1 + \Perm{ijab}{jiba})\sum_{km_{1}de}\tnsr \intg{ke}{m_{1}d}\tnsr T^{k}_{a}\tnsr T^{j}_{d}\tnsr T^{im_{1}}_{eb}\nl
+ + (1 + \Perm{ijab}{jiba})\sum_{ll_{1}c}\tnsr \intg{li}{l_{1}c}\tnsr T^{j}_{c}\tnsr T^{ll_{1}}_{ab} + (-1 - \Perm{ijab}{jiba})\sum_{lcd}\tnsr \intg{lc}{ad}\tnsr T^{i}_{c}\tnsr T^{lj}_{db} + (-1\nl
+ - \Perm{ijab}{jiba})\sum_{lcd_{1}}\tnsr \intg{lc}{ad_{1}}\tnsr T^{j}_{c}\tnsr T^{li}_{bd_{1}} + (-1 - \Perm{ijab}{jiba})\sum_{lcd_{1}}\tnsr \intg{ld_{1}}{ac}\tnsr T^{i}_{c}\tnsr T^{lj}_{bd_{1}}\nl
+ + \sum_{mm_{1}cd}\tnsr \intg{mc}{m_{1}d}\tnsr T^{i}_{c}\tnsr T^{j}_{d}\tnsr T^{mm_{1}}_{ab} + \tnsr \intg{ai}{bj} + (1 + \Perm{ijab}{jiba})\sum_{c}\tnsr \intg{ai}{bc}\tnsr T^{j}_{c}\nl
+ + \sum_{cc_{1}}\tnsr \intg{ac}{bc_{1}}\tnsr T^{ij}_{cc_{1}} + \sum_{cd}\tnsr \intg{ac}{bd}\tnsr T^{i}_{c}\tnsr T^{j}_{d}
 \eeq
  Diagrams: 
 
@@ -914,14 +914,14 @@ CCSD singles amplitude equation:
 \beq
 &&\bracs \op H (1+\op T_1 + \half \op T_1 \op T_1 + \frac{1}{6}\op T_1 \op T_1 \op T_1 + \frac{1}{24}\op T_1 \op T_1 \op T_1 \op T_1)(1 +\op T_2 ) |0>_C
 =\nl
-4*1\sum_{jkbc}\prm \intg{jb}{kc}\prm T^{j}_{b}\prm T^{ki}_{ca} + 2*1\sum_{jb}\prm f_{jb}\prm T^{ji}_{ba} + (-2*1)\sum_{jj_{1}b_{1}}\prm \intg{ji}{j_{1}b_{1}}\prm T^{jj_{1}}_{ab_{1}}\nl
- + (-2*1)\sum_{jkc}\prm \intg{ji}{kc}\prm T^{j}_{a}\prm T^{k}_{c} + (-2*1)\sum_{jkbc_{1}}\prm \intg{jb}{kc_{1}}\prm T^{j}_{b}\prm T^{ki}_{ac_{1}} + (-2*1)\sum_{jkbd}\prm \intg{jb}{kd}\prm T^{j}_{b}\prm T^{k}_{a}\prm T^{i}_{d}\nl
- + 2*1\sum_{jb}\prm \intg{jb}{ai}\prm T^{j}_{b} + 2*1\sum_{jbb_{1}}\prm \intg{jb}{ab_{1}}\prm T^{ji}_{bb_{1}} + 2*1\sum_{jbc}\prm \intg{jb}{ac}\prm T^{j}_{b}\prm T^{i}_{c}\nl
- + (-2*1)\sum_{jkbc}\prm \intg{jc}{kb}\prm T^{j}_{b}\prm T^{ki}_{ca} + (-2*1)\sum_{jk_{1}cc_{1}}\prm \intg{jc}{k_{1}c_{1}}\prm T^{j}_{a}\prm T^{ik_{1}}_{cc_{1}}\nl
- + (-2*1)\sum_{kk_{1}bc_{1}}\prm \intg{kb}{k_{1}c_{1}}\prm T^{i}_{b}\prm T^{kk_{1}}_{ac_{1}} + (-1)\sum_{j}\prm f_{ji}\prm T^{j}_{a} + (-1)\sum_{jb_{1}}\prm f_{jb_{1}}\prm T^{ji}_{ab_{1}} + (-1)\sum_{jc}\prm f_{jc}\prm T^{j}_{a}\prm T^{i}_{c}\nl
- + \prm f_{ai} + \sum_{b}\prm f_{ab}\prm T^{i}_{b} + \sum_{jj_{1}b}\prm \intg{ji}{j_{1}b}\prm T^{jj_{1}}_{ba} + \sum_{jkb}\prm \intg{ji}{kb}\prm T^{j}_{b}\prm T^{k}_{a} + (-1)\sum_{jb}\prm \intg{ji}{ab}\prm T^{j}_{b}\nl
- + (-1)\sum_{jbb_{1}}\prm \intg{jb_{1}}{ab}\prm T^{ji}_{bb_{1}} + \sum_{jkcc_{1}}\prm \intg{jc}{kc_{1}}\prm T^{j}_{a}\prm T^{ki}_{cc_{1}} + \sum_{jkcd}\prm \intg{jc}{kd}\prm T^{j}_{a}\prm T^{k}_{c}\prm T^{i}_{d}\nl
- + \sum_{jk_{1}bc}\prm \intg{jc}{k_{1}b}\prm T^{j}_{b}\prm T^{ik_{1}}_{ca} + (-1)\sum_{jbc}\prm \intg{jc}{ab}\prm T^{j}_{b}\prm T^{i}_{c} + \sum_{kk_{1}bc}\prm \intg{kb}{k_{1}c}\prm T^{i}_{b}\prm T^{kk_{1}}_{ca}
+4*1\sum_{jkbc}\tnsr \intg{jb}{kc}\tnsr T^{j}_{b}\tnsr T^{ki}_{ca} + 2*1\sum_{jb}\tnsr f_{jb}\tnsr T^{ji}_{ba} + (-2*1)\sum_{jj_{1}b_{1}}\tnsr \intg{ji}{j_{1}b_{1}}\tnsr T^{jj_{1}}_{ab_{1}}\nl
+ + (-2*1)\sum_{jkc}\tnsr \intg{ji}{kc}\tnsr T^{j}_{a}\tnsr T^{k}_{c} + (-2*1)\sum_{jkbc_{1}}\tnsr \intg{jb}{kc_{1}}\tnsr T^{j}_{b}\tnsr T^{ki}_{ac_{1}} + (-2*1)\sum_{jkbd}\tnsr \intg{jb}{kd}\tnsr T^{j}_{b}\tnsr T^{k}_{a}\tnsr T^{i}_{d}\nl
+ + 2*1\sum_{jb}\tnsr \intg{jb}{ai}\tnsr T^{j}_{b} + 2*1\sum_{jbb_{1}}\tnsr \intg{jb}{ab_{1}}\tnsr T^{ji}_{bb_{1}} + 2*1\sum_{jbc}\tnsr \intg{jb}{ac}\tnsr T^{j}_{b}\tnsr T^{i}_{c}\nl
+ + (-2*1)\sum_{jkbc}\tnsr \intg{jc}{kb}\tnsr T^{j}_{b}\tnsr T^{ki}_{ca} + (-2*1)\sum_{jk_{1}cc_{1}}\tnsr \intg{jc}{k_{1}c_{1}}\tnsr T^{j}_{a}\tnsr T^{ik_{1}}_{cc_{1}}\nl
+ + (-2*1)\sum_{kk_{1}bc_{1}}\tnsr \intg{kb}{k_{1}c_{1}}\tnsr T^{i}_{b}\tnsr T^{kk_{1}}_{ac_{1}} + (-1)\sum_{j}\tnsr f_{ji}\tnsr T^{j}_{a} + (-1)\sum_{jb_{1}}\tnsr f_{jb_{1}}\tnsr T^{ji}_{ab_{1}} + (-1)\sum_{jc}\tnsr f_{jc}\tnsr T^{j}_{a}\tnsr T^{i}_{c}\nl
+ + \tnsr f_{ai} + \sum_{b}\tnsr f_{ab}\tnsr T^{i}_{b} + \sum_{jj_{1}b}\tnsr \intg{ji}{j_{1}b}\tnsr T^{jj_{1}}_{ba} + \sum_{jkb}\tnsr \intg{ji}{kb}\tnsr T^{j}_{b}\tnsr T^{k}_{a} + (-1)\sum_{jb}\tnsr \intg{ji}{ab}\tnsr T^{j}_{b}\nl
+ + (-1)\sum_{jbb_{1}}\tnsr \intg{jb_{1}}{ab}\tnsr T^{ji}_{bb_{1}} + \sum_{jkcc_{1}}\tnsr \intg{jc}{kc_{1}}\tnsr T^{j}_{a}\tnsr T^{ki}_{cc_{1}} + \sum_{jkcd}\tnsr \intg{jc}{kd}\tnsr T^{j}_{a}\tnsr T^{k}_{c}\tnsr T^{i}_{d}\nl
+ + \sum_{jk_{1}bc}\tnsr \intg{jc}{k_{1}b}\tnsr T^{j}_{b}\tnsr T^{ik_{1}}_{ca} + (-1)\sum_{jbc}\tnsr \intg{jc}{ab}\tnsr T^{j}_{b}\tnsr T^{i}_{c} + \sum_{kk_{1}bc}\tnsr \intg{kb}{k_{1}c}\tnsr T^{i}_{b}\tnsr T^{kk_{1}}_{ca}
 \eeq
  Diagrams: 
 
@@ -1222,8 +1222,8 @@ Energy
 \beq
 &&<0| \op H (1+\op T_1 + \half \op T_1 \op T_1 + \frac{1}{6}\op T_1 \op T_1 \op T_1 + \frac{1}{24}\op T_1 \op T_1 \op T_1 \op T_1)(1 +\op T_2 ) |0>_C
 =\nl
-2*1\sum_{ii_{1}aa_{1}}\prm \intg{ia}{i_{1}a_{1}}\prm T^{ii_{1}}_{aa_{1}} + 2*1\sum_{ijab}\prm \intg{ia}{jb}\prm T^{i}_{a}\prm T^{j}_{b} + 2*1\sum_{ia}\prm f_{ia}\prm T^{i}_{a} + (-1)\sum_{ii_{1}aa_{1}}\prm \intg{ia_{1}}{i_{1}a}\prm T^{ii_{1}}_{aa_{1}}\nl
- + (-1)\sum_{ijab}\prm \intg{ib}{ja}\prm T^{i}_{a}\prm T^{j}_{b}
+2*1\sum_{ii_{1}aa_{1}}\tnsr \intg{ia}{i_{1}a_{1}}\tnsr T^{ii_{1}}_{aa_{1}} + 2*1\sum_{ijab}\tnsr \intg{ia}{jb}\tnsr T^{i}_{a}\tnsr T^{j}_{b} + 2*1\sum_{ia}\tnsr f_{ia}\tnsr T^{i}_{a} + (-1)\sum_{ii_{1}aa_{1}}\tnsr \intg{ia_{1}}{i_{1}a}\tnsr T^{ii_{1}}_{aa_{1}}\nl
+ + (-1)\sum_{ijab}\tnsr \intg{ib}{ja}\tnsr T^{i}_{a}\tnsr T^{j}_{b}
 \eeq
  Diagrams: 
 
@@ -1278,10 +1278,10 @@ MP2 from variational CC2
 \beq
 &&<0| \op \tau^\dg_{\mu_2} (\op W + \op F \op T_2) |0>_C
 =\nl
-(-2*1 + \Perm{ii_{1}}{i_{1}i} + \Perm{aa_{1}}{a_{1}a} - 2*\Perm{ii_{1}aa_{1}}{i_{1}ia_{1}a})\sum_{j}\prm f_{ji}\prm T^{ji_{1}}_{aa_{1}} + (2*1 - \Perm{ii_{1}}{i_{1}i} - \Perm{aa_{1}}{a_{1}a} \newpg
+(-2*1 + \Perm{ii_{1}}{i_{1}i} + \Perm{aa_{1}}{a_{1}a} - 2*\Perm{ii_{1}aa_{1}}{i_{1}ia_{1}a})\sum_{j}\tnsr f_{ji}\tnsr T^{ji_{1}}_{aa_{1}} + (2*1 - \Perm{ii_{1}}{i_{1}i} - \Perm{aa_{1}}{a_{1}a} \newpg
 \eeq
 \beq
-&& + 2*\Perm{ii_{1}aa_{1}}{i_{1}ia_{1}a})\sum_{b}\prm f_{ab}\prm T^{ii_{1}}_{ba_{1}} + (2*1 - \Perm{aa_{1}}{a_{1}a})\prm \intg{ai}{a_{1}i_{1}}
+&& + 2*\Perm{ii_{1}aa_{1}}{i_{1}ia_{1}a})\sum_{b}\tnsr f_{ab}\tnsr T^{ii_{1}}_{ba_{1}} + (2*1 - \Perm{aa_{1}}{a_{1}a})\tnsr \intg{ai}{a_{1}i_{1}}
 \eeq
  Diagrams: 
 

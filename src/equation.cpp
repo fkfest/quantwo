@@ -331,9 +331,9 @@ bool LEquation::do_sumterms(bool excopsonly )
     } else if (lex == Lelem::Sum) { // handle \sum
       if (!excopsonly)
         term.addsummation(handle_sum(lel));
-    } else if (lex == Lelem::Param) { // handle Parameter
+    } else if (lex == Lelem::Tensor) { // handle Tensor
       if (!excopsonly)
-        term *= handle_parameter(lel);
+        term *= handle_tensor(lel);
       indxoperterm.push_back(i+1);
     } else if (lex == Lelem::Perm) { // handle Permutation
       if (!excopsonly)
@@ -622,7 +622,7 @@ Permut LEquation::handle_permutation(const Lelem& lel) const
   }
   return Permut(orbs1,orbs2);
 }
-Matrix LEquation::handle_parameter(const Lelem& lel)
+Matrix LEquation::handle_tensor(const Lelem& lel)
 {
 #define _LPN LParsedName
   LParsedName op(lel.name(),_LPN::Lmel|_LPN::Dg|_LPN::Orbs|_LPN::Excitation|_LPN::Nameadd,false);
@@ -639,7 +639,7 @@ Matrix LEquation::handle_parameter(const Lelem& lel)
     return Matrix(Ops::Interm,itex->second.orbitals(op.dg),itex->second.exccls(op.dg), 
                     itex->second.lmel(op.dg),name,itex->second.spinsymexcs());
   } else { 
-    // no subscript, parameter is a "number"
+    // no subscript, tensor is a "number"
     return Matrix(Ops::Number,Product<Orbital>(),0,0,name);
   }
 }

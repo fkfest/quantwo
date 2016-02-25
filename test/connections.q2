@@ -6,5 +6,5 @@ output,level=2
 \end{eqnarray}
 
 \begin{eqnarray}
-\sum_{\mu_1}\prm T^{\dg}_{\mu_1}<0| (\op \tau_{\mu_1}^\dg (\op H \op T_1)_C)_D \op T_2 |0>_C
+\sum_{\mu_1}\tnsr T^{\dg}_{\mu_1}<0| (\op \tau_{\mu_1}^\dg (\op H \op T_1)_C)_D \op T_2 |0>_C
 \end{eqnarray}

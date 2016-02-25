@@ -72,7 +72,7 @@ The comments can be done using %.
 
 At this stage the following mathematical operators and latex commands will be recognized:
 (, [, ), ], {, }, +, -, <number>, \frac{<number>}{<number>}, \half, < <bra> |, | <ket> >, \op <operator>, \mu_<integer>,
-\dagger, \dg, \prm <parameter>, \sum_{<excitation>[,<excitation>[,...]]}, \newcommand{}{} 
+\dagger, \dg, \tnsr <tensor>, \sum_{<excitation>[,<excitation>[,...]]}, \newcommand{}{} 
 
 Following latex commands will be ignored:
 \left, \right, \lk, \rk, &, \\ (syntax:skipop)
@@ -112,12 +112,12 @@ bra and ket can be
 2) Excited determinant:  <excitation> (like in excitation operators ), e.g., \mu_1, \nu_3, etc
 3) Explicitly given excited determinant: \Phi^<set of indices>_<set of indices>, e.g. \Phi^{ab}_{ii_{1}}, \Phi_{abij}, etc (syntax:csf)
 
-PARAMETERS:
+TENSORS:
 
-1) Parameter with excitation indices:  \prm <name of parameter>_<excitation>^<addition to name> (command:parameter)
-    e.g., \prm \Lambda_{\mu_2}
+1) Tensor with excitation indices:  \tnsr <name of tensor>_<excitation>^<addition to name> (command:tensor)
+    e.g., \tnsr \Lambda_{\mu_2}
   <excitation> should match one of <excitation>s in Excitation operators or Excited determinant
-2) Number : \prm <name of parameter>^<addition to name>   , e.g., \prm \omega^X
+2) Number : \tnsr <name of tensor>^<addition to name>   , e.g., \tnsr \omega^X
 
 SUM:
 
@@ -162,7 +162,7 @@ LCCD amplitude equation:
 
 MP2 Lagrangian:
 \beq
-<0|\op W \op T_2 |0> + \sum_{\mu_2} \prm \Lambda_{\mu_2} <\mu_2|\op W +\op F \op T_2 |0>_C
+<0|\op W \op T_2 |0> + \sum_{\mu_2} \tnsr \Lambda_{\mu_2} <\mu_2|\op W +\op F \op T_2 |0>_C
 \eeq
 
 OUTPUT FILE
