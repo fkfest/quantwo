@@ -159,4 +159,7 @@ namespace Input
 #define _foreach_cauto(Type,It,Array) for ( Type::const_iterator (It) = (Array).begin(); (It) != (Array).end(); ++(It) )
 #define _foreach_crauto(Type,It,Array) for ( Type::const_reverse_iterator (It) = (Array).rbegin(); (It) != (Array).rend(); ++(It) )
 
+// print timing
+#define _CPUtiming(what,start,end) xout << std::fixed << std::setprecision(2) << "CPU time " << what << 1000.0*(end-start)/CLOCKS_PER_SEC << " ms\n";
+
 #endif

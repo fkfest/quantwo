@@ -91,6 +91,7 @@ set="prog",type=i,name="nobrafac",value=0,desc="if = 0: use the usual prefactors
 set="prog",type=i,name="algo",value=0,desc="if > 0: print algorithm file"
 set="prog",type=i,name="contrexcop",value=1,desc="if > 0: use contracted excitation operators (e.g., a^+b^+ji) instead of a product of one-electron excitation operators (e.g.,a^+ib^+j)"
 set="prog",type=i,name="usefock",value=1,desc="if > 0: replace h by fock (can be used for noorder>0)"
+set="prog",type=i,name="cpu",value=1,desc="print cpu usage"
 
 %TENSORS
 set="tensor",type=s,name="T[aaii]",value="" 

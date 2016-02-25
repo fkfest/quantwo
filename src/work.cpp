@@ -8,21 +8,26 @@ Sum< Term, TFactor > Q2::reduceSum(Sum< Term, TFactor > s)
   bool spinintegr = Input::iPars["prog"]["spinintegr"];
   bool usefock = Input::iPars["prog"]["usefock"];
   usefock = usefock && (Input::iPars["prog"]["noorder"]>0);
+  bool timing = ( Input::iPars["prog"]["cpu"] > 0 );
+  std::clock_t c_start;
   Sum<Term,TFactor> sum,sum1;
   Term term,term1;
   bool added;
   TFactor prefac;
 
   if (usefock){
+    if (timing) c_start = std::clock();
     // replace h matrices by fock matrices
     say("Use Fock matrices...");
     s = OneEl2Fock(s);
+    if (timing) _CPUtiming("",c_start,std::clock());
   }
 
   say("Reduce sum of terms");
   _xout3(s << std::endl);
 
   say("Antisymmetry...");
+  if (timing) c_start = std::clock();
   sum.clear();
   for ( Sum<Term,TFactor>::const_iterator i=s.begin();i!=s.end(); ++i) {
     term=i->first;
@@ -32,25 +37,33 @@ Sum< Term, TFactor > Q2::reduceSum(Sum< Term, TFactor > s)
     sum += sum1;
   }
   _xout3(sum << std::endl);
+  if (timing) _CPUtiming("",c_start,std::clock());
   
   say("Kroneckers...");
+  if (timing) c_start = std::clock();
   sum = Kroneckers(sum);
   _xout3(sum << std::endl);
+  if (timing) _CPUtiming("",c_start,std::clock());
   
   // set remaining general indices to the occupied or active space
   say("Handle general indices...");
+  if (timing) c_start = std::clock();
   sum = GeneralIndices(sum);
   sum = ZeroTerms(sum);
   _xout3(sum << std::endl);
+  if (timing) _CPUtiming("",c_start,std::clock());
 
   if (spinintegr){
     // bring all the density matrices into singlet-order
     say("Singlet order...");
+    if (timing) c_start = std::clock();
     sum = SingletDM(sum);
     _xout3(sum << std::endl);
+    if (timing) _CPUtiming("",c_start,std::clock());
   }
 
   say("Connections...");
+  if (timing) c_start = std::clock();
   s = sum;
   sum.clear();
   for ( Sum<Term,TFactor>::const_iterator i=s.begin();i!=s.end(); ++i) {
@@ -66,8 +79,10 @@ Sum< Term, TFactor > Q2::reduceSum(Sum< Term, TFactor > s)
     sum += std::make_pair(term,i->second);
   }
   _xout3(sum << std::endl);
+  if (timing) _CPUtiming("",c_start,std::clock());
   if (quan3) {
     say("count electrons (a posteriori)...");
+    if (timing) c_start = std::clock();
     s = sum;
     sum.clear();
     for ( Sum<Term,TFactor>::const_iterator i=s.begin();i!=s.end(); ++i) {
@@ -100,9 +115,11 @@ Sum< Term, TFactor > Q2::reduceSum(Sum< Term, TFactor > s)
 //      sum += std::make_pair(term,i->second);
     }
 //    _xout3(sum << std::endl);
+    if (timing) _CPUtiming("",c_start,std::clock());
     return sum;
   }
   say("Diagrams and Spin-integration...");
+  if (timing) c_start = std::clock();
   s = sum;
   sum.clear();
   for ( Sum<Term,TFactor>::const_iterator i=s.begin();i!=s.end(); ++i) {
@@ -116,13 +133,18 @@ Sum< Term, TFactor > Q2::reduceSum(Sum< Term, TFactor > s)
     sum += std::make_pair(term,i->second);
   }
   _xout3(sum << std::endl);
+  if (timing) _CPUtiming("",c_start,std::clock());
 
   say("Equal terms and permutations...");
+  if (timing) c_start = std::clock();
   //std::cout << "SUM:" << sum << std::endl;
   sum = EqualTerms(sum,minfac);
+  if (timing) _CPUtiming("",c_start,std::clock());
   say("Remove terms with small prefactors...");
+  if (timing) c_start = std::clock();
   // now remove everything with small prefactor
   sum = SmallTerms(sum,minfac);
+  if (timing) _CPUtiming("",c_start,std::clock());
   
   return sum;
 }
@@ -340,9 +362,12 @@ Sum< Term, TFactor > Q2::postaction(Sum< Term, TFactor > s)
 
 Sum< Term, TFactor > Q2::normalOrderPH(Sum< Term, TFactor > s)
 {
+  bool timing = ( Input::iPars["prog"]["cpu"] > 0 );
+  std::clock_t c_start;
   Sum<Term,TFactor> sum,sum0;
   Term term;
   say("Normal ordering");
+  if (timing) c_start = std::clock();
   for ( Sum<Term,TFactor>::const_iterator i=s.begin();i!=s.end(); ++i) {
     term=i->first;
     sum0 += term.normalOrderPH_fullyContractedOnly();
@@ -350,6 +375,7 @@ Sum< Term, TFactor > Q2::normalOrderPH(Sum< Term, TFactor > s)
     sum += sum0;
     sum0=Sum<Term,TFactor>();
   }
+  if (timing) _CPUtiming("",c_start,std::clock());
   return sum;
 }
 Sum< Term, TFactor > Q2::wick(Sum< Term, TFactor > s)
@@ -358,10 +384,13 @@ Sum< Term, TFactor > Q2::wick(Sum< Term, TFactor > s)
   bool genwick = (iwick > 1);
   int noorder = Input::iPars["prog"]["noorder"];
   if (!genwick && noorder > 0 ) error("Cannot have non-ordered Hamiltonian with wick<2. Either set noorder=0 or wick=2");
+  bool timing = ( Input::iPars["prog"]["cpu"] > 0 );
+  std::clock_t c_start;
   Sum<Term,TFactor> sum,sum0;
   Term term;
   _xout3(s << std::endl);
   say("Wick's theorem");
+  if (timing) c_start = std::clock();
   for ( Sum<Term,TFactor>::const_iterator i=s.begin();i!=s.end(); ++i) {
     term=i->first;
     sum0 += term.wickstheorem(genwick,noorder);
@@ -369,6 +398,7 @@ Sum< Term, TFactor > Q2::wick(Sum< Term, TFactor > s)
     sum += sum0;
     sum0=Sum<Term,TFactor>();
   }
+  if (timing) _CPUtiming("",c_start,std::clock());
   return sum;
 }
 

@@ -5,6 +5,8 @@
 #include <stdlib.h>
 #include <cmath>
 #include <algorithm>
+#include <ctime>
+#include <iomanip>
 #include "utilities.h"
 #include "product.h"
 #include "operators.h"
