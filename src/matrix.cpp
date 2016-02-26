@@ -680,11 +680,3 @@ std::ostream & operator << (std::ostream & o, const Equivalents& eqv){
     o << "[" << *it << "]";
   return o;
 }
-std::ostream & operator << (std::ostream & o, const Order& ord){
-  _foreach_cauto(Order,it,ord){
-    if (it != ord.begin())
-      o << " ";
-    o << *it ;
-  }
-  return o;
-}

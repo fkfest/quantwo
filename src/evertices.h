@@ -6,10 +6,11 @@
 #include <list>
 #include <assert.h>
 #include "types.h"
+#include "arrays.h"
 #include "globals.h"
 #include "utilities.h"
 
-typedef std::vector<uint> JointVertices;
+typedef Array<uint> JointVertices;
 struct EquiVertices : public std::vector<JointVertices> {
   EquiVertices() : std::vector<JointVertices>(){};
   void add( const JointVertices& jv ) { 

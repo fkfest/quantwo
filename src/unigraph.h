@@ -17,11 +17,14 @@
 /// current vertex by an incomming line (i.e., a creator for the current vertex))
 class UniGraph {
 public:
+  typedef std::vector<JointVertices> PermVertices;
   UniGraph(const Term& term);
   // ordered matrices
   Product<Matrix> ordmats() const;
   const Order& connections() const { return _vertconn;};
   const Equivalents& equivals() const { return _equivs;};
+  const PermVertices& eqperms() const { return _eqperms;};
+  const PermVertices& eqperm_from() const { return _eqperm_from;};
   // search for the minimal _vertconn using _equivs and _eqperms
   void minimize();
 private:
@@ -34,12 +37,12 @@ private:
   Permutation _perms;
   // store orbital types according to vertconn for a safety check
   OrbitalTypes _orbtypes;
-  typedef std::vector<Permutation> Permutations;
   // vectors of equivalent (joint) vertices for permutational symmetry
   // T_2 (0,1) T_2 (2,3) --> [ (0,1)(2,3) ][ (0)(1) ][ (2)(3) ] 
   Equivalents _equivs;
-  // allowed permutations (e.g. external lines etc)
-  Permutations _eqperms;
+  // vertices for allowed permutations (e.g. external lines etc) and vertices connected to those 
+  // (needed because of non-conserving stuff)
+  PermVertices _eqperms, _eqperm_from;
   const Term * pTerm;
 };
 

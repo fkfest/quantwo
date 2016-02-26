@@ -12,11 +12,9 @@ some useful functions for vector arrays
 */
 template <class T>
 class Array : public std::vector<T> {
+    typedef std::vector<T> Base;
   public:
-    Array<T> () : std::vector<T>(){};
-    Array<T> ( typename Array<T>::const_iterator beg, typename Array<T>::const_iterator end)
-     : std::vector<T>(beg,end){};
-    Array<T> ( unsigned long int size ) : std::vector<T>(size){};
+    using Base::Base;
     void push_front(const T& t);
     // set from 0 to n
     void identity( unsigned long int n );
