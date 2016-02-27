@@ -9,7 +9,7 @@ Sum< Term, TFactor > Q2::reduceSum(Sum< Term, TFactor > s)
   bool usefock = Input::iPars["prog"]["usefock"];
   usefock = usefock && (Input::iPars["prog"]["noorder"]>0);
   bool timing = ( Input::iPars["prog"]["cpu"] > 0 );
-  std::clock_t c_start;
+  std::clock_t c_start=0;
   Sum<Term,TFactor> sum,sum1;
   Term term,term1;
   bool added;
@@ -363,7 +363,7 @@ Sum< Term, TFactor > Q2::postaction(Sum< Term, TFactor > s)
 Sum< Term, TFactor > Q2::normalOrderPH(Sum< Term, TFactor > s)
 {
   bool timing = ( Input::iPars["prog"]["cpu"] > 0 );
-  std::clock_t c_start;
+  std::clock_t c_start=0;
   Sum<Term,TFactor> sum,sum0;
   Term term;
   say("Normal ordering");
@@ -385,7 +385,7 @@ Sum< Term, TFactor > Q2::wick(Sum< Term, TFactor > s)
   int noorder = Input::iPars["prog"]["noorder"];
   if (!genwick && noorder > 0 ) error("Cannot have non-ordered Hamiltonian with wick<2. Either set noorder=0 or wick=2");
   bool timing = ( Input::iPars["prog"]["cpu"] > 0 );
-  std::clock_t c_start;
+  std::clock_t c_start=0;
   Sum<Term,TFactor> sum,sum0;
   Term term;
   _xout3(s << std::endl);
