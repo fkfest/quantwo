@@ -30,6 +30,8 @@ private:
   // apply permutations to minimize the connections-vector further
   void apply_eqperms(Order& connections, const Order& vertorder,
                      PermVertices& ep, PermVertices& epf, PermVertices& epfo);
+  // set _perms
+  void gen_perms(const PermVertices& from, const PermVertices& to);
   typedef std::map<uint,uint> Permutation;
   // canonical order of matrices
   Order _matsord;

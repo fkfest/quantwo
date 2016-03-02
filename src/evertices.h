@@ -88,6 +88,11 @@ struct PermVertices : public std::vector<JointVertices> {
       ++itpv;
     }
   }
+  void sort() {
+    for( JointVertices& pvs: *this){
+      std::sort(pvs.begin(),pvs.end());
+    }
+  }
   void minpermute(Order& connections, const PermVertices& orig) {
     assert( this->size() == orig.size() );
     PermVertices::const_iterator itpvso = orig.begin();

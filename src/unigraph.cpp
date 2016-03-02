@@ -92,7 +92,8 @@ UniGraph::UniGraph(const Term& term)
       pvs.erase(std::remove(pvs.begin(),pvs.end(),nverts),pvs.end());
     }
   }
-   
+  _eqperms.sort();
+  _eqperm_from.sort();
 }
 
 Product< Matrix > UniGraph::ordmats() const
@@ -109,11 +110,28 @@ Product< Matrix > UniGraph::ordmats() const
 void UniGraph::apply_eqperms( Order& connections, const Order& vertorder,
                               PermVertices& ep, PermVertices& epf, PermVertices& epfo )
 {
-    ep = _eqperms;
-    epf.set_with_order(_eqperm_from,vertorder);
-    epfo = epf;
-    ep.minpermute(connections,_eqperms);
-    epf.minpermute(connections,epfo);
+  ep = _eqperms;
+  epf.set_with_order(_eqperm_from,vertorder);
+  epf.sort();
+  epfo = epf;
+  ep.minpermute(connections,_eqperms);
+  epf.minpermute(connections,epfo);
+}
+void UniGraph::gen_perms(const PermVertices& from, const PermVertices& to)
+{
+  assert( from.size() == to.size() );
+  PermVertices::const_iterator itpv = to.begin();
+  for( const JointVertices& fpv: from){
+    assert( itpv->size() == fpv.size() );
+    JointVertices::const_iterator it = itpv->begin();
+    for ( const uint& fp: fpv ) {
+      if ( *it != fp ) {
+        _perms[fp] = *it;
+      }
+      ++it;
+    }
+    ++itpv;
+  }
 }
 
 void UniGraph::minimize()
@@ -125,10 +143,20 @@ void UniGraph::minimize()
   vertorder.identity(_vertconn.size());
   // last value for not connected vertices
   vertorder.push_back(_vertconn.size());
+  PermVertices eq_perms(_eqperms), eq_perm_from(_eqperm_from), eq_perm_from_orig(eq_perm_from),
+               min_eq_perms, min_eq_perm_from;
+  if ( permute4each_vertorder ) {
+    min_eq_perms = eq_perms;
+    min_eq_perm_from = eq_perm_from;
+  }
   Order
     minvertorder(vertorder),
-    connections(_vertconn), minconn(_vertconn);
-  PermVertices eq_perms(_eqperms), eq_perm_from(_eqperm_from), eq_perm_from_orig(eq_perm_from);
+    connections(_vertconn);
+  if (permute4each_vertorder) {
+    // allowed permutations
+    apply_eqperms(connections,vertorder,eq_perms,eq_perm_from,eq_perm_from_orig);
+  }
+  Order minconn(connections);
   bool nextperm;
   uint minorder = 0, iord = 0;
   do {
@@ -151,14 +179,35 @@ void UniGraph::minimize()
         minconn = connections;
         minvertorder = vertorder;
         minorder = iord;
+        if (permute4each_vertorder) {
+          min_eq_perms = eq_perms;
+          min_eq_perm_from = eq_perm_from;
+        }
       }
     }
   } while (nextperm); 
   if ( !permute4each_vertorder ) {
     // try to minimize further by using allowed permutations
     apply_eqperms(minconn,minvertorder,eq_perms,eq_perm_from,eq_perm_from_orig);
+    gen_perms(_eqperms,eq_perms);
+    gen_perms(eq_perm_from_orig,eq_perm_from);
+  } else {
+    eq_perm_from_orig.set_with_order(_eqperm_from,minvertorder);
+    gen_perms(_eqperms,min_eq_perms);
+    gen_perms(eq_perm_from_orig,min_eq_perm_from);
   }
   xout << "Smallest connection vector (" << minorder<< "): " << minvertorder << " --> " << minconn << std::endl;
+  if ( _perms.size() > 0 ) {
+    xout << "Permutations: ";
+    for ( const auto& perm: _perms ){
+      xout << perm.first;
+    }
+    xout << " --> ";
+    for ( const auto& perm: _perms ){
+      xout << perm.second;
+    }
+    xout << std::endl;
+  }
 }
 
 
