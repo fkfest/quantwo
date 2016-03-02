@@ -92,6 +92,8 @@ set="prog",type=i,name="algo",value=0,desc="if > 0: print algorithm file"
 set="prog",type=i,name="contrexcop",value=1,desc="if > 0: use contracted excitation operators (e.g., a^+b^+ji) instead of a product of one-electron excitation operators (e.g.,a^+ib^+j)"
 set="prog",type=i,name="usefock",value=1,desc="if > 0: replace h by fock (can be used for noorder>0)"
 set="prog",type=i,name="cpu",value=0,desc="print cpu usage"
+set="prog",type=i,name="eqway",value=0,desc="compare terms using diagram-comparison(0) or minimized connection-vector(1)"
+set="prog",type=i,name="permuteq",value=1,desc="(for eqway > 0) if = 1: try to permute indices to make terms equal, if > 1: safe - do it for each vertices-permutation in minimization"
 
 %TENSORS
 set="tensor",type=s,name="T[aaii]",value="" 

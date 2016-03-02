@@ -61,6 +61,52 @@ struct EquiVertices : public std::vector<JointVertices> {
 /// T_2 (0,1) T_2 (2,3) --> [ (0,1)(2,3) ][ (0)(1) ][ (2)(3) ] 
 typedef std::vector<EquiVertices> Equivalents;
 
+struct PermVertices : public std::vector<JointVertices> {
+  PermVertices(): std::vector<JointVertices>(){};
+  // this = ord(pvert)
+  PermVertices(const PermVertices& pvert, const Order& ord): std::vector<JointVertices>() {
+    this->resize(pvert.size());
+    PermVertices::iterator itpv = this->begin();
+    for( const JointVertices& pvs: pvert){
+      itpv->reserve(pvs.size());
+      for ( const uint& pv: pvs)
+        itpv->push_back(ord[pv]);
+      ++itpv;
+    }
+  };
+  // this = ord(pvert) (this should have proper sizes already)
+  void set_with_order(const PermVertices& pvert, const Order& ord) {
+    assert( this->size() == pvert.size() );
+    PermVertices::iterator itpv = this->begin();
+    for( const JointVertices& pvs: pvert){
+      assert( itpv->size() == pvs.size() );
+      JointVertices::iterator it = itpv->begin();
+      for ( const uint& pv: pvs) {
+        *it = ord[pv];
+        ++it;
+      }
+      ++itpv;
+    }
+  }
+  void minpermute(Order& connections, const PermVertices& orig) {
+    assert( this->size() == orig.size() );
+    PermVertices::const_iterator itpvso = orig.begin();
+    Order temp(connections.size());
+    for( JointVertices& pvs: *this){
+      // resort
+      InsertionSort(&connections.front(),&pvs.front(),pvs.size());
+      assert(pvs.size() == itpvso->size());
+      for ( uint i = 0; i < pvs.size(); ++i ) {
+        temp[i] = connections[pvs[i]];
+      }
+      for ( uint i = 0; i < itpvso->size(); ++i ) {
+        connections[(*itpvso)[i]] = temp[i];
+      }
+      ++itpvso;
+    }
+  };
+};
+
 std::ostream & operator << (std::ostream & o, const EquiVertices& ev);
 std::ostream & operator << (std::ostream & o, const Equivalents& eqv);
 #endif

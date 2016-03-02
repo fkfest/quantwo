@@ -17,7 +17,6 @@
 /// current vertex by an incomming line (i.e., a creator for the current vertex))
 class UniGraph {
 public:
-  typedef std::vector<JointVertices> PermVertices;
   UniGraph(const Term& term);
   // ordered matrices
   Product<Matrix> ordmats() const;
@@ -28,6 +27,9 @@ public:
   // search for the minimal _vertconn using _equivs and _eqperms
   void minimize();
 private:
+  // apply permutations to minimize the connections-vector further
+  void apply_eqperms(Order& connections, const Order& vertorder,
+                     PermVertices& ep, PermVertices& epf, PermVertices& epfo);
   typedef std::map<uint,uint> Permutation;
   // canonical order of matrices
   Order _matsord;

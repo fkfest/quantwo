@@ -244,6 +244,7 @@ Sum< Term, TFactor > Q2::ZeroTerms(Sum< Term, TFactor > s)
 
 Sum< Term, TFactor > Q2::EqualTerms(Sum< Term, TFactor > s, double minfac)
 {
+  int eqway = Input::iPars["prog"]["eqway"];
   Sum<Term,TFactor> sum;
   Term term,term1;
   TFactor prefac;
@@ -253,13 +254,12 @@ Sum< Term, TFactor > Q2::EqualTerms(Sum< Term, TFactor > s, double minfac)
     prefac=j->second*term.prefac();
     // remove prefactors in terms
     term.reset_prefac();
-    
-//     xout << "Term: " << term << std::endl;
-//     UniGraph ug(term);
-//     xout << ug << std::endl;
-//     ug.minimize();
-    
-    
+    if (eqway > 0) {
+      xout << "Term: " << term << std::endl;
+      UniGraph ug(term);
+      xout << ug << std::endl;
+      ug.minimize();
+    }
     added=false;
     for ( Sum<Term,TFactor>::iterator k=sum.begin();k!=sum.end(); ++k) {
       Permut perm;

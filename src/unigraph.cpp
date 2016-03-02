@@ -2,6 +2,7 @@
 
 UniGraph::UniGraph(const Term& term)
 {
+  int permuteq = Input::iPars["prog"]["permuteq"];
   pTerm = &term;
   const Product<Matrix> & mats = term.mat();
   for ( uint i = 0; i < mats.size(); ++i )
@@ -41,8 +42,10 @@ UniGraph::UniGraph(const Term& term)
       // sort external orbitals in order to have the same indices always on the same places
       std::sort(creators.begin()+currvert,creators.end());
       std::sort(annihilators.begin()+currvert,annihilators.end());
-      // allow permutations
-      _eqperms.push_back(verts);
+      if ( permuteq > 0 ) {
+        // allow permutations
+        _eqperms.push_back(verts);
+      }
     }
     // for non-conserved vertices
     if ( creators.size() < nextvert ) creators.resize(nextvert);
@@ -71,22 +74,22 @@ UniGraph::UniGraph(const Term& term)
     _orbtypes.push_back(itorb->type());
   }
   // "from-verices" for allowed permutations
-  _foreach_auto(PermVertices,ipvs,_eqperms) {
+  for(JointVertices& pvs: _eqperms) {
     JointVertices fromvert;
     bool modify_pvs = false;
-    _foreach_auto(JointVertices,ipv,*ipvs) {
-      int ipos = _vertconn.find(*ipv);
+    for(uint& pv: pvs) {
+      int ipos = _vertconn.find(pv);
       if ( ipos >= 0 ) 
         fromvert.push_back(ipos);
-      if ( _vertconn[*ipv] == nverts ) {
+      if ( _vertconn[pv] == nverts ) {
         // no creator on this one, remove it from the list
-        *ipv = nverts;
+        pv = nverts;
         modify_pvs = true;
       }
     }
     _eqperm_from.push_back(fromvert);
     if (modify_pvs) {
-      ipvs->erase(std::remove(ipvs->begin(),ipvs->end(),nverts),ipvs->end());
+      pvs.erase(std::remove(pvs.begin(),pvs.end(),nverts),pvs.end());
     }
   }
    
@@ -103,8 +106,20 @@ Product< Matrix > UniGraph::ordmats() const
   return mats;
 }
 
+void UniGraph::apply_eqperms( Order& connections, const Order& vertorder,
+                              PermVertices& ep, PermVertices& epf, PermVertices& epfo )
+{
+    ep = _eqperms;
+    epf.set_with_order(_eqperm_from,vertorder);
+    epfo = epf;
+    ep.minpermute(connections,_eqperms);
+    epf.minpermute(connections,epfo);
+}
+
 void UniGraph::minimize()
 {
+  int permuteq = Input::iPars["prog"]["permuteq"];
+  bool permute4each_vertorder = (permuteq > 1);
   // order of vertices
   Order vertorder;
   vertorder.identity(_vertconn.size());
@@ -113,6 +128,7 @@ void UniGraph::minimize()
   Order
     minvertorder(vertorder),
     connections(_vertconn), minconn(_vertconn);
+  PermVertices eq_perms(_eqperms), eq_perm_from(_eqperm_from), eq_perm_from_orig(eq_perm_from);
   bool nextperm;
   uint minorder = 0, iord = 0;
   do {
@@ -126,6 +142,10 @@ void UniGraph::minimize()
       // create new connection vector and compare to the old one
       for ( uint i = 0; i < _vertconn.size(); ++i )
         connections[vertorder[i]] = vertorder[_vertconn[i]];
+      if (permute4each_vertorder) {
+        // allowed permutations
+        apply_eqperms(connections,vertorder,eq_perms,eq_perm_from,eq_perm_from_orig);
+      }
 //       xout << vertorder << " --> " << connections << std::endl;
       if ( connections < minconn ) {
         minconn = connections;
@@ -134,7 +154,11 @@ void UniGraph::minimize()
       }
     }
   } while (nextperm); 
-  xout << "Smallest connection vector (" << minorder<< "): " << minconn << std::endl;
+  if ( !permute4each_vertorder ) {
+    // try to minimize further by using allowed permutations
+    apply_eqperms(minconn,minvertorder,eq_perms,eq_perm_from,eq_perm_from_orig);
+  }
+  xout << "Smallest connection vector (" << minorder<< "): " << minvertorder << " --> " << minconn << std::endl;
 }
 
 
@@ -143,22 +167,22 @@ std::ostream& operator<<(std::ostream& o, const UniGraph& ug)
   const Order& conns = ug.connections();
   Product<Matrix> mats = ug.ordmats();
   const Equivalents& equivs = ug.equivals();
-  const UniGraph::PermVertices& eqperms = ug.eqperms();
-  const UniGraph::PermVertices& eqperm_from = ug.eqperm_from();
+  const PermVertices& eqperms = ug.eqperms();
+  const PermVertices& eqperm_from = ug.eqperm_from();
   o << mats;
   o << equivs;
   o << "{";
-  _foreach_cauto(Order,ic,conns){
-    o << *ic << " ";
+  for(auto& ic: conns){
+    o << ic << " ";
   }
   o << "}";
   o << "Perm/";
-  _foreach_cauto(UniGraph::PermVertices,jv,eqperms){
-    o << *jv << " ";
+  for(auto& jv: eqperms){
+    o << jv << " ";
   }
   o <<"//";
-  _foreach_cauto(UniGraph::PermVertices,jv,eqperm_from){
-    o << *jv << " ";
+  for(auto& jv: eqperm_from){
+    o << jv << " ";
   }
   o <<"/";
   
