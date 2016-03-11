@@ -63,6 +63,7 @@ class Orbital {
   public:
   // enumerate orbital types. The numbers are important, since we iterate over them
   enum Type { 
+    NoType = 0, // not an orbital
     Occ = 1,  // occupied (i)
     Virt = 2, // virtual (a)
     GenT = 3, // general (p)

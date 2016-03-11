@@ -19,24 +19,72 @@ Product< Orbital > Ops::genprodorb(short int exccl, const Orbital& occ, const Or
 
 Matrix::Matrix() // : _type(Interm)
 {
-  _antisymform=false;
-  _type = Ops::None;
-  _matspinsym = Singlet;
-  _npairs = _lmel = 0;
-  _exccl = _intlines = _intvirt = _orbtypeshash = 0;
+  create_Matrix(Ops::None,0,0,"",Singlet,false);
 }
-Matrix::Matrix(Ops::Type t, Product< Orbital > p, short npairs, short lmel, 
+Matrix::Matrix(Ops::Type t, const Product< Orbital >& p, uint npairs, short lmel, 
                    std::string name, Matrix::Spinsym matspinsym, bool antisymW)
 {
+  _orbs = p;
+  create_Matrix(t,npairs,lmel,name,matspinsym,antisymW);
+}
+Matrix::Matrix(Ops::Type t, const Product< Orbital >& pcrea, const Product< Orbital >& panni, 
+               uint npairs, short int lmel, std::string name, Matrix::Spinsym matspinsym, bool antisymW)
+{
+  assert( pcrea.size() == panni.size()+lmel );
+  _orbs.reserve(pcrea.size()+panni.size());
+  if ( t == Ops::DensM && Input::iPars["prog"]["dmsort"] > 0 ) {
+    // different order of electrons: 1,2,...2, 1
+    _foreach_cauto(Product<Orbital>,itorb,pcrea){
+      _orbs.push_back(*itorb);
+    }
+    _foreach_crauto(Product<Orbital>,itorb,panni){
+      _orbs.push_back(*itorb);
+    }
+  } else {
+    uint 
+      maxlen = std::max(pcrea.size(), panni.size());
+    for ( uint iorb = 0; iorb < maxlen; ++iorb ){
+      if ( iorb < pcrea.size() )
+        _orbs.push_back(pcrea[iorb]);
+      if ( iorb < panni.size() )
+        _orbs.push_back(panni[iorb]);
+    }
+  }
+  create_Matrix(t,npairs,lmel,name,matspinsym,antisymW);
+}
+
+Matrix::Matrix(const Kronecker& d)
+{
+  _orbs.push_back(d.orb1());
+  _orbs.push_back(d.orb2());
+  create_Matrix(Ops::Delta,1,0,"",Singlet,false);
+}
+void Matrix::create_Matrix(Ops::Type t, uint npairs, short int lmel, 
+                           std::string name, Matrix::Spinsym matspinsym, bool antisymW)
+{
   _type=t;
-  _orbs=p;
+  gen_name(name);
   _npairs=npairs;
   assert(_npairs <= _orbs.size()/2);
   _lmel = lmel;
   assert(2*_npairs+std::abs(_lmel) == _orbs.size());
   assert((_orbs.size()-_lmel)%2 == 0 && (_orbs.size()+_lmel)%2 == 0 );
+  _matspinsym=matspinsym;
+  if (t==Ops::FluctP)
+    _antisymform=antisymW;
+  else if ( t==Ops::Exc && Input::iPars["prog"]["quan3"] > 0 ) {
+    // make amplitudes antisymmetrical (now works only for doubles!)
+    assert(_orbs.size() == 4);
+    _antisymform=true;
+  } else
+    _antisymform=false;
+  _exccl = _intlines = _intvirt = _orbtypeshash = 0;
+}
+
+void Matrix::gen_name(const std::string& name)
+{
   std::string exc0 = Input::sPars["output"]["exc0"];
-  switch (t) {
+  switch (_type) {
     case Ops::Fock:
       _name = "Fock";
       break;
@@ -52,6 +100,8 @@ Matrix::Matrix(Ops::Type t, Product< Orbital > p, short npairs, short lmel,
     case Ops::DensM:
       _name = "Gamma";
       break;
+    case Ops::Delta:
+      _name = "delta";
     case Ops::Exc0:
     case Ops::Deexc0:
       if (exc0 != " "){
@@ -61,30 +111,7 @@ Matrix::Matrix(Ops::Type t, Product< Orbital > p, short npairs, short lmel,
     default:
       _name=name;
   }
-  _matspinsym=matspinsym;
-  if (t==Ops::FluctP)
-    _antisymform=antisymW;
-  else if ( t==Ops::Exc && Input::iPars["prog"]["quan3"] > 0 ) {
-    // make amplitudes antisymmetrical (now works only for doubles!)
-    assert(_orbs.size() == 4);
-    _antisymform=true;
-  } else
-    _antisymform=false;
-  _exccl = _intlines = _intvirt = _orbtypeshash = 0;
 }
-Matrix::Matrix(const Kronecker& d)
-{
-  _type = Ops::Delta;
-  _orbs.push_back(d.orb1());
-  _orbs.push_back(d.orb2());
-  _npairs = 1;
-  _lmel = 0;
-  _name = "delta";
-  _matspinsym = Singlet;
-  _antisymform = false;
-  _exccl = _intlines = _intvirt = _orbtypeshash = 0;
-}
-
 Ops::Type Matrix::type() const
 { return _type; }
 const Product< Orbital >& Matrix::orbitals() const

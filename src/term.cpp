@@ -148,6 +148,21 @@ void Term::addsummation (const Product<Orbital> & orbs)
       say("Strange, summation runs already over "+orbs[i].name());
   }
 }
+void Term::addsummation(const Orbital& orb)
+{
+  std::pair<TOrbSet::iterator,bool> ret;
+  ret = _sumorbs.insert(orb);
+  if (!ret.second)
+    say("Strange, summation runs already over "+orb.name());
+}
+void Term::addorb(const Orbital& orb)
+{
+  std::pair<TOrbSet::iterator,bool> ret;
+  ret = _orbs.insert(orb);
+  if (!ret.second)
+    say("Strange, orbital is already there "+orb.name());
+}
+
 void Term::replacematrix(const Matrix& mat, lui ipos)
 {
   if (ipos >= _mat.size())
@@ -1587,12 +1602,16 @@ void Term::printdiag(Output* pout) const
   *(pout->pout) << diag["ediag"] << std::endl;
 }
 
-Orbital Term::freeorbname(Orbital::Type type)
+Orbital Term::freeorbname(Orbital::Type type, bool spinfree)
 {
   TsPar& orbs = Input::sPars["syntax"];
-  bool spinintegr = Input::iPars["prog"]["spinintegr"];
   Spin::Type spin = Spin::Gen;
-  if (spinintegr) spin = Spin::GenS;
+  if (spinfree) {
+    spin = Spin::No;
+  } else {
+    bool spinintegr = Input::iPars["prog"]["spinintegr"];
+    if (spinintegr) spin = Spin::GenS;
+  }
   const std::string * ip_orbs;
   std::string lastorb=_lastorb[type].letname();
   unsigned long int indx;

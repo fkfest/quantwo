@@ -2,7 +2,7 @@
 
 Orbital::Orbital() 
 { 
-  _type = Orbital::GenT;
+  _type = Orbital::NoType;
   _spin = Spin(Spin::No);
 }
 

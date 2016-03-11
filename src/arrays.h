@@ -19,6 +19,10 @@ class Array : public std::vector<T> {
     // set from 0 to n
     void identity( unsigned long int n );
     bool is_identity() const;
+    // append t to product
+    Array<T> & operator += (T const & t);
+    // append product to product
+    Array<T> & operator += (Array<T> const & p);
     // get sub array 
     Array<T> subarray(unsigned long int beg, unsigned long int end) const;
     // search (starting from position ipos), if not found -> -1

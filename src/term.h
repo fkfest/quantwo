@@ -60,6 +60,9 @@ class Term {
     //! add summation indices
     void addsummation (Orbital const & orb, short excl);
     void addsummation (const Product<Orbital> & orbs);
+    void addsummation( const Orbital& orb );
+    // add orbital index
+    void addorb( const Orbital& orb );
     //! replace matrix on position ipos
     void replacematrix (Matrix const & mat, unsigned long int ipos);
     //! return contained Product<SQOp>
@@ -171,7 +174,7 @@ class Term {
     //! print diagram, which corresponds to this term 
     void printdiag(Output* pout) const;
     //! return free orbital name
-    Orbital freeorbname(Orbital::Type type);
+    Orbital freeorbname(Orbital::Type type, bool spinfree = false);
     //! static wrapper-function to be able to callback the member function freeorbname()
     static Orbital getfreeorbname(void * Obj, Orbital::Type type);
     //! return next free electron

@@ -25,7 +25,21 @@ void Array<T>::push_front(const T& t)
     temp.push_back(*it);
   *this = temp;
 }
-
+template <class T>
+inline
+Array< T > & Array<T>::operator+= (T const & t) // append t
+{
+  this->push_back(t);
+  return *this;
+}
+template <class T>
+inline
+Array< T >& Array<T>::operator+=(const Array<T>& p)
+{
+  for ( typename Array<T>::const_iterator i=p.begin(); i!=p.end(); ++i )
+    this->push_back(*i);
+  return *this;
+}
 template <class T>
 inline
 Array<T> Array<T>::subarray(unsigned long int beg, unsigned long int end) const

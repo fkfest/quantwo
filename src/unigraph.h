@@ -18,6 +18,8 @@
 class UniGraph {
 public:
   UniGraph(const Term& term);
+  // gen term
+  Term gen_term() const;
   // ordered matrices
   Product<Matrix> ordmats() const;
   const Order& connections() const { return _vertconn;};
@@ -39,8 +41,12 @@ private:
   Order _vertconn;
   // additional permutations to get to vertconn
   Permutation _perms;
-  // store orbital types according to vertconn for a safety check
+  // store orbital types according to vertconn
   OrbitalTypes _orbtypes;
+  // store external orbitals
+  Product<Orbital> _extorbs_crea, _extorbs_anni;
+  // external vertices
+  JointVertices _extvertices;
   // vectors of equivalent (joint) vertices for permutational symmetry
   // T_2 (0,1) T_2 (2,3) --> [ (0,1)(2,3) ][ (0)(1) ][ (2)(3) ] 
   Equivalents _equivs;

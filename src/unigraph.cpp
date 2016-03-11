@@ -17,7 +17,7 @@ UniGraph::UniGraph(const Term& term)
   JointVertices verts;
   
   _foreach_cauto(Order,im,_matsord){
-    const Matrix mat = mats[*im];
+    const Matrix& mat = mats[*im];
     uint nextvert = currvert+mat.nvertices();
     // equivalent matrices?
     if ( verts.size() > 0 && mat.equivalent(mats[prev]) ) {
@@ -42,6 +42,10 @@ UniGraph::UniGraph(const Term& term)
       // sort external orbitals in order to have the same indices always on the same places
       std::sort(creators.begin()+currvert,creators.end());
       std::sort(annihilators.begin()+currvert,annihilators.end());
+      // store external orbitals for later 
+      _extorbs_crea *= Product<Orbital>(creators.begin()+currvert,creators.end());
+      _extorbs_anni *= Product<Orbital>(annihilators.begin()+currvert,annihilators.end());
+      _extvertices += verts;
       if ( permuteq > 0 ) {
         // allow permutations
         _eqperms.push_back(verts);
@@ -126,7 +130,8 @@ void UniGraph::gen_perms(const PermVertices& from, const PermVertices& to)
     JointVertices::const_iterator it = itpv->begin();
     for ( const uint& fp: fpv ) {
       if ( *it != fp ) {
-        _perms[fp] = *it;
+        assert( _perms.count(*it) == 0 );
+        _perms[*it] = fp;
       }
       ++it;
     }
@@ -196,6 +201,7 @@ void UniGraph::minimize()
     gen_perms(_eqperms,min_eq_perms);
     gen_perms(eq_perm_from_orig,min_eq_perm_from);
   }
+  _vertconn = minconn;
   xout << "Smallest connection vector (" << minorder<< "): " << minvertorder << " --> " << minconn << std::endl;
   if ( _perms.size() > 0 ) {
     xout << "Permutations: ";
@@ -208,6 +214,84 @@ void UniGraph::minimize()
     }
     xout << std::endl;
   }
+}
+
+Term UniGraph::gen_term() const
+{
+  Term term;
+  // it works for spinfree stuff only for now
+  bool spinfree = true;
+  // create annihilator-connection vector from the connection vector
+  uint nverts = _vertconn.size();
+  Order annicon(_vertconn.size(),nverts);
+  for ( uint icon = 0; icon < _vertconn.size(); ++icon )
+    if ( _vertconn[icon] < nverts )
+      annicon[_vertconn[icon]] = icon;
+  
+  // create a list of orbitals from the type-list (replace external orbitals by the saved ones)
+  for ( const auto& orb: _extorbs_crea )
+    term.set_lastorb(orb,true);
+  for ( const auto& orb: _extorbs_anni )
+    term.set_lastorb(orb,true);
+  Array<Orbital> orbs(nverts);
+  // set external orbitals
+  uint iexorbc = 0, iexorba = 0;
+  for ( uint exvert: _extvertices ) {
+    assert( exvert < nverts );
+    if ( _vertconn[exvert] < nverts ) {
+      orbs[exvert] = _extorbs_crea[iexorbc];
+      term.addorb(orbs[exvert]);
+      ++iexorbc;
+    }
+    if ( annicon[exvert] < nverts ) {
+      orbs[annicon[exvert]] = _extorbs_anni[iexorba];
+      term.addorb(orbs[annicon[exvert]]);
+      ++iexorba;
+    }
+  }
+  assert( _orbtypes.size() == nverts );
+  for ( uint ivert = 0; ivert < nverts; ++ivert ) {
+    if ( orbs[ivert].type() == Orbital::NoType && _orbtypes[ivert] != Orbital::NoType ) {
+      // not set before
+      orbs[ivert] = term.freeorbname(_orbtypes[ivert],spinfree);
+      term.addorb(orbs[ivert]);
+      term.addsummation(orbs[ivert]);
+    }
+  }
+  // set permutations
+  Permut permuts;
+  for ( const auto& perm: _perms ){
+    assert( perm.first < orbs.size() && perm.second < orbs.size() );
+    permuts += Permut(orbs[perm.first],orbs[perm.second]); 
+  }
+  Sum<Permut,TFactor> sumpermut;
+  sumpermut += std::make_pair(permuts,pTerm->prefac());
+  term.setperm(sumpermut);
+  // add matrices to the term
+  const Product<Matrix>& mats = pTerm->mat();
+  const Product<Matrix> newmats;
+  uint currvert = 0;
+  _foreach_cauto(Order,im,_matsord){
+    const Matrix& mat = mats[*im];
+    uint nextvert = currvert + mat.nvertices();
+    assert( nextvert <= nverts );
+    // use connection vectors and list of orbitals to create the product of orbitals of mat
+    Product<Orbital> orbcre, orbani;
+    for ( uint ivert = currvert; ivert < nextvert; ++ivert ){
+      if ( _vertconn[ivert] < nverts ) {
+        orbcre.push_back(orbs[ivert]);
+      }
+      if ( annicon[ivert] < nverts ) {
+        orbani.push_back(orbs[annicon[ivert]]);
+      }
+    }
+    // add the matrix to the term
+    term *= Matrix(mat.type(),orbcre,orbani,mat.npairs(),mat.lmel(),mat.name(),mat.matspinsym(),
+                   mat.antisymform());
+    currvert = nextvert;
+  }
+  
+  return term;
 }
 
 

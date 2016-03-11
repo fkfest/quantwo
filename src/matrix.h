@@ -38,8 +38,11 @@ class Matrix {
   enum Spinsym {Singlet, Triplet};
   Matrix();
   // construct from type and orbitals and name
-  Matrix(Ops::Type t, Product<Orbital> p, short npairs, short lmel=0, std::string name="T", 
+  Matrix(Ops::Type t, const Product<Orbital>& p, uint npairs, short lmel=0, std::string name="T", 
            Spinsym matspinsym=Singlet, bool antisymW=true);
+  // construct from type and orbitals and name
+  Matrix(Ops::Type t, const Product<Orbital>& pcrea, const Product<Orbital>& panni, uint npairs, 
+         short lmel=0, std::string name="T", Spinsym matspinsym=Singlet, bool antisymW=true);
   // construct from kronecker
   Matrix(const Kronecker& d);
   // return Type
@@ -50,8 +53,11 @@ class Matrix {
   std::string name() const;
   // return true if antisymmetrized form
   bool antisymform() const;
+  // number of conserved electrons
+  uint npairs() const { return _npairs;};
   // non-conserved electrons
   short lmel() const { return _lmel;};
+  Spinsym matspinsym() const { return _matspinsym;};
   // combine with mat, in dontorbs: orbital indices in mat to let out
   void combine(const Matrix& mat, const Set<uint>& dontorbs = Set<uint>() );
   // replace orbital orb1 with orb2
@@ -124,6 +130,11 @@ class Matrix {
   // returns a plain name that can be used in algo's
   std::string plainname() const;
   private:
+  // generate name from type or use the given name
+  void gen_name(const std::string& name);
+  // sets internal variables. it's used by constructors
+  void create_Matrix(Ops::Type t, uint npairs, short lmel, 
+                     std::string name, Spinsym matspinsym, bool antisymW);
   Ops::Type _type;
   // orbitals in the electron-order
   Product<Orbital> _orbs;
