@@ -1,13 +1,13 @@
 #include "factorizer.h"
 #include <bitset> // for test
 
-Factorizer::Factorizer(const Sum< Term, TFactor >& s)
+Factorizer::Factorizer(const TermSum& s)
 {
   std::map<Orbital,const SlotType*> slotorbs;
   std::map<Matrix,const Tensor*> tensormats;
 
   // create an expression from the sum
-  for ( Sum<Term,TFactor>::const_iterator i=s.begin();i!=s.end(); ++i) {
+  for ( TermSum::const_iterator i=s.begin();i!=s.end(); ++i) {
     #ifdef _RATIONAL
     Factor fac = boost::rational_cast<Factor>(i->second);
     #else
@@ -24,8 +24,8 @@ Factorizer::Factorizer(const Sum< Term, TFactor >& s)
 //    _foreach_cauto(Product<Matrix>,im,term.mat()){
 //      tensormats[*im] = _expression.add(Translators::mat2tensor(*im,slotorbs));
 //    }
-    Sum<Term,TFactor> sumt = term.resolve_permutations();
-    for ( Sum<Term,TFactor>::const_iterator ist = sumt.begin();ist != sumt.end(); ++ist ) {
+    TermSum sumt = term.resolve_permutations();
+    for ( TermSum::const_iterator ist = sumt.begin();ist != sumt.end(); ++ist ) {
       #ifdef _RATIONAL
       Factor fact = boost::rational_cast<Factor>(ist->second);
       #else

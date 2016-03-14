@@ -86,13 +86,13 @@ int main(int argc, char **argv) {
         continue;
       }
 //       Input::verbose = 2;
-      Sum<Term,TFactor> sum_finp(finput.sumterms());
-      Sum<Term,TFactor> sum_NO;
+      TermSum sum_finp(finput.sumterms());
+      TermSum sum_NO;
       if ( Input::iPars["prog"]["wick"] == 0 )
         sum_NO = Q2::normalOrderPH(sum_finp);
       else 
         sum_NO = Q2::wick(sum_finp);
-      Sum<Term,TFactor> sum_final1(Q2::reduceSum(sum_NO)),
+      TermSum sum_final1(Q2::reduceSum(sum_NO)),
         sum_final(Q2::postaction(sum_final1));
       _xout1(finput << endl);
       _xout2(" = " << sum_finp << endl);

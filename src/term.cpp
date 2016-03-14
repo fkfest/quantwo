@@ -82,10 +82,10 @@ Term& Term::operator*=(const Matrix& mat)
   return *this;
 }
 
-Sum< Term, TFactor > Term::times(const Sum< Term, TFactor >& s) const
+TermSum Term::times(const TermSum& s) const
 {
-  Sum< Term, TFactor > sum;
-  for ( Sum<Term,TFactor>::const_iterator is = s.begin(); is != s.end(); ++is) {
+  TermSum sum;
+  for ( TermSum::const_iterator is = s.begin(); is != s.end(); ++is) {
     Term tt(*this);
     tt *= is->first;
     tt *= is->second;
@@ -93,9 +93,9 @@ Sum< Term, TFactor > Term::times(const Sum< Term, TFactor >& s) const
   }
   return sum;
 }
-Sum< Term, TFactor > Term::times(const Sum< Matrix, TFactor >& s) const
+TermSum Term::times(const Sum< Matrix, TFactor >& s) const
 {
-  Sum< Term, TFactor > sum;
+  TermSum sum;
   for ( Sum<Matrix,TFactor>::const_iterator is = s.begin(); is != s.end(); ++is) {
     Term tt(*this);
     tt *= is->first;
@@ -190,9 +190,9 @@ void Term::permute(const Permut& p)
     it->permute(p);
   }
 }
-Sum< Term, TFactor > Term::resolve_permutations() const
+TermSum Term::resolve_permutations() const
 {
-  Sum< Term, TFactor > sum;
+  TermSum sum;
   Sum<Permut,TFactor> empty_perm;
   for ( Sum<Permut,TFactor>::const_iterator itp = _perm.begin(); itp != _perm.end(); ++itp ){
     Term term = *this;
@@ -516,16 +516,16 @@ std::ostream & operator << (std::ostream & o, Term const & t)
 return o;
 }
 
-Sum< Term, TFactor > Term::normalOrder() const
+TermSum Term::normalOrder() const
 {   return normalOrder(false);  }
 
-Sum< Term, TFactor > Term::normalOrder_fullyContractedOnly() const
+TermSum Term::normalOrder_fullyContractedOnly() const
 {   return normalOrder(true);   }
 
 
-Sum< Term, TFactor > Term::normalOrder(bool fullyContractedOnly) const
+TermSum Term::normalOrder(bool fullyContractedOnly) const
 {
-    Sum<Term, TFactor>  sum;
+    TermSum  sum;
     for ( unsigned int i=0 ; i+1<_opProd.size() ; ++i ) // iterate over Product<SQOp> but the last
     {
         // check if two consecutive operators need reordering
@@ -556,16 +556,16 @@ Sum< Term, TFactor > Term::normalOrder(bool fullyContractedOnly) const
     return sum;
 }
 
-Sum< Term, TFactor > Term::normalOrderPH() const
+TermSum Term::normalOrderPH() const
 {   return normalOrderPH(false);  }
 
-Sum< Term, TFactor > Term::normalOrderPH_fullyContractedOnly() const
+TermSum Term::normalOrderPH_fullyContractedOnly() const
 {   return normalOrderPH(true);   }
 
 
-Sum< Term, TFactor > Term::normalOrderPH(bool fullyContractedOnly) const
+TermSum Term::normalOrderPH(bool fullyContractedOnly) const
 {
-  Sum<Term, TFactor>  sum;
+  TermSum  sum;
   bool creat2, annih1;
   for ( unsigned int i=0 ; i+1<_opProd.size() ; ++i ) {// iterate over Product<SQOp> but the last
     // check if two consecutive operators need reordering
@@ -604,7 +604,7 @@ Sum< Term, TFactor > Term::normalOrderPH(bool fullyContractedOnly) const
   return sum;
 }
 
-Sum< Term, TFactor > Term::wickstheorem(bool genw, int noord) const
+TermSum Term::wickstheorem(bool genw, int noord) const
 {
   // generate "matrix" of indices to SQops
   TWOps opers;
@@ -620,7 +620,7 @@ Sum< Term, TFactor > Term::wickstheorem(bool genw, int noord) const
     } else
       assert(false);
   }
-  if ( cran != 0 ) return Sum< Term, TFactor>();
+  if ( cran != 0 ) return TermSum();
   for (unsigned int i=0; i<_opProd.size(); i++) {
     if (m==_mat.size()) { // all SQops, which are not in Matrix have to be added as individual vectors
       opermat.push_back(i);
@@ -658,9 +658,9 @@ Sum< Term, TFactor > Term::wickstheorem(bool genw, int noord) const
   }
 }
 
-Sum< Term, TFactor > Term::wick(TWOps& opers, TWMats& krons) const
+TermSum Term::wick(TWOps& opers, TWMats& krons) const
 {
-  Sum<Term, TFactor>  sum;
+  TermSum  sum;
   if (opers.size()==0) { // no SQoperators left
     Product<SQOp> p;
     // generate Kroneckers
@@ -732,9 +732,9 @@ Sum< Term, TFactor > Term::wick(TWOps& opers, TWMats& krons) const
   return sum;
 }
 
-Sum< Term, TFactor > Term::genwick(Term::TWOps& opers, const Term::TWMats& krons, Term::TWMats densmat) const
+TermSum Term::genwick(Term::TWOps& opers, const Term::TWMats& krons, Term::TWMats densmat) const
 {
-  Sum<Term, TFactor>  sum;
+  TermSum  sum;
   if (opers.size()==0) { // no SQoperators left
     Product<SQOp> p;
     // generate Kroneckers
@@ -830,10 +830,10 @@ Sum< Term, TFactor > Term::genwick(Term::TWOps& opers, const Term::TWMats& krons
   }
   return sum;
 }
-Sum<Term, TFactor> Term::change2fock(uint imat, bool multiref) const
+TermSum Term::change2fock(uint imat, bool multiref) const
 {
   assert( _mat[imat].type() == Ops::OneEl );
-  Sum<Term, TFactor> sum;
+  TermSum sum;
   Term term(*this);
   // h_PQ = f_PQ - (PQ||KJ)\delta_KJ [-(PQ||TU)\gamma^T_U]
   Product<Orbital> orbs = _mat[imat].orbitals();
@@ -889,7 +889,7 @@ Sum<Term, TFactor> Term::change2fock(uint imat, bool multiref) const
   }
   return sum;
 }
-Sum< Term, TFactor > Term::dmwickstheorem(const Matrix& dm) const
+TermSum Term::dmwickstheorem(const Matrix& dm) const
 {
   assert( dm.type() == Ops::DensM );
   // generate "matrix" of indices to SQops
@@ -905,9 +905,9 @@ Sum< Term, TFactor > Term::dmwickstheorem(const Matrix& dm) const
   assert(dm.get_cran().size() == dm.orbitals().size());
   return dmwick(opers,krons,dm);
 }
-Sum< Term, TFactor > Term::dmwick(Term::TWMats& opers, const Term::TWMats& krons, const Matrix& dm) const
+TermSum Term::dmwick(Term::TWMats& opers, const Term::TWMats& krons, const Matrix& dm) const
 {
-  Sum<Term, TFactor>  sum;
+  TermSum  sum;
   const Product<Orbital>& orbs(dm.orbitals());
   const Product<SQOpT::Gender> cranorder(dm.get_cran());
   TWMats::iterator itelc = opers.begin(), itela = opers.end();
@@ -1221,9 +1221,9 @@ bool Term::antisymmetrized()
     if( _mat[i].antisymform()) return true;
   return false;
 }
-Sum< Term, TFactor > Term::expand_antisym()
+TermSum Term::expand_antisym()
 {
-  Sum< Term, TFactor > sum;
+  TermSum sum;
   bool expand;
   Term term(*this); // copy term
   if (term.expandintegral(true)) {
@@ -1240,9 +1240,9 @@ Sum< Term, TFactor > Term::expand_antisym()
   }
   return sum;
 }
-Sum< Term, TFactor > Term::oneel2fock(bool multiref)
+TermSum Term::oneel2fock(bool multiref)
 {
-  Sum< Term, TFactor > sum;
+  TermSum sum;
   for ( uint i = 0; i < _mat.size(); ++i ){
     if (_mat[i].type() == Ops::OneEl){
       // replace "h" by "f - integrals"
@@ -1261,9 +1261,9 @@ bool Term::has_nonsingldm() const
     if (_mat[i].nonsingldm()) return true;
   return false;
 }
-Sum< Term, TFactor > Term::dm2singlet()
+TermSum Term::dm2singlet()
 {
-  Sum< Term, TFactor > sum;
+  TermSum sum;
   for ( uint i = 0; i < _mat.size(); ++i ){
     if (_mat[i].nonsingldm()){
       this->dmelectrons(i);
@@ -1309,7 +1309,7 @@ bool Term::dmelectrons(uint imat)
       el2 = itel->first;
     } else if ( itel->second != 0 ) {
       error("More than one annihilator-creator pair has different electrons","Term::dmwickstheorem");
-//      return Sum< Term, TFactor >();
+//      return TermSum();
     }
   }
   if ( replace_el ) {
@@ -1334,10 +1334,10 @@ bool Term::has_generalindices() const
     if (it->type() == Orbital::GenT) return true;
   return false;
 }
-Sum< Term, TFactor > Term::removegeneralindices()
+TermSum Term::removegeneralindices()
 {
   bool active = (Input::iPars["prog"]["multiref"] > 0);
-  Sum< Term, TFactor > sum;
+  TermSum sum;
   this->set_lastorbs();
   Term tt(*this);
   _foreach_auto(TOrbSet,it,_orbs){

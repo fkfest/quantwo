@@ -22,24 +22,24 @@
 
 namespace Q2
 {
-  Sum<Term,TFactor> reduceSum(Sum<Term,TFactor> s);
-  Sum<Term,TFactor> Kroneckers(Sum<Term,TFactor> s);
-  Sum<Term,TFactor> SingletDM(Sum<Term,TFactor> s);
-  bool has_nonsingldm(const Sum<Term,TFactor>& s);
-  Sum<Term,TFactor> OneEl2Fock(Sum<Term,TFactor> s);
-  Sum<Term,TFactor> GeneralIndices(Sum<Term,TFactor> s);
-  bool has_generalindices(const Sum<Term,TFactor>& s);
-  Sum<Term,TFactor> ZeroTerms(Sum<Term,TFactor> s);
-  Sum<Term,TFactor> EqualTerms(Sum<Term,TFactor> s, double minfac);
-  Sum<Term,TFactor> SmallTerms(Sum<Term,TFactor> s, double minfac);
-  Sum<Term,TFactor> ResolvePermutaions(Sum<Term,TFactor> s);
+  TermSum reduceSum(TermSum s);
+  TermSum Kroneckers(TermSum s);
+  TermSum SingletDM(TermSum s);
+  bool has_nonsingldm(const TermSum& s);
+  TermSum OneEl2Fock(TermSum s);
+  TermSum GeneralIndices(TermSum s);
+  bool has_generalindices(const TermSum& s);
+  TermSum ZeroTerms(TermSum s);
+  TermSum EqualTerms(TermSum s, double minfac);
+  TermSum SmallTerms(TermSum s, double minfac);
+  TermSum ResolvePermutaions(TermSum s);
   
-  Sum<Term,TFactor> normalOrderPH(Sum<Term,TFactor> s);
-  Sum<Term,TFactor> wick(Sum<Term,TFactor> s);
-  Sum<Term,TFactor> postaction(Sum<Term,TFactor> s);
-  void printdiags(Output* pout, Sum<Term,TFactor> s);
+  TermSum normalOrderPH(TermSum s);
+  TermSum wick(TermSum s);
+  TermSum postaction(TermSum s);
+  void printdiags(Output* pout, TermSum s);
   
-  void printalgo(std::ofstream& out, Sum<Term,TFactor> s);
+  void printalgo(std::ofstream& out, TermSum s);
 }
 #endif
 

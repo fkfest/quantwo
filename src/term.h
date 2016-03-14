@@ -18,6 +18,8 @@
 
 class SQOp;
 class Oper;
+class Term;
+typedef Sum<Term,TFactor> TermSum;
 /*!
     A term consists of a Product of SQOperators and a Product of Kroneckers
 */
@@ -48,9 +50,9 @@ class Term {
     //! multiply by a matrix
     Term & operator *= (const Matrix & mat);
     //! multiply a term by a sum
-    Sum<Term,TFactor> times(const Sum<Term,TFactor>& s) const;
+    TermSum times(const TermSum& s) const;
     //! multiply a term by a sum of matrices
-    Sum<Term,TFactor> times(const Sum<Matrix,TFactor>& s) const;
+    TermSum times(const Sum<Matrix,TFactor>& s) const;
     //! add permutator
     Term & operator += (Permut const & perm);
     //! add permutator with a factor
@@ -96,22 +98,22 @@ class Term {
     // perm: permutation which brings t-term to this term (if true at return)
     bool equal(Term & t, Permut & perm);
     //! calculate normal ordering
-    Sum<Term, TFactor>  normalOrder() const;
+    TermSum  normalOrder() const;
     //! calculate normal ordering, fully contracted terms only
-    Sum<Term, TFactor>  normalOrder_fullyContractedOnly() const;
+    TermSum  normalOrder_fullyContractedOnly() const;
     //! calculate normal ordering in Particle/Hole formalism
-    Sum<Term, TFactor>  normalOrderPH() const;
+    TermSum  normalOrderPH() const;
     //! calculate normal ordering in Particle/Hole formalism, fully contracted terms only
-    Sum<Term, TFactor>  normalOrderPH_fullyContractedOnly() const;
+    TermSum  normalOrderPH_fullyContractedOnly() const;
     typedef std::list<int> TWMats;
     typedef std::list<TWMats> TWOps;
     //! Wick's theorem: call recursive routine wick
     // if genw == true: use the generalized Wick's theorem
-    Sum<Term, TFactor>  wickstheorem(bool genw = false, int noord = 0) const;
+    TermSum  wickstheorem(bool genw = false, int noord = 0) const;
     //! Wick's theorem, recursive: opers contains index of SQop in _opProd (divided into individual operators)
-    Sum<Term, TFactor>  wick(TWOps& opers, TWMats& krons) const;
+    TermSum  wick(TWOps& opers, TWMats& krons) const;
     //! generalized Wick's theorem, recursive: opers contains index of SQop in _opProd (divided into individual operators)
-    Sum<Term, TFactor>  genwick(Term::TWOps& opers, const Term::TWMats& krons, Term::TWMats densmat) const;
+    TermSum  genwick(Term::TWOps& opers, const Term::TWMats& krons, Term::TWMats densmat) const;
     //! set connections for each matrix
     void setmatconnections();
     //! reduce equation (delete Kroneckers and summation indices)
@@ -141,23 +143,23 @@ class Term {
     //! check if we have any antisymmetrized matrices in term
     bool antisymmetrized();
     //! expand all antisymmetrical matrices in term 
-    Sum<Term,TFactor> expand_antisym();
+    TermSum expand_antisym();
     //! one-electron matrices to fock
-    Sum<Term, TFactor> oneel2fock(bool multiref = false);
+    TermSum oneel2fock(bool multiref = false);
     //! change matrix imat in _mat from oneel to fock
-    Sum<Term, TFactor> change2fock(uint imat, bool multiref = false) const;
+    TermSum change2fock(uint imat, bool multiref = false) const;
     //! true if has a non-singlet density matrix
     bool has_nonsingldm() const;
     //! reorder density matrices to singlet order
-    Sum<Term, TFactor> dm2singlet();
+    TermSum dm2singlet();
     //! check electrons in DMs and make electron-deltas (returns true if replaced electrons in term)
     bool dmelectrons(uint imat);
-    Sum<Term, TFactor> dmwickstheorem(const Matrix& dm) const;
-    Sum<Term, TFactor> dmwick( Term::TWMats& opers, const Term::TWMats& krons, const Matrix& dm ) const;
+    TermSum dmwickstheorem(const Matrix& dm) const;
+    TermSum dmwick( Term::TWMats& opers, const Term::TWMats& krons, const Matrix& dm ) const;
     //! true if has general indices
     bool has_generalindices() const;
     //! replace remaining general indices by occupied (and active) orbitals
-    Sum<Term, TFactor> removegeneralindices();
+    TermSum removegeneralindices();
     //! Spin integration (if notfake false: calculate only _nloops, _nintloops, _nocc)
     void spinintegration(bool notfake);
     //! set prefactor of term to one
@@ -167,7 +169,7 @@ class Term {
     // permute the term according to p
     void permute(const Permut& p);
     // resolve permutations
-    Sum<Term, TFactor> resolve_permutations() const;
+    TermSum resolve_permutations() const;
     //! compare actual connections with the needed (in _connections)
     //! return true if the term is ok
     bool properconnect() const;
@@ -192,8 +194,8 @@ class Term {
     Orbital orb( uint iorb ) const;
     
   private:
-    Sum<Term, TFactor>  normalOrder(bool fullyContractedOnly) const;
-    Sum<Term, TFactor>  normalOrderPH(bool fullyContractedOnly) const;
+    TermSum  normalOrder(bool fullyContractedOnly) const;
+    TermSum  normalOrderPH(bool fullyContractedOnly) const;
 
     Product<SQOp> _opProd;
     Product<Kronecker>  _kProd;

@@ -116,7 +116,7 @@ std::string Finput::input() const
 { return _input; }
 LelString Finput::eqn() const
 { return _eqn.eqn(); }
-Sum< Term, TFactor > Finput::sumterms() const
+TermSum Finput::sumterms() const
 { return _eqn.sumterms(); }
 
 bool Finput::analyzeq()

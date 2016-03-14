@@ -30,7 +30,7 @@ public:
   std::string input() const;
   LelString eqn() const;
   // get sum of terms
-  Sum<Term,TFactor> sumterms() const;
+  TermSum sumterms() const;
   // analyze input
   bool analyzeit();
   // clear all arrays

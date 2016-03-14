@@ -25,7 +25,7 @@ namespace Translators{
 
 class Factorizer {
 public:
-  Factorizer(const Sum< Term, TFactor >& s);
+  Factorizer(const TermSum& s);
   
   
   

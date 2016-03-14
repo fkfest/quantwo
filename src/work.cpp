@@ -1,6 +1,6 @@
 #include "work.h"
 
-Sum< Term, TFactor > Q2::reduceSum(Sum< Term, TFactor > s)
+TermSum Q2::reduceSum(TermSum s)
 {
   double minfac = Input::fPars["prog"]["minfac"];
   bool brill = ( Input::iPars["prog"]["brill"] > 0 );
@@ -10,7 +10,7 @@ Sum< Term, TFactor > Q2::reduceSum(Sum< Term, TFactor > s)
   usefock = usefock && (Input::iPars["prog"]["noorder"]>0);
   bool timing = ( Input::iPars["prog"]["cpu"] > 0 );
   std::clock_t c_start=0;
-  Sum<Term,TFactor> sum,sum1;
+  TermSum sum,sum1;
   Term term,term1;
   bool added;
   TFactor prefac;
@@ -29,7 +29,7 @@ Sum< Term, TFactor > Q2::reduceSum(Sum< Term, TFactor > s)
   say("Antisymmetry...");
   if (timing) c_start = std::clock();
   sum.clear();
-  for ( Sum<Term,TFactor>::const_iterator i=s.begin();i!=s.end(); ++i) {
+  for ( TermSum::const_iterator i=s.begin();i!=s.end(); ++i) {
     term=i->first;
     // expand antisymmetrized integrals
     sum1 = term.expand_antisym();
@@ -66,7 +66,7 @@ Sum< Term, TFactor > Q2::reduceSum(Sum< Term, TFactor > s)
   if (timing) c_start = std::clock();
   s = sum;
   sum.clear();
-  for ( Sum<Term,TFactor>::const_iterator i=s.begin();i!=s.end(); ++i) {
+  for ( TermSum::const_iterator i=s.begin();i!=s.end(); ++i) {
     term=i->first;
     // generate Kallay's "triplets of integers"
     term.matrixkind();
@@ -85,7 +85,7 @@ Sum< Term, TFactor > Q2::reduceSum(Sum< Term, TFactor > s)
     if (timing) c_start = std::clock();
     s = sum;
     sum.clear();
-    for ( Sum<Term,TFactor>::const_iterator i=s.begin();i!=s.end(); ++i) {
+    for ( TermSum::const_iterator i=s.begin();i!=s.end(); ++i) {
       term=i->first;
       term.deleteNoneMats();
       term.setmatconnections();
@@ -94,7 +94,7 @@ Sum< Term, TFactor > Q2::reduceSum(Sum< Term, TFactor > s)
       // remove prefactors in terms
       term.reset_prefac();
       added=false;
-      for ( Sum<Term,TFactor>::iterator k=sum.begin();k!=sum.end(); ++k) {
+      for ( TermSum::iterator k=sum.begin();k!=sum.end(); ++k) {
         Permut perm;
         term1=k->first;
         if (term.equal(term1,perm)) {
@@ -122,7 +122,7 @@ Sum< Term, TFactor > Q2::reduceSum(Sum< Term, TFactor > s)
   if (timing) c_start = std::clock();
   s = sum;
   sum.clear();
-  for ( Sum<Term,TFactor>::const_iterator i=s.begin();i!=s.end(); ++i) {
+  for ( TermSum::const_iterator i=s.begin();i!=s.end(); ++i) {
     term=i->first;
     // use Brilloin condition 
     if ( brill && term.brilloin() ) continue;
@@ -148,12 +148,12 @@ Sum< Term, TFactor > Q2::reduceSum(Sum< Term, TFactor > s)
   
   return sum;
 }
-Sum< Term, TFactor > Q2::Kroneckers(Sum< Term, TFactor > s)
+TermSum Q2::Kroneckers(TermSum s)
 {
-  Sum<Term,TFactor> sum;
+  TermSum sum;
   Term term;
   bool printed = false;
-  for ( Sum<Term,TFactor>::const_iterator i=s.begin();i!=s.end(); ++i) {
+  for ( TermSum::const_iterator i=s.begin();i!=s.end(); ++i) {
     term=i->first;
     // remove Kroneckers
     term.reduceTerm();
@@ -170,12 +170,12 @@ Sum< Term, TFactor > Q2::Kroneckers(Sum< Term, TFactor > s)
   }
   return sum;
 }
-Sum< Term, TFactor > Q2::OneEl2Fock(Sum< Term, TFactor > s)
+TermSum Q2::OneEl2Fock(TermSum s)
 {
   bool multiref = (Input::iPars["prog"]["multiref"] > 0);
   Term term;
-  Sum<Term,TFactor> sum,sum1;
-  Sum< Term, TFactor >::const_iterator its;
+  TermSum sum,sum1;
+  TermSum::const_iterator its;
   _foreach(its,s){
     term = its->first;
     sum1 = term.oneel2fock(multiref);
@@ -185,14 +185,14 @@ Sum< Term, TFactor > Q2::OneEl2Fock(Sum< Term, TFactor > s)
   return sum;
 }
 
-Sum< Term, TFactor > Q2::SingletDM(Sum< Term, TFactor > s)
+TermSum Q2::SingletDM(TermSum s)
 {
   Term term;
   uint iter = 0;
   for ( iter = 0; has_nonsingldm(s) && iter < 1000; ++iter ){
     xout << "has nonsingldm" << std::endl;
-    Sum<Term,TFactor> sum,sum1;
-    for ( Sum<Term,TFactor>::const_iterator i=s.begin();i!=s.end(); ++i) {
+    TermSum sum,sum1;
+    for ( TermSum::const_iterator i=s.begin();i!=s.end(); ++i) {
       term = i->first;
       sum1 = term.dm2singlet();
       sum1 *= i->second;
@@ -203,20 +203,20 @@ Sum< Term, TFactor > Q2::SingletDM(Sum< Term, TFactor > s)
   if (iter == 1000) error("Could not bring density matrices into singlet order in 1000 iterations!");
   return s;
 }
-bool Q2::has_nonsingldm(const Sum< Term, TFactor >& s)
+bool Q2::has_nonsingldm(const TermSum& s)
 {
-  for ( Sum<Term,TFactor>::const_iterator i=s.begin();i!=s.end(); ++i) 
+  for ( TermSum::const_iterator i=s.begin();i!=s.end(); ++i) 
     if (i->first.has_nonsingldm()) return true;
   return false;
 }
-Sum< Term, TFactor > Q2::GeneralIndices(Sum< Term, TFactor > s)
+TermSum Q2::GeneralIndices(TermSum s)
 {
   uint iter = 0;
   for ( iter = 0; has_generalindices(s) && iter < 1000; ++iter ){
-    Sum<Term,TFactor> sum;
-    for ( Sum<Term,TFactor>::const_iterator i=s.begin();i!=s.end(); ++i) {
+    TermSum sum;
+    for ( TermSum::const_iterator i=s.begin();i!=s.end(); ++i) {
       Term term = i->first;
-      Sum<Term,TFactor> sum1 = term.removegeneralindices();
+      TermSum sum1 = term.removegeneralindices();
       sum1 *= i->second;
       sum += sum1;
     }
@@ -225,16 +225,16 @@ Sum< Term, TFactor > Q2::GeneralIndices(Sum< Term, TFactor > s)
   if (iter == 1000) error("Could not remove all general indices in 1000 iterations!");
   return s;
 }
-bool Q2::has_generalindices(const Sum< Term, TFactor >& s)
+bool Q2::has_generalindices(const TermSum& s)
 {
-  for ( Sum<Term,TFactor>::const_iterator i=s.begin();i!=s.end(); ++i) 
+  for ( TermSum::const_iterator i=s.begin();i!=s.end(); ++i) 
     if (i->first.has_generalindices()) return true;
   return false;
 }
-Sum< Term, TFactor > Q2::ZeroTerms(Sum< Term, TFactor > s)
+TermSum Q2::ZeroTerms(TermSum s)
 {
-  Sum<Term,TFactor> sum;
-  for ( Sum<Term,TFactor>::const_iterator i=s.begin();i!=s.end(); ++i) {
+  TermSum sum;
+  for ( TermSum::const_iterator i=s.begin();i!=s.end(); ++i) {
     if ( ! i->first.removeit()){
       sum += std::make_pair(i->first,i->second);
     }
@@ -242,14 +242,14 @@ Sum< Term, TFactor > Q2::ZeroTerms(Sum< Term, TFactor > s)
   return sum;
 }
 
-Sum< Term, TFactor > Q2::EqualTerms(Sum< Term, TFactor > s, double minfac)
+TermSum Q2::EqualTerms(TermSum s, double minfac)
 {
   int eqway = Input::iPars["prog"]["eqway"];
-  Sum<Term,TFactor> sum;
+  TermSum sum;
   Term term,term1;
   TFactor prefac;
   bool added;
-  for ( Sum<Term,TFactor>::const_iterator j=s.begin();j!=s.end(); ++j) {
+  for ( TermSum::const_iterator j=s.begin();j!=s.end(); ++j) {
     term=j->first;
     prefac=j->second*term.prefac();
     // remove prefactors in terms
@@ -262,7 +262,7 @@ Sum< Term, TFactor > Q2::EqualTerms(Sum< Term, TFactor > s, double minfac)
       xout << ug.gen_term() << std::endl;
     }
     added=false;
-    for ( Sum<Term,TFactor>::iterator k=sum.begin();k!=sum.end(); ++k) {
+    for ( TermSum::iterator k=sum.begin();k!=sum.end(); ++k) {
       Permut perm;
       term1=k->first;
       if (term.equal(term1,perm)) {
@@ -282,11 +282,11 @@ Sum< Term, TFactor > Q2::EqualTerms(Sum< Term, TFactor > s, double minfac)
   }
   return sum;
 }
-Sum< Term, TFactor > Q2::SmallTerms(Sum< Term, TFactor > s, double minfac)
+TermSum Q2::SmallTerms(TermSum s, double minfac)
 {
-  Sum<Term,TFactor> sum;
+  TermSum sum;
   Term term,term1;
-  for ( Sum<Term,TFactor>::const_iterator j=s.begin(); j!=s.end(); ++j) {
+  for ( TermSum::const_iterator j=s.begin(); j!=s.end(); ++j) {
     if ( _todouble(_abs(j->second)) < minfac ) continue;
     term1 = term = j->first;
     if ( _todouble(_abs(term.prefac())) < minfac ) continue;
@@ -300,11 +300,11 @@ Sum< Term, TFactor > Q2::SmallTerms(Sum< Term, TFactor > s, double minfac)
   }
   return sum;
 }
-Sum< Term, TFactor > Q2::ResolvePermutaions(Sum< Term, TFactor > s)
+TermSum Q2::ResolvePermutaions(TermSum s)
 {
-  Sum<Term,TFactor> sum;
+  TermSum sum;
   Term term,term1;
-  for ( Sum<Term,TFactor>::const_iterator j=s.begin(); j!=s.end(); ++j) {
+  for ( TermSum::const_iterator j=s.begin(); j!=s.end(); ++j) {
     term1 = term = j->first;
     const Sum<Permut,TFactor>& perms = term.perm();
     term.reset_prefac();
@@ -318,20 +318,20 @@ Sum< Term, TFactor > Q2::ResolvePermutaions(Sum< Term, TFactor > s)
   return sum;
 }
 
-Sum< Term, TFactor > Q2::postaction(Sum< Term, TFactor > s)
+TermSum Q2::postaction(TermSum s)
 {
   double minfac = Input::fPars["prog"]["minfac"];
   std::string divide = Input::sPars["act"]["divide"];
-  Sum<Term,TFactor> sum = s;
+  TermSum sum = s;
   if ( divide != "" && divide != "1" ){
     Finput div(true);
     div.addline(divide);
     div.analyzeq();
-    Sum<Term,TFactor> sum1;
+    TermSum sum1;
     Sum<Permut,TFactor> divperm, divpermadd;
     sum1 = div.sumterms();
     Matrix OneMat;
-    for ( Sum<Term,TFactor>::const_iterator it=sum1.begin();it!=sum1.end(); ++it) {
+    for ( TermSum::const_iterator it=sum1.begin();it!=sum1.end(); ++it) {
       if ( it->first.mat().size() != 1 && !(it->first.mat().front() == OneMat) )
         error("Not an One-Matrix in divide!");
       divpermadd.clear();
@@ -343,7 +343,7 @@ Sum< Term, TFactor > Q2::postaction(Sum< Term, TFactor > s)
     sum1.clear();
 //    xout << "permutations: " << divperm << std::endl;
     Term term;
-    for ( Sum<Term,TFactor>::const_iterator i=sum.begin();i!=sum.end(); ++i) {
+    for ( TermSum::const_iterator i=sum.begin();i!=sum.end(); ++i) {
       term=i->first;
       Sum<Permut,TFactor> perms = term.perm();
       perms /= divperm;
@@ -361,25 +361,25 @@ Sum< Term, TFactor > Q2::postaction(Sum< Term, TFactor > s)
   return sum;
 }
 
-Sum< Term, TFactor > Q2::normalOrderPH(Sum< Term, TFactor > s)
+TermSum Q2::normalOrderPH(TermSum s)
 {
   bool timing = ( Input::iPars["prog"]["cpu"] > 0 );
   std::clock_t c_start=0;
-  Sum<Term,TFactor> sum,sum0;
+  TermSum sum,sum0;
   Term term;
   say("Normal ordering");
   if (timing) c_start = std::clock();
-  for ( Sum<Term,TFactor>::const_iterator i=s.begin();i!=s.end(); ++i) {
+  for ( TermSum::const_iterator i=s.begin();i!=s.end(); ++i) {
     term=i->first;
     sum0 += term.normalOrderPH_fullyContractedOnly();
     sum0 *= i->second;
     sum += sum0;
-    sum0=Sum<Term,TFactor>();
+    sum0=TermSum();
   }
   if (timing) _CPUtiming("",c_start,std::clock());
   return sum;
 }
-Sum< Term, TFactor > Q2::wick(Sum< Term, TFactor > s)
+TermSum Q2::wick(TermSum s)
 {
   int iwick = Input::iPars["prog"]["wick"];
   bool genwick = (iwick > 1);
@@ -387,33 +387,33 @@ Sum< Term, TFactor > Q2::wick(Sum< Term, TFactor > s)
   if (!genwick && noorder > 0 ) error("Cannot have non-ordered Hamiltonian with wick<2. Either set noorder=0 or wick=2");
   bool timing = ( Input::iPars["prog"]["cpu"] > 0 );
   std::clock_t c_start=0;
-  Sum<Term,TFactor> sum,sum0;
+  TermSum sum,sum0;
   Term term;
   _xout3(s << std::endl);
   say("Wick's theorem");
   if (timing) c_start = std::clock();
-  for ( Sum<Term,TFactor>::const_iterator i=s.begin();i!=s.end(); ++i) {
+  for ( TermSum::const_iterator i=s.begin();i!=s.end(); ++i) {
     term=i->first;
     sum0 += term.wickstheorem(genwick,noorder);
     sum0 *= i->second;
     sum += sum0;
-    sum0=Sum<Term,TFactor>();
+    sum0=TermSum();
   }
   if (timing) _CPUtiming("",c_start,std::clock());
   return sum;
 }
 
-void Q2::printdiags(Output* pout, Sum< Term, TFactor > s)
+void Q2::printdiags(Output* pout, TermSum s)
 {
   say("Diagrams...");
   *(pout->pout) << " Diagrams: " << std::endl;
     *(pout->pout) << std::endl;
-  for ( Sum<Term,TFactor>::const_iterator it = s.begin(); it != s.end(); ++it){
+  for ( TermSum::const_iterator it = s.begin(); it != s.end(); ++it){
     it->first.printdiag(pout);
   }
 }
 
-void Q2::printalgo(std::ofstream& out, Sum< Term, TFactor > s)
+void Q2::printalgo(std::ofstream& out, TermSum s)
 {
   const std::string& resultt = Input::sPars["syntax"]["result"];
   say("Algorithm...");
@@ -423,7 +423,7 @@ void Q2::printalgo(std::ofstream& out, Sum< Term, TFactor > s)
   out << "algorithm..." << std::endl;
   // external indices
   // .....
-  for ( Sum<Term,TFactor>::const_iterator i=s.begin();i!=s.end(); ++i) {
+  for ( TermSum::const_iterator i=s.begin();i!=s.end(); ++i) {
     out << resultt << "[abij]" << " += ";
     // call term ...
     out << std::endl;

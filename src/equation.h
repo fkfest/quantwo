@@ -17,7 +17,7 @@
 /*!
     Equation
  */
-class Equation : public Sum<Term, TFactor> {
+class Equation : public TermSum {
 public:
   
 };
@@ -128,7 +128,7 @@ public:
   void addnewop(const std::string& name, const LelString& oper){ _newops[name] = oper; };
   LelString eqn() const { return _eqn;};
   // get sum of terms
-  Sum<Term,TFactor> sumterms() const { return _sumterms;};
+  TermSum sumterms() const { return _sumterms;};
 private:
   // add connections to term, and term to _sumterms
   void addterm(Term& term, bool plus, lui beg, lui end, 
