@@ -100,6 +100,18 @@ UniGraph::UniGraph(const Term& term)
   _eqperm_from.sort();
 }
 
+bool UniGraph::is_equal(const UniGraph& ug) const
+{
+  if ( _matsord.size() != ug._matsord.size() ) return false;
+  const Product<Matrix>& mats = pTerm->mat();
+  const Product<Matrix>& ugmats = ug.pTerm->mat();
+  for ( uint i = 0; i < _matsord.size(); ++i ) {
+    if ( ! mats[_matsord[i]].equivalent(ugmats[ug._matsord[i]]) ) return false;
+  }
+  return _orbtypes == ug._orbtypes && _vertconn == ug._vertconn;
+  
+}
+
 Product< Matrix > UniGraph::ordmats() const
 {
   Product<Matrix> mats;

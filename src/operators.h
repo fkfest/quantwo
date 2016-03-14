@@ -17,7 +17,7 @@
 
 /*!
     Implements a second quantized creation (\op a_i^\dagger)
-    and annihilation ( \op a_i) operators (M. Hanrath)
+    and annihilation ( \op a_i) operators 
 */
 class SQOp {
   public:

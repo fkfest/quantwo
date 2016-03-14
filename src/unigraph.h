@@ -26,6 +26,8 @@ public:
   const Equivalents& equivals() const { return _equivs;};
   const PermVertices& eqperms() const { return _eqperms;};
   const PermVertices& eqperm_from() const { return _eqperm_from;};
+  // check equality of two graphs
+  bool is_equal(const UniGraph& ug) const;
   // search for the minimal _vertconn using _equivs and _eqperms
   void minimize();
 private:
