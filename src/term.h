@@ -73,6 +73,7 @@ class Term {
     Product<Kronecker>  kProd() const;
     //! return prefactor
     TFactor prefac() const;
+    void set_prefac(const TFactor& fac) { _prefac = fac; };
     //! return matrices
     const Product<Matrix>& mat() const;
     //! return orbitals

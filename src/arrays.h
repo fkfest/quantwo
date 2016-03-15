@@ -1,6 +1,7 @@
 #ifndef Array_H
 #define Array_H
 #include <vector>
+#include <deque>
 #include <algorithm>
 #include <iostream>
 #include <assert.h>
@@ -19,9 +20,9 @@ class Array : public std::vector<T> {
     // set from 0 to n
     void identity( unsigned long int n );
     bool is_identity() const;
-    // append t to product
+    // append t to array
     Array<T> & operator += (T const & t);
-    // append product to product
+    // append array to array
     Array<T> & operator += (Array<T> const & p);
     // get sub array 
     Array<T> subarray(unsigned long int beg, unsigned long int end) const;
@@ -37,6 +38,27 @@ class Array : public std::vector<T> {
 template <class T>
 std::ostream & operator << (std::ostream & o, Array<T> const & p);
 
+/*
+some useful functions for deque arrays (useful for very large arrays and many insertions)
+*/
+template <class T>
+class BigArray : public std::deque<T> {
+    typedef std::deque<T> Base;
+  public:
+    using Base::Base;
+    // append t to array
+    BigArray<T> & operator += (T const & t);
+    // append array to array
+    BigArray<T> & operator += (BigArray<T> const & p);
+    // get sub array 
+    BigArray<T> subarray(unsigned long int beg, unsigned long int end) const;
+    // search (starting from position ipos), if not found -> -1
+    int find(T const & t, uint ipos = 0) const;
+    // quick sort in increasing order
+    void resort();
+};
+template <class T>
+std::ostream & operator << (std::ostream & o, BigArray<T> const & p);
 #include "arrays.cpp"
 
 #endif

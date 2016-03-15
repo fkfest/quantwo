@@ -12,6 +12,7 @@
 #include "operators.h"
 #include "kronecker.h"
 #include "sum.h"
+#include "arrays.h"
 #include "globals.h"
 #include "term.h"
 #include "unigraph.h"

@@ -11,6 +11,17 @@
 #include "evertices.h"
 #include "matrix.h"
 
+class Permutation : public std::map<uint,uint> {
+  typedef std::map<uint,uint> Base;
+public: 
+  using Base::Base;
+  bool operator < (const Permutation& perm) const { 
+    if ( this->size() < perm.size() ) return true;
+    if ( perm.size() < this->size() ) return false;
+    return static_cast<const Base&>(*this) < static_cast<const Base&>(perm);
+  };
+};
+
 /// The graphs have a canonical order of operators (neglecting orbital names),
 /// sets of equivalent vertices for permutational symmetry handling, 
 /// and a connection vector (each element is a pointer to the next vertex connected to the
@@ -19,7 +30,7 @@ class UniGraph {
 public:
   UniGraph(const Term& term);
   // gen term
-  Term gen_term() const;
+  Term gen_term();
   // ordered matrices
   Product<Matrix> ordmats() const;
   const Order& connections() const { return _vertconn;};
@@ -30,13 +41,15 @@ public:
   bool is_equal(const UniGraph& ug) const;
   // search for the minimal _vertconn using _equivs and _eqperms
   void minimize();
+  // generate permutation using orbitals from ug (have to be generated before!)
+  std::pair<Permut,TFactor> permutation( const UniGraph& ug ) const; 
 private:
   // apply permutations to minimize the connections-vector further
+  // calls gen_perms to set _perms
   void apply_eqperms(Order& connections, const Order& vertorder,
                      PermVertices& ep, PermVertices& epf, PermVertices& epfo);
   // set _perms
   void gen_perms(const PermVertices& from, const PermVertices& to);
-  typedef std::map<uint,uint> Permutation;
   // canonical order of matrices
   Order _matsord;
   // vertices connections v[0]=1 --> a line from vertex 0 to 1
@@ -47,6 +60,8 @@ private:
   OrbitalTypes _orbtypes;
   // store external orbitals
   Product<Orbital> _extorbs_crea, _extorbs_anni;
+  // store new orbitals (for generation of permutations)
+  Array<Orbital> _neworbs;
   // external vertices
   JointVertices _extvertices;
   // vectors of equivalent (joint) vertices for permutational symmetry

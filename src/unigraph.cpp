@@ -132,6 +132,10 @@ void UniGraph::apply_eqperms( Order& connections, const Order& vertorder,
   epfo = epf;
   ep.minpermute(connections,_eqperms);
   epf.minpermute(connections,epfo);
+  // set _perms
+  _perms.clear();
+  gen_perms(_eqperms,ep);
+  gen_perms(epfo,epf);
 }
 void UniGraph::gen_perms(const PermVertices& from, const PermVertices& to)
 {
@@ -162,20 +166,21 @@ void UniGraph::minimize()
   vertorder.push_back(_vertconn.size());
   PermVertices eq_perms(_eqperms), eq_perm_from(_eqperm_from), eq_perm_from_orig(eq_perm_from),
                min_eq_perms, min_eq_perm_from;
-  if ( permute4each_vertorder ) {
-    min_eq_perms = eq_perms;
-    min_eq_perm_from = eq_perm_from;
-  }
   Order
     minvertorder(vertorder),
     connections(_vertconn);
+  Permutation
+    min_perms;
   if (permute4each_vertorder) {
     // allowed permutations
     apply_eqperms(connections,vertorder,eq_perms,eq_perm_from,eq_perm_from_orig);
+    min_eq_perms = eq_perms;
+    min_eq_perm_from = eq_perm_from;
+    min_perms = _perms;
   }
   Order minconn(connections);
   bool nextperm;
-  uint minorder = 0, iord = 0;
+//   uint minorder = 0, iord = 0;
   do {
     // next permutation of ieqv'th equivalent vertices
     nextperm = false;
@@ -183,52 +188,63 @@ void UniGraph::minimize()
       nextperm = _equivs[ieqv].next_permutation(vertorder);
     }
     if ( nextperm ) {
-      ++iord;
       // create new connection vector and compare to the old one
       for ( uint i = 0; i < _vertconn.size(); ++i )
         connections[vertorder[i]] = vertorder[_vertconn[i]];
       if (permute4each_vertorder) {
         // allowed permutations
         apply_eqperms(connections,vertorder,eq_perms,eq_perm_from,eq_perm_from_orig);
-      }
-//       xout << vertorder << " --> " << connections << std::endl;
-      if ( connections < minconn ) {
-        minconn = connections;
-        minvertorder = vertorder;
-        minorder = iord;
-        if (permute4each_vertorder) {
+//         xout << eq_perms << " " << eq_perm_from << " " << std::endl;
+        if ( connections < minconn || ( connections == minconn && _perms < min_perms ) ) {
+            // replace equal connection only if the new one has less permutations
           min_eq_perms = eq_perms;
           min_eq_perm_from = eq_perm_from;
+          min_perms = _perms;
+          minconn = connections;
+          minvertorder = vertorder;
         }
+      } else if ( connections < minconn ) {
+        minconn = connections;
+        minvertorder = vertorder;
       }
+//       xout << vertorder << " --> " << connections << std::endl;
     }
   } while (nextperm); 
   if ( !permute4each_vertorder ) {
     // try to minimize further by using allowed permutations
     apply_eqperms(minconn,minvertorder,eq_perms,eq_perm_from,eq_perm_from_orig);
-    gen_perms(_eqperms,eq_perms);
-    gen_perms(eq_perm_from_orig,eq_perm_from);
   } else {
-    eq_perm_from_orig.set_with_order(_eqperm_from,minvertorder);
-    gen_perms(_eqperms,min_eq_perms);
-    gen_perms(eq_perm_from_orig,min_eq_perm_from);
+    _perms = min_perms;
   }
   _vertconn = minconn;
-  xout << "Smallest connection vector (" << minorder<< "): " << minvertorder << " --> " << minconn << std::endl;
-  if ( _perms.size() > 0 ) {
-    xout << "Permutations: ";
-    for ( const auto& perm: _perms ){
-      xout << perm.first;
-    }
-    xout << " --> ";
-    for ( const auto& perm: _perms ){
-      xout << perm.second;
-    }
-    xout << std::endl;
-  }
+//   xout << "Smallest connection vector: " << minvertorder << " --> " << minconn << std::endl;
+//   if ( _perms.size() > 0 ) {
+//     xout << "Permutations: ";
+//     for ( const auto& perm: _perms ){
+//       xout << perm.first;
+//     }
+//     xout << " --> ";
+//     for ( const auto& perm: _perms ){
+//       xout << perm.second;
+//     }
+//     xout << std::endl;
+//   }
 }
 
-Term UniGraph::gen_term() const
+std::pair<Permut,TFactor> UniGraph::permutation(const UniGraph& ug) const
+{
+  assert( ug._neworbs.size() == _vertconn.size() );
+  const Array<Orbital>& orbs = ug._neworbs;
+  // set permutations
+  Permut permuts;
+  for ( const auto& perm: _perms ){
+    assert( perm.first < orbs.size() && perm.second < orbs.size() );
+    permuts += Permut(orbs[perm.first],orbs[perm.second]); 
+  }
+  return std::make_pair(permuts,pTerm->prefac());
+}
+
+Term UniGraph::gen_term()
 {
   Term term;
   // it works for spinfree stuff only for now
@@ -245,39 +261,34 @@ Term UniGraph::gen_term() const
     term.set_lastorb(orb,true);
   for ( const auto& orb: _extorbs_anni )
     term.set_lastorb(orb,true);
-  Array<Orbital> orbs(nverts);
+  assert( _neworbs.empty() );
+  _neworbs.resize(nverts);
   // set external orbitals
   uint iexorbc = 0, iexorba = 0;
   for ( uint exvert: _extvertices ) {
     assert( exvert < nverts );
     if ( _vertconn[exvert] < nverts ) {
-      orbs[exvert] = _extorbs_crea[iexorbc];
-      term.addorb(orbs[exvert]);
+      _neworbs[exvert] = _extorbs_crea[iexorbc];
+      term.addorb(_neworbs[exvert]);
       ++iexorbc;
     }
     if ( annicon[exvert] < nverts ) {
-      orbs[annicon[exvert]] = _extorbs_anni[iexorba];
-      term.addorb(orbs[annicon[exvert]]);
+      _neworbs[annicon[exvert]] = _extorbs_anni[iexorba];
+      term.addorb(_neworbs[annicon[exvert]]);
       ++iexorba;
     }
   }
   assert( _orbtypes.size() == nverts );
   for ( uint ivert = 0; ivert < nverts; ++ivert ) {
-    if ( orbs[ivert].type() == Orbital::NoType && _orbtypes[ivert] != Orbital::NoType ) {
+    if ( _neworbs[ivert].type() == Orbital::NoType && _orbtypes[ivert] != Orbital::NoType ) {
       // not set before
-      orbs[ivert] = term.freeorbname(_orbtypes[ivert],spinfree);
-      term.addorb(orbs[ivert]);
-      term.addsummation(orbs[ivert]);
+      _neworbs[ivert] = term.freeorbname(_orbtypes[ivert],spinfree);
+      term.addorb(_neworbs[ivert]);
+      term.addsummation(_neworbs[ivert]);
     }
   }
-  // set permutations
-  Permut permuts;
-  for ( const auto& perm: _perms ){
-    assert( perm.first < orbs.size() && perm.second < orbs.size() );
-    permuts += Permut(orbs[perm.first],orbs[perm.second]); 
-  }
   Sum<Permut,TFactor> sumpermut;
-  sumpermut += std::make_pair(permuts,pTerm->prefac());
+  sumpermut += permutation(*this);
   term.setperm(sumpermut);
   // add matrices to the term
   const Product<Matrix>& mats = pTerm->mat();
@@ -291,10 +302,10 @@ Term UniGraph::gen_term() const
     Product<Orbital> orbcre, orbani;
     for ( uint ivert = currvert; ivert < nextvert; ++ivert ){
       if ( _vertconn[ivert] < nverts ) {
-        orbcre.push_back(orbs[ivert]);
+        orbcre.push_back(_neworbs[ivert]);
       }
       if ( annicon[ivert] < nverts ) {
-        orbani.push_back(orbs[annicon[ivert]]);
+        orbani.push_back(_neworbs[annicon[ivert]]);
       }
     }
     // add the matrix to the term
@@ -332,5 +343,18 @@ std::ostream& operator<<(std::ostream& o, const UniGraph& ug)
   o <<"/";
   
   
+  return o;
+}
+
+std::ostream & operator << (std::ostream & o, const PermVertices& permv){
+  _foreach_cauto(PermVertices,it,permv){
+    o << "(";
+    _foreach_cauto(JointVertices,jv,*it){
+      if (jv != it->begin())
+        o << " ";
+      o << *jv ;
+    }
+    o << ")";
+  }
   return o;
 }

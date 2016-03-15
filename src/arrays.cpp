@@ -92,3 +92,49 @@ std::ostream & operator << (std::ostream & o, Array<T> const & p)
   return o;
 }
 
+template <class T>
+inline
+BigArray< T > & BigArray<T>::operator+= (T const & t) // append t
+{
+  this->push_back(t);
+  return *this;
+}
+template <class T>
+inline
+BigArray< T >& BigArray<T>::operator+=(const BigArray<T>& p)
+{
+  for ( typename BigArray<T>::const_iterator i=p.begin(); i!=p.end(); ++i )
+    this->push_back(*i);
+  return *this;
+}
+template <class T>
+inline
+BigArray<T> BigArray<T>::subarray(unsigned long int beg, unsigned long int end) const
+{
+  unsigned long int end1=(end < this->size() ? end + 1 : this->size());
+  return BigArray<T>(this->begin()+beg,this->begin()+end1);
+}
+template <class T>
+inline
+int BigArray<T>::find(const T& t, uint ipos) const
+{
+  long unsigned int i = ipos;
+  for ( typename BigArray<T>::const_iterator it = this->begin()+ipos; it != this->end(); ++it, ++i )
+    if ( t== *it ) return i;
+  return -1;
+}
+template <class T>
+inline
+void BigArray<T>::resort()
+{
+  std::sort(this->begin(), this->end());
+}
+
+template <class T>
+inline
+std::ostream & operator << (std::ostream & o, BigArray<T> const & p)
+{
+  for ( typename BigArray<T>::const_iterator i=p.begin(); i!=p.end(); ++i )
+    o << *i;
+  return o;
+}

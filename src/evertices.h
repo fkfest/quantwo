@@ -93,6 +93,7 @@ struct PermVertices : public std::vector<JointVertices> {
       std::sort(pvs.begin(),pvs.end());
     }
   }
+  // permute connections
   void minpermute(Order& connections, const PermVertices& orig) {
     assert( this->size() == orig.size() );
     PermVertices::const_iterator itpvso = orig.begin();
@@ -114,4 +115,5 @@ struct PermVertices : public std::vector<JointVertices> {
 
 std::ostream & operator << (std::ostream & o, const EquiVertices& ev);
 std::ostream & operator << (std::ostream & o, const Equivalents& eqv);
+std::ostream & operator << (std::ostream & o, const PermVertices& permv);
 #endif

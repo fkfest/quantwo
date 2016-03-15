@@ -246,6 +246,8 @@ TermSum Q2::EqualTerms(TermSum s, double minfac)
 {
   int eqway = Input::iPars["prog"]["eqway"];
   TermSum sum;
+  BigArray<UniGraph> ugraphs;
+  BigArray<Term> uterms, newterms;
   Term term,term1;
   TFactor prefac;
   bool added;
@@ -255,29 +257,59 @@ TermSum Q2::EqualTerms(TermSum s, double minfac)
     // remove prefactors in terms
     term.reset_prefac();
     if (eqway > 0) {
-      xout << "Term: " << term << std::endl;
-      UniGraph ug(term);
-      xout << ug << std::endl;
+      uterms.push_back(term);
+      Term & uterm = uterms.back(); 
+      uterm.set_prefac(prefac);
+//       xout << "Term: " << uterm << std::endl;
+      UniGraph ug(uterm);
+//       xout << ug << std::endl;
       ug.minimize();
-      xout << ug.gen_term() << std::endl;
-    }
-    added=false;
-    for ( TermSum::iterator k=sum.begin();k!=sum.end(); ++k) {
-      Permut perm;
-      term1=k->first;
-      if (term.equal(term1,perm)) {
-        sum.erase(k);
-        term1+=std::make_pair(perm,prefac);
+      added=false;
+      for ( uint igr = 0; igr < ugraphs.size(); ++igr ){
+        if ( ug.is_equal(ugraphs[igr]) ) {
+          newterms[igr] += ug.permutation(ugraphs[igr]);
+          added=true;
+          break;
+        }
+      }
+      if (added) {
+        // not needed anymore
+        uterms.pop_back();
+      } else {
+        term = ug.gen_term();
+//         xout << term << std::endl;
+        newterms.push_back(term);
+        ugraphs.push_back(ug);
+      } 
+    } else {
+      added=false;
+      for ( TermSum::iterator k=sum.begin();k!=sum.end(); ++k) {
+        Permut perm;
+        term1=k->first;
+        if (term.equal(term1,perm)) {
+          sum.erase(k);
+          term1+=std::make_pair(perm,prefac);
 //         std::cout<<"term old" << term1 <<std::endl;
-        if ( !term1.term_is_0(minfac) ) sum+=term1;
-        added=true;
-        break;
+          if ( !term1.term_is_0(minfac) ) sum+=term1;
+          added=true;
+          break;
+        }
+      }
+      if (!added) {
+        term+=std::make_pair(Permut(),prefac);
+        if ( !term.term_is_0(minfac) ) sum+=term;
+//       std::cout<<"term new" << term <<std::endl;
       }
     }
-    if (!added) {
-      term+=std::make_pair(Permut(),prefac);
-      if ( !term.term_is_0(minfac) ) sum+=term;
-//       std::cout<<"term new" << term <<std::endl;
+  }
+  if (eqway > 0) {
+    for ( Term& newterm: newterms ) {
+      if ( !newterm.term_is_0(minfac) ) {
+//         // for sorting... Remove if too slow
+//         newterm.matrixkind();
+//         newterm.setmatconnections();
+        sum += newterm;
+      }
     }
   }
   return sum;
