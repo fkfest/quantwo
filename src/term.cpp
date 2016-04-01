@@ -1580,16 +1580,16 @@ void Term::printdiag(Output* pout) const
       if (orbs.insert(it->orbitals()[iorb]).second) {// is new
         const ConLine & cl = it->conline(iorb);
         if ( iorb%2 == 0 ){
-          assert( (it->type() < _mat[cl.imat].type() && it->orbitals()[iorb].type() == Orbital::Virt) ||
-                  (it->type() > _mat[cl.imat].type() && it->orbitals()[iorb].type() == Orbital::Occ) );
+          assert( (it->diaglevel() < _mat[cl.imat].diaglevel() && it->orbitals()[iorb].type() == Orbital::Virt) ||
+                  (it->diaglevel() > _mat[cl.imat].diaglevel() && it->orbitals()[iorb].type() == Orbital::Occ) );
           assert( cl.idx%2 == 1 );
           if ( verb > 2 )
             *(pout->pout) << diag["conline"]  << "[$" << it->orbitals()[iorb] << "$]{t" << im << int(iorb/2+1) << "}{t" << cl.imat << int(cl.idx/2+1) << "}" << std::endl;
           else
             *(pout->pout) << diag["conline"] << "{t" << im << int(iorb/2+1) << "}{t" << cl.imat << int(cl.idx/2+1) << "}" << std::endl;
         } else {
-          assert( (it->type() > _mat[cl.imat].type() && it->orbitals()[iorb].type() == Orbital::Virt) ||
-                  (it->type() < _mat[cl.imat].type() && it->orbitals()[iorb].type() == Orbital::Occ) );
+          assert( (it->diaglevel() > _mat[cl.imat].diaglevel() && it->orbitals()[iorb].type() == Orbital::Virt) ||
+                  (it->diaglevel() < _mat[cl.imat].diaglevel() && it->orbitals()[iorb].type() == Orbital::Occ) );
           assert( cl.idx%2 == 0 );
           if ( verb > 2 )
             *(pout->pout) << diag["conline"] << "[$" << it->orbitals()[iorb] << "$]{t" << cl.imat << int(cl.idx/2+1) << "}{t" << im << int(iorb/2+1) << "}" << std::endl;

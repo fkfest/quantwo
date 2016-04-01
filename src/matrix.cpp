@@ -371,6 +371,27 @@ void Matrix::calc_orbtypeshash()
     off *= _orbs.size();
   }
 }
+uint Matrix::diaglevel() const
+{
+  switch ( _type ){
+    case Ops::Exc:
+    case Ops::Exc0:
+      return 0;
+    case Ops::Deexc:
+    case Ops::Deexc0:
+      return 2;
+    case Ops::Fock:
+    case Ops::OneEl:
+    case Ops::FluctP:
+    case Ops::XPert:
+    case Ops::DensM:
+      return 1;
+    default:
+      Error("Unknown matrix in diagram");
+      return 0;
+  }
+}
+
 void Matrix::setkind(short int exccl, short int intlines, short int intvirt)
 {
   _exccl=exccl;

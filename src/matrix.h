@@ -103,6 +103,8 @@ class Matrix {
   // returns gender of the creation/annihilation operator that corresponds to the orbital on position ipos
   // information is either taken from _cranorder or guessed 
   SQOpT::Gender genderguess(uint ipos) const;
+  // returns diagram level starting from 0 (excitation ops) to 2 (deexcitation ops)
+  uint diaglevel() const;
   // set no spin for all orbitals
   void set_no_spin();
   // reset vertices

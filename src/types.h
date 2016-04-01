@@ -16,12 +16,12 @@ namespace Ops {
   { None, 
     Exc, // excitation operators \op T_i
     Exc0, // bare excitation operators \op \tau_{\mu_i}
+    Deexc, // deexcitation operators \op T_i^\dg
+    Deexc0, // bare deexcitation operators \op \tau_{\mu_i}^\dg
     Fock, // Fock 
     OneEl, // one-electron operator \op h
     FluctP, // fluctuation potential
     XPert, // external perturbation
-    Deexc, // deexcitation operators \op T_i^\dg
-    Deexc0, // bare deexcitation operators \op \tau_{\mu_i}^\dg
     Interm, // some intermediates
     DensM, // density matrix (for active orbitals)
     Delta, // kronecker
