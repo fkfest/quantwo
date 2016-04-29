@@ -25,6 +25,7 @@ namespace Ops {
     Interm, // some intermediates
     DensM, // density matrix (for active orbitals)
     Delta, // kronecker
+    Overlap, 
     Number};
 }
 

@@ -498,6 +498,10 @@ std::ostream & operator << (std::ostream & o, Matrix const & mat)
       o << tensor << "X_{" << mat.orbitals() << "}";
       MyOut::pcurout->lenbuf += 1+mat.orbitals().size()/MyOut::pcurout->wsi;
       break;
+    case Ops::Overlap:
+      o << tensor << "S_{" << mat.orbitals() << "}";
+      MyOut::pcurout->lenbuf += 1+mat.orbitals().size()/MyOut::pcurout->wsi;
+      break;
     case Ops::DensM: {
       Product<Orbital> orbs(mat.orbitals());
       std::string name("\\"+Input::sPars["command"]["densmat"]);

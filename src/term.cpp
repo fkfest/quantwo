@@ -1,18 +1,34 @@
 #include "term.h"
 
-Term::Term() : _prefac(1), _lastel(0) {_nloops=_nintloops=_nocc=0;_perm+=Permut();}
+Term::Term() : _prefac(1), _lastel(0), _matconnectionsset(false) 
+{
+  _nloops=_nintloops=_nocc=0;
+  _perm+=Permut();
+}
 
 Term::Term(Product<SQOp> const & opProd) :
-    _opProd(opProd), _prefac(1), _lastel(0) {_nloops=_nintloops=_nocc=0;_perm+=Permut();}
+    _opProd(opProd), _prefac(1), _lastel(0), _matconnectionsset(false) 
+{
+  _nloops=_nintloops=_nocc=0;
+  _perm+=Permut();
+}
 
 Term::Term(Product<SQOp> const & opProd, Product<Kronecker> const & kProd) :
-    _opProd(opProd), _kProd(kProd), _prefac(1), _lastel(0) {_nloops=_nintloops=_nocc=0;_perm+=Permut();}
+    _opProd(opProd), _kProd(kProd), _prefac(1), _lastel(0), _matconnectionsset(false) 
+{
+  _nloops=_nintloops=_nocc=0;
+  _perm+=Permut();
+}
     
 Term::Term(const Product< SQOp >& opProd, const Product< Kronecker >& kProd, 
            const Product< Matrix >& mat, const TOrbSet& orbs, const TOrbSet& sumorbs, 
            const TFactor& prefac, const ConnectionsMap& connections) :
     _opProd(opProd), _kProd(kProd), _mat(mat), _orbs(orbs), _sumorbs(sumorbs), 
-    _prefac(prefac), _connections(connections), _lastel(0) {_nloops=_nintloops=_nocc=0;_perm+=Permut();}
+    _prefac(prefac), _connections(connections), _lastel(0), _matconnectionsset(false) 
+{
+  _nloops=_nintloops=_nocc=0;
+  _perm+=Permut();
+}
 
 Term& Term::operator*=(const Oper& op)
 {
@@ -168,6 +184,76 @@ void Term::replacematrix(const Matrix& mat, lui ipos)
   if (ipos >= _mat.size())
     error("The position is outside of this term: "+any2str(ipos),"Term::replacematrix");
   _mat[ipos]=mat;
+}
+void Term::addoverlaps()
+{
+  TOrbSet orbs_done;
+  //loop over matrices and check connections
+  //put overlaps between amplitudes, and between amplitudes and external lines
+  assert( _matconnectionsset );
+  lui nmats = _mat.size();
+  for ( lui im = 0; im < nmats; ++im ){
+    if ( InSet(_mat[im].type(),Ops::Exc,Ops::Deexc,Ops::Exc0,Ops::Deexc0,Ops::DensM) ) {
+      for ( uint iorb = 0;  iorb < _mat[im].orbitals().size(); ++iorb ) {
+        const Orbital & orb = _mat[im].orbitals()[iorb];
+        if ( orb.type() == Orbital::Virt ) {
+          auto ret = orbs_done.insert(orb);
+          if ( !ret.second ) {
+            // already handled
+            continue;
+          }
+          const ConLine& cl = _mat[im].conline(iorb);
+          // check whether _mat[cl.imat] is excitation or deexcitation,
+          // and an external line
+          bool exc =false, exter = false;
+          switch (_mat[cl.imat].type()) {
+            case Ops::DensM:
+            case Ops::Exc:
+              exc = true;
+              break;
+            case Ops::Deexc0:
+              exter = true;
+              break;
+            case Ops::Exc0:
+              exc = true;
+              exter = true;
+              break;
+            case Ops::Deexc:
+              break;
+            default:
+              // overlap is not needed
+              continue;
+          }
+          
+          Orbital neworb(orb);
+          do {
+            neworb.add_prime();
+            ret = _orbs.insert(neworb);
+          } while ( !ret.second );
+          _sumorbs.insert(neworb);
+          orbs_done.insert(neworb);
+          if ( exter ){
+            // insert overlap, new orbital in _mat[im]
+            _mat[im].set_orb(neworb,iorb);
+          } else {
+            // insert overlap, new orbital in _mat[cl.imat]
+            _mat[cl.imat].set_orb(neworb,cl.idx);
+          }
+          Product<Orbital> oorbs;
+          oorbs.resize(2);
+          if ( exc ){
+            oorbs[0] = orb;
+            oorbs[1] = _mat[cl.imat].orbitals()[cl.idx];
+          } else {
+            oorbs[0] = _mat[cl.imat].orbitals()[cl.idx];
+            oorbs[1] = orb;
+          }
+          _mat *= Matrix(Ops::Overlap,oorbs,1,0,"S");
+        }
+      }
+    }
+  }
+  setmatconnections();
 }
 
 
@@ -1037,6 +1123,7 @@ void Term::setmatconnections()
           _mat[k].set_conline(kj,i,j);
         }
     }
+  _matconnectionsset = true;
 }
 void Term::reduceTerm()
 {

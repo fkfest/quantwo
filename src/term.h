@@ -65,6 +65,8 @@ class Term {
     void addsummation( const Orbital& orb );
     // add orbital index
     void addorb( const Orbital& orb );
+    // add overlaps in virtual space
+    void addoverlaps();
     //! replace matrix on position ipos
     void replacematrix (Matrix const & mat, unsigned long int ipos);
     //! return contained Product<SQOp>
@@ -215,6 +217,8 @@ class Term {
     // for term comparison:
     // number of (all and internal only) loops and occupied orbitals (set in spinintegration)
     lui _nloops, _nintloops, _nocc;
+    // stores whether the matconnections have been set
+    bool _matconnectionsset;
 };
 
 //! output operator for Term

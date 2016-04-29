@@ -145,10 +145,12 @@ TermSum Q2::reduceSum(TermSum s)
   // now remove everything with small prefactor
   sum = SmallTerms(sum,minfac);
   if (timing) _CPUtiming("",c_start,std::clock());
+  // put overlaps if needed 
+  sum = VirtSpace(sum);
   
   return sum;
 }
-TermSum Q2::Kroneckers(TermSum s)
+TermSum Q2::Kroneckers(const TermSum& s)
 {
   TermSum sum;
   Term term;
@@ -170,7 +172,7 @@ TermSum Q2::Kroneckers(TermSum s)
   }
   return sum;
 }
-TermSum Q2::OneEl2Fock(TermSum s)
+TermSum Q2::OneEl2Fock(const TermSum& s)
 {
   bool multiref = (Input::iPars["prog"]["multiref"] > 0);
   Term term;
@@ -231,7 +233,7 @@ bool Q2::has_generalindices(const TermSum& s)
     if (i->first.has_generalindices()) return true;
   return false;
 }
-TermSum Q2::ZeroTerms(TermSum s)
+TermSum Q2::ZeroTerms(const TermSum& s)
 {
   TermSum sum;
   for ( TermSum::const_iterator i=s.begin();i!=s.end(); ++i) {
@@ -242,7 +244,7 @@ TermSum Q2::ZeroTerms(TermSum s)
   return sum;
 }
 
-TermSum Q2::EqualTerms(TermSum s, double minfac)
+TermSum Q2::EqualTerms(const TermSum& s, double minfac)
 {
   int eqway = Input::iPars["prog"]["eqway"];
   TermSum sum;
@@ -305,16 +307,16 @@ TermSum Q2::EqualTerms(TermSum s, double minfac)
   if (eqway > 0) {
     for ( Term& newterm: newterms ) {
       if ( !newterm.term_is_0(minfac) ) {
-//         // for sorting... Remove if too slow
-//         newterm.matrixkind();
-//         newterm.setmatconnections();
+        // for sorting... Remove if too slow
+        newterm.matrixkind();
+        newterm.setmatconnections();
         sum += newterm;
       }
     }
   }
   return sum;
 }
-TermSum Q2::SmallTerms(TermSum s, double minfac)
+TermSum Q2::SmallTerms(const TermSum& s, double minfac)
 {
   TermSum sum;
   Term term,term1;
@@ -332,7 +334,26 @@ TermSum Q2::SmallTerms(TermSum s, double minfac)
   }
   return sum;
 }
-TermSum Q2::ResolvePermutaions(TermSum s)
+TermSum Q2::VirtSpace(const TermSum& s)
+{
+  std::string virtsp = Input::sPars["prog"]["virtspace"];
+  std::transform(virtsp.begin(), virtsp.end(), virtsp.begin(), toupper);
+  if ( virtsp != "PAO" && virtsp != "PNO" ) {
+    // no overlaps
+    return s;
+  }
+  // add overlap matrices
+  xout << "add overlaps" << std::endl;
+  TermSum sum;
+  _foreach_cauto ( TermSum, its, s ) {
+    Term term = its->first;
+    term.addoverlaps();
+    sum += std::make_pair(term,its->second);
+  }
+  return sum;
+}
+
+TermSum Q2::ResolvePermutaions(const TermSum& s)
 {
   TermSum sum;
   Term term,term1;
@@ -350,7 +371,7 @@ TermSum Q2::ResolvePermutaions(TermSum s)
   return sum;
 }
 
-TermSum Q2::postaction(TermSum s)
+TermSum Q2::postaction(const TermSum& s)
 {
   double minfac = Input::fPars["prog"]["minfac"];
   std::string divide = Input::sPars["act"]["divide"];
@@ -393,7 +414,7 @@ TermSum Q2::postaction(TermSum s)
   return sum;
 }
 
-TermSum Q2::normalOrderPH(TermSum s)
+TermSum Q2::normalOrderPH(const TermSum& s)
 {
   bool timing = ( Input::iPars["prog"]["cpu"] > 0 );
   std::clock_t c_start=0;
@@ -411,7 +432,7 @@ TermSum Q2::normalOrderPH(TermSum s)
   if (timing) _CPUtiming("",c_start,std::clock());
   return sum;
 }
-TermSum Q2::wick(TermSum s)
+TermSum Q2::wick(const TermSum& s)
 {
   int iwick = Input::iPars["prog"]["wick"];
   bool genwick = (iwick > 1);
@@ -435,7 +456,7 @@ TermSum Q2::wick(TermSum s)
   return sum;
 }
 
-void Q2::printdiags(Output* pout, TermSum s)
+void Q2::printdiags(Output* pout, const TermSum& s)
 {
   say("Diagrams...");
   *(pout->pout) << " Diagrams: " << std::endl;
@@ -445,7 +466,7 @@ void Q2::printdiags(Output* pout, TermSum s)
   }
 }
 
-void Q2::printalgo(std::ofstream& out, TermSum s)
+void Q2::printalgo(std::ofstream& out, const TermSum& s)
 {
   const std::string& resultt = Input::sPars["syntax"]["result"];
   say("Algorithm...");

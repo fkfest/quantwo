@@ -64,6 +64,8 @@ class Matrix {
   Return replace(Orbital orb1, Orbital orb2, bool smart);
   // replace spin spin1 with spin2
   Return replace(Spin spin1, Spin spin2, bool smart);
+  // set orbital at iorb to orb
+  void set_orb(Orbital orb, lui iorb) { assert(iorb<_orbs.size()); _orbs[iorb] = orb;};
   // expand antisymmetrized matrix ( from antisymmetrized form < AB || CD > to the normal form < AB | CD > - < AB | DC > )
   // if firstpart=true : < AB | CD >, if firstpart=false : < AB | DC >
   // if return is true: expanded, if false: don't need to expand

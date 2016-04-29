@@ -197,7 +197,10 @@ void Diagram::binarize(Expression& expr) const
 //  xout << "in " << nsteps << " steps" << std::endl;
 //  for ( uint i = 0; i < mat_idx.size(); ++i ) bt[i] = true;
   assert( _tensors[0]._connect.bitmask == inters[bt.to_ulong()]._connect.bitmask );
-//  inters[bt.to_ulong()] = _tensors[0];
+  xout << std::endl;
+  xout << "_tensors[0] " << _tensors[0] << std::endl;
+  xout << "inters" << inters.size() << std::endl;
+  xout << "inters[bt.to_ulong()] " << inters[bt.to_ulong()] << std::endl;
   const Tensor * pSummand = transform2Expr(expr,inters,order,bt,true);
   
   // residual tensor
@@ -463,7 +466,7 @@ std::ostream & operator << (std::ostream& o, const Expression& exp) {
   if ( residuals.size() == 0 )
     o << "// No residual tensors set!" << std::endl;
   _foreach_cauto(std::set< const Tensor * >,itres,residuals) {
-    xout << "Residual " << *(*itres) << std::endl;
+    xout << "// Residual: " << *(*itres) << std::endl;
     print_code(o,*(*itres));
   }
   

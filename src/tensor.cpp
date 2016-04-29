@@ -419,6 +419,11 @@ bool Tensor::equal(const Tensor& ten, bool considerprops) const
   return false;
 }
 
+std::ostream & operator << (std::ostream& o, const DiagramTensor& t) {
+  o << t.name() << "{phantom:" << t.phantom() << " sym:" << t.syms();
+  o << "(" << t.connects().bitmask << ")}";
+  return o;
+}
 
 std::ostream & operator << (std::ostream& o, const SlotType& st)
 {
@@ -463,6 +468,27 @@ std::ostream & operator << (std::ostream& o, const Slots& ss) {
       o << "{" << *is << "}";
     else
       o << *is;
+  }
+  return o;
+}
+std::ostream & operator << (std::ostream& o, const SlotUniqueSet& ss) {
+  _foreach_cauto(SlotUniqueSet,is,ss){
+    if (*is > 9) 
+      o << "{" << *is << "}";
+    else
+      o << *is;
+  }
+  return o;
+}
+std::ostream & operator << (std::ostream& o, const Symmetry& sym) {
+  if ( sym._sign < 0 ) {
+    o << "-";
+  } else if ( sym._simSlots.empty() ) {
+    o << "+";
+  }
+  o << sym._symSlots;
+  if ( !sym._simSlots.empty() ) {
+    o << "/" << sym._simSlots;
   }
   return o;
 }

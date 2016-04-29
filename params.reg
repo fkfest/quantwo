@@ -94,6 +94,7 @@ set="prog",type=i,name="usefock",value=1,desc="if > 0: replace h by fock (can be
 set="prog",type=i,name="cpu",value=0,desc="print cpu usage"
 set="prog",type=i,name="eqway",value=0,desc="compare terms using diagram-comparison(0) or minimized connection-vector(1)"
 set="prog",type=i,name="permuteq",value=2,desc="(for eqway > 0) if = 1: try to permute indices to make terms equal, if > 1: safe - do it for each vertices-permutation in minimization"
+set="prog",type=s,name="virtspace",value="CAN",desc="virtual space. Possible values: CAN, PAO, PNO"
 
 %TENSORS
 set="tensor",type=s,name="T[aaii]",value="" 

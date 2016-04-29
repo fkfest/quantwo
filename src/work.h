@@ -24,23 +24,24 @@
 namespace Q2
 {
   TermSum reduceSum(TermSum s);
-  TermSum Kroneckers(TermSum s);
+  TermSum Kroneckers(const TermSum& s);
   TermSum SingletDM(TermSum s);
   bool has_nonsingldm(const TermSum& s);
-  TermSum OneEl2Fock(TermSum s);
+  TermSum OneEl2Fock(const TermSum& s);
   TermSum GeneralIndices(TermSum s);
   bool has_generalindices(const TermSum& s);
-  TermSum ZeroTerms(TermSum s);
-  TermSum EqualTerms(TermSum s, double minfac);
-  TermSum SmallTerms(TermSum s, double minfac);
-  TermSum ResolvePermutaions(TermSum s);
+  TermSum ZeroTerms(const TermSum& s);
+  TermSum EqualTerms(const TermSum& s, double minfac);
+  TermSum SmallTerms(const TermSum& s, double minfac);
+  TermSum VirtSpace(const TermSum& s);
+  TermSum ResolvePermutaions(const TermSum& s);
   
-  TermSum normalOrderPH(TermSum s);
-  TermSum wick(TermSum s);
-  TermSum postaction(TermSum s);
-  void printdiags(Output* pout, TermSum s);
+  TermSum normalOrderPH(const TermSum& s);
+  TermSum wick(const TermSum& s);
+  TermSum postaction(const TermSum& s);
+  void printdiags(Output* pout, const TermSum& s);
   
-  void printalgo(std::ofstream& out, TermSum s);
+  void printalgo(std::ofstream& out, const TermSum& s);
 }
 #endif
 

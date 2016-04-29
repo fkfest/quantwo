@@ -138,6 +138,15 @@ void Orbital::replace_letname(const std::string& newname)
   for ( iend = this->_name.size(); iend > 0 && isdigit(this->_name[iend-1]); --iend ){}
   _name.replace(0,iend,newname);
 }
+void Orbital::add_prime()
+{
+  std::string orbname, up, down;
+  IL::nameupdown(orbname,up,down,_name);
+  up += "\\prime";
+  _name = orbname;
+  if (!down.empty()) _name += "_{"+down+"}";
+  _name += "^{"+up+"}";
+}
 
 int Orbital::comp_letname(const Orbital& orb) const
 {
@@ -180,12 +189,17 @@ Return Orbital::replace(const Spin& spin1, const Spin& spin2, bool smart)
 
 std::ostream & operator << (std::ostream & o, Orbital const & orb)
 {
+  std::string orbname, up, down;
+  IL::nameupdown(orbname,up,down,orb.name());
   if ( orb.spin().type() == Spin::Gen )
-    o << char(std::toupper(orb.name().at(0)));
+    o << char(std::toupper(orbname.at(0)));
   else
-    o << orb.name().at(0);
-  if (orb.name().size() > 1)
-    o <<"_{" << orb.name().substr(1) << "}";
+    o << orbname.at(0);
+  
+  if (orbname.size() > 1 || !down.empty())
+    o <<"_{" << orbname.substr(1) << down << "}";
+  if ( !up.empty() )
+    o << "^{" << up << "}";
   if ( orb.spin().type() != Spin::Gen )
     o << orb.spin();
 /*  if ( orb.type()==Orbital::Occ ) 

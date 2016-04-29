@@ -53,6 +53,7 @@ typedef std::set<uint> SlotUniqueSet;
 
 
 std::ostream & operator << (std::ostream& o, const Slots& ss);
+std::ostream & operator << (std::ostream& o, const SlotUniqueSet& ss);
 
 class Symmetry {
 public:
@@ -66,6 +67,9 @@ public:
   // slots that has to be permuted simultaniously to the symSlots
   Slots _simSlots;
 };
+
+//! output operator for symmetry
+std::ostream & operator << (std::ostream& o, const Symmetry& sym);
 
 class Cut {
 public:
@@ -137,6 +141,7 @@ public:
   TensorBase( const Symmetries& syms, std::string name = "T" ) 
     : _syms(syms), _name(name) {};
   const Symmetries& syms() const { return _syms; };
+  const SlotUniqueSet& phantom() const { return _phantomSlots; };
   const std::string& name() const { return _name; };
   bool phantomSlot( uint iSlot ) const { return _phantomSlots.count(iSlot); };
 //  virtual bool operator < ( const TensorBase& ten ) const = 0;
@@ -172,9 +177,13 @@ public:
 //    : TensorBase(slots,syms,cuts,name) {};
 //  bool operator < ( const DiagramTensor& ten ) const;
   std::string slotTypeLetters( const SlotTs& slottypes ) const;
+  const Connections& connects() const { return _connect; };
 //private:
   Connections _connect;
 };
+
+//! output operator for DiagramTensor
+std::ostream & operator << (std::ostream& o, const DiagramTensor& t);
 
 class Tensor : public TensorBase {
 public:
