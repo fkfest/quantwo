@@ -133,6 +133,10 @@ class Matrix {
   void permute(const Permut& p);
   // returns a plain name that can be used in algo's
   std::string plainname() const;
+  // names for integrals: 
+  //  J: if orbital types for each electron are the same
+  //  K: otherwise
+  std::string integralnames() const;
   private:
   // generate name from type or use the given name
   void gen_name(const std::string& name);

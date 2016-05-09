@@ -31,6 +31,8 @@ set="syntax",type=s,name="actorb",value="tuvwxyz",desc="active orbitals"
 set="syntax",type=s,name="plainsymb",value="abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789",desc="symbols allowed in plain names"
 set="syntax",type=s,name="result",value="R",desc="result tensor (residuum)"
 set="syntax",type=s,name="intermeds",value="ABCDEFGHIJKLMNOPQUVWXYZ",desc="names for intermediates"
+set="syntax",type=s,name="coulombint",value="Jint",desc="name for Coulomb integrals in algo"
+set="syntax",type=s,name="exchangeint",value="Kint",desc="name for exchange integrals"
 
 %COMMANDS
 set="command",type=s,name="operator",value="op",desc="command for operator"
@@ -97,10 +99,10 @@ set="prog",type=i,name="permuteq",value=2,desc="(for eqway > 0) if = 1: try to p
 set="prog",type=s,name="virtspace",value="CAN",desc="virtual space. Possible values: CAN, PAO, PNO"
 
 %TENSORS
-set="tensor",type=s,name="T[aaii]",value="" 
-set="tensor",type=s,name="T[ai]",value="" 
-set="tensor",type=s,name="R[aaii]",value=""
-set="tensor",type=s,name="R[ai]",value=""
+set="tensor",type=s,name="T[aaii]",value="",desc="doubles amplitudes, cuts and symmetry" 
+set="tensor",type=s,name="T[ai]",value="",desc="singles amplitudes, cuts and symmetry" 
+set="tensor",type=s,name="R[aaii]",value="",desc="doubles residual, cuts and symmetry"
+set="tensor",type=s,name="R[ai]",value="",desc="doubles residual, cuts and symmetry"
 
 %FACTORIZATION
 set="fact",type=i,name="nocc",value=60,desc="number of occupied orbitals (for optimization)"

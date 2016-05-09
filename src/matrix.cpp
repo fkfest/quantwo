@@ -468,7 +468,23 @@ std::string Matrix::plainname() const
       plainnam += _name[i];
     }
   }
+  if ( type() == Ops::FluctP ) {
+    plainnam = integralnames();
+  }
   return plainnam;
+}
+std::string Matrix::integralnames() const
+{
+  assert( _type == Ops::FluctP );
+  std::string name = Input::sPars["syntax"]["coulombint"];
+  for ( uint iorb = 0; iorb < _orbs.size(); ++iorb ) {
+    assert( iorbel(iorb) >= 0 );
+    if ( _orbs[iorb].type() != _orbs[iorbel(iorb)].type() ) {
+      name = Input::sPars["syntax"]["exchangeint"];
+      break;
+    }
+  }
+  return name;
 }
 
 std::ostream & operator << (std::ostream & o, Matrix const & mat)

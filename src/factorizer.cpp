@@ -82,7 +82,7 @@ Tensor Translators::mat2tensor(const Matrix& mat, const std::map< Orbital, const
   
   // and parents??
   
-  return Tensor(sts,mat.plainname());
+  return Tensor(sts,name);
 }
 
 Diagram Translators::term2diagram(const Term& term, Factor fact, const std::map< Orbital, const SlotType* >& slotorbs, const Expression& expr)
