@@ -21,7 +21,7 @@ bool Lelem::operator==(const Lelem& lel) const
 { return _lex==lel._lex && _name==lel._name; }
 
 
-lui LelString::closbrack(lui ipos) const
+lui LelString::closbrack(lui ipos, Lelem::Lex find) const
 {
   lui i,ipos1=ipos;
   Lelem::Lex rk=Lelem::RPar,lk=(*this)[ipos].lex();
@@ -29,22 +29,29 @@ lui LelString::closbrack(lui ipos) const
     rk=Lelem::Ket;
   else if (lk==Lelem::LPar)
     rk=Lelem::RPar;
+  else if (lk==Lelem::LCom)
+    rk=Lelem::RCom;
   else
     error("Not a bracket!","Lexic::closbrack"); 
+  Lelem::Lex what = rk;
+  if ( find != Lelem::None ) what = find;
   int nk=1;
   for ( i=ipos+1;i<this->size();++i) {
+    if ( nk == 1 && (*this)[i].lex()==what) {
+      --nk;
+      ipos1=i;
+      break;
+    }
     if ((*this)[i].lex()==lk) 
       ++nk; // count number of "("
     else if ((*this)[i].lex()==rk) {
       --nk; // count number of ")"
-      if (nk==0) {
-        ipos1=i;
-        break;
-      }
     }
   }
   if ( nk != 0 ) 
-    error("Number of brackets is incosistent: "+any2str(nk),"Lexic::closbrack"); 
+    error("Number of brackets is incosistent: "+any2str(nk),"Lexic::closbrack");
+  if ( ipos1 == ipos )
+    error("Not found in "+any2str((*this)[ipos]),"Lexic::closbrack");
   return ipos1;
 }
 lui LelString::openbrack(lui ipos) const
@@ -55,6 +62,8 @@ lui LelString::openbrack(lui ipos) const
     lk=Lelem::Bra;
   else if (rk==Lelem::RPar)
     lk=Lelem::LPar;
+  else if (rk==Lelem::RCom)
+    lk=Lelem::LCom;
   else
     error("Not a bracket!","Lexic::openbrack"); 
   int nk=-1;
@@ -110,25 +119,53 @@ LelString LelString::expandnewops(const NewOpMap& newops) const
 }
 lui LelString::elem(lui beg, bool bk) const
 {
-  lui i, end, nk=0;
+  lui i, end, nk=0, ncom=0;
   bool braket=false;
   
   for ( i = beg; i < this->size() ; i++ ) {
     if ((*this)[i].lex()==Lelem::LPar) ++nk;
     if ((*this)[i].lex()==Lelem::RPar) --nk;
+    if ((*this)[i].lex()==Lelem::LCom) ++ncom;
+    if ((*this)[i].lex()==Lelem::RCom) --ncom;
     if (bk) {
       if ((*this)[i].lex()==Lelem::Bra) braket=true;
       if ((*this)[i].lex()==Lelem::Ket) braket=false;
     }
-    if (InSet((*this)[i].lex(), Lelem::Plus,Lelem::Minus) && i!= beg && nk==0 && !braket ) 
+    if (InSet((*this)[i].lex(), Lelem::Plus,Lelem::Minus) && 
+        i!= beg && nk==0 && ncom==0 && !braket ) 
       break; // end of term
   }
-  if (nk!=0 || braket) error("Check input, Mismatch in parentheses or bra/ket","Lexic::elem");
+  if (nk!=0 || ncom!=0 || braket) error("Check input, Mismatch in parentheses or bra/ket","Lexic::elem");
   if (i==beg || i==0 ) 
     end=0;
   else 
     end=i-1;
   return end;
+}
+LelString LelString::expandcom(lui beg) const
+{ // e.g., [a,b] --> (a)(b)-(b)(a)
+  lui 
+    end = this->closbrack(beg),
+    comma = this->closbrack(beg, Lelem::Comma);
+  LelString result, 
+    beforecomma = this->substring(beg+1,comma-1),
+    aftercomma = this->substring(comma+1,end-1);
+  result.add(Lelem("",Lelem::LPar)); // (
+  result.add(Lelem("",Lelem::LPar)); //  (
+  result.add(beforecomma);           //   a 
+  result.add(Lelem("",Lelem::RPar)); //  )
+  result.add(Lelem("",Lelem::LPar)); //  (   
+  result.add(aftercomma);            //   b
+  result.add(Lelem("",Lelem::RPar)); //  )
+  result.add(Lelem("",Lelem::Minus));//  - 
+  result.add(Lelem("",Lelem::LPar)); //  (
+  result.add(aftercomma);            //   b
+  result.add(Lelem("",Lelem::RPar)); //  )
+  result.add(Lelem("",Lelem::LPar)); //  (
+  result.add(beforecomma);           //   a
+  result.add(Lelem("",Lelem::RPar)); //  )
+  result.add(Lelem("",Lelem::RPar)); // )
+  return result; 
 }
 LelString LelString::expandpar(lui beg, ConnectionsMap& connections) const
 { // e.g., this=-a(b+c)d
@@ -227,6 +264,14 @@ bool LelString::expanded() const
   }
   return true;
 }
+bool LelString::expanded_com() const
+{ 
+  _foreach_cauto(LelString,itl,*this) {
+    if (itl->lex()==Lelem::LCom )
+      return false;
+  }
+  return true;
+}
 void LelString::expand( ConnectionsMap& connections)
 {
   LelString res;
@@ -274,7 +319,24 @@ void LelString::expand( ConnectionsMap& connections)
     }
   }
 }
-
+void LelString::expand_commutators()
+{
+  LelString res;
+  lui beg=0, end;
+  while (!expanded_com()) {
+    res = *this;
+    *this = LelString();
+    for ( beg = 0; beg < res.size(); ++beg ) {
+      if ( res[beg].lex() == Lelem::LCom ) {
+        end=res.closbrack(beg);
+        this->add(res.substring(beg,end).expandcom(0));
+        beg=end;
+      } else {
+        this->add(res[beg]);
+      }
+    }
+  }
+}
 
 std::ostream& operator<<(std::ostream& o, const Lelem& lel)
 {
@@ -287,6 +349,12 @@ std::ostream& operator<<(std::ostream& o, const Lelem& lel)
     o << "(";
   else if (lel.lex()==Lelem::RPar)
     o << ")";
+  else if (lel.lex()==Lelem::LCom)
+    o << "[";
+  else if (lel.lex()==Lelem::RCom)
+    o << "]";
+  else if (lel.lex()==Lelem::Comma)
+    o << ",";
   else if (lel.lex()==Lelem::Oper)
     o << "\\"<< commands["operator"]<<" ";
   else if (lel.lex()==Lelem::Tensor)

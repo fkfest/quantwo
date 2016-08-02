@@ -172,9 +172,9 @@ bool Finput::analyzeit()
       _eqn += Lelem("",Lelem::Div);
     } else if (ch=='*') { // times
       _eqn += Lelem("",Lelem::Times);
-    } else if (InSet(ch, '(','[')) { // left parenthesis
+    } else if (ch=='(') { // left parenthesis
       _eqn += Lelem("",Lelem::LPar);
-    } else if (InSet(ch, ')',']')) { // right parenthesis
+    } else if (ch==')') { // right parenthesis
       //connections
       if (_input.substr(i+1,2)=="_C") conn=Lelem::Connect;
       else if (_input.substr(i+1,2)=="_D") conn=Lelem::Disconnect;
@@ -182,6 +182,12 @@ bool Finput::analyzeit()
       _eqn += Lelem("",Lelem::RPar,conn);
       if (InSet(conn, Lelem::Connect,Lelem::Disconnect))
         i+=2;
+    } else if (ch=='[') { // left commutator bracket
+      _eqn += Lelem("",Lelem::LCom);
+    } else if (ch==']') { // right commutator bracket
+      _eqn += Lelem("",Lelem::RCom);
+    } else if (ch==',') { // comma from the commutator
+      _eqn += Lelem("",Lelem::Comma);
     } else if (isdigit(ch)) { // number
       ipos=IL::nextwordpos(_input,i);
       _eqn += Lelem(_input.substr(i,ipos-i),Lelem::Num);

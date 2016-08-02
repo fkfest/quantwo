@@ -266,6 +266,8 @@ bool LEquation::extractit()
 {
   // expand custom operators
   _eqn = _eqn.expandnewops(_newops);
+  // expand commutators
+  _eqn.expand_commutators();
   // expand parentheses
   _eqn.expand(_connections);
   // remove redundant connections

@@ -13,7 +13,10 @@
 class Lelem {
   public:
   // enumerate lexic
-  enum Lex {Bra, Ket, LPar, RPar, Oper, Tensor, Num, Frac, Plus, Minus, Times, Div, Sum, Perm };
+  enum Lex {None,
+            Bra, Ket, LPar, RPar, LCom, RCom, Comma,
+            Oper, Tensor, Num, Frac, 
+            Plus, Minus, Times, Div, Sum, Perm };
   // enumerate types expressions in parantheses (Normal, Connected, Disconnected, ...)
   enum Conn {Normal, Connect, Disconnect }; 
   // constructor from name and Lex
@@ -56,7 +59,8 @@ public:
   void add(const LelString& a) { this->operator*=(a);}
   
   // get position of the closing bracket (which corresponds to the bracket on ipos)
-  lui closbrack(lui ipos) const;
+  // if find != None : search for this lexic element inside the brackets
+  lui closbrack(lui ipos, Lelem::Lex find = Lelem::None) const;
   // get position of the opening bracket (which corresponds to the bracket on ipos)
   lui openbrack(lui ipos) const;
   // add connections: beg and end are positions of opening and closing parantheses
@@ -67,14 +71,20 @@ public:
   lui elem(lui beg, bool bk=false) const;
   // find the end position of current term
   lui term(lui beg) const { return elem(beg,true); };
+  // expand commutator (has to be done before the connections-stuff)
+  LelString  expandcom(lui beg) const;
   // expand parantheses pair
   LelString  expandpar(lui beg, ConnectionsMap& connections) const;
   // expand a term
   LelString expandterm(ConnectionsMap& connections) const;
   // test if eqn is completely expanded
   bool expanded() const;
+  // test if all commutators are completely expanded
+  bool expanded_com() const;
   // expand full expression
   void expand(ConnectionsMap& connections);
+  // expand commutators
+  void expand_commutators();
   
 };
 
