@@ -98,34 +98,6 @@ void Orbital::gentype()
     error("Unknown type of orbital! "+_name,"Orbital::gentype"); 
 }
 
-std::string Orbital::name() const
-{ return _name;}
-
-Orbital::Type Orbital::type() const
-{ return _type;}
-
-Spin Orbital::spin() const
-{ return _spin;}
-void Orbital::setspin(Spin spin)
-{ _spin=spin; }
-
-bool Orbital::operator==(const Orbital& orb) const
-{ return _spin==orb._spin && _type==orb._type && _name==orb._name;}
-bool Orbital::operator!=(const Orbital& orb) const
-{ return !(*this==orb); }
-
-bool Orbital::operator<(const Orbital& orb) const
-{
-  if (_type<orb._type) return true;
-  if (orb._type<_type) return false;
-  if (_name<orb._name) return true;
-  if (_name>orb._name) return false;
-//  assert( _type == orb._type );
-  return _spin<orb._spin;
-}
-bool Orbital::equal(const Orbital& orb) const
-{ return _spin.equal(orb._spin) && _type==orb._type && _name==orb._name; }
-
 std::string Orbital::letname() const
 {
   lui iend;

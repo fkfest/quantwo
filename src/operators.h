@@ -26,22 +26,32 @@ class SQOp {
   // constructor from gender and orbital
   SQOp (SQOpT::Gender gender, Orbital orb);
   // return gender
-  SQOpT::Gender gender() const;
+  SQOpT::Gender gender() const
+    { return _gender;};
   // return gender in Particle/Hole formalism
-  SQOpT::Gender genderPH() const;
+  SQOpT::Gender genderPH() const
+    { return _genderPH;};
   // return orbital
   Orbital orb() const;
   // check equality
-  bool operator == (SQOp const & o) const;
+  bool operator == (SQOp const & o) const
+    { return _gender==o._gender && _orb==o._orb; };
   // check ordering relation (for sorting)
-  bool operator < (SQOp const & o) const;
+  bool operator < (SQOp const & o) const
+    {
+      if ( _gender<o._gender )
+        return true;
+      if (o._gender<_gender )
+        return false;
+      return _orb<o._orb;
+    };
   // replace orbital orb1 with orb2
   Return replace(Orbital orb1, Orbital orb2, bool smart);
   // replace spin spin1 with spin2
   Return replace(Spin spin1, Spin spin2, bool smart);
 
   private:
-  SQOpT::Gender _gender;
+  SQOpT::Gender _gender, _genderPH;
   Orbital _orb;
 };
 

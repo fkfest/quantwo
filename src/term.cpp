@@ -766,6 +766,10 @@ TermSum Term::wick(TWOps& opers, TWMats& krons) const
   SQOpT::Gender gencurr=_opProd[curr].gender();
   Orbital::Type orbtypecurr=_opProd[curr].orb().type();
   bool orbcurrgen = (orbtypecurr==Orbital::GenT);
+  if ( _opProd[curr].genderPH() == SQOpT::Creator ) {
+    // quasi-Creator on the left --> this term is zero
+    return sum;
+  }
   // remove first SQop-index
   if (ifirstop->size() == 1) {
     opers.erase(ifirstop);
@@ -789,7 +793,7 @@ TermSum Term::wick(TWOps& opers, TWMats& krons) const
       // check if the first operator and operator i would yield a Kronecker
       const SQOp& op = _opProd[*ijop];
       Orbital::Type oporbtype = op.orb().type();
-      if (op.gender()!=gencurr && 
+      if (op.gender()!=gencurr && op.genderPH() != SQOpT::Annihilator &&
           (orbcurrgen || oporbtype == orbtypecurr|| oporbtype == Orbital::GenT)) {
         // copy opers and krons
         TWOps opers1(opers);
@@ -857,6 +861,10 @@ TermSum Term::genwick(Term::TWOps& opers, const Term::TWMats& krons, Term::TWMat
   Orbital::Type orbtypecurr = _opProd[curr].orb().type();
   bool orbcurrgen = (orbtypecurr==Orbital::GenT);
   bool orbcurract = (orbtypecurr==Orbital::Act);
+  if ( _opProd[curr].genderPH() == SQOpT::Creator ) {
+    // quasi-Creator on the left --> this term is zero
+    return sum;
+  }
   // remove first SQop-index
   if (ifirstop->size() == 1) {
     opers.erase(ifirstop);
@@ -878,7 +886,7 @@ TermSum Term::genwick(Term::TWOps& opers, const Term::TWMats& krons, Term::TWMat
       // check if the first operator and operator i would yield a Kronecker
       const SQOp& op = _opProd[*ijop];
       Orbital::Type oporbtype = op.orb().type();
-      if (op.gender()!=gencurr && 
+      if (op.gender()!=gencurr && op.genderPH() != SQOpT::Annihilator && 
           (orbcurrgen || oporbtype == orbtypecurr|| oporbtype == Orbital::GenT)) {
         // copy opers and krons
         TWOps opers1(opers);

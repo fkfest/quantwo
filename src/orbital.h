@@ -87,23 +87,33 @@ class Orbital {
   // constructor from type (for printing of types)
   Orbital ( Type type );
   // return orbital
-  std::string name() const;
-  Type type() const;
-  Spin spin() const;
+  std::string name() const {return _name;};
+  Type type() const {return _type;};
+  Spin spin() const {return _spin;};
   // set spin
-  void setspin(Spin spin);
+  void setspin(Spin spin) { _spin=spin; };
   // set electron (in _spin)
   void setel(Electron el){_spin.setel(el);};
   // get electron (from _spin)
   Electron getel() const {return _spin.el();};
   // check equality
-  bool operator == (Orbital const & orb) const;
+  bool operator == (Orbital const & orb) const 
+       { return _spin==orb._spin && _type==orb._type && _name==orb._name;};
   // check inequality
-  bool operator != (Orbital const & orb) const;
+  bool operator != (Orbital const & orb) const { return !(*this==orb); };
   // check ordering relation (for sorting)
-  bool operator < (Orbital const & orb) const;
+  bool operator < (Orbital const & orb) const
+    {
+      if (_type<orb._type) return true;
+      if (orb._type<_type) return false;
+      if (_name<orb._name) return true;
+      if (_name>orb._name) return false;
+//    assert( _type == orb._type );
+      return _spin<orb._spin;
+    };
   // check equality without checking electrons
-  bool equal(const Orbital& orb) const;
+  bool equal(const Orbital& orb) const
+    { return _spin.equal(orb._spin) && _type==orb._type && _name==orb._name; };
   // return letter-name of orbital
   std::string letname() const;
   void replace_letname(const std::string& newname);

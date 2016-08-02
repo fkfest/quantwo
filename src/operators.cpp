@@ -10,26 +10,18 @@ SQOp::SQOp(SQOpT::Gender gender, Orbital orb)
 {
   _gender=gender;
   _orb = orb;
+  if (_orb.type()==Orbital::Occ && _gender==SQOpT::Creator) {
+    _genderPH = SQOpT::Annihilator;
+  } else if (_orb.type()==Orbital::Occ && _gender==SQOpT::Annihilator) {
+    _genderPH = SQOpT::Creator;
+  } else if (_orb.type()==Orbital::GenT || _orb.type()==Orbital::Act) {
+    _genderPH = SQOpT::Gen;
+  } else {
+    _genderPH = _gender;
+  }
 }
-SQOpT::Gender SQOp::gender() const
-{ return _gender; }
-SQOpT::Gender SQOp::genderPH() const
-{ if (_orb.type()==Orbital::Occ && _gender==SQOpT::Creator) return SQOpT::Annihilator;
-  if (_orb.type()==Orbital::Occ && _gender==SQOpT::Annihilator) return SQOpT::Creator;
-  if (_orb.type()==Orbital::GenT || _orb.type()==Orbital::Act) return SQOpT::Gen;
-  return _gender; }
 Orbital SQOp::orb() const
 { return _orb; }
-bool SQOp::operator==(const SQOp& o) const
-{ return _gender==o._gender && _orb==o._orb; }
-bool SQOp::operator<(const SQOp& o) const
-{
-  if ( _gender<o._gender )
-    return true;
-  if (o._gender<_gender )
-    return false;
-  return _orb<o._orb;
-}
 Return SQOp::replace(Orbital orb1, Orbital orb2, bool smart)
 {
   return _orb.replace(orb1,orb2,smart);
