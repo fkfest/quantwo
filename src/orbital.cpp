@@ -156,6 +156,7 @@ Return Orbital::replace(const Orbital& orb1, const Orbital& orb2, bool smart)
 }
 Return Orbital::replace(const Spin& spin1, const Spin& spin2, bool smart)
 {
+  (void)smart; //unused variable
   return this->_spin.replace(spin1,spin2);
 }
 
