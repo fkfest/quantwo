@@ -87,7 +87,7 @@ void IL::changePars(const std::string& str, lui ipos)
   while( (ipend = IL::nextwordpos(str,ipos)) != ipos ){
     // search name in parameter-set
     std::string name = str.substr(ipos,ipend-ipos);
-    if ( stype && Input::sPars[set].count(name) ){
+    if ( stype && ( Input::sPars[set].count(name) || set.compare(0,3,"new") == 0 ) ){
       Input::sPars[set][name] = IL::key(str,ipos,name);
     } else if ( itype && Input::iPars[set].count(name)){ // change the parameter
       int x;
