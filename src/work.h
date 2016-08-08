@@ -23,6 +23,7 @@
 
 namespace Q2
 {
+  TermSum evalEq(Finput& finput);
   TermSum reduceSum(TermSum s);
   TermSum Kroneckers(const TermSum& s);
   TermSum SingletDM(TermSum s);

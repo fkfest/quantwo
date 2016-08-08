@@ -1,5 +1,23 @@
 #include "work.h"
 
+TermSum Q2::evalEq(Finput& finput)
+{
+//       Input::verbose = 2;
+  _xout1(finput << std::endl);
+  TermSum sum_finp(finput.sumterms());
+  _xout2(" = " << sum_finp << std::endl);
+  TermSum sum_NO;
+  if ( Input::iPars["prog"]["wick"] == 0 )
+    sum_NO = Q2::normalOrderPH(sum_finp);
+  else 
+    sum_NO = Q2::wick(sum_finp);
+  _xout2(" = " << sum_NO << std::endl);
+  TermSum sum_final1(Q2::reduceSum(sum_NO)),
+    sum_final(Q2::postaction(sum_final1));
+  _xout1(" = " << sum_final << std::endl);
+  return sum_final;
+}
+
 TermSum Q2::reduceSum(TermSum s)
 {
   double minfac = Input::fPars["prog"]["minfac"];
