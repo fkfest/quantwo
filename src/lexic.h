@@ -16,7 +16,7 @@ class Lelem {
   enum Lex {None,
             Bra, Ket, LPar, RPar, LCom, RCom, Comma,
             Oper, Tensor, Num, Frac, 
-            Plus, Minus, Times, Div, Sum, Perm };
+            Equal, Plus, Minus, Times, Div, Sum, Perm };
   // enumerate types expressions in parantheses (Normal, Connected, Disconnected, ...)
   enum Conn {Normal, Connect, Disconnect }; 
   // constructor from name and Lex

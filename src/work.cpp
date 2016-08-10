@@ -15,6 +15,7 @@ TermSum Q2::evalEq(Finput& finput)
   TermSum sum_final1(Q2::reduceSum(sum_NO)),
     sum_final(Q2::postaction(sum_final1));
   _xout1(" = " << sum_final << std::endl);
+  finput.sumterms(sum_final);
   return sum_final;
 }
 

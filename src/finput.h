@@ -28,13 +28,16 @@ public:
   bool analyzeq();
   // get input
   std::string input() const;
+  // last equation
   LelString eqn() const;
   // get sum of terms
   TermSum sumterms() const;
+  // set sum of terms
+  void sumterms( const TermSum& ts );
   // analyze input
   bool analyzeit();
   // clear all arrays
-  void clear() {_inlines.clear(); _ineq.clear(); _input.clear(); _eqn = LEquation(); _eq = false;};
+  void clear() {_inlines.clear(); _ineq.clear(); _input.clear(); _eq = false;};
   // return input lines
   const std::vector<std::string> & inlines() const { return _inlines;};
   const std::vector<std::string> & ineq() const { return _ineq;};
@@ -49,7 +52,10 @@ private:
   // variables
   std::string _input;
   bool _eq;
-  LEquation _eqn;
+  // left-hand-sides
+  std::vector<Matrix> _lhs;
+  // equations
+  std::vector<LEquation> _eqns;
   std::vector<std::string> _inlines;
   std::vector<std::string> _ineq;
 };

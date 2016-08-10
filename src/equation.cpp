@@ -291,9 +291,22 @@ bool LEquation::extractit()
   return true;
 }
 
-
-bool LEquation::do_sumterms(bool excopsonly )
+void LEquation::shift_connections(int shift)
 {
+  for (lui i = 0; i < _connections.size(); i++) {
+    Product<long int>& conn = _connections[i];
+    for (lui j = 0; j < conn.size(); j++) {
+      if ( conn[j] < 0 )
+        conn[j]=conn[j]-shift;
+      else
+        conn[j]=conn[j]+shift;
+    }
+  }
+}
+
+Matrix LEquation::do_sumterms(bool excopsonly )
+{
+  Matrix LHS;
   lui beg=0;
   bool plus=true, bra=false, ket=false;
   if (!_eqn.expanded())
@@ -316,6 +329,15 @@ bool LEquation::do_sumterms(bool excopsonly )
         ket = true;
       term *= handle_braket(lel,term,excopsonly);
       indxoperterm.push_back(i+1);
+    } else if ( lex == Lelem::Equal ) { // assignment
+      if ( !excopsonly ) {
+        if ( term.mat().size() != 2 ) {
+          error("Left-hand-side doesn't have exactly one tensor!");
+        }
+        LHS = term.mat().back();
+        shift_connections(-1);
+        reset_term(term);
+      }
     } else if (InSet(lex, Lelem::Minus,Lelem::Plus)) { // add current term and save the sign of the next term
       bra = ket = false; // reset bra and ket variables
       if (!excopsonly) {
@@ -351,7 +373,7 @@ bool LEquation::do_sumterms(bool excopsonly )
   }
   // add last term
   if(_eqn.size()>0) addterm(term,plus,beg,_eqn.size()-1,indxoperterm,excopsonly);
-  return true;
+  return LHS;
 }
 void LEquation::reset_term(Term& term) const
 {

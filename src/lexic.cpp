@@ -361,6 +361,8 @@ std::ostream& operator<<(std::ostream& o, const Lelem& lel)
     o << "\\"<< commands["tensor"]<<" ";
   else if (lel.lex()==Lelem::Perm)
     o << "\\"<< commands["permutation"];
+  else if (lel.lex()==Lelem::Equal)
+    o << "=";
   else if (lel.lex()==Lelem::Plus)
     o << "+";
   else if (lel.lex()==Lelem::Minus)

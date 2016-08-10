@@ -17,10 +17,11 @@
 /*!
     Equation
  */
-class Equation : public TermSum {
-public:
-  
-};
+typedef TermSum Equation;
+//class Equation : public TermSum {
+//public:
+//  
+//};
 
 typedef std::map< Orbital::Type,Orbital > TOrb4Type;
 class LExcitationMap;
@@ -122,13 +123,18 @@ public:
   void reseteq() { _eqn = LelString(); _connections = ConnectionsMap(); };
   // extract expression (remove parentheses and sums)
   bool extractit();
+  // shift connections by adding the shift
+  void shift_connections( int shift );
   // transform LelString/ to Sum<Term>, if excopsonly: do only pure excitation operators (and bra/ket)
-  bool do_sumterms(bool excopsonly=false);
+  // return left-hand side of the equation
+  Matrix do_sumterms(bool excopsonly=false);
   // add new operator
   void addnewop(const std::string& name, const LelString& oper){ _newops[name] = oper; };
   LelString eqn() const { return _eqn;};
   // get sum of terms
   TermSum sumterms() const { return _sumterms;};
+  // set sum of terms
+  void sumterms( const TermSum& ts ) { _sumterms = ts;};
 private:
   // add connections to term, and term to _sumterms
   void addterm(Term& term, bool plus, lui beg, lui end, 

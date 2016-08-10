@@ -92,6 +92,7 @@ bool Finput::addline(const std::string& line)
     if ( iprint > 1 && !_eq )
       _inlines.pop_back();
     _eq=true;
+    _eqns.push_back(LEquation());
     analyzenewops();
   } else if (InSet(linesp, eeqs)) {// end equation
     if ( iprint > 0 && _eq )
@@ -115,20 +116,40 @@ bool Finput::addline(const std::string& line)
 std::string Finput::input() const
 { return _input; }
 LelString Finput::eqn() const
-{ return _eqn.eqn(); }
+{ 
+  if ( _eqns.size() > 0 )
+    return _eqns.back().eqn();
+  else
+    return LelString();
+}
 TermSum Finput::sumterms() const
-{ return _eqn.sumterms(); }
+{ 
+  if ( _eqns.size() > 0 )
+    return _eqns.back().sumterms();
+  else
+    return TermSum();
+}
+void Finput::sumterms( const TermSum& ts )
+{ 
+  if ( _eqns.size() > 0 )
+    return _eqns.back().sumterms(ts);
+  else
+    error("No equations yet!");
+}
 
 bool Finput::analyzeq()
 {
+  assert( _eqns.size() > 0 );
   analyzeit();
-  _eqn.extractit();
-  _eqn.do_sumterms(true);
-  _eqn.do_sumterms();
+  _eqns.back().extractit();
+  _eqns.back().do_sumterms(true);
+  _lhs.push_back( _eqns.back().do_sumterms() );
   return true;
 }
 bool Finput::analyzeit()
 {
+  assert( _eqns.size() > 0 );
+  LEquation& _eqn = _eqns.back();
   char ch;
   lui i=0, ipos, ipos1;
   Lelem::Conn conn=Lelem::Normal;
@@ -164,6 +185,8 @@ bool Finput::analyzeit()
       ++i;
       ipos=analyzecommand(i);
       i=ipos-1;
+    } else if (ch=='=') { // assignment
+      _eqn += Lelem("",Lelem::Equal);
     } else if (ch=='+') { // plus
       _eqn += Lelem("",Lelem::Plus);
     } else if (ch=='-') { // minus
@@ -194,7 +217,6 @@ bool Finput::analyzeit()
       i=ipos-1;
     } else if (InSet(ch, '&',' ')) { // do nothing
     } else
-    //  std::cout << "Character " << ch << " is ignored" << std::endl;
       say("Character "+std::string(1,ch)+" is ignored");
     ++i;
   }
@@ -202,6 +224,8 @@ bool Finput::analyzeit()
 }
 lui Finput::analyzecommand(lui ipos)
 {
+  assert( _eqns.size() > 0 );
+  LEquation& _eqn = _eqns.back();
   const TParArray& skipops = Input::aPars["syntax"]["skipop"];
   TsPar& commands = Input::sPars["command"];
   // custom commands
@@ -250,6 +274,8 @@ lui Finput::analyzecommand(lui ipos)
 void Finput::analyzenewops()
 {
   assert( _input.size() == 0 );
+  assert( _eqns.size() > 0 );
+  LEquation& _eqn = _eqns.back();
   TsPar& newops = Input::sPars["newoperator"];
   _eqn = LEquation();
   for ( TsPar::iterator iop = newops.begin(); iop != newops.end(); ++iop ){
