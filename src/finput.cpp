@@ -289,6 +289,14 @@ void Finput::analyzenewops()
   _input = "";
 }
 
+void Finput::insert_tensors()
+{
+  assert( _eqns.size() > 0 );
+  assert( _eqns.size() == _lhs.size() );
+  for ( uint i = 0; i <= _lhs.size(); ++i ){
+    
+  }
+}
 
 std::ostream& operator<<(std::ostream& o, const Finput& inp)
 {

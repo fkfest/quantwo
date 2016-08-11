@@ -36,6 +36,8 @@ public:
   void sumterms( const TermSum& ts );
   // analyze input
   bool analyzeit();
+  // try to insert tensors into the last expression from the previously calculated expressions
+  void insert_tensors();
   // clear all arrays
   void clear() {_inlines.clear(); _ineq.clear(); _input.clear(); _eq = false;};
   // return input lines

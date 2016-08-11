@@ -16,7 +16,8 @@ TermSum Q2::evalEq(Finput& finput)
     sum_final(Q2::postaction(sum_final1));
   _xout1(" = " << sum_final << std::endl);
   finput.sumterms(sum_final);
-  return sum_final;
+  finput.insert_tensors();
+  return finput.sumterms();
 }
 
 TermSum Q2::reduceSum(TermSum s)

@@ -125,7 +125,7 @@ public:
   bool extractit();
   // shift connections by adding the shift
   void shift_connections( int shift );
-  // transform LelString/ to Sum<Term>, if excopsonly: do only pure excitation operators (and bra/ket)
+  // transform LelString to Sum<Term>, if excopsonly: do only pure excitation operators (and bra/ket)
   // return left-hand side of the equation
   Matrix do_sumterms(bool excopsonly=false);
   // add new operator
