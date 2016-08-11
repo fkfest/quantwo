@@ -45,7 +45,7 @@ public:
 private:
   // initialyse default input-parameters 
   void InitInpars(std::string paramspath);
-  // analyse all \newop's and save as a map in _eqn.newops
+  // analyse all \newop's and save as a map in _eqns.back().newops
   void analyzenewops();
   // analyze command coming after backslash at position ipos-1
   lui analyzecommand(lui ipos);

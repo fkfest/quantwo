@@ -149,7 +149,7 @@ bool Finput::analyzeq()
 bool Finput::analyzeit()
 {
   assert( _eqns.size() > 0 );
-  LEquation& _eqn = _eqns.back();
+  LEquation& eqn = _eqns.back();
   char ch;
   lui i=0, ipos, ipos1;
   Lelem::Conn conn=Lelem::Normal;
@@ -162,7 +162,7 @@ bool Finput::analyzeit()
       else {
         ++i;
         ipos1=IL::nextwordpos(_input,i);
-        _eqn += Lelem(_input.substr(i,ipos1-i),Lelem::Bra);
+        eqn += Lelem(_input.substr(i,ipos1-i),Lelem::Bra);
       }
       i=ipos;
     } else if (ch=='|') { // ket
@@ -176,7 +176,7 @@ bool Finput::analyzeit()
         if (_input.substr(ipos+1,2)=="_C") conn=Lelem::Connect;
         else if (_input.substr(ipos+1,2)=="_D") conn=Lelem::Disconnect;
         else conn=Lelem::Normal;
-        _eqn += Lelem(_input.substr(i,ipos1-i),Lelem::Ket,conn);
+        eqn += Lelem(_input.substr(i,ipos1-i),Lelem::Ket,conn);
         if (InSet(conn, Lelem::Connect,Lelem::Disconnect))
           ipos+=2;
       }
@@ -186,34 +186,34 @@ bool Finput::analyzeit()
       ipos=analyzecommand(i);
       i=ipos-1;
     } else if (ch=='=') { // assignment
-      _eqn += Lelem("",Lelem::Equal);
+      eqn += Lelem("",Lelem::Equal);
     } else if (ch=='+') { // plus
-      _eqn += Lelem("",Lelem::Plus);
+      eqn += Lelem("",Lelem::Plus);
     } else if (ch=='-') { // minus
-      _eqn += Lelem("",Lelem::Minus);
+      eqn += Lelem("",Lelem::Minus);
     } else if (ch=='/') { // Division
-      _eqn += Lelem("",Lelem::Div);
+      eqn += Lelem("",Lelem::Div);
     } else if (ch=='*') { // times
-      _eqn += Lelem("",Lelem::Times);
+      eqn += Lelem("",Lelem::Times);
     } else if (ch=='(') { // left parenthesis
-      _eqn += Lelem("",Lelem::LPar);
+      eqn += Lelem("",Lelem::LPar);
     } else if (ch==')') { // right parenthesis
       //connections
       if (_input.substr(i+1,2)=="_C") conn=Lelem::Connect;
       else if (_input.substr(i+1,2)=="_D") conn=Lelem::Disconnect;
       else conn=Lelem::Normal;
-      _eqn += Lelem("",Lelem::RPar,conn);
+      eqn += Lelem("",Lelem::RPar,conn);
       if (InSet(conn, Lelem::Connect,Lelem::Disconnect))
         i+=2;
     } else if (ch=='[') { // left commutator bracket
-      _eqn += Lelem("",Lelem::LCom);
+      eqn += Lelem("",Lelem::LCom);
     } else if (ch==']') { // right commutator bracket
-      _eqn += Lelem("",Lelem::RCom);
+      eqn += Lelem("",Lelem::RCom);
     } else if (ch==',') { // comma from the commutator
-      _eqn += Lelem("",Lelem::Comma);
+      eqn += Lelem("",Lelem::Comma);
     } else if (isdigit(ch)) { // number
       ipos=IL::nextwordpos(_input,i);
-      _eqn += Lelem(_input.substr(i,ipos-i),Lelem::Num);
+      eqn += Lelem(_input.substr(i,ipos-i),Lelem::Num);
       i=ipos-1;
     } else if (InSet(ch, '&',' ')) { // do nothing
     } else
@@ -225,7 +225,7 @@ bool Finput::analyzeit()
 lui Finput::analyzecommand(lui ipos)
 {
   assert( _eqns.size() > 0 );
-  LEquation& _eqn = _eqns.back();
+  LEquation& eqn = _eqns.back();
   const TParArray& skipops = Input::aPars["syntax"]["skipop"];
   TsPar& commands = Input::sPars["command"];
   // custom commands
@@ -237,7 +237,7 @@ lui Finput::analyzecommand(lui ipos)
     ipos2, ipos3;
   if (str==commands["operator"]) { // operators
     ipos1=IL::nextwordpos(_input,ipos);
-    _eqn += Lelem(_input.substr(ipos,ipos1-ipos),Lelem::Oper);
+    eqn += Lelem(_input.substr(ipos,ipos1-ipos),Lelem::Oper);
   } else if (str==commands["tensor"]) { // tensor
     ipos1=IL::nextwordpos(_input,ipos);
     std::string name = _input.substr(ipos,ipos1-ipos);
@@ -245,20 +245,20 @@ lui Finput::analyzecommand(lui ipos)
        ipos1=IL::nextwordpos(_input,ipos1);
        ipos1=IL::nextwordpos(_input,ipos1);
     } 
-    _eqn += Lelem(_input.substr(ipos,ipos1-ipos),Lelem::Tensor);
+    eqn += Lelem(_input.substr(ipos,ipos1-ipos),Lelem::Tensor);
   } else if (str==commands["fraction"]) { // fraction
     ipos1=IL::nextwordpos(_input,ipos);
     ipos2=ipos1;
     ipos3=IL::nextwordpos(_input,ipos2);
-    _eqn += Lelem(_input.substr(ipos,ipos1-ipos)+"/"+_input.substr(ipos2,ipos3-ipos2),Lelem::Frac);
+    eqn += Lelem(_input.substr(ipos,ipos1-ipos)+"/"+_input.substr(ipos2,ipos3-ipos2),Lelem::Frac);
     ipos1=ipos3;
   } else if (str.substr(0,commands["sum"].size())==commands["sum"]) { // sum
-    _eqn += Lelem(str.substr(commands["sum"].size()),Lelem::Sum);
+    eqn += Lelem(str.substr(commands["sum"].size()),Lelem::Sum);
   } else if (str==commands["permutation"]) { // permutation
     ipos1=IL::nextwordpos(_input,ipos);
     ipos2=ipos1;
     ipos3=IL::nextwordpos(_input,ipos2);
-    _eqn += Lelem(_input.substr(ipos,ipos1-ipos)+"/"+_input.substr(ipos2,ipos3-ipos2),Lelem::Perm);
+    eqn += Lelem(_input.substr(ipos,ipos1-ipos)+"/"+_input.substr(ipos2,ipos3-ipos2),Lelem::Perm);
     ipos1=ipos3;
   } else if (InSet(str, skipops)){//,"left","right","lk","rk","\\"))
   } else if (newcom.count(str)){// custom command
@@ -275,16 +275,16 @@ void Finput::analyzenewops()
 {
   assert( _input.size() == 0 );
   assert( _eqns.size() > 0 );
-  LEquation& _eqn = _eqns.back();
+  LEquation& eqn = _eqns.back();
   TsPar& newops = Input::sPars["newoperator"];
-  _eqn = LEquation();
+  eqn = LEquation();
   for ( TsPar::iterator iop = newops.begin(); iop != newops.end(); ++iop ){
     _input = iop->second;
-    _eqn +=  Lelem("",Lelem::LPar);
+    eqn +=  Lelem("",Lelem::LPar);
     analyzeit();
-    _eqn +=  Lelem("",Lelem::RPar);
-    _eqn.addnewop(iop->first,_eqn.eqn());
-    _eqn.reseteq();
+    eqn +=  Lelem("",Lelem::RPar);
+    eqn.addnewop(iop->first,eqn.eqn());
+    eqn.reseteq();
   }
   _input = "";
 }
