@@ -81,6 +81,7 @@ int main(int argc, char **argv) {
   for ( lui il = 0; il < inp.size(); ++il ){
     if ( algo ) {
     } else if ( finput.addline(inp[il]) ){
+      finput.analyzeq();
       if ( finput.sumterms().size() == 0 ){
         say("Empty equation!");
         continue;

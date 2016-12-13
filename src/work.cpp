@@ -16,7 +16,6 @@ TermSum Q2::evalEq(Finput& finput)
     sum_final(Q2::postaction(sum_final1));
   _xout1(" = " << sum_final << std::endl);
   finput.sumterms(sum_final);
-  finput.insert_tensors();
   return finput.sumterms();
 }
 
@@ -28,6 +27,9 @@ TermSum Q2::reduceSum(TermSum s)
   bool spinintegr = Input::iPars["prog"]["spinintegr"];
   bool usefock = Input::iPars["prog"]["usefock"];
   usefock = usefock && (Input::iPars["prog"]["noorder"]>0);
+  // 13.12.2016: temporary hack until a proper insert of intermediate tensors is implemented 
+  bool replaceE0 = Input::iPars["prog"]["replacee0"];
+  replaceE0 = replaceE0 && (Input::iPars["prog"]["noorder"]>0);
   bool timing = ( Input::iPars["prog"]["cpu"] > 0 );
   std::clock_t c_start=0;
   TermSum sum,sum1;
@@ -40,6 +42,15 @@ TermSum Q2::reduceSum(TermSum s)
     // replace h matrices by fock matrices
     say("Use Fock matrices...");
     s = OneEl2Fock(s);
+    if (timing) _CPUtiming("",c_start,std::clock());
+  }
+  _xout3(s << std::endl);
+  
+  if (replaceE0){
+    if (timing) c_start = std::clock();
+    // replace E^{\snam{0}} by <0|\op F|0>
+    say("Replace E^0...");
+    s = ReplaceE0(s);
     if (timing) _CPUtiming("",c_start,std::clock());
   }
 
@@ -201,6 +212,20 @@ TermSum Q2::OneEl2Fock(const TermSum& s)
   _foreach(its,s){
     term = its->first;
     sum1 = term.oneel2fock(multiref);
+    sum1 *= its->second;
+    sum += sum1;
+  }
+  return sum;
+}
+TermSum Q2::ReplaceE0(const TermSum& s)
+{
+  bool multiref = (Input::iPars["prog"]["multiref"] > 0);
+  Term term;
+  TermSum sum,sum1;
+  TermSum::const_iterator its;
+  _foreach(its,s){
+    term = its->first;
+    sum1 = term.replaceE0(multiref);
     sum1 *= its->second;
     sum += sum1;
   }
@@ -399,6 +424,7 @@ TermSum Q2::postaction(const TermSum& s)
   if ( divide != "" && divide != "1" ){
     Finput div(true);
     div.addline(divide);
+    div.analyzeline();
     div.analyzeq();
     TermSum sum1;
     Sum<Permut,TFactor> divperm, divpermadd;

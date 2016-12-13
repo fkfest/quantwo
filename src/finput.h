@@ -34,9 +34,9 @@ public:
   TermSum sumterms() const;
   // set sum of terms
   void sumterms( const TermSum& ts );
-  // analyze input
-  bool analyzeit();
-  // try to insert tensors into the last expression from the previously calculated expressions
+  // analyze input line
+  bool analyzeline();
+  // try to insert tensors into the last lexic expression from the previously calculated expressions
   void insert_tensors();
   // clear all arrays
   void clear() {_inlines.clear(); _ineq.clear(); _input.clear(); _eq = false;};

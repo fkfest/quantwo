@@ -98,7 +98,7 @@ bool Finput::addline(const std::string& line)
     if ( iprint > 0 && _eq )
       _ineq.pop_back();
     _eq=false;
-    analyzeq();
+    analyzeline();
     _input="";
     neweq = true;
   } else if (InSet(linesp.substr(ipos,ipend-ipos), newcs)) {// newcommand
@@ -140,13 +140,13 @@ void Finput::sumterms( const TermSum& ts )
 bool Finput::analyzeq()
 {
   assert( _eqns.size() > 0 );
-  analyzeit();
+  insert_tensors();
   _eqns.back().extractit();
   _eqns.back().do_sumterms(true);
   _lhs.push_back( _eqns.back().do_sumterms() );
   return true;
 }
-bool Finput::analyzeit()
+bool Finput::analyzeline()
 {
   assert( _eqns.size() > 0 );
   LEquation& eqn = _eqns.back();
@@ -158,7 +158,7 @@ bool Finput::analyzeit()
     if (ch=='<') { // bra
       ipos=_input.find('|',i);
       if (ipos==std::string::npos)
-        error("Can not find bra","Finput::analyzeit");
+        error("Can not find bra","Finput::analyzeline");
       else {
         ++i;
         ipos1=IL::nextwordpos(_input,i);
@@ -168,7 +168,7 @@ bool Finput::analyzeit()
     } else if (ch=='|') { // ket
       ipos=_input.find('>',i);
       if (ipos==std::string::npos)
-        error("Can not find ket","Finput::analyzeit");
+        error("Can not find ket","Finput::analyzeline");
       else {
         ++i;
         ipos1=IL::nextwordpos(_input,i);
@@ -281,7 +281,7 @@ void Finput::analyzenewops()
   for ( TsPar::iterator iop = newops.begin(); iop != newops.end(); ++iop ){
     _input = iop->second;
     eqn +=  Lelem("",Lelem::LPar);
-    analyzeit();
+    analyzeline();
     eqn +=  Lelem("",Lelem::RPar);
     eqn.addnewop(iop->first,eqn.eqn());
     eqn.reseteq();
@@ -291,9 +291,11 @@ void Finput::analyzenewops()
 
 void Finput::insert_tensors()
 {
+  // at least the current eqn should be there
   assert( _eqns.size() > 0 );
-  assert( _eqns.size() == _lhs.size() );
-  for ( uint i = 0; i <= _lhs.size(); ++i ){
+  // lhs from the current eqn is not there yet
+  assert( _eqns.size() == _lhs.size()+1 );
+  for ( uint i = 0; i < _lhs.size(); ++i ){
     
   }
 }

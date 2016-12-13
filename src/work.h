@@ -29,6 +29,7 @@ namespace Q2
   TermSum SingletDM(TermSum s);
   bool has_nonsingldm(const TermSum& s);
   TermSum OneEl2Fock(const TermSum& s);
+  TermSum ReplaceE0(const TermSum& s);
   TermSum GeneralIndices(TermSum s);
   bool has_generalindices(const TermSum& s);
   TermSum ZeroTerms(const TermSum& s);

@@ -51,6 +51,7 @@ class Matrix {
   const Product<Orbital>& orbitals() const;
   // return name
   std::string name() const;
+  void set_name(const std::string& newname) { _name = newname; };
   // return true if antisymmetrized form
   bool antisymform() const;
   // number of conserved electrons

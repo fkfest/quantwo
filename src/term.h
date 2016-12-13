@@ -151,6 +151,10 @@ class Term {
     TermSum oneel2fock(bool multiref = false);
     //! change matrix imat in _mat from oneel to fock
     TermSum change2fock(uint imat, bool multiref = false) const;
+    //! replace E0 to <0|F|0>
+    TermSum replaceE0(bool multiref = false);
+    //! replace E0 at position imat in _mat to <0|F|0>
+    TermSum replaceE0byfock(uint imat, bool multiref = false, bool replaceE0act = false) const;
     //! true if has a non-singlet density matrix
     bool has_nonsingldm() const;
     //! reorder density matrices to singlet order

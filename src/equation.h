@@ -160,6 +160,7 @@ private:
   void reset_term(Term& term) const;
   
   LelString _eqn;
+  // final sum of terms
   Equation _sumterms;
   // save names and corresponding info of pure excitation and deexciation operators
   LExcitationMap _excops;

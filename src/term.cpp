@@ -1108,6 +1108,56 @@ TermSum Term::dmwick(Term::TWMats& opers, const Term::TWMats& krons, const Matri
   return sum;
 }
 
+TermSum Term::replaceE0byfock(uint imat, bool multiref, bool replaceE0act) const
+{
+  assert( _mat[imat].name() == Input::sPars["hamilton"]["E0"] );
+  TermSum sum;
+  Term term(*this);
+  // E^0 = \sum f_II [ + \sum f_TU \gamma^T_U]
+  Product<Orbital> orbs;
+  // f_II
+  Orbital
+    orb1 = term.freeorbname(Orbital::Occ);
+  Electron el = term.nextelectron();
+  orb1.setel(el);
+  orbs *= orb1;
+  orbs *= orb1;
+  term._mat[imat] = Matrix(Ops::Fock,orbs,1);
+  term._sumorbs.insert(orb1);
+  term._orbs.insert(orb1);
+  sum += term;
+  if (multiref) {
+    // f_TU \gamma^T_U
+    term = *this;
+    if (replaceE0act) {
+      orbs.clear();
+      Orbital torb = term.freeorbname(Orbital::Act),
+              uorb = term.freeorbname(Orbital::Act);
+      Electron el = term.nextelectron();
+      torb.setel(el);
+      uorb.setel(el);
+      orbs *= torb;
+      orbs *= uorb;
+      term._mat[imat] = Matrix(Ops::Fock,orbs,1);
+      term._mat.push_back(Matrix(Ops::DensM,orbs,1));
+      Product< SQOpT::Gender > cran;
+      cran *= SQOpT::Creator;
+      cran *= SQOpT::Annihilator;
+      term._mat.back().set_cran(cran);
+      term._sumorbs.insert(torb);
+      term._orbs.insert(torb);
+      term._sumorbs.insert(uorb);
+      term._orbs.insert(uorb);
+    } else {
+      std::string name = term._mat[imat].name();
+      IL::add2name(name,"act",true,true);
+      term._mat[imat].set_name(name);
+    }
+    sum += term;
+  }
+  return sum;
+}
+
 void Term::setmatconnections()
 {
   long int kj;
@@ -1342,6 +1392,22 @@ TermSum Term::oneel2fock(bool multiref)
     if (_mat[i].type() == Ops::OneEl){
       // replace "h" by "f - integrals"
       sum = this->change2fock(i,multiref);
+      // can transform only one matrix per call
+      return sum;
+    }
+  }
+  sum += *this;
+  return sum;
+}
+TermSum Term::replaceE0(bool multiref)
+{
+  std::string e0name = Input::sPars["hamilton"]["E0"];
+  bool replaceE0act = (Input::iPars["prog"]["replacee0"] > 1);
+  TermSum sum;
+  for ( uint i = 0; i < _mat.size(); ++i ){
+    if ( _mat[i].name() == e0name ){
+      // replace "E^0" by "2\sum_i f_ii + \sum_tu f_tu \gamma^t_u"
+      sum = this->replaceE0byfock(i,multiref,replaceE0act);
       // can transform only one matrix per call
       return sum;
     }

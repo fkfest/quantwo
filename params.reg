@@ -50,6 +50,7 @@ set="hamilton",type=s,name="oneelop",value="h",desc="one-electron operator"
 set="hamilton",type=s,name="flucpot",value="W",desc="fluctuation potential"
 set="hamilton",type=s,name="dflucpot",value="\dW",desc="distinguishable fluctuation potential"
 set="hamilton",type=s,name="perturbation",value="X",desc="one-electron perturbation"
+set="hamilton",type=s,name="E0",value="E^{\snam{0}}"
 
 %CUSTOM COMMANDS
 set="newcommand",type=s,name="half",value="\frac{1}{2}",desc="command for 1/2"
@@ -97,6 +98,7 @@ set="prog",type=i,name="cpu",value=0,desc="print cpu usage"
 set="prog",type=i,name="eqway",value=0,desc="compare terms using diagram-comparison(0) or minimized connection-vector(1)"
 set="prog",type=i,name="permuteq",value=2,desc="(for eqway > 0) if = 1: try to permute indices to make terms equal, if > 1: safe - do it for each vertices-permutation in minimization"
 set="prog",type=s,name="virtspace",value="CAN",desc="virtual space. Possible values: CAN, PAO, PNO"
+set="prog",type=i,name="replacee0",value=0,desc="if > 0: replace e0 by <0|F|0> (can be used for noorder>0), if > 1: replace E^0act too."
 
 %TENSORS
 set="tensor",type=s,name="T[aaii]",value="",desc="doubles amplitudes, cuts and symmetry" 
