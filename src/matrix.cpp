@@ -36,18 +36,25 @@ Matrix::Matrix(Ops::Type t, const Product< Orbital >& pcrea, const Product< Orbi
     // different order of electrons: 1,2,...2, 1
     _foreach_cauto(Product<Orbital>,itorb,pcrea){
       _orbs.push_back(*itorb);
+      _cranorder.push_back(SQOpT::Creator);
     }
     _foreach_crauto(Product<Orbital>,itorb,panni){
       _orbs.push_back(*itorb);
+      _cranorder.push_back(SQOpT::Annihilator);
     }
+    
   } else {
     uint 
       maxlen = std::max(pcrea.size(), panni.size());
     for ( uint iorb = 0; iorb < maxlen; ++iorb ){
-      if ( iorb < pcrea.size() )
+      if ( iorb < pcrea.size() ) {
         _orbs.push_back(pcrea[iorb]);
-      if ( iorb < panni.size() )
+        if (t == Ops::DensM) _cranorder.push_back(SQOpT::Creator);
+      }
+      if ( iorb < panni.size() ) {
         _orbs.push_back(panni[iorb]);
+        if (t == Ops::DensM) _cranorder.push_back(SQOpT::Annihilator);
+      }
     }
   }
   create_Matrix(t,npairs,lmel,name,matspinsym,antisymW);
@@ -281,9 +288,11 @@ Product< Orbital > Matrix::crobs(bool anni) const
     add = 1;
   if ( _type == Ops::DensM && Input::iPars["prog"]["dmsort"] > 0 ) {
     // different order of electrons: 1,2,...2, 1
+    // note that here we exchange creators and annihilators in order to correspond to connections
+    // i.e., for something like T^v_u \gamma^u_v we call "u" in gamma annihilator and "v" - creator!
     mult = 1;
     offs = 0;
-    if ( anni ){
+    if ( !anni ){
       begin = 2*_npairs-1;
       end = _npairs-1;
       add = -1;
