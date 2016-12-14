@@ -106,6 +106,8 @@ void Matrix::gen_name(const std::string& name)
     case Ops::Deexc0:
       if (exc0 != " "){
         _name = exc0;
+        if ( _type == Ops::Deexc0 ) // add dagger
+          IL::add2name(_name,Input::aPars["syntax"]["dg"].front());
         break;
       }
     default:
