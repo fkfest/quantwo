@@ -70,6 +70,7 @@ void Matrix::create_Matrix(Ops::Type t, uint npairs, short int lmel,
   assert(2*_npairs+std::abs(_lmel) == _orbs.size());
   assert((_orbs.size()-_lmel)%2 == 0 && (_orbs.size()+_lmel)%2 == 0 );
   _matspinsym=matspinsym;
+  _internal = true;
   if (t==Ops::FluctP)
     _antisymform=antisymW;
   else if ( t==Ops::Exc && Input::iPars["prog"]["quan3"] > 0 ) {
@@ -123,6 +124,17 @@ std::string Matrix::name() const
 { return _name; }
 bool Matrix::antisymform() const
 { return _antisymform; }
+bool Matrix::is_internal(const TOrbSet& sumorbs)
+{
+  _internal = true;
+  _foreach_cauto(Product<Orbital>, ito, _orbs){
+    if ( sumorbs.count(*ito) == 0 ) {
+      _internal = false;
+      return false;
+    }
+  }
+  return true;
+}
 
 void Matrix::combine(const Matrix& mat, const Set< uint >& dontorbs)
 {

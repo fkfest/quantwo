@@ -59,6 +59,10 @@ class Matrix {
   // non-conserved electrons
   short lmel() const { return _lmel;};
   Spinsym matspinsym() const { return _matspinsym;};
+  // check whether all orbitals are in sumorbs and set _internal variable
+  bool is_internal(const TOrbSet& sumorbs);
+  // is internal?
+  bool internal() const { return _internal;};
   // combine with mat, in dontorbs: orbital indices in mat to let out
   void combine(const Matrix& mat, const Set<uint>& dontorbs = Set<uint>() );
   // replace orbital orb1 with orb2
@@ -151,6 +155,8 @@ class Matrix {
   Spinsym _matspinsym;
   Product<SQOpT::Gender> _cranorder; // sets creator or annihilator type for every orbital (for density matrices only!)
   bool _antisymform; // W is constructed in antisymmetrized form, but can be expanded later.
+  // for Exc0 and Deexc0 operators: is it completely internal (i.e., part of \sum_\mu T_\mu \tau_mu) or external
+  bool _internal; 
   // number of orbital pairs (== electrons for number-conserving operators and otherwise == conserved particles)
   uint _npairs;
   // non-conserved electrons

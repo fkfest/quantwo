@@ -373,6 +373,12 @@ bool Term::term_is_valid()
   }
   for ( uint i = 0; i < from.size(); ++i ) 
     this->replace(from[i],to[i],false);
+  // check and set external matrices
+  _foreach_auto( Product<Matrix>, itm, _mat ){
+    itm->is_internal(_sumorbs) ;
+    // external matrices only of Deexc0 or Exc0 type! 
+    assert ( itm->internal() || InSet(itm->type(),Ops::Deexc0,Ops::Exc0) ); 
+  }
   return true;
 }
 
@@ -1296,6 +1302,11 @@ void Term::deleteNoneMats(bool unite_exc0)
         ++it;
         continue;
       }
+      if ( it->internal() ) {
+        // the matrix is internal (comming from something like \sum_\mu T_\mu \tau_\mu)
+        it = _mat.erase(it);
+        continue;
+      }
       Set<uint> norbs;
       const Product<Orbital> & orbs = it->orbitals();
       for ( uint io = 0; io < orbs.size(); ++io ){
@@ -1310,8 +1321,8 @@ void Term::deleteNoneMats(bool unite_exc0)
         combineMats(pExc0,it,norbs);
       }
     }
-    matrixkind();
   }
+  matrixkind();
 }
 bool Term::brilloin() const
 {

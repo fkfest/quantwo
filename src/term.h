@@ -35,7 +35,7 @@ class Term {
     Term(Product<SQOp> const & opProd, Product<Kronecker> const & kProd, 
          Product<Matrix> const & mat, const TOrbSet & orbs, const TOrbSet & sumorbs, 
          const TFactor& prefac, const ConnectionsMap& connections);
-    //! validate term
+    //! validate term and finalize settings
     bool term_is_valid();
     //! append Operator
     Term & operator *= (Oper const & t);
@@ -207,6 +207,7 @@ class Term {
     Product<SQOp> _opProd;
     Product<Kronecker>  _kProd;
     Product<Matrix> _mat;
+    // orbitals in term and summation orbitals
     TOrbSet _orbs,_sumorbs;
     TFactor _prefac;
     Sum<Permut,TFactor> _perm;
