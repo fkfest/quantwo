@@ -263,19 +263,44 @@ bool Matrix::equivalent(const Matrix& mat) const
 Equivalents Matrix::equivertices(uint offs) const
 {
   Equivalents everts;
-  // no symmetry in the residual
-  if ( InSet(_type,Ops::Deexc0,Ops::Exc0) ) return everts;
+  // is it an ordered density matrix?
+  bool dmo = (_type == Ops::DensM && Input::iPars["prog"]["dmsort"] > 0);
   EquiVertices ev;
+  OrbitalTypes curorbts;
   // electrons (orbital pairs)
-  for ( uint vert = 0; vert < _npairs; ++vert )
-    if ( spinsym(vert*2) == Singlet )
-      ev.add(vert+offs);
-  if ( ev.size() > 1 ) everts.push_back(ev);
-  ev.clear();
+  uint nextvert = 0;
+  if ( nextvert < _npairs ) do {
+    uint startvert = nextvert;
+    nextvert = 0;
+    curorbts = orbtypes4vertex(startvert,dmo);
+    for ( uint vert = startvert; vert < _npairs; ++vert ) {
+      if ( curorbts == orbtypes4vertex(vert,dmo) ){
+        if ( dmo || spinsym(vert*2) == Singlet )
+          ev.add(vert+offs);
+      } else if ( nextvert == 0 ){
+        nextvert = vert;
+      }
+    }
+    if ( ev.size() > 1 ) everts.push_back(ev);
+    ev.clear();
+  } while (nextvert > 0);
   // non-conserved electrons (single orbitals)
-  for ( uint vert = _npairs; vert < nvertices(); ++vert )
-    ev.add(vert+offs);
-  if ( ev.size() > 1 ) everts.push_back(ev);
+  nextvert = _npairs;
+  if ( nextvert < nvertices()) do {
+    uint startvert = nextvert;
+    nextvert = 0;
+    curorbts = orbtypes4vertex(startvert,dmo);
+    for ( uint vert = startvert; vert < nvertices(); ++vert ) {
+      if ( curorbts == orbtypes4vertex(vert,dmo) ){
+        ev.add(vert+offs);
+      } else if ( nextvert == 0 ){
+        nextvert = vert;
+      }
+    }
+    if ( ev.size() > 1 ) everts.push_back(ev);
+    ev.clear();
+  } while (nextvert > 0);
+  
   return everts;
 }
 Product< Orbital > Matrix::crobs(bool anni) const
@@ -299,6 +324,9 @@ Product< Orbital > Matrix::crobs(bool anni) const
       end = _npairs-1;
       add = -1;
     }
+//   } if ( _type == Ops::Delta ) {
+//     // exchange creators and annihilators in order to correspond to connections (cf. density matrices)
+//     offs = anni ? 0 : 1;
   }
   for ( uint vert = begin; vert != end; vert+=add ){
     orbs.push_back(_orbs[mult*vert+offs]);
@@ -310,6 +338,26 @@ Product< Orbital > Matrix::crobs(bool anni) const
     }
   }
   return orbs;
+}
+OrbitalTypes Matrix::orbtypes4vertex(uint vertex, bool dmo) const
+{
+  OrbitalTypes orbts;
+  if ( vertex < _npairs ){
+    if ( dmo ) {
+      // orbitals4vertices: 1 2 3 3 2 1
+      orbts.push_back(_orbs[vertex].type());
+      orbts.push_back(_orbs[_orbs.size()-1-vertex].type());
+    } else {
+      // orbitals4vertices: 1 1 2 2 3 3
+      orbts.push_back(_orbs[2*vertex].type());
+      orbts.push_back(_orbs[2*vertex+1].type());
+    }
+  } else {
+    // non-conserved electrons
+    assert( vertex < _npairs + std::abs(_lmel) );
+    orbts.push_back(_orbs[_npairs+vertex].type());
+  }
+  return orbts;
 }
 
 void Matrix::reset_vertices()

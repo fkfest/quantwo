@@ -92,6 +92,9 @@ class Matrix {
   Equivalents equivertices(uint offs = 0) const;
   // creators orbitals (if anni=true - annihilators orbitals) (in the same order of electrons!)
   Product<Orbital> crobs(bool anni=false) const;
+  // returns orbital types of orbitals from vertex
+  // dmo: ordered density-matrix
+  OrbitalTypes orbtypes4vertex( uint vertex, bool dmo = false ) const;
   // return true if the matrix is zero
   bool is0() const;
   // set cranorder for density matrix

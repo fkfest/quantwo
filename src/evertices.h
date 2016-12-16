@@ -84,6 +84,19 @@ struct PermVertices : public std::vector<JointVertices> {
       ++itpv;
     }
   };
+  PermVertices(const Equivalents& equis, short int sign = 0) : std::vector<JointVertices>() {
+    this->resize(equis.size());
+    PermVertices::iterator itpv = this->begin();
+    for( const EquiVertices& eqv: equis){
+      itpv->reserve(eqv.size());
+      for ( const JointVertices& jv: eqv){
+        assert( jv.size() == 1 );
+        itpv->push_back(jv.front());
+      }
+      itpv->sign = sign;
+      ++itpv;
+    }
+  };
   // this = ord(pvert) (this should have proper sizes already)
   void set_with_order(const PermVertices& pvert, const Order& ord) {
     assert( this->size() == pvert.size() );

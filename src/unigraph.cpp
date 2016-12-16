@@ -34,13 +34,12 @@ UniGraph::UniGraph(const Term& term) : _sign(1)
     prev = *im;
     // equivalent vertices?
     Equivalents equivs( mat.equivertices(currvert) );
-    _equivs.insert(_equivs.end(),equivs.begin(),equivs.end());
     // creators and annihilators orbitals
     creators *= mat.crobs();
     annihilators *= mat.crobs(true);
     if ( mat.has_pmsym() ) {
-      verts.sign = mat.pmsym();
-      _eqperms.push_back(verts);
+      PermVertices perms(equivs,mat.pmsym());
+      _eqperms.insert(_eqperms.end(),perms.begin(),perms.end());
     }
     if ( InSet(mat.type(),Ops::Deexc0,Ops::Exc0) ){
       // sort external orbitals in order to have the same indices always on the same places
@@ -52,8 +51,12 @@ UniGraph::UniGraph(const Term& term) : _sign(1)
       _extvertices += verts;
       if ( permuteq > 0 ) {
         // allow permutations
-        _eqperms.push_back(verts);
+        PermVertices perms(equivs);
+        _eqperms.insert(_eqperms.end(),perms.begin(),perms.end());
       }
+    } else {
+      // note: no symmetry in the residual
+      _equivs.insert(_equivs.end(),equivs.begin(),equivs.end());
     }
     // for non-conserved vertices
     if ( creators.size() < nextvert ) creators.resize(nextvert);
@@ -76,7 +79,12 @@ UniGraph::UniGraph(const Term& term) : _sign(1)
     } else {
       // find in the annihilators
       int ipos = annihilators.find(*itorb);
-      if ( ipos < 0 ) Error("Implementation error: no annihilator for a creator!");
+      if ( ipos < 0 ) {
+        xout << "Term: " << term << std::endl;
+        xout << "creators: " << creators << std::endl;
+        xout << "annihilators: " << annihilators << std::endl;
+        Error("Implementation error: no annihilator for a creator!");
+      }
       _vertconn.push_back(ipos);
     }
     _orbtypes.push_back(itorb->type());
