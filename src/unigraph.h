@@ -56,6 +56,8 @@ private:
   Order _vertconn;
   // additional permutations to get to vertconn
   Permutation _perms;
+  // sign change (-1 or 1)
+  short _sign;
   // store orbital types according to vertconn
   OrbitalTypes _orbtypes;
   // store external orbitals
@@ -69,6 +71,8 @@ private:
   Equivalents _equivs;
   // vertices for allowed permutations (e.g. external lines etc) and vertices connected to those 
   // (needed because of non-conserving stuff)
+  // also vertices for permutationally symmetric indices (for plus/minus combination of tensors)
+  // for such permutations _eqperms[i].sign is +/-1, otherwise it is 0
   PermVertices _eqperms, _eqperm_from;
   const Term * pTerm;
 };

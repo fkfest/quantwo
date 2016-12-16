@@ -38,11 +38,11 @@ class Matrix {
   enum Spinsym {Singlet, Triplet};
   Matrix();
   // construct from type and orbitals and name
-  Matrix(Ops::Type t, const Product<Orbital>& p, uint npairs, short lmel=0, std::string name="T", 
-           Spinsym matspinsym=Singlet, bool antisymW=true);
+  Matrix(Ops::Type t, const Product<Orbital>& p, uint npairs, short lmel=0, short pmsym=0,
+         std::string name="T", Spinsym matspinsym=Singlet, bool antisymW=true);
   // construct from type and orbitals and name
   Matrix(Ops::Type t, const Product<Orbital>& pcrea, const Product<Orbital>& panni, uint npairs, 
-         short lmel=0, std::string name="T", Spinsym matspinsym=Singlet, bool antisymW=true);
+         short lmel=0, short pmsym=0, std::string name="T", Spinsym matspinsym=Singlet, bool antisymW=true);
   // construct from kronecker
   Matrix(const Kronecker& d);
   // return Type
@@ -58,6 +58,9 @@ class Matrix {
   uint npairs() const { return _npairs;};
   // non-conserved electrons
   short lmel() const { return _lmel;};
+  // plus/minus symmetry for index permutations in spin-integrated form
+  short pmsym() const { return _pmsym;};
+  bool has_pmsym() const { return _pmsym != 0; };
   Spinsym matspinsym() const { return _matspinsym;};
   // check whether all orbitals are in sumorbs and set _internal variable
   bool is_internal(const TOrbSet& sumorbs);
@@ -146,7 +149,7 @@ class Matrix {
   // generate name from type or use the given name
   void gen_name(const std::string& name);
   // sets internal variables. it's used by constructors
-  void create_Matrix(Ops::Type t, uint npairs, short lmel, 
+  void create_Matrix(Ops::Type t, uint npairs, short lmel, short pmsym, 
                      std::string name, Spinsym matspinsym, bool antisymW);
   Ops::Type _type;
   // orbitals in the electron-order
@@ -161,6 +164,9 @@ class Matrix {
   uint _npairs;
   // non-conserved electrons
   short _lmel;
+  // plus/minus symmetry under index permutations (after spin integration!)
+  // i.e., denotes singlet (=1)/triplet (=-1) combinations. default =0 
+  short _pmsym;
   // needed for comparison of terms:
   long int _indx;
   // connected to (index of matrix in term (start from 1!!!)):

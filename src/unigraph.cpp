@@ -1,6 +1,6 @@
 #include "unigraph.h"
 
-UniGraph::UniGraph(const Term& term)
+UniGraph::UniGraph(const Term& term) : _sign(1)
 {
   int permuteq = Input::iPars["prog"]["permuteq"];
   pTerm = &term;
@@ -38,6 +38,10 @@ UniGraph::UniGraph(const Term& term)
     // creators and annihilators orbitals
     creators *= mat.crobs();
     annihilators *= mat.crobs(true);
+    if ( mat.has_pmsym() ) {
+      verts.sign = mat.pmsym();
+      _eqperms.push_back(verts);
+    }
     if ( InSet(mat.type(),Ops::Deexc0,Ops::Exc0) ){
       // sort external orbitals in order to have the same indices always on the same places
       std::sort(creators.begin()+currvert,creators.end());
@@ -91,6 +95,7 @@ UniGraph::UniGraph(const Term& term)
         modify_pvs = true;
       }
     }
+    fromvert.sign = pvs.sign;
     _eqperm_from.push_back(fromvert);
     if (modify_pvs) {
       pvs.erase(std::remove(pvs.begin(),pvs.end(),nverts),pvs.end());
@@ -134,6 +139,7 @@ void UniGraph::apply_eqperms( Order& connections, const Order& vertorder,
   epf.minpermute(connections,epfo);
   // set _perms
   _perms.clear();
+  _sign = 1;
   gen_perms(_eqperms,ep);
   gen_perms(epfo,epf);
 }
@@ -144,12 +150,22 @@ void UniGraph::gen_perms(const PermVertices& from, const PermVertices& to)
   for( const JointVertices& fpv: from){
     assert( itpv->size() == fpv.size() );
     JointVertices::const_iterator it = itpv->begin();
+    uint ndiffs = 0;
     for ( const uint& fp: fpv ) {
       if ( *it != fp ) {
-        assert( _perms.count(*it) == 0 );
-        _perms[*it] = fp;
+        ++ndiffs;
+        if ( fpv.sign == 0 ) {
+          assert( _perms.count(*it) == 0 );
+          _perms[*it] = fp;
+        }
       }
       ++it;
+    }
+    if ( fpv.sign != 0 ) {
+      // simply change the sign: sign=(fpv.sign)^(ndiffs-1)
+      assert( fpv.sign == itpv->sign );
+      for ( uint i = 1; i < ndiffs; ++i )
+        _sign *= fpv.sign;
     }
     ++itpv;
   }
@@ -241,7 +257,7 @@ std::pair<Permut,TFactor> UniGraph::permutation(const UniGraph& ug) const
     assert( perm.first < orbs.size() && perm.second < orbs.size() );
     permuts += Permut(orbs[perm.first],orbs[perm.second]); 
   }
-  return std::make_pair(permuts,pTerm->prefac());
+  return std::make_pair(permuts,pTerm->prefac()*_sign);
 }
 
 Term UniGraph::gen_term()
@@ -309,11 +325,10 @@ Term UniGraph::gen_term()
       }
     }
     // add the matrix to the term
-    term *= Matrix(mat.type(),orbcre,orbani,mat.npairs(),mat.lmel(),mat.name(),mat.matspinsym(),
-                   mat.antisymform());
+    term *= Matrix(mat.type(),orbcre,orbani,mat.npairs(),mat.lmel(),mat.pmsym(),mat.name(),
+                   mat.matspinsym(), mat.antisymform());
     currvert = nextvert;
   }
-  
   return term;
 }
 

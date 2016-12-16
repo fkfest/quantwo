@@ -63,7 +63,7 @@ Oper::Oper(Ops::Type type, bool antisym, Term* pTerm)
     name="X";
   create_Oper(name,antisym);
 }
-Oper::Oper(Ops::Type type, short int exccl, std::string name, int lm, Term* pTerm)
+Oper::Oper(Ops::Type type, short int exccl, std::string name, int lm, int pmsym, Term* pTerm)
 {
   assert( !InSet(type, Ops::FluctP,Ops::Fock,Ops::OneEl,Ops::XPert) );
   _type=type;
@@ -76,18 +76,19 @@ Oper::Oper(Ops::Type type, short int exccl, std::string name, int lm, Term* pTer
     orb0 = Orbital(std::string("A"));
     orb1 = Orbital(std::string("I"));
   }
-  create_Oper(exccl,orb1,orb0,name,lm);
+  create_Oper(exccl,orb1,orb0,name,lm,pmsym);
 }
-Oper::Oper(Ops::Type type, short int exccl, Orbital occ, Orbital virt, std::string name, int lm, Term* pTerm)
+Oper::Oper(Ops::Type type, short int exccl, Orbital occ, Orbital virt, std::string name, 
+           int lm, int pmsym, Term* pTerm)
 {
   assert( !InSet(type, Ops::FluctP,Ops::Fock,Ops::OneEl,Ops::XPert) );
   _type=type;
   p_Term = pTerm;
-  create_Oper(exccl,occ,virt,name,lm);
+  create_Oper(exccl,occ,virt,name,lm,pmsym);
 //   xout << *this << std::endl;
 }
 Oper::Oper(Ops::Type type, short int exccl, const std::map< Orbital::Type, Orbital >& orbnames, 
-           const std::vector<OrbitalTypes>& orbtypes, std::string name, int lm, Term* pTerm)
+           const std::vector<OrbitalTypes>& orbtypes, std::string name, int lm, int pmsym, Term* pTerm)
 {
   assert( !InSet(type, Ops::FluctP,Ops::Fock,Ops::OneEl,Ops::XPert) );
   assert( orbtypes.size() == 2 );
@@ -95,29 +96,29 @@ Oper::Oper(Ops::Type type, short int exccl, const std::map< Orbital::Type, Orbit
   assert( int(orbtypes[1].size()) == exccl+lm );
   _type=type;
   p_Term = pTerm;
-  create_Oper(exccl,orbnames,orbtypes,name,lm);
+  create_Oper(exccl,orbnames,orbtypes,name,lm,pmsym);
 }
 
 Oper::Oper(Ops::Type type, short int exccl, const Product< Orbital >& occs, const Product< Orbital >& virts, 
-           std::string name, int lm, Term* pTerm)
+           std::string name, int lm, int pmsym, Term* pTerm)
 {
   assert( occs.size() + lm == virts.size() );
   assert( occs.size() == uint(exccl) );
   assert( !InSet(type, Ops::FluctP,Ops::Fock,Ops::OneEl,Ops::XPert) );
   _type=type;
   p_Term = pTerm;
-  create_Oper(occs,virts,name);
+  create_Oper(occs,virts,name,pmsym);
 }
-Oper::Oper(Ops::Type type, const Product< Orbital >& orbs, std::string name, int lm)
+Oper::Oper(Ops::Type type, const Product< Orbital >& orbs, std::string name, int lm, int pmsym)
 {
   assert( !InSet(type, Ops::FluctP,Ops::Fock,Ops::OneEl,Ops::XPert) );
   _type=type;
   p_Term = 0;
-  create_Oper(orbs,name,lm);
+  create_Oper(orbs,name,lm,pmsym);
 }
 
 Oper::Oper(Ops::Type type, short int exccl, const std::vector<OrbitalTypes>& orbtypes, 
-           std::string name, int lm, Term* pTerm)
+           std::string name, int lm, int pmsym, Term* pTerm)
 {
   assert( !InSet(type, Ops::FluctP,Ops::Fock,Ops::OneEl,Ops::XPert) );
   assert( orbtypes.size() == 2 );
@@ -143,7 +144,7 @@ Oper::Oper(Ops::Type type, short int exccl, const std::vector<OrbitalTypes>& orb
     orbnames[Orbital::Act] = Orbital(std::string(1,char(std::toupper(orbs["actorb"][0]))));
     orbnames[Orbital::GenT] = Orbital(std::string(1,char(std::toupper(orbs["genorb"][0]))));
   }
-  create_Oper(exccl,orbnames,orbtypes,name,lm);
+  create_Oper(exccl,orbnames,orbtypes,name,lm,pmsym);
 }
 
 void Oper::create_Oper(const std::string& name, bool antisym)
@@ -185,10 +186,10 @@ void Oper::create_Oper(const std::string& name, bool antisym)
     _prefac /= 4;
   }
   short npairs = porbs.size()/2;
-  _mat=Matrix(_type,porbs,npairs,0,name,spinsym,antisym);
+  _mat=Matrix(_type,porbs,npairs,0,0,name,spinsym,antisym);
 }
 void Oper::create_Oper(short int const & exccl,Orbital const & occ, Orbital const & virt, 
-                       std::string const & name, int lm)
+                       std::string const & name, int lm, int pmsym)
 {
   assert( !InSet(_type, Ops::FluctP,Ops::Fock,Ops::OneEl,Ops::XPert) );
   std::string excl;
@@ -204,10 +205,10 @@ void Oper::create_Oper(short int const & exccl,Orbital const & occ, Orbital cons
     if ( i < nvirt )
       virts *= Orbital(virt.name()+excl,virt.spin());
   }
-  create_Oper(occs,virts,name);
+  create_Oper(occs,virts,name,pmsym);
 }
 void Oper::create_Oper(const short int& exccl, const std::map< Orbital::Type, Orbital >& orbnames, 
-                       const std::vector<OrbitalTypes>& orbtypes, const std::string& name, int lm)
+                       const std::vector<OrbitalTypes>& orbtypes, const std::string& name, int lm, int pmsym)
 {
   assert( !InSet(_type, Ops::FluctP,Ops::Fock,Ops::OneEl,Ops::XPert) );
   std::string excl;
@@ -242,10 +243,11 @@ void Oper::create_Oper(const short int& exccl, const std::map< Orbital::Type, Or
     const Orbital& virt(orbnames.at(virtype[i]));
     virts *= Orbital(virt.name()+excl,virt.spin());
   }
-  create_Oper(occs,virts,name);
+  create_Oper(occs,virts,name,pmsym);
 }
 
-void Oper::create_Oper(const Product< Orbital >& occs, const Product< Orbital >& virts, const std::string& name)
+void Oper::create_Oper(const Product< Orbital >& occs, const Product< Orbital >& virts, 
+                       const std::string& name, int pmsym)
 {
   assert( !InSet(_type, Ops::FluctP,Ops::Fock,Ops::OneEl,Ops::XPert) );
   Matrix::Spinsym spinsym = Matrix::Singlet;
@@ -290,10 +292,10 @@ void Oper::create_Oper(const Product< Orbital >& occs, const Product< Orbital >&
       porbs *= orb;
     }
   }
-  create_Oper(porbs,name,p_orb0->size()-p_orb1->size());
+  create_Oper(porbs,name,p_orb0->size()-p_orb1->size(),pmsym);
 }
 
-void Oper::create_Oper(const Product< Orbital >& orbs, const std::string& name, int lm)
+void Oper::create_Oper(const Product< Orbital >& orbs, const std::string& name, int lm, int pmsym)
 {
   assert( !InSet(_type, Ops::FluctP,Ops::Fock,Ops::OneEl,Ops::XPert) );
   bool spinintegr = Input::iPars["prog"]["spinintegr"];
@@ -372,7 +374,7 @@ void Oper::create_Oper(const Product< Orbital >& orbs, const std::string& name, 
     }
     _prefac = 1/_prefac;
   }
-  _mat=Matrix(_type,orbs,npairs,lm,name,spinsym);
+  _mat=Matrix(_type,orbs,npairs,lm,pmsym,name,spinsym);
 
 }
 

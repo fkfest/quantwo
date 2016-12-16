@@ -329,6 +329,12 @@ TermSum Q2::EqualTerms(const TermSum& s, double minfac)
         ugraphs.push_back(ug);
       } 
     } else {
+      for ( const Matrix& mat: term.mat() ){
+        if (mat.has_pmsym()) {
+          xout << "Tensor " << mat << " has plus/minus symmetry" << std::endl;
+          error("Use eqway>1 for tensors with plus/minus symmetry");
+        }
+      }
       added=false;
       for ( TermSum::iterator k=sum.begin();k!=sum.end(); ++k) {
         Permut perm;

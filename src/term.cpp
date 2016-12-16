@@ -248,7 +248,7 @@ void Term::addoverlaps()
             oorbs[0] = _mat[cl.imat].orbitals()[cl.idx];
             oorbs[1] = orb;
           }
-          _mat *= Matrix(Ops::Overlap,oorbs,1,0,"S");
+          _mat *= Matrix(Ops::Overlap,oorbs,1,0,0,"S");
         }
       }
     }

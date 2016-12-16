@@ -19,16 +19,17 @@ Product< Orbital > Ops::genprodorb(short int exccl, const Orbital& occ, const Or
 
 Matrix::Matrix() // : _type(Interm)
 {
-  create_Matrix(Ops::None,0,0,"",Singlet,false);
+  create_Matrix(Ops::None,0,0,0,"",Singlet,false);
 }
-Matrix::Matrix(Ops::Type t, const Product< Orbital >& p, uint npairs, short lmel, 
+Matrix::Matrix(Ops::Type t, const Product< Orbital >& p, uint npairs, short lmel, short pmsym,
                    std::string name, Matrix::Spinsym matspinsym, bool antisymW)
 {
   _orbs = p;
-  create_Matrix(t,npairs,lmel,name,matspinsym,antisymW);
+  create_Matrix(t,npairs,lmel,pmsym,name,matspinsym,antisymW);
 }
 Matrix::Matrix(Ops::Type t, const Product< Orbital >& pcrea, const Product< Orbital >& panni, 
-               uint npairs, short int lmel, std::string name, Matrix::Spinsym matspinsym, bool antisymW)
+               uint npairs, short int lmel, short pmsym, std::string name, 
+               Matrix::Spinsym matspinsym, bool antisymW)
 {
   assert( pcrea.size() == panni.size()+lmel );
   _orbs.reserve(pcrea.size()+panni.size());
@@ -57,16 +58,16 @@ Matrix::Matrix(Ops::Type t, const Product< Orbital >& pcrea, const Product< Orbi
       }
     }
   }
-  create_Matrix(t,npairs,lmel,name,matspinsym,antisymW);
+  create_Matrix(t,npairs,lmel,pmsym,name,matspinsym,antisymW);
 }
 
 Matrix::Matrix(const Kronecker& d)
 {
   _orbs.push_back(d.orb1());
   _orbs.push_back(d.orb2());
-  create_Matrix(Ops::Delta,1,0,"",Singlet,false);
+  create_Matrix(Ops::Delta,1,0,0,"",Singlet,false);
 }
-void Matrix::create_Matrix(Ops::Type t, uint npairs, short int lmel, 
+void Matrix::create_Matrix(Ops::Type t, uint npairs, short int lmel, short int pmsym,
                            std::string name, Matrix::Spinsym matspinsym, bool antisymW)
 {
   _type=t;
@@ -74,6 +75,7 @@ void Matrix::create_Matrix(Ops::Type t, uint npairs, short int lmel,
   _npairs=npairs;
   assert(_npairs <= _orbs.size()/2);
   _lmel = lmel;
+  _pmsym = pmsym;
   assert(2*_npairs+std::abs(_lmel) == _orbs.size());
   assert((_orbs.size()-_lmel)%2 == 0 && (_orbs.size()+_lmel)%2 == 0 );
   _matspinsym=matspinsym;

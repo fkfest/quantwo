@@ -58,7 +58,7 @@ LExcitationMap::iterator LExcitationMap::get_add(const std::string& name, int lm
     opstype = Ops::Deexc0;
   else
     opstype = Ops::Exc0;
-  Oper op(opstype,excl,orb4t,orbtypes,"",lmel,&_globalterm);
+  Oper op(opstype,excl,orb4t,orbtypes,"",lmel,0,&_globalterm);
   
   return (this->insert(std::make_pair(name,LExcitationInfo(op.mat().orbitals(),lmel,exc.spinsym)))).first;
 }
@@ -87,7 +87,7 @@ void LExcitationMap::correct_orbs(const Product< Orbital >& orbs)
 }
 
 LParsedName::LParsedName(const std::string& namein, uint try2set, bool strict)
-              : lmel(0),dg(false),excl(-1),spinsym(Matrix::Singlet)
+              : lmel(0),dg(false),excl(-1),spinsym(Matrix::Singlet),pmsym(0)
 {
   std::string upname, downname;
   foundsscipt = IL::nameupdown(name,upname,downname,namein);
@@ -135,6 +135,7 @@ void LParsedName::parse_superscript(const std::string& up, uint try2set)
 {
   const TParArray& dgs = Input::aPars["syntax"]["dg"];
   const TParArray& lessmore = Input::aPars["syntax"]["lessmore"];
+  const TParArray& plusminus = Input::aPars["syntax"]["plusminus"];
   bool spinintegr = Input::iPars["prog"]["spinintegr"];
   const std::string& supername = Input::sPars["command"]["supername"];
   Spin::Type spintype = Spin::Gen;
@@ -152,7 +153,13 @@ void LParsedName::parse_superscript(const std::string& up, uint try2set)
     if( try2set&Dg && InSet(word, dgs) ) {
       dg=true;
       nameadd += dgs.front()+" ";
-    
+    } else if ( try2set&PlusMinussym && InSet(word,plusminus) ){
+      // it is plus/minus symmetry
+      if ( word == plusminus.front() )
+        pmsym = 1;
+      else
+        pmsym = -1;
+      nameadd += word+" ";
     } else if ( try2set&Lmel && InSet(word,lessmore) ){
       // it is less/more
       ipos=ipos1;
@@ -483,13 +490,13 @@ Oper LEquation::handle_excitation(Term& term, const std::string& name,
   if (excopsonly) {
     return Oper();
   } else if (dg && op.found_orbs()) {
-    return Oper(Ops::Deexc0,op.excl,op.occ,op.virt,"",lmel,&term);
+    return Oper(Ops::Deexc0,op.excl,op.occ,op.virt,"",lmel,0,&term);
   } else if (dg) {
-    return Oper(Ops::Deexc0, itex->second.orbitals(dg),"",itex->second.lmel(dg));
+    return Oper(Ops::Deexc0, itex->second.orbitals(dg),"",itex->second.lmel(dg),0);
   } else if (op.found_orbs()) {
-    return Oper(Ops::Exc0,op.excl,op.occ,op.virt,"",lmel,&term);
+    return Oper(Ops::Exc0,op.excl,op.occ,op.virt,"",lmel,0,&term);
   } else {
-    return Oper(Ops::Exc0,itex->second.orbitals(dg),"",itex->second.lmel(dg));
+    return Oper(Ops::Exc0,itex->second.orbitals(dg),"",itex->second.lmel(dg),0);
   }
 }
 
@@ -557,10 +564,11 @@ Oper LEquation::handle_operator(const Lelem& lel, Term& term, bool excopsonly)
     return handle_excitation(term,lel.name(),false,0,excopsonly);
   }
 #define _LPN LParsedName
-  op = LParsedName(lel.name(),_LPN::Lmel|_LPN::Dg|_LPN::Nameadd|_LPN::Excl|_LPN::Orbtypes);
+  op = LParsedName(lel.name(),_LPN::Lmel|_LPN::Dg|_LPN::Nameadd|_LPN::Excl|_LPN::Orbtypes|_LPN::PlusMinussym);
 #undef _LPN
   std::string name = op.name;
   int lmelec = op.lmel;
+  int pmsym = op.pmsym;
   
   // parts of Hamilton operator
   if ( InSet(name, hms)) {
@@ -582,14 +590,14 @@ Oper LEquation::handle_operator(const Lelem& lel, Term& term, bool excopsonly)
     Error("Excitation class in "+lel.name());
   if (op.orbtypes.size() == 0){
     if(op.dg)
-      return Oper(Ops::Deexc,op.excl,name,lmelec,&term);
+      return Oper(Ops::Deexc,op.excl,name,lmelec,pmsym,&term);
     else
-      return Oper(Ops::Exc,op.excl,name,lmelec,&term);
+      return Oper(Ops::Exc,op.excl,name,lmelec,pmsym,&term);
   } else {
     if(op.dg)
-      return Oper(Ops::Deexc,op.excl,op.orbtypes,name,lmelec,&term);
+      return Oper(Ops::Deexc,op.excl,op.orbtypes,name,lmelec,pmsym,&term);
     else
-      return Oper(Ops::Exc,op.excl,op.orbtypes,name,lmelec,&term);
+      return Oper(Ops::Exc,op.excl,op.orbtypes,name,lmelec,pmsym,&term);
   }
 }
 
@@ -649,22 +657,22 @@ Permut LEquation::handle_permutation(const Lelem& lel) const
 Matrix LEquation::handle_tensor(const Lelem& lel)
 {
 #define _LPN LParsedName
-  LParsedName op(lel.name(),_LPN::Lmel|_LPN::Dg|_LPN::Orbs|_LPN::Excitation|_LPN::Nameadd,false);
+  LParsedName op(lel.name(),_LPN::Lmel|_LPN::Dg|_LPN::Orbs|_LPN::Excitation|_LPN::Nameadd|_LPN::PlusMinussym,false);
 #undef _LPN
   std::string name = op.name;
   IL::add2name(name,op.nameadd); // add nameadd to name (as superscript)
   if ( op.found_orbs() ){
     // orbitals
-    return Matrix(Ops::Interm,op.orbs(),op.excl,op.lmel,name,op.spinsym);
+    return Matrix(Ops::Interm,op.orbs(),op.excl,op.lmel,op.pmsym,name,op.spinsym);
   } else if ( !op.excitation.empty() ){
     // something like \mu_1
     LExcitationMap::const_iterator itex = _excops.get_add(op.excitation,op.lmel);
   
     return Matrix(Ops::Interm,itex->second.orbitals(op.dg),itex->second.exccls(op.dg), 
-                    itex->second.lmel(op.dg),name,itex->second.spinsymexcs());
+                    itex->second.lmel(op.dg),op.pmsym,name,itex->second.spinsymexcs());
   } else { 
     // no subscript, tensor is a "number"
-    return Matrix(Ops::Number,Product<Orbital>(),0,0,name);
+    return Matrix(Ops::Number,Product<Orbital>(),0,0,0,name);
   }
 }
 

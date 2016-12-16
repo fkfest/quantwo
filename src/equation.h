@@ -87,7 +87,8 @@ struct LParsedName {
     Excl = 0x010,       // 1, 2, 3...
     Excitation = 0x020, // \mu_1, \nu_3
     Orbtypes = 0x040,   // ^{ii}_{ta}
-    Spinsym = 0x080     // singlet or triplet
+    Spinsym = 0x080,    // singlet or triplet
+    PlusMinussym = 0x1  // plus/minus symmetry of the matrix
   };
   int lmel;
   std::string name, nameadd, excitation;
@@ -98,7 +99,8 @@ struct LParsedName {
   // orbital types (first set for occ and second set for virt indices )
   std::vector<OrbitalTypes> orbtypes;
   Matrix::Spinsym spinsym;
-  LParsedName() : lmel(0),dg(false),excl(-1),spinsym(Matrix::Singlet){};
+  short int pmsym;
+  LParsedName() : lmel(0),dg(false),excl(-1),spinsym(Matrix::Singlet),pmsym(0){};
   // parse namein for name, subscript and superscript
   // if try2set=Name - stop after setting the name
   LParsedName( const std::string& namein, uint try2set, bool strict = true );

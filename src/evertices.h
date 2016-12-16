@@ -10,7 +10,17 @@
 #include "globals.h"
 #include "utilities.h"
 
-typedef Array<uint> JointVertices;
+struct JointVertices : public Array<uint> {
+  typedef Array<uint> Base;
+  JointVertices() : Base(), sign(0){};
+  JointVertices(uint n, uint vert) : Base(n,vert), sign(0){};
+  // sign for permutational symmetry
+  // +1 : the tensor is symmetric
+  //  0 : the tensor is non-symmetric
+  // -1 : the tensor is anti-symmetric
+  short int sign;
+};
+
 struct EquiVertices : public std::vector<JointVertices> {
   EquiVertices() : std::vector<JointVertices>(){};
   void add( const JointVertices& jv ) { 
