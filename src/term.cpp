@@ -1244,8 +1244,15 @@ void Term::reduceElectronsInTerm()
 }
 void Term::krons2mats()
 {
+  // try to guess the proper order of the indices in the Kroneckers
+  // creators and annihilators orbitals
+  Product<Orbital> creators, annihilators;
+  for ( const Matrix& mat: _mat ){
+    creators *= mat.crobs();
+    annihilators *= mat.crobs(true);
+  }
   _foreach_cauto(Product<Kronecker>,ik,_kProd){
-    _mat.push_back(Matrix(*ik));
+    _mat.push_back(Matrix(*ik,ik->is_ordered(creators,annihilators)));
   }
   _kProd = Product<Kronecker>();
 }

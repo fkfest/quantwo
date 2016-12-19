@@ -18,6 +18,8 @@ public:
     Orbital orb1() const;
     //! get second index
     Orbital orb2() const;
+    // check the ordering
+    bool is_ordered( const Product<Orbital>& crobs, const Product<Orbital>& anobs ) const;
     //! "artificial" ordering relation (for sorting purposes)
     bool operator < (Kronecker const & k) const;
     // replace orbital orb1 with orb2

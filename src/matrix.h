@@ -44,7 +44,7 @@ class Matrix {
   Matrix(Ops::Type t, const Product<Orbital>& pcrea, const Product<Orbital>& panni, uint npairs, 
          short lmel=0, short pmsym=0, std::string name="T", Spinsym matspinsym=Singlet, bool antisymW=true);
   // construct from kronecker
-  Matrix(const Kronecker& d);
+  Matrix(const Kronecker& d, bool ordered = true);
   // return Type
   Ops::Type type() const;
   // return const reference to Product of orbitals

@@ -61,10 +61,15 @@ Matrix::Matrix(Ops::Type t, const Product< Orbital >& pcrea, const Product< Orbi
   create_Matrix(t,npairs,lmel,pmsym,name,matspinsym,antisymW);
 }
 
-Matrix::Matrix(const Kronecker& d)
+Matrix::Matrix(const Kronecker& d, bool ordered)
 {
-  _orbs.push_back(d.orb1());
-  _orbs.push_back(d.orb2());
+  if ( ordered ){
+    _orbs.push_back(d.orb1());
+    _orbs.push_back(d.orb2());
+  } else {
+    _orbs.push_back(d.orb2());
+    _orbs.push_back(d.orb1());
+  }
   create_Matrix(Ops::Delta,1,0,0,"",Singlet,false);
 }
 void Matrix::create_Matrix(Ops::Type t, uint npairs, short int lmel, short int pmsym,
@@ -313,18 +318,26 @@ Product< Orbital > Matrix::crobs(bool anni) const
     begin = 0, 
     end = _npairs,
     add = 1;
-  if ( _type == Ops::DensM && Input::iPars["prog"]["dmsort"] > 0 ) {
-    // different order of electrons: 1,2,...2, 1
-    // note that here we exchange creators and annihilators in order to correspond to connections
-    // i.e., for something like T^v_u \gamma^u_v we call "u" in gamma annihilator and "v" - creator!
-    mult = 1;
-    offs = 0;
-    if ( !anni ){
-      begin = 2*_npairs-1;
-      end = _npairs-1;
-      add = -1;
+  if ( _type == Ops::DensM ) {
+    if ( Input::iPars["prog"]["dmsort"] > 0 ) {
+      // different order of electrons: 1,2,...2, 1
+      // note that here we exchange creators and annihilators in order to correspond to connections
+      // i.e., for something like T^v_u \gamma^u_v we call "u" in gamma annihilator and "v" - creator!
+      mult = 1;
+      offs = 0;
+      if ( !anni ){
+        begin = 2*_npairs-1;
+        end = _npairs-1;
+        add = -1;
+      }
+    } else {
+      // use order stored in _cranorder
+      for ( uint iorb = 0; iorb < 2*_npairs; ++iorb ){
+        if ( (_cranorder[iorb] == SQOpT::Creator) == anni )
+          orbs.push_back(_orbs[iorb]);
+      }
     }
-//   } if ( _type == Ops::Delta ) {
+//   } else if ( _type == Ops::Delta ) {
 //     // exchange creators and annihilators in order to correspond to connections (cf. density matrices)
 //     offs = anni ? 0 : 1;
   }

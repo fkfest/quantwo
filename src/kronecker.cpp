@@ -14,6 +14,32 @@ Orbital Kronecker::orb1() const
 Orbital Kronecker::orb2() const
 {   return _orb2;   }
 
+bool Kronecker::is_ordered(const Product< Orbital >& crobs, const Product< Orbital >& anobs) const
+{
+  bool orb1anni = ( crobs.find(_orb1) >= 0 );
+  bool orb2anni = ( crobs.find(_orb2) >= 0 );
+  bool orb1crea = ( anobs.find(_orb1) >= 0 );
+  bool orb2crea = ( anobs.find(_orb2) >= 0 );
+  if ( (orb1anni && orb2anni) || (orb1crea && orb2crea) ) {
+    xout << "crobs: " << crobs << std::endl;
+    xout << "anobs: " << anobs << std::endl;
+    xout << "Kronecker: " << *this << std::endl;
+    error("Type mismatch in crobs and anobs in term for Kronecker");
+  }
+  bool ordered = false;
+  if ( orb1anni || orb2crea ) {
+    ordered = false;
+  } else if ( orb2anni || orb1crea ) {
+    ordered = true;
+  } else { 
+    xout << "crobs: " << crobs << std::endl;
+    xout << "anobs: " << anobs << std::endl;
+    xout << "Kronecker: " << *this << std::endl;
+    error("Cannot guess the order of orbitals in Kronecker");
+  }
+  return ordered;
+}
+
 bool Kronecker::operator < (Kronecker const & k) const
 {
     if ( _orb1<k._orb1 )
