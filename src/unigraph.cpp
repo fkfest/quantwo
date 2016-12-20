@@ -324,12 +324,18 @@ Term UniGraph::gen_term()
     assert( nextvert <= nverts );
     // use connection vectors and list of orbitals to create the product of orbitals of mat
     Product<Orbital> orbcre, orbani;
+    Product<Orbital> * porbcre = &orbcre,
+                     * porbani = &orbani;
+    if ( mat.type() == Ops::DensM ) {
+      // definition here is opposite to the Matrix
+      std::swap(porbcre,porbani);
+    }
     for ( uint ivert = currvert; ivert < nextvert; ++ivert ){
       if ( _vertconn[ivert] < nverts ) {
-        orbcre.push_back(_neworbs[ivert]);
+        porbcre->push_back(_neworbs[ivert]);
       }
       if ( annicon[ivert] < nverts ) {
-        orbani.push_back(_neworbs[annicon[ivert]]);
+        porbani->push_back(_neworbs[annicon[ivert]]);
       }
     }
     // add the matrix to the term
