@@ -307,14 +307,17 @@ TermSum Q2::EqualTerms(const TermSum& s, double minfac)
       uterms.push_back(term);
       Term & uterm = uterms.back(); 
       uterm.set_prefac(prefac);
-//       xout << "Term: " << uterm << std::endl;
+//       bool print = ( uterm.mat().size() == 2); 
+//       if (print) xout << "Term: " << uterm << std::endl;
       UniGraph ug(uterm);
 //       xout << ug << std::endl;
       ug.minimize();
       added=false;
       for ( uint igr = 0; igr < ugraphs.size(); ++igr ){
         if ( ug.is_equal(ugraphs[igr]) ) {
+//           if (print) xout << "before add " << newterms[igr] << std::endl;
           newterms[igr] += ug.permutation(ugraphs[igr]);
+//           if (print) xout << "after add " << newterms[igr] << std::endl;
           added=true;
           break;
         }
@@ -324,10 +327,10 @@ TermSum Q2::EqualTerms(const TermSum& s, double minfac)
         uterms.pop_back();
       } else {
         term = ug.gen_term();
-//         xout << term << std::endl;
+//         if (print) xout << term << std::endl;
         newterms.push_back(term);
         ugraphs.push_back(ug);
-      } 
+      }
     } else {
       for ( const Matrix& mat: term.mat() ){
         if (mat.has_pmsym()) {

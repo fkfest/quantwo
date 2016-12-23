@@ -49,7 +49,9 @@ private:
   void apply_eqperms(Order& connections, const Order& vertorder,
                      PermVertices& ep, PermVertices& epf, PermVertices& epfo);
   // set _perms
-  void gen_perms(const PermVertices& from, const PermVertices& to);
+  // create neworder from the permvertices
+  void gen_perms(const PermVertices& from, const PermVertices& to, 
+                 Order& neworder );
   // canonical order of matrices
   Order _matsord;
   // vertices connections v[0]=1 --> a line from vertex 0 to 1

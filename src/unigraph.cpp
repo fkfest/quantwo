@@ -139,19 +139,29 @@ Product< Matrix > UniGraph::ordmats() const
 void UniGraph::apply_eqperms( Order& connections, const Order& vertorder,
                               PermVertices& ep, PermVertices& epf, PermVertices& epfo )
 {
+  Order permorder,neworder;
+  permorder.identity(vertorder.size());
+  neworder.resize(vertorder.size());
   ep = _eqperms;
-  epf.set_with_order(_eqperm_from,vertorder);
-  epf.sort();
-  epfo = epf;
   ep.minpermute(connections,_eqperms);
-  epf.minpermute(connections,epfo);
   // set _perms
   _perms.clear();
   _sign = 1;
-  gen_perms(_eqperms,ep);
-  gen_perms(epfo,epf);
+  gen_perms(_eqperms,ep,permorder);
+  // permute vertorder according to permorder in order to incorporate permutations from _eqperms
+  for(uint i = 0; i < vertorder.size(); ++i){
+    neworder[i] = permorder[vertorder[i]];
+  }
+  // handle "from" permutations
+  epf.set_with_order(_eqperm_from,neworder);
+  epf.sort();
+  epfo = epf;
+  epf.minpermute(connections,epfo);
+  // add to _perms
+  gen_perms(epfo,epf,permorder);
 }
-void UniGraph::gen_perms(const PermVertices& from, const PermVertices& to)
+void UniGraph::gen_perms(const PermVertices& from, const PermVertices& to,
+                         Order& neworder)
 {
   assert( from.size() == to.size() );
   PermVertices::const_iterator itpv = to.begin();
@@ -162,6 +172,7 @@ void UniGraph::gen_perms(const PermVertices& from, const PermVertices& to)
     for ( const uint& fp: fpv ) {
       if ( *it != fp ) {
         ++ndiffs;
+        neworder[*it] = fp;
         if ( fpv.sign == 0 ) {
           assert( _perms.count(*it) == 0 );
           _perms[*it] = fp;
@@ -183,7 +194,7 @@ void UniGraph::minimize()
 {
   int permuteq = Input::iPars["prog"]["permuteq"];
   bool permute4each_vertorder = (permuteq > 1);
-  // order of vertices
+  // order of vertices, i.e., where is the vertex i
   Order vertorder;
   vertorder.identity(_vertconn.size());
   // last value for not connected vertices
@@ -193,14 +204,18 @@ void UniGraph::minimize()
   Order
     minvertorder(vertorder),
     connections(_vertconn);
+//   xout << vertorder << " --> " << connections << std::endl;
   Permutation
     min_perms;
+  short
+    min_sign = 1;
   if (permute4each_vertorder) {
     // allowed permutations
     apply_eqperms(connections,vertorder,eq_perms,eq_perm_from,eq_perm_from_orig);
     min_eq_perms = eq_perms;
     min_eq_perm_from = eq_perm_from;
     min_perms = _perms;
+    min_sign = _sign;
   }
   Order minconn(connections);
   bool nextperm;
@@ -215,6 +230,7 @@ void UniGraph::minimize()
       // create new connection vector and compare to the old one
       for ( uint i = 0; i < _vertconn.size(); ++i )
         connections[vertorder[i]] = vertorder[_vertconn[i]];
+//       xout << "before permut " << vertorder << " --> " << connections << std::endl;
       if (permute4each_vertorder) {
         // allowed permutations
         apply_eqperms(connections,vertorder,eq_perms,eq_perm_from,eq_perm_from_orig);
@@ -224,6 +240,7 @@ void UniGraph::minimize()
           min_eq_perms = eq_perms;
           min_eq_perm_from = eq_perm_from;
           min_perms = _perms;
+          min_sign = _sign;
           minconn = connections;
           minvertorder = vertorder;
         }
@@ -239,6 +256,7 @@ void UniGraph::minimize()
     apply_eqperms(minconn,minvertorder,eq_perms,eq_perm_from,eq_perm_from_orig);
   } else {
     _perms = min_perms;
+    _sign = min_sign;
   }
   _vertconn = minconn;
 //   xout << "Smallest connection vector: " << minvertorder << " --> " << minconn << std::endl;
