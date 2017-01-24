@@ -497,14 +497,29 @@ bool Term::equal(Term& t, Permut& perm)
           break;
         }
       }
+      SQOpT::Gender genorb = mat[ithis].genderguess(ipos);
       assert(ordmatt.size() == tmat.size());
+      ipost = -1;
       for (unsigned int jo=0; jo<ordmatt.size(); jo++) {
         unsigned int j = ordmatt[jo];
-        ipost = tmat[j].orbitals().find(orb1t);
-        if (ipost >= 0) {
+        ++ipost;
+        ipost = tmat[j].orbitals().find(orb1t,ipost);
+        if (ipost >= 0 ) {
+          if ( !exter && tmat[j].genderguess(ipost) != genorb) { 
+            // orbitals come from different gendered operators
+            // exclude external indices from the gender-check because of the ambiguity in particle-nonconserved matrices
+            --jo; // check same matrix again
+            continue;
+          }
           ithist=j;
           break;
         }
+        ipost = -1;
+      }
+      if ( ipost < 0 ) {
+        // not found
+        equal=false;
+        continue;
       }
       do {
         // find orbital which corresponds to the same electron
@@ -522,7 +537,8 @@ bool Term::equal(Term& t, Permut& perm)
         if ( ipost < 0 ) break;
         orb1t = tmat[ithist].orbitals()[ipost];
         
-        if (orb1.type() != orb1t.type() || !mat[ithis].vertices(ipos,tmat[ithist],ipost,ithis))
+        if (orb1.type() != orb1t.type() || !mat[ithis].vertices(ipos,tmat[ithist],ipost,ithis) ||
+            mat[ithis].genderguess(ipos) != tmat[ithist].genderguess(ipost) )
           equal=false;
         else { 
           exter1= (peo.count(orb1));
