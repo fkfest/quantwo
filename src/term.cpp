@@ -37,6 +37,9 @@ Term& Term::operator*=(const Oper& op)
   _orbs *= op.orbs();
   _sumorbs *= op.sumorbs();
   _prefac *= op.prefac();
+  if ( op.sumops().size() > 0 )
+    _termsfacs *= op.sumops();
+  assert( _opProd.size() == 0 || _termsfacs.size() == 0 );
   return *this;
 }
 Term& Term::operator*=(const TFactor& fac)
@@ -83,6 +86,12 @@ Term& Term::operator*=(const Sum< Permut, TFactor >& perm)
 
 Term& Term::operator*=(const Term& t)
 {
+#ifndef NDEBUG
+  // all orbitals should differ!
+  _foreach_cauto( TOrbSet, itorb, _orbs ){
+    assert( t._orbs.find(*itorb) == t._orbs.end() );
+  }
+#endif
   _opProd *= t._opProd;
   _kProd *= t._kProd;
   _mat *= t._mat;
@@ -90,6 +99,8 @@ Term& Term::operator*=(const Term& t)
   _sumorbs *= t._sumorbs;
   _prefac *= t._prefac;
   *this *= t._perm;
+  _termsfacs *= t._termsfacs;
+  assert( _opProd.size() == 0 || _termsfacs.size() == 0 );
   return *this;
 }
 Term& Term::operator*=(const Matrix& mat)
@@ -185,6 +196,31 @@ void Term::replacematrix(const Matrix& mat, lui ipos)
     error("The position is outside of this term: "+any2str(ipos),"Term::replacematrix");
   _mat[ipos]=mat;
 }
+
+TermSum Term::expandtermsfacs()
+{
+  TermSum ts, tts;
+  Product<TermSum> trmsfacs= _termsfacs;
+  _termsfacs.clear();
+  ts += *this;
+  _foreach_cauto( Product<TermSum>, itfs, trmsfacs ){
+    _foreach_cauto( TermSum, its, ts ){
+      TermSum trms = its->first.times(*itfs);
+      trms *= its->second;
+      tts += trms;
+    }
+    ts = tts;
+    tts.clear();
+  }
+#ifndef NDEBUG
+  // all termsfacs in ts should be empty
+  _foreach_cauto( TermSum, its, ts ){
+    assert( its->first._termsfacs.size() == 0 );
+  }
+#endif
+  return ts;
+}
+
 void Term::addoverlaps()
 {
   TOrbSet orbs_done;
@@ -396,6 +432,8 @@ bool Term::operator < (Term const & t) const
     if ( _orbs>t._orbs ) return false;
     if ( _perm<t._perm) return false;
     if ( t._perm<_perm) return true;
+    if ( _termsfacs<t._termsfacs) return true;
+    if ( t._termsfacs<_termsfacs) return false;
     if (_connections < t._connections) return true;
     if (t._connections < _connections) return false;
     return _prefac<t._prefac;
@@ -621,6 +659,14 @@ std::ostream & operator << (std::ostream & o, Term const & t)
     o << "*";
   o << t.opProd();
   MyOut::pcurout->lenbuf += t.opProd().size()*2;
+  if ( t.termsfacs().size() > 0 ) {
+    Product<TermSum> tts = t.termsfacs();
+    _foreach_cauto( Product<TermSum>, itts, tts ){
+      MyOut::pcurout->lenbuf++ ; // for "("
+      o << "(" << *itts << ")";
+      MyOut::pcurout->lenbuf++ ; // for ")"
+    }
+  }
 return o;
 }
 

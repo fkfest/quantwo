@@ -58,6 +58,7 @@ class SQOp {
 std::ostream & operator << (std::ostream & o, SQOp const & op);
 
 class Term;
+typedef Sum<Term,TFactor> TermSum;
 /*! 
     Implements Operators in second quantized form
 */
@@ -87,6 +88,8 @@ class Oper {
   Matrix mat() const;
   //return operator
   Product<SQOp> SQprod() const;
+  //return sum of operators/matrices - for the generalized normal ordering
+  TermSum sumops() const { return _sumops; }
   //return prefactor
   TFactor prefac() const;
   // return orbitals
@@ -106,11 +109,21 @@ class Oper {
                    const std::string& name, int pmsym);
   // create operator using orbitals in orbs (in the given order and spins!)
   void create_Oper(const Product<Orbital>& orbs, const std::string& name, int lm, int pmsym);
+  // move _SQprod to _sumops and clear it
+  void move_SQprod();
+  // returns _SQprod in general normal ordering (_SQprod is cleared at the end)
+  TermSum gennormord();
+  typedef Product<uint> Inds;
+  // term from the generalized normal ordering
+  // in creas and annis: the indices (offsets) of creator and annihilator (from end) operators in _SQprod
+  // to create density matrices
+  TermSum gennormordterm(const Product<uint>& creas, const Product<uint>& annis);
   Ops::Type _type;
   Product<SQOp> _SQprod;
   Matrix _mat;
   TFactor _prefac;
   TOrbSet _orbs, _sumorbs;
+  TermSum _sumops;
   Term * p_Term;
 };
 

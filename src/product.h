@@ -17,6 +17,18 @@ class Product : public std::vector<T> {
     Product<T> () : std::vector<T>(){};
     Product<T> ( typename Product<T>::const_iterator beg, typename Product<T>::const_iterator end)
      : std::vector<T>(beg,end){};
+    Product<T> ( const T& a1 ) : std::vector<T>(){ 
+      this->push_back(a1);
+    }
+    Product<T> ( const T& a1, const T& a2 ) : std::vector<T>(){ 
+      this->push_back(a1); 
+      this->push_back(a2);
+    }
+    Product<T> ( const T& a1, const T& a2, const T& a3 ) : std::vector<T>(){ 
+      this->push_back(a1); 
+      this->push_back(a2);
+      this->push_back(a3);
+    }
     // append t to product
     Product<T> & operator *= (T const & t);
     // append product to product
@@ -27,6 +39,8 @@ class Product : public std::vector<T> {
     int find(T const & t, uint ipos = 0) const;
     // quick sort in increasing order
     void resort();
+    // erase element at position ipos
+    void eraseelem( uint ipos ) {this->erase(this->begin()+ipos);}
 };
 template <class T>
 std::ostream & operator << (std::ostream & o, Product<T> const & p);

@@ -27,6 +27,8 @@ class Sum : public std::map<Object, Field> {
     Sum<Object, Field> &  operator += (std::pair<Object,Field> const & p);
     // multiplication by a factor
     Sum<Object, Field> &  operator *= (Field const & f);
+    // multiplication by the Object. The Sum will be reconstructed! Object should support *= Object operation.
+    Sum<Object, Field> &  operator *= (Object const & o);
     // divide by a sum
     Sum<Object, Field> &  operator /= (const Sum<Object, Field>& s);
     

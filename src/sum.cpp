@@ -40,8 +40,21 @@ template <class Object, class Field>
 inline
 Sum<Object, Field> &  Sum<Object, Field>::operator *= (Field const & f)
 {
-  for ( typename Sum<Object,Field>::const_iterator i=this->begin();i!=this->end(); ++i) {
-    (*this)[i->first] *= f;
+  for ( typename Sum<Object,Field>::iterator i=this->begin();i!=this->end(); ++i) {
+    i->second *= f;
+  }
+  return *this;
+}
+template <class Object, class Field>
+inline
+Sum<Object, Field> &  Sum<Object, Field>::operator *= (Object const & o)
+{
+  Sum<Object, Field> old = *this;
+  this->clear();
+  for ( typename Sum<Object,Field>::const_iterator i=old.begin();i!=old.end(); ++i) {
+    Object ob = i->first;
+    ob *= o;
+    (*this)[ob] += i->second;
   }
   return *this;
 }

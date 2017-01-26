@@ -75,6 +75,8 @@ class Term {
     Product<Kronecker>  kProd() const;
     //! return prefactor
     TFactor prefac() const;
+    // return termsum factors
+    Product<TermSum> termsfacs() const { return _termsfacs; };
     void set_prefac(const TFactor& fac) { _prefac = fac; };
     //! return matrices
     const Product<Matrix>& mat() const;
@@ -100,6 +102,8 @@ class Term {
     // terms will be not changed! (but const can't be applied) 
     // perm: permutation which brings t-term to this term (if true at return)
     bool equal(Term & t, Permut & perm);
+    // expand termsum-prefactors (from e.g. general normal ordered operators)
+    TermSum expandtermsfacs();
     //! calculate normal ordering
     TermSum  normalOrder() const;
     //! calculate normal ordering, fully contracted terms only
@@ -205,6 +209,9 @@ class Term {
     TermSum  normalOrderPH(bool fullyContractedOnly) const;
 
     Product<SQOp> _opProd;
+    // termsum factors from e.g. generalized normal ordered SQ-operators
+    // should be cleared before wickstheorem by calling expandtermsfacs
+    Product<TermSum> _termsfacs;
     Product<Kronecker>  _kProd;
     Product<Matrix> _mat;
     // orbitals in term and summation orbitals

@@ -187,6 +187,8 @@ void Oper::create_Oper(const std::string& name, bool antisym)
   }
   short npairs = porbs.size()/2;
   _mat=Matrix(_type,porbs,npairs,0,0,name,spinsym,antisym);
+  // needed for expanding general normal ordered operators later
+  if ( Input::iPars["prog"]["contrexcop"] > 1 ) move_SQprod();
 }
 void Oper::create_Oper(short int const & exccl,Orbital const & occ, Orbital const & virt, 
                        std::string const & name, int lm, int pmsym)
@@ -300,7 +302,7 @@ void Oper::create_Oper(const Product< Orbital >& orbs, const std::string& name, 
   assert( !InSet(_type, Ops::FluctP,Ops::Fock,Ops::OneEl,Ops::XPert) );
   bool spinintegr = Input::iPars["prog"]["spinintegr"];
   bool noprefac = (Input::iPars["prog"]["nobrafac"]) && InSet(_type, Ops::Exc0,Ops::Deexc0);
-  bool contrexcop = Input::iPars["prog"]["contrexcop"];
+  int contrexcop = Input::iPars["prog"]["contrexcop"];
   Matrix::Spinsym spinsym = Matrix::Singlet;
   Product<SQOp> anniSQprod;
   // excitation and deexcitation operators
@@ -333,7 +335,7 @@ void Oper::create_Oper(const Product< Orbital >& orbs, const std::string& name, 
       ++itorb;
     }
     if ( i < nanni ) {
-      if (contrexcop)
+      if (contrexcop > 0)
         anniSQprod *= SQOp(SQOpT::Annihilator, *itorb);
       else
         _SQprod *= SQOp(SQOpT::Annihilator, *itorb);
@@ -352,7 +354,7 @@ void Oper::create_Oper(const Product< Orbital >& orbs, const std::string& name, 
     }
     symel[elhash] += 1;
   }
-  if (contrexcop) {
+  if (contrexcop > 0) {
     // add annihilation operators in the opposite order 
     _foreach_crauto(Product<SQOp>,ita,anniSQprod){
       _SQprod *= *ita;
@@ -375,9 +377,108 @@ void Oper::create_Oper(const Product< Orbital >& orbs, const std::string& name, 
     _prefac = 1/_prefac;
   }
   _mat=Matrix(_type,orbs,npairs,lm,pmsym,name,spinsym);
-
+  if ( contrexcop > 1 ) {
+    // general normal order
+    if ( ncrea != nanni ) 
+      error("General normal ordering (prog,contrexcop>1) is not implemented for non-conserving case","Oper::create_Oper"); 
+    _sumops += gennormord();
+  } 
 }
 
+TermSum Oper::gennormord()
+{
+  assert( _SQprod.size()%2 == 0 );
+  TermSum ret;
+  uint ncrea = _SQprod.size()/2;
+  ret += Term(_SQprod);
+  Oper op;
+  switch (ncrea) {
+    case (0) :
+      break;
+    case (1) :
+      op = *this;
+      ret -= op.gennormordterm(Inds(0),Inds(0));
+      break;
+    case (2) :
+      op = *this;
+      ret -= op.gennormordterm(Inds(0),Inds(0));
+      op = *this;
+      ret -= op.gennormordterm(Inds(1),Inds(1));
+      op = *this;
+      ret -= op.gennormordterm(Inds(0),Inds(1));
+      op = *this;
+      ret -= op.gennormordterm(Inds(1),Inds(0));
+      op = *this;
+      ret -= op.gennormordterm(Inds(0,1),Inds(0,1));
+      break;
+    default :
+      error("General normal ordering (prog,contrexcop>1) is not implemented for excitation class "+ncrea,"Oper::create_Oper");
+  }
+  _SQprod.clear();
+  return ret;
+}
+
+TermSum Oper::gennormordterm(const Product< uint >& creas, const Product< uint >& annis)
+{
+  assert( creas.size() == annis.size() );
+  assert( _SQprod.size() >= creas.size() );
+  Product<Orbital> pcrea, panni;
+  std::vector<uint> mask(_SQprod.size(),1);
+  TFactor fac(1);
+  for ( uint iop = 0; iop < creas.size(); ++iop ){
+    uint 
+      icr = creas[iop],
+      ian0 = annis[iop];
+    assert( icr < _SQprod.size() && ian0 < _SQprod.size() );
+    uint 
+      ian = _SQprod.size() - 1 - ian0,
+      ianorig = _SQprod.size() - 1 - icr;
+    // should be ordered
+    assert( _SQprod[icr].orb().getel() == _SQprod[ianorig].orb().getel() );
+    Spin
+      spinold = _SQprod[ian].orb().spin(),
+      spinnew = _SQprod[ianorig].orb().spin();
+    if ( spinold != spinnew ) {
+      _SQprod[ianorig].replace(spinnew,spinold,false);
+      _SQprod[ian].replace(spinold,spinnew,false);
+      fac /= -2;
+    }
+    assert( _SQprod[icr].gender() == SQOpT::Creator );
+    pcrea.push_back(_SQprod[icr].orb());
+    mask[icr] = 0;
+    assert( _SQprod[ian].gender() == SQOpT::Annihilator );
+    panni.push_back(_SQprod[ian].orb());
+    mask[ian] = 0;
+  }
+  // copy remaining SQ-operators
+  Product<SQOp> sqops;
+  for ( uint iop = 0; iop < _SQprod.size(); ++iop ){
+    if ( mask[iop] > 0 )
+      sqops.push_back(_SQprod[iop]);
+  }
+  _SQprod = sqops;
+  
+  Matrix gamma(Ops::DensM,pcrea,panni,creas.size());
+  
+  TermSum ret;
+  if ( !gamma.is0() ){
+    ret += gennormord();
+    Term trmgamma;
+    trmgamma *= gamma;
+    ret *= trmgamma;
+    ret *= fac;
+  }
+  return ret; 
+}
+
+void Oper::move_SQprod()
+{
+  if ( _SQprod.size() > 0 ) {
+    assert ( _sumops.size() == 0 ); // otherwise one should multiply _SQprod with _sumops...
+    _sumops += Term(_SQprod);
+    _SQprod.clear();
+  }
+}
 
 Matrix Oper::mat() const
 { return _mat;}
@@ -395,8 +496,11 @@ TOrbSet Oper::sumorbs() const
 std::ostream & operator << (std::ostream & o, Oper const & op)
 {
   if ( _todouble(_abs(_abs(op.prefac()) - 1)) > MyOut::pcurout->small) o << op.prefac();
-  if (op.sumorbs().size()>0) o <<"\\sum_{"<<op.sumorbs()<<"}";
-  o <<op.mat() << op.SQprod();
+  if ( op.sumorbs().size() > 0 ) o << "\\sum_{" << op.sumorbs() << "}";
+  o << op.mat() << op.SQprod();
+  if ( op.sumops().size() > 0 ) {
+    o << "(" << op.sumops() << ")";
+  }
   return o;
 }
 

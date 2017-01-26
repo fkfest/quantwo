@@ -419,9 +419,9 @@ void LEquation::addterm(Term& term, bool plus, lui beg, lui end,
   term.term_is_valid();
   // add term
   if(plus) 
-    _sumterms += term;
+    _sumterms += term.expandtermsfacs();
   else
-    _sumterms -= term;
+    _sumterms -= term.expandtermsfacs();
 }
 void LEquation::correct_orbs(Term& term, const Product< Orbital >& occs, 
                              const Product< Orbital >& virts, Spin::Type spintype, bool excopsonly)
