@@ -67,7 +67,8 @@ class Oper {
   //default constructor
   Oper ();
   // constructor from Type (for Hamiltonian)
-  Oper (Ops::Type type, bool antisym = true, Term* pTerm = 0);
+  Oper (Ops::Type type, bool antisym = true, Term* pTerm = 0, 
+        const std::vector<OrbitalTypes>& orbtypes = std::vector<OrbitalTypes>());
   // constructor from excitation class and Type, lm: difference in number of electrons (#virts-#occs), exccl == #occs
   Oper (Ops::Type type, short exccl, std::string name="T", int lm=0, int pmsym=0, Term* pTerm = 0);
   // constructor from excitation class, Type and orbital-types (for occ. orbs: [0] and virts.: [1] -- for multireference).
@@ -99,7 +100,7 @@ class Oper {
 
   private:
   // for hamiltonian-parts
-  void create_Oper(const std::string& name, bool antisym);
+  void create_Oper(const std::string& name, bool antisym, const std::vector<OrbitalTypes>& orbtypes);
   // for excitation operators
   void create_Oper(const short int& exccl, const Orbital& occ, const Orbital& virt, 
                    const std::string& name, int lm, int pmsym);

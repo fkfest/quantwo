@@ -47,7 +47,7 @@ Oper::Oper()
   p_Term = 0;
 }
 
-Oper::Oper(Ops::Type type, bool antisym, Term* pTerm)
+Oper::Oper(Ops::Type type, bool antisym, Term* pTerm, const std::vector<OrbitalTypes>& orbtypes)
 {
   assert( InSet(type, Ops::FluctP,Ops::Fock,Ops::OneEl,Ops::XPert) );
   std::string name;
@@ -61,7 +61,7 @@ Oper::Oper(Ops::Type type, bool antisym, Term* pTerm)
     name="W";
   else
     name="X";
-  create_Oper(name,antisym);
+  create_Oper(name,antisym,orbtypes);
 }
 Oper::Oper(Ops::Type type, short int exccl, std::string name, int lm, int pmsym, Term* pTerm)
 {
@@ -147,7 +147,7 @@ Oper::Oper(Ops::Type type, short int exccl, const std::vector<OrbitalTypes>& orb
   create_Oper(exccl,orbnames,orbtypes,name,lm,pmsym);
 }
 
-void Oper::create_Oper(const std::string& name, bool antisym)
+void Oper::create_Oper(const std::string& name, bool antisym, const std::vector<OrbitalTypes>& orbtypes)
 {
   assert( InSet(_type, Ops::FluctP,Ops::Fock,Ops::OneEl,Ops::XPert) );
   Product<Orbital> porbs;
@@ -155,12 +155,32 @@ void Oper::create_Oper(const std::string& name, bool antisym)
   Electron el = 1;
   if (p_Term) el = p_Term->nextelectron();
   // operators with general indices
-  Orbital orb(std::string("P"),el);
+  std::string orbname("P");
+  if (orbtypes.size() > 0) {
+    if (orbtypes.size() != 2 || orbtypes[0].size() == 0 || orbtypes[1].size() == 0) 
+      error("Wrong type definition of Hamiltonian part","Oper::create_Oper");
+    // specified type
+    if (p_Term)
+      orbname = p_Term->freeorbname(orbtypes[1][0],true).name();
+    else
+      error("Explicit types in Hamiltonian outside of term not implemented","Oper::create_Oper");
+    orbname[0] = std::toupper(orbname[0]);
+  }
+  Orbital orb(orbname,el);
   _SQprod*=SQOp(SQOpT::Creator,orb);
   porbs*=orb;
   _orbs.insert(orb);
   _sumorbs.insert(orb);
-  orb=Orbital(std::string("Q"),el);//same electron as in P
+  orbname = "Q";
+  if (orbtypes.size() > 0) {
+    // specified type
+    if (p_Term)
+      orbname = p_Term->freeorbname(orbtypes[0][0]).name();
+    else
+      error("Explicit types in Hamiltonian outside of term not implemented","Oper::create_Oper");
+    orbname[0] = std::toupper(orbname[0]);
+  }
+  orb=Orbital(orbname,el);//same electron as in P
   porbs*=orb;
   _orbs.insert(orb);
   _sumorbs.insert(orb);
@@ -171,12 +191,26 @@ void Oper::create_Oper(const std::string& name, bool antisym)
    // we use chemical notation (PQ|RS) P^\dg R^\dg S Q
     ++el;
     if (p_Term) el = p_Term->nextelectron();
-    orb=Orbital(std::string("R"),el);
+    orbname = "R";
+    if (orbtypes.size() > 0) {
+      if ( orbtypes[0].size() != 2 || orbtypes[1].size() != 2  ) 
+        error("Wrong type definition of Hamiltonian part","Oper::create_Oper");
+      // specified type
+      if (p_Term) orbname = p_Term->freeorbname(orbtypes[1][1]).name();
+      orbname[0] = std::toupper(orbname[0]);
+    }
+    orb=Orbital(orbname,el);
     _SQprod*=SQOp(SQOpT::Creator,orb);
     porbs*=orb;
     _orbs.insert(orb);
     _sumorbs.insert(orb);
-    orb=Orbital(std::string("S"),el);//same electron as in R
+    orbname = "S";
+    if (orbtypes.size() > 0) {
+      // specified type
+      if (p_Term) orbname = p_Term->freeorbname(orbtypes[0][1]).name();
+      orbname[0] = std::toupper(orbname[0]);
+    }
+    orb=Orbital(orbname,el);//same electron as in R
     _SQprod*=SQOp(SQOpT::Annihilator,orb);
     porbs*=orb;
     _orbs.insert(orb);

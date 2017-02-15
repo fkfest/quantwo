@@ -573,13 +573,13 @@ Oper LEquation::handle_operator(const Lelem& lel, Term& term, bool excopsonly)
   // parts of Hamilton operator
   if ( InSet(name, hms)) {
     if (excopsonly) return Oper();
-    if (op.foundsscipt)
+    if (op.foundsscipt && op.orbtypes.size() == 0)
       say("Sub- and superscripts in Hamiltonian will be ignored: "+lel.name());
-    if ( name==hms["fock"] ) return Oper(Ops::Fock,true,&term);
-    if ( name==hms["oneelop"] ) return Oper(Ops::OneEl,true,&term);
-    if ( name==hms["flucpot"] ) return Oper(Ops::FluctP,true,&term);
-    if ( name==hms["dflucpot"] ) return Oper(Ops::FluctP,false,&term);
-    if ( name==hms["perturbation"] ) return Oper(Ops::XPert,true,&term);
+    if ( name==hms["fock"] ) return Oper(Ops::Fock,true,&term,op.orbtypes);
+    if ( name==hms["oneelop"] ) return Oper(Ops::OneEl,true,&term,op.orbtypes);
+    if ( name==hms["flucpot"] ) return Oper(Ops::FluctP,true,&term,op.orbtypes);
+    if ( name==hms["dflucpot"] ) return Oper(Ops::FluctP,false,&term,op.orbtypes);
+    if ( name==hms["perturbation"] ) return Oper(Ops::XPert,true,&term,op.orbtypes);
   }
   // excitation class
   if (op.excl < 0)
