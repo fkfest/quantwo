@@ -94,7 +94,7 @@ set="prog",type=i,name="noorder",value=0,desc="if = 0: use normal ordering, = 1:
 set="prog",type=i,name="nobrafac",value=0,desc="if = 0: use the usual prefactors in bare excitation operators"
 set="prog",type=i,name="algo",value=0,desc="if > 0: print algorithm file"
 set="prog",type=i,name="contrexcop",value=1,desc="if = 0: use a product of one-electron excitation operators (e.g.,a^+ib^+j) for excitation operators, 1: contracted excitation operators (e.g., a^+b^+ji), 2: general contracted excitation operators (e.g., a^+b^+ji - \gamma^i_a b^+j - \gamma^j_b a^+i + 0.5 \gamma^i_b a^+j + 0.5 \gamma^j_a b^+i - \gamma^ij_ab)"
-set="prog",type=i,name="usefock",value=1,desc="if > 0: replace h by fock (can be used for noorder>0)"
+set="prog",type=i,name="usefock",value=1,desc="if > 0: replace h by fock (can be used for noorder>0), if > 1: use closed-shell part of the fock only (for multiref)"
 set="prog",type=i,name="cpu",value=0,desc="print cpu usage"
 set="prog",type=i,name="eqway",value=0,desc="compare terms using diagram-comparison(0) or minimized connection-vector(1)"
 set="prog",type=i,name="permuteq",value=2,desc="(for eqway > 0) if = 1: try to permute indices to make terms equal, if > 1: safe - do it for each vertices-permutation in minimization"

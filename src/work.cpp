@@ -206,12 +206,19 @@ TermSum Q2::Kroneckers(const TermSum& s)
 TermSum Q2::OneEl2Fock(const TermSum& s)
 {
   bool multiref = (Input::iPars["prog"]["multiref"] > 0);
+  int iusefock = Input::iPars["prog"]["usefock"];
+  std::string decoration = "";
+  if (iusefock > 1 && multiref) {
+    // use only closed-shell fock
+    multiref = false;
+    decoration = "c";
+  }
   Term term;
   TermSum sum,sum1;
   TermSum::const_iterator its;
   _foreach(its,s){
     term = its->first;
-    sum1 = term.oneel2fock(multiref);
+    sum1 = term.oneel2fock(decoration,multiref);
     sum1 *= its->second;
     sum += sum1;
   }

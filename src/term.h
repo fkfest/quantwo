@@ -152,9 +152,9 @@ class Term {
     //! expand all antisymmetrical matrices in term 
     TermSum expand_antisym();
     //! one-electron matrices to fock
-    TermSum oneel2fock(bool multiref = false);
+    TermSum oneel2fock(std::string decoration = "", bool multiref = false);
     //! change matrix imat in _mat from oneel to fock
-    TermSum change2fock(uint imat, bool multiref = false) const;
+    TermSum change2fock(uint imat, const std::string& decoration, bool multiref = false) const;
     //! replace E0 to <0|F|0>
     TermSum replaceE0(bool multiref = false);
     //! replace E0 at position imat in _mat to <0|F|0>

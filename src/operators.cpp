@@ -54,13 +54,13 @@ Oper::Oper(Ops::Type type, bool antisym, Term* pTerm, const std::vector<OrbitalT
   _type=type;
   p_Term = pTerm;
   if (type == Ops::Fock )
-    name="F";
+    name="f";
   if (type == Ops::OneEl )
     name="h";
   else if (type == Ops::FluctP )
     name="W";
   else
-    name="X";
+    name="T";
   create_Oper(name,antisym,orbtypes);
 }
 Oper::Oper(Ops::Type type, short int exccl, std::string name, int lm, int pmsym, Term* pTerm)

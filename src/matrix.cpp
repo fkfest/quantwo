@@ -99,34 +99,42 @@ void Matrix::create_Matrix(Ops::Type t, uint npairs, short int lmel, short int p
 void Matrix::gen_name(const std::string& name)
 {
   std::string exc0 = Input::sPars["output"]["exc0"];
-  switch (_type) {
-    case Ops::Fock:
-      _name = "Fock";
-      break;
-    case Ops::OneEl:
-      _name = "OneEl";
-      break;
-    case Ops::FluctP:
-      _name = "FluctP";
-      break;
-    case Ops::XPert:
-      _name = "XPert";
-      break;
-    case Ops::DensM:
-      _name = "Gamma";
-      break;
-    case Ops::Delta:
-      _name = "delta";
-    case Ops::Exc0:
-    case Ops::Deexc0:
-      if (exc0 != " "){
-        _name = exc0;
-        if ( _type == Ops::Deexc0 ) // add dagger
-          IL::add2name(_name,Input::aPars["syntax"]["dg"].front());
+  // replace default name
+  if ( name == "T" ) {
+    switch (_type) {
+      case Ops::Fock:
+        _name = "f";
         break;
-      }
-    default:
-      _name=name;
+      case Ops::OneEl:
+        _name = "h";
+        break;
+      case Ops::FluctP:
+        _name = "W";
+        break;
+      case Ops::XPert:
+        _name = "X";
+        break;
+      case Ops::Overlap:
+        _name = "S";
+        break;
+      case Ops::DensM:
+        _name = "\\gamma";
+        break;
+      case Ops::Delta:
+        _name = "\\delta";
+      case Ops::Exc0:
+      case Ops::Deexc0:
+        if (exc0 != " "){
+          _name = exc0;
+          if ( _type == Ops::Deexc0 ) // add dagger
+            IL::add2name(_name,Input::aPars["syntax"]["dg"].front());
+          break;
+        }
+      default:
+        _name=name;
+    }
+  } else {
+    _name=name;
   }
 }
 Ops::Type Matrix::type() const
@@ -581,11 +589,10 @@ std::ostream & operator << (std::ostream & o, Matrix const & mat)
   if ( clean <= 0 ) tensor = "\\"+Input::sPars["command"]["tensor"] + " ";
   switch ( mat.type() ){
     case Ops::Fock:
-      o << tensor << "f_{" << mat.orbitals() << "}";
-      MyOut::pcurout->lenbuf += 1+mat.orbitals().size()/MyOut::pcurout->wsi;
-      break;
     case Ops::OneEl:
-      o << tensor << "h_{" << mat.orbitals() << "}";
+    case Ops::XPert:
+    case Ops::Overlap:
+      o << tensor << mat.name() << "_{" << mat.orbitals() << "}";
       MyOut::pcurout->lenbuf += 1+mat.orbitals().size()/MyOut::pcurout->wsi;
       break;
     case Ops::FluctP:
@@ -595,14 +602,6 @@ std::ostream & operator << (std::ostream & o, Matrix const & mat)
         o << tensor << "\\" << Input::sPars["command"]["integral"] << "{" 
                    << mat.orbitals().subprod(0,1) << "}{" << mat.orbitals().subprod(2,3) << "}";
       MyOut::pcurout->lenbuf += 7;
-      break;
-    case Ops::XPert:
-      o << tensor << "X_{" << mat.orbitals() << "}";
-      MyOut::pcurout->lenbuf += 1+mat.orbitals().size()/MyOut::pcurout->wsi;
-      break;
-    case Ops::Overlap:
-      o << tensor << "S_{" << mat.orbitals() << "}";
-      MyOut::pcurout->lenbuf += 1+mat.orbitals().size()/MyOut::pcurout->wsi;
       break;
     case Ops::DensM: {
       Product<Orbital> orbs(mat.orbitals());

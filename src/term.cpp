@@ -992,7 +992,7 @@ TermSum Term::genwick(Term::TWOps& opers, const Term::TWMats& krons, Term::TWMat
   }
   return sum;
 }
-TermSum Term::change2fock(uint imat, bool multiref) const
+TermSum Term::change2fock(uint imat, const std::string& decoration, bool multiref ) const
 {
   assert( _mat[imat].type() == Ops::OneEl );
   TermSum sum;
@@ -1001,7 +1001,10 @@ TermSum Term::change2fock(uint imat, bool multiref) const
   Product<Orbital> orbs = _mat[imat].orbitals();
   TCon2 connected2 = _mat[imat].connected2();
   // f_PQ
-  term._mat[imat] = Matrix(Ops::Fock,orbs,1);
+  if (decoration.empty())
+    term._mat[imat] = Matrix(Ops::Fock,orbs,1);
+  else
+    term._mat[imat] = Matrix(Ops::Fock,orbs,1,0,0,"f^"+decoration);
   term._mat[imat].set_connect(connected2);
   sum += term;
   // (PQ||KJ)\delta_{KJ}
@@ -1465,13 +1468,13 @@ TermSum Term::expand_antisym()
   }
   return sum;
 }
-TermSum Term::oneel2fock(bool multiref)
+TermSum Term::oneel2fock(std::string decoration, bool multiref )
 {
   TermSum sum;
   for ( uint i = 0; i < _mat.size(); ++i ){
     if (_mat[i].type() == Ops::OneEl){
       // replace "h" by "f - integrals"
-      sum = this->change2fock(i,multiref);
+      sum = this->change2fock(i,decoration,multiref);
       // can transform only one matrix per call
       return sum;
     }
