@@ -33,7 +33,8 @@ TParArray IL::parray(const std::string& str)
     ipend = endword(str,ipos);
   while( ipend != ipos ){
     res.push_back(str.substr(ipos,ipend-ipos));
-    ipos = ipend+1;
+    ipos = ipend;
+    if ( ipos < str.size() ) ++ipos;
     ipos = skip(str,ipos," ,");
     ipend = endword(str,ipos);
   }
