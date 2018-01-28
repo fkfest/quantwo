@@ -67,12 +67,13 @@ depend:
 
 # DO NOT DELETE THIS LINE -- make depend needs it
 
-src/main.o: src/utilities.h src/globals.h src/term.h src/types.h
-src/main.o: src/product.h src/product.cpp src/arrays.h src/arrays.cpp
-src/main.o: src/operators.h src/orbital.h src/inpline.h src/matrix.h
-src/main.o: src/sum.h src/sum.cpp src/kronecker.h src/evertices.h
-src/main.o: src/finput.h src/equation.h src/lexic.h src/work.h src/unigraph.h
-src/main.o: src/factorizer.h src/tensor.h src/action.h src/expression.h
+src/main.o: src/argpars.h src/utilities.h src/globals.h src/term.h
+src/main.o: src/types.h src/product.h src/product.cpp src/arrays.h
+src/main.o: src/arrays.cpp src/operators.h src/orbital.h src/inpline.h
+src/main.o: src/matrix.h src/sum.h src/sum.cpp src/kronecker.h
+src/main.o: src/evertices.h src/finput.h src/equation.h src/lexic.h
+src/main.o: src/work.h src/unigraph.h src/factorizer.h src/tensor.h
+src/main.o: src/action.h src/expression.h
 src/tensor.o: src/tensor.h src/globals.h src/utilities.h src/types.h
 src/tensor.o: src/product.h src/product.cpp src/arrays.h src/arrays.cpp
 src/action.o: src/action.h src/globals.h src/utilities.h src/types.h

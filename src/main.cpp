@@ -2,6 +2,7 @@
 #include <cstring>
 #include <iostream>
 #include <fstream>
+#include "argpars.h"
 #include "utilities.h"
 #include "term.h"
 #include "orbital.h"
@@ -14,12 +15,14 @@ using namespace std;
 
 int main(int argc, char **argv) {
   // handle input and output
-  string inputfile, outputfile,
+  ArgPars args(argc,argv);
+  std::string opt, arg;
+  std::string inputfile, outputfile,
     exePath = exepath();
-  int iarg=1;
   bool algo = false;
-  while ( iarg<argc && argv[iarg][0]=='-') {// handle options
-    if (strcmp(argv[iarg],"-h")==0 || strcmp(argv[iarg],"--help")==0) {
+  // handle options  
+  while ( args.nextoption(opt) ) {
+    if ( opt == "h" || opt == "-help" ) {
       cout << "quantwo <input-file> [<output-file>]" << endl;
       // print README file if exists
       ifstream readme;
@@ -32,23 +35,22 @@ int main(int argc, char **argv) {
         }
       }
       return 0;
-    } else if (strcmp(argv[iarg],"-v")==0 || strcmp(argv[iarg],"--verbose")==0) {
-      if ( iarg == argc-1 || !str2num<int>(Input::verbose,argv[iarg+1],std::dec)){
-        Input::verbose = 1;
+    } else if ( opt == "v" || opt == "-verbose" ) {
+      if ( args.optarg(arg) && str2num<int>(Input::verbose,arg,std::dec)){
+        args.markasoption();
       } else {
-        ++iarg;
+        Input::verbose = 1;
       }
-    } else if (strcmp(argv[iarg],"-a")==0 || strcmp(argv[iarg],"--algo")==0) {
+    } else if ( opt == "a" || opt == "-algo" ) {
       // the input file is an algofile
       algo = true;
     }
-    ++iarg;
   }
-  if (iarg >= argc) error("Please provide an input file!");
-  inputfile=argv[iarg];
-  if (argc>iarg+1)
-    outputfile=argv[iarg+1];
-  else 
+  if ( !args.nextremaining(arg) ) error("Please provide an input file!");
+  inputfile=arg;
+  if ( args.nextremaining(arg) ) {
+    outputfile=arg;
+  } else 
     outputfile = FileName(inputfile,true)+".tex";
   // read input
   Finput finput(exePath);
