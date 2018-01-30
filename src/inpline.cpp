@@ -27,16 +27,18 @@ std::string IL::key(const std::string& line, const std::string& keyword)
 
 TParArray IL::parray(const std::string& str)
 {
+  std::string listsep = Input::sPars["syntax"]["listseparator"];
   TParArray res;
   lui 
     ipos = 0,
-    ipend = endword(str,ipos);
+    ipend = endword(str,ipos,listsep);
+  
   while( ipend != ipos ){
     res.push_back(str.substr(ipos,ipend-ipos));
     ipos = ipend;
     if ( ipos < str.size() ) ++ipos;
-    ipos = skip(str,ipos," ,");
-    ipend = endword(str,ipos);
+    ipos = skip(str,ipos,listsep);
+    ipend = endword(str,ipos,listsep);
   }
   return res;
 }
@@ -138,19 +140,29 @@ void IL::delbrack(std::string& str, lui ipos, std::string brackets)
   if ( str.size() > ipos ) str = str.substr(ipos,endstr-ipos);
 }
 
-lui IL::endword(const std::string& line, lui& ipos)
+lui IL::endword(const std::string& line, lui& ipos, std::string separ)
 {
 //  assert(ipos < line.size());
   ipos = skip(line,ipos," ");
+  if ( separ.find(" ") < separ.size() ) {
+    // if space is one of the separators we have to skip all separators!
+    ipos = skip(line,ipos,separ);
+  }
   if ( ipos >= line.size() ) return ipos;
-  char end = ',';
+  std::string end;
   if ( line[ipos] == '"' ){
     end = '"'; ++ipos;
   }else if ( line[ipos] == '{' ){
     end = '}'; ++ipos;
   }
-  std::string ends(1,end);
-  return lexfind(line,ends,ipos);
+  if ( end.empty() ) {
+    lui iposres = std::string::npos;
+    _foreach_cauto( std::string, is, separ ){
+      iposres = std::min(iposres, lexfind(line,std::string(1,*is),ipos));
+    }
+    return iposres;
+  }
+  return lexfind(line,end,ipos);
 }
 lui IL::closbrack(const std::string& str, lui ipos)
 {

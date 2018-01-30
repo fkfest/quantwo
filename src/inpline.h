@@ -30,8 +30,8 @@ namespace IL{
   // delete left and right brackets (if they correspond to each other!) and empty space
   // {{a}_2{b}} -> {a}_2{b}
   void delbrack( std::string& str, lui ipos = 0, std::string brackets = "{" );
-  // end of word (may be in " )
-  lui endword(const std::string& line, lui& ipos);
+  // end of word (may be in " ). Words can be separated by separ
+  lui endword(const std::string& line, lui& ipos, std::string separ = ",");
   // get positions of next word (begin and end)
   // use gluer if glue is true, otherwise a gluer is a separator too
   // greedy: only separators will separate words, otherwise only gluer and {} can glue symbols together
