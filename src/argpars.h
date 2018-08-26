@@ -19,7 +19,7 @@ public:
   bool optarg(std::string& arg, int shift = 0);
   // mark the next argument as a part of options
   void markasoption( int shift = 0 ) {
-    uint pos = _curarg + 1 + shift;
+    unsigned int pos = _curarg + 1 + shift;
     if ( pos < _options.size() ) _options[pos] = true;
   }
   // unhandled arguments left
