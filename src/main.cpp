@@ -60,11 +60,14 @@ int main(int argc, char **argv) {
   std::vector< std::string > inp;
   if (fin.is_open())
   {
+    // temporary input evaluation in order to set parameters
+    Finput temp;
     string line;
     while (fin.good()) {
       getline (fin,line);
       _xout1(line << endl);
       inp.push_back(line);
+      temp.addline(inp.back());
     }
   }
   else

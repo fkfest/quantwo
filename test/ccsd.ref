@@ -1,3 +1,5 @@
+prog,diagrams=1,contrexcop=0
+output,level=2
 
 CCSD doubles amplitude equation with $\exp(\op T_1)$-similiarity transformed $\op H$:
 \beq
