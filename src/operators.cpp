@@ -362,7 +362,7 @@ void Oper::create_Oper(const Product< Orbital >& orbs, const std::string& name, 
         _sumorbs.insert(*itorb);
       el = itorb->spin().el();
       // add this type of electron-orbital
-      hash = uint(itorb->type()) + 2*Orbital::MaxType*itorb->spin().spinhash();
+      hash = uint(itorb->type()) + 2*Orbital::MaxType*itorb->spin().spinhash(spinintegr);
       sym[hash] += 1;
       // hash for (any) electron
       elhash += uint(itorb->type()) + Orbital::MaxType*Orbital::MaxType*itorb->spin().spinhash(false);
@@ -379,7 +379,7 @@ void Oper::create_Oper(const Product< Orbital >& orbs, const std::string& name, 
       if ( el != 0 && el != itorb->spin().el() )
         error("Different electrons in the product!","Oper::create_Oper");
       // add this type of electron-orbital
-      hash = Orbital::MaxType + uint(itorb->type()) + 2*Orbital::MaxType*itorb->spin().spinhash();
+      hash = Orbital::MaxType + uint(itorb->type()) + 2*Orbital::MaxType*itorb->spin().spinhash(spinintegr);
       sym[hash] += 1;
       // hash for (any) electron
       elhash += Orbital::MaxType*uint(itorb->type()) + 
