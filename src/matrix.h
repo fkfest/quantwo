@@ -120,6 +120,8 @@ class Matrix {
   uint diaglevel() const;
   // set no spin for all orbitals
   void set_no_spin();
+  // remove electron info for all orbitals
+  void set_no_el();
   // reset vertices
   void reset_vertices();
   // compare vertices

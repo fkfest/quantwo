@@ -547,6 +547,11 @@ void Matrix::set_no_spin()
   for (unsigned int i=0; i<_orbs.size(); ++i)
     _orbs[i].setspin(nospin);
 }
+void Matrix::set_no_el()
+{
+  for (unsigned int i=0; i<_orbs.size(); ++i)
+    _orbs[i].setel(0);
+}
 void Matrix::permute(const Permut& p)
 {
   for (unsigned int i=0; i<_orbs.size(); ++i){

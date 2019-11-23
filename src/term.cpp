@@ -1683,28 +1683,36 @@ void Term::spinintegration(bool notfake)
     } else
       _prefac=0;
   }
-  if (notfake) {// set no spin
-    for (unsigned int i=0; i<_mat.size(); i++) {
+  // set no spin (or no electron in case of fake spinintegration)
+  for (unsigned int i=0; i<_mat.size(); i++) {
+    if (notfake) 
       _mat[i].set_no_spin();
-    }
-    TOrbSet orbs;
-    for ( TOrbSet::iterator it = _orbs.begin(); it != _orbs.end(); ++it ){
-      orb = *it;
+    else
+      _mat[i].set_no_el();
+  }
+  TOrbSet orbs;
+  for ( TOrbSet::iterator it = _orbs.begin(); it != _orbs.end(); ++it ){
+    orb = *it;
+    if (notfake) 
       orb.setspin(nospin);
-      orbs.insert(orb);
-    }
-    _orbs = orbs;
-    orbs.clear();
-    for ( TOrbSet::iterator it =_sumorbs.begin(); it != _sumorbs.end(); ++it ){
-      orb = *it;
+    else
+      orb.setel(0);
+    orbs.insert(orb);
+  }
+  _orbs = orbs;
+  orbs.clear();
+  for ( TOrbSet::iterator it =_sumorbs.begin(); it != _sumorbs.end(); ++it ){
+    orb = *it;
+    if (notfake) 
       orb.setspin(nospin);
-      orbs.insert(orb);
-    }
-    _sumorbs = orbs;
-    if ( dm_warning ) {
-      // It is probably relevant for explicitly inserted terms only (e.g. by creating fock from h)...
-      warning("spin summation in " << *this << " relies on \\gamma^t\\alpha_u\\alpha = \\gamma^t\\beta_u\\beta = \\half \\gamma^t_u");
-    }
+    else
+      orb.setel(0);
+    orbs.insert(orb);
+  }
+  _sumorbs = orbs;
+  if ( notfake && dm_warning ) {
+    // It is probably relevant for explicitly inserted terms only (e.g. by creating fock from h)...
+    warning("spin summation in " << *this << " relies on \\gamma^t\\alpha_u\\alpha = \\gamma^t\\beta_u\\beta = \\half \\gamma^t_u");
   }
 }
 
