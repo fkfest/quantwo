@@ -12,41 +12,44 @@
 #include "tensor.h"
 
 using namespace std;
+using namespace ArgParser;
 
 int main(int argc, char **argv) {
   // handle input and output
   ArgPars args(argc,argv);
-  std::string opt, arg;
+  std::string arg;
   std::string inputfile, outputfile,
     exePath = exepath();
   bool algo = false;
   // handle options  
-  while ( args.nextoption(opt) ) {
-    if ( opt == "h" || opt == "-help" ) {
-      cout << "quantwo <input-file> [<output-file>]" << endl;
-      // print README file if exists
-      ifstream readme;
-      readme.open((exePath+"README").c_str());
-      if (readme.is_open()) {
-        string line;
-        while (readme.good()) {
-          getline (readme,line);
-          cout << line << endl;
-        }
-      }
-      return 0;
-    } else if ( opt == "v" || opt == "-verbose" ) {
+  while ( args.nextoption() ) {
+    if ( args.check(ArgOpt("Verbosity level","v","-verbose" )) ) {
       if ( args.optarg(arg) && str2num<int>(Input::verbose,arg,std::dec)){
         args.markasoption();
       } else {
         Input::verbose = 1;
       }
-    } else if ( opt == "a" || opt == "-algo" ) {
-      // the input file is an algofile
+    } else if ( args.check(ArgOpt("the input file is an algofile","a","-algo")) ) {
       algo = true;
+    } else if ( args.check(ArgOpt("print this help","h","-help")) ) {
+      args.printhelp(xout,"quantwo <input-file> [<output-file>]",
+                     "Second-quantization program");
+//      // print README file if exists
+//      ifstream readme;
+//      readme.open((exePath+"README").c_str());
+//      if (readme.is_open()) {
+//        string line;
+//        while (readme.good()) {
+//          getline (readme,line);
+//          cout << line << endl;
+//        }
+//      }
+      return 0;
+    } else {
+      error("Unknown parameter -"+args.get_current_option());
     }
   }
-  if ( !args.nextremaining(arg) ) error("Please provide an input file!");
+  if ( !args.nextremaining(arg) ) error("Please provide an input file or -h!");
   inputfile=arg;
   if ( args.nextremaining(arg) ) {
     outputfile=arg;

@@ -8,37 +8,8 @@
 #include <sstream>
 #include <iomanip>
 
-/*!
- * Argument list parser
- */
-class ArgPars {
-public:
-  ArgPars() : _argc(0), _curarg(0), _nextlet(0) {}
-  ArgPars(int argc, char **argv) : _argc(argc), _argv(argv), 
-      _options(argc,false), _curarg(0), _nextlet(0) {}
-  // next option
-  bool nextoption(std::string & opt);
-  // next argument after the current option. Using shift one can get other arguments
-  bool optarg(std::string& arg, int shift = 0);
-  // mark the next argument as a part of options
-  void markasoption( int shift = 0 ) {
-    unsigned int pos = _curarg + 1 + shift;
-    if ( pos < _options.size() ) _options[pos] = true;
-  }
-  // unhandled arguments left
-  bool nextremaining(std::string& arg);
-private:
-  // arguments
-  int _argc;
-  char **_argv;
-  // status: is it an option?
-  std::vector<bool> _options;
-  // current argument
-  int _curarg;
-  // current letter in multi-option
-  unsigned int _nextlet;
-};
-
+//! Main functionality in class ArgPars
+namespace ArgParser {
 /*! 
  * Option (can be used to generate help print)
  */
@@ -101,14 +72,62 @@ public:
   }
 };
 
-bool ArgPars::nextoption(std::string & opt) {
+/*!
+ * Argument list parser
+ */
+class ArgPars {
+public:
+  ArgPars() : _argc(0), _curarg(0), _nextlet(0) {}
+  ArgPars(int argc, char **argv) : _argc(argc), _argv(argv), 
+      _options(argc,false), _curarg(0), _nextlet(0) {}
+  // next option, if clear is true: clear stored option info
+  bool nextoption(std::string & opt, bool clear = true);
+  // next option, if clear is true: clear stored option info
+  bool nextoption(bool clear = true);
+  // add and check option
+  bool check(const ArgOpt& aopt) { return _argopts.check(_opt,aopt); }
+  // get current option
+  std::string get_current_option() const { return _opt; }
+  // next argument after the current option. Using shift one can get other arguments
+  bool optarg(std::string& arg, int shift = 0);
+  // mark the next argument as a part of options
+  void markasoption( int shift = 0 ) {
+    unsigned int pos = _curarg + 1 + shift;
+    if ( pos < _options.size() ) _options[pos] = true;
+  }
+  // unhandled arguments left
+  bool nextremaining(std::string& arg);
+  // print help
+  // with usage information and description. The width reserved for options can be changed using optwidth 
+  void printhelp(std::ostream & o, const std::string& usage = "", const std::string& desc = "", int optwidth = 16) const {
+          _argopts.printhelp(o,usage,desc,optwidth);
+        }
+private:
+  // arguments
+  int _argc;
+  char **_argv;
+  // status: is it an option?
+  std::vector<bool> _options;
+  // current argument
+  int _curarg;
+  // current letter in multi-option
+  unsigned int _nextlet;
+  // current option
+  std::string _opt;
+  // list of possible options
+  ArgOpts _argopts;
+};
+
+
+bool ArgPars::nextoption(bool clear) {
+  if (clear) _argopts.clear();
   if ( _curarg >= _argc ) {
-    opt.clear();
+    _opt.clear();
     return false;
   }
   if ( _nextlet > 0 && _nextlet < strlen(_argv[_curarg])) {
     // next letter
-    opt = std::string(1,_argv[_curarg][_nextlet]);
+    _opt = std::string(1,_argv[_curarg][_nextlet]);
     ++_nextlet;
     return true;
   }
@@ -117,7 +136,7 @@ bool ArgPars::nextoption(std::string & opt) {
   ++_curarg;
   _nextlet = 0;
   if ( _curarg == _argc ) {
-    opt.clear();
+    _opt.clear();
     return false;
   }
   
@@ -126,14 +145,19 @@ bool ArgPars::nextoption(std::string & opt) {
     _options[_curarg] = true;
     if ( strlen(_argv[_curarg]) > 2 && _argv[_curarg][1] == '-' ){
       // long option "--word"
-      opt = std::string(&_argv[_curarg][1]);
+      _opt = std::string(&_argv[_curarg][1]);
       return true;
     } else {
       // short options "-wo"
       ++_nextlet;
     }    
   }
-  return nextoption(opt);
+  return nextoption();
+}
+bool ArgPars::nextoption(std::string & opt, bool clear) {
+  bool ret = nextoption(clear);
+  opt = _opt;
+  return ret;
 }
 bool ArgPars::optarg(std::string& arg, int shift) {
   int pos = _curarg + 1 + shift;
@@ -158,4 +182,5 @@ bool ArgPars::nextremaining(std::string& arg) {
   return false;
 }
 
+}
 #endif
