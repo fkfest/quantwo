@@ -89,7 +89,8 @@ public:
   // get current option
   std::string get_current_option() const { return _opt; }
   // next argument after the current option. Using shift one can get other arguments
-  bool optarg(std::string& arg, int shift = 0);
+  // if tolerate_minus = true: arguments starting with "-" are allowed
+  bool optarg(std::string& arg, int shift = 0, bool tolerate_minus = false);
   // mark the next argument as a part of options
   void markasoption( int shift = 0 ) {
     unsigned int pos = _curarg + 1 + shift;
@@ -159,14 +160,14 @@ bool ArgPars::nextoption(std::string & opt, bool clear) {
   opt = _opt;
   return ret;
 }
-bool ArgPars::optarg(std::string& arg, int shift) {
+bool ArgPars::optarg(std::string& arg, int shift, bool tolerate_minus) {
   int pos = _curarg + 1 + shift;
-  if ( pos < _argc ) {
-    arg = std::string(_argv[pos]);
-    return true;
-  } else {
+  if ( pos >= _argc || ( !tolerate_minus && _argv[pos][0] == '-' ) ) {
     arg.clear();
     return false;
+  } else {
+    arg = std::string(_argv[pos]);
+    return true;
   }
 }
 
