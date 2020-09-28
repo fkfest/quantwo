@@ -154,10 +154,10 @@ namespace Input
 #define _xout3(x) _xout(3,x)
 
 #define _foreach(It,Array) for ( (It) = (Array).begin(); (It) != (Array).end(); ++(It) )
-#define _foreach_auto(Type,It,Array) for ( Type::iterator (It) = (Array).begin(); (It) != (Array).end(); ++(It) )
-#define _foreach_rauto(Type,It,Array) for ( Type::reverse_iterator (It) = (Array).rbegin(); (It) != (Array).rend(); ++(It) )
-#define _foreach_cauto(Type,It,Array) for ( Type::const_iterator (It) = (Array).begin(); (It) != (Array).end(); ++(It) )
-#define _foreach_crauto(Type,It,Array) for ( Type::const_reverse_iterator (It) = (Array).rbegin(); (It) != (Array).rend(); ++(It) )
+#define _foreach_auto(It,Array) for ( auto It = (Array).begin(); It != (Array).end(); ++It )
+#define _foreach_rauto(It,Array) for ( auto It = (Array).rbegin(); It != (Array).rend(); ++It )
+#define _foreach_cauto(It,Array) for ( auto It = (Array).begin(); It != (Array).end(); ++It )
+#define _foreach_crauto(It,Array) for ( auto It = (Array).rbegin(); It != (Array).rend(); ++It )
 
 // print timing
 #define _CPUtiming(what,start,end) xout << std::fixed << std::setprecision(2) << "CPU time " << what << 1000.0*(end-start)/CLOCKS_PER_SEC << " ms\n";

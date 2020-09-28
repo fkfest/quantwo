@@ -157,8 +157,8 @@ lui IL::endword(const std::string& line, lui& ipos, std::string separ)
   }
   if ( end.empty() ) {
     lui iposres = std::string::npos;
-    _foreach_cauto( std::string, is, separ ){
-      iposres = std::min(iposres, lexfind(line,std::string(1,*is),ipos));
+    for (const auto& is: separ ){
+      iposres = std::min(iposres, lexfind(line,std::string(1,is),ipos));
     }
     return iposres;
   }

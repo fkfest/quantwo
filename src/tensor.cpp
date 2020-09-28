@@ -355,8 +355,8 @@ std::string DiagramTensor::slotTypeLetters( const SlotTs& slottypes ) const
 void Tensor::add(const Action* pAct)
 {
   if (pAct) {
-    _foreach_cauto(Actions,itact,_parents){
-      if ( pAct == *itact ) return;
+    for (const auto& act: _parents){
+      if ( pAct == act ) return;
     }
     _parents.push_back(pAct);
   }
@@ -365,8 +365,8 @@ void Tensor::add(const Action* pAct)
 std::string Tensor::slotTypeLetters() const
 {
   std::string ret;
-  _foreach_cauto(SlotTs,ist,_slots){
-    ret += (*ist)->name();
+  for (const auto& st: _slots){
+    ret += st->name();
   }
   return ret;
 }
@@ -463,20 +463,20 @@ std::ostream & operator << (std::ostream& o, const SlotType& st)
 }
 
 std::ostream & operator << (std::ostream& o, const Slots& ss) {
-  _foreach_cauto(Slots,is,ss){
-    if (*is > 9) 
-      o << "{" << *is << "}";
+  for (const auto& s: ss){
+    if (s > 9) 
+      o << "{" << s << "}";
     else
-      o << *is;
+      o << s;
   }
   return o;
 }
 std::ostream & operator << (std::ostream& o, const SlotUniqueSet& ss) {
-  _foreach_cauto(SlotUniqueSet,is,ss){
-    if (*is > 9) 
-      o << "{" << *is << "}";
+  for (const auto& s: ss){
+    if (s > 9) 
+      o << "{" << s << "}";
     else
-      o << *is;
+      o << s;
   }
   return o;
 }
@@ -521,9 +521,9 @@ std::ostream & operator << (std::ostream& o, const Tensor& t) {
   if ( t.cuts().size() > 0 ){
     o << "cut:";
     bool putcomma = false;
-    _foreach_cauto(Cuts,ic,t.cuts()){
+    for (const auto& c: t.cuts()){
       if (putcomma) o << ",";
-      o << *ic;
+      o << c;
       putcomma = true;
     }
   }

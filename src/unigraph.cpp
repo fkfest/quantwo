@@ -16,8 +16,8 @@ UniGraph::UniGraph(const Term& term) : _sign(1)
   // vertices of the previous matrix
   JointVertices verts;
   
-  _foreach_cauto(Order,im,_matsord){
-    const Matrix& mat = mats[*im];
+  for (const auto& im: _matsord){
+    const Matrix& mat = mats[im];
     uint nextvert = currvert+mat.nvertices();
     // equivalent matrices?
     if ( verts.size() > 0 && mat.equivalent(mats[prev]) ) {
@@ -31,7 +31,7 @@ UniGraph::UniGraph(const Term& term) : _sign(1)
     for ( uint vert = currvert; vert < nextvert; ++vert) {
       verts.push_back(vert);
     }
-    prev = *im;
+    prev = im;
     // equivalent vertices?
     Equivalents equivs( mat.equivertices(currvert) );
     // creators and annihilators orbitals
@@ -72,13 +72,13 @@ UniGraph::UniGraph(const Term& term) : _sign(1)
   assert(creators.size() == annihilators.size()); // even for non-conserving operators
   Orbital dummy;
   uint nverts = creators.size();
-  _foreach_cauto( Product<Orbital>,itorb,creators ){
-    if ( *itorb == dummy ) {
+  for (const auto& orb: creators ){
+    if ( orb == dummy ) {
       // an invalid connection
       _vertconn.push_back(nverts);
     } else {
       // find in the annihilators
-      int ipos = annihilators.find(*itorb);
+      int ipos = annihilators.find(orb);
       if ( ipos < 0 ) {
         xout << "Term: " << term << std::endl;
         xout << "creators: " << creators << std::endl;
@@ -87,7 +87,7 @@ UniGraph::UniGraph(const Term& term) : _sign(1)
       }
       _vertconn.push_back(ipos);
     }
-    _orbtypes.push_back(itorb->type());
+    _orbtypes.push_back(orb.type());
   }
   // "from-verices" for allowed permutations
   for(JointVertices& pvs: _eqperms) {
@@ -131,8 +131,8 @@ Product< Matrix > UniGraph::ordmats() const
   assert( pTerm );
   const Product<Matrix>& origmats = pTerm->mat();
   assert( _matsord.size() == origmats.size());
-  _foreach_cauto(Order,im,_matsord)
-    mats.push_back(origmats[*im]);
+  for (const auto& im: _matsord)
+    mats.push_back(origmats[im]);
   return mats;
 }
 
@@ -336,8 +336,8 @@ Term UniGraph::gen_term()
   const Product<Matrix>& mats = pTerm->mat();
   const Product<Matrix> newmats;
   uint currvert = 0;
-  _foreach_cauto(Order,im,_matsord){
-    const Matrix& mat = mats[*im];
+  for (const auto& im: _matsord){
+    const Matrix& mat = mats[im];
     uint nextvert = currvert + mat.nvertices();
     assert( nextvert <= nverts );
     // use connection vectors and list of orbitals to create the product of orbitals of mat
@@ -394,12 +394,10 @@ std::ostream& operator<<(std::ostream& o, const UniGraph& ug)
 }
 
 std::ostream & operator << (std::ostream & o, const PermVertices& permv){
-  _foreach_cauto(PermVertices,it,permv){
+  for (const auto& pm: permv){
     o << "(";
-    _foreach_cauto(JointVertices,jv,*it){
-      if (jv != it->begin())
-        o << " ";
-      o << *jv ;
+    for (const auto& jv: pm){
+      o << " " << jv ;
     }
     o << ")";
   }

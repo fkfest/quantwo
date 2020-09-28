@@ -406,10 +406,10 @@ TermSum Q2::VirtSpace(const TermSum& s)
   // add overlap matrices
   xout << "add overlaps" << std::endl;
   TermSum sum;
-  _foreach_cauto ( TermSum, its, s ) {
-    Term term = its->first;
+  for ( const auto& ts: s ) {
+    Term term = ts.first;
     term.addoverlaps();
-    sum += std::make_pair(term,its->second);
+    sum += std::make_pair(term,ts.second);
   }
   return sum;
 }

@@ -115,20 +115,20 @@ void Summation::print(std::ostream& o, const Tensor& res) const
   std::map<SlotType::Type,std::string> slotnames;
   Array<std::string> 
         resslots(res.slots().size());
-  _foreach_cauto(Summands,its,_summands){
+  for ( const auto& ts: _summands){
     Array<std::string> 
-        aslots(its->p_A->slots().size());
-    slotNames4Refs(resslots,aslots,slotnames,its->_RinA,its->_AinR,res.slots(),its->p_A->slots());
+        aslots(ts.p_A->slots().size());
+    slotNames4Refs(resslots,aslots,slotnames,ts._RinA,ts._AinR,res.slots(),ts.p_A->slots());
     fillFreeSlotNames(resslots,slotnames,res);
     std::map<SlotType::Type,std::string> slotnamesA(slotnames);
-    fillFreeSlotNames(aslots,slotnamesA,*(its->p_A));
+    fillFreeSlotNames(aslots,slotnamesA,*(ts.p_A));
     o << res.name() << "[" << resslots << "] ";
-    if ( its->_fac < 0 )
+    if ( ts._fac < 0 )
       o << "-= ";
     else 
       o << "+= ";
-    if ( std::abs(std::abs(its->_fac) - 1) > Numbers::verysmall ) o << std::abs(its->_fac) << " ";
-    o << its->p_A->name() << "[" << aslots << "] " << std::endl;
+    if ( std::abs(std::abs(ts._fac) - 1) > Numbers::verysmall ) o << std::abs(ts._fac) << " ";
+    o << ts.p_A->name() << "[" << aslots << "] " << std::endl;
   }
 }
 

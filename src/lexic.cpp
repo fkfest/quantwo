@@ -247,8 +247,8 @@ LelString LelString::expandterm(ConnectionsMap& connections) const
 //  for (unsigned int k = 0; k<connections.size();k++)
 //    std::cout << "in connection " << k << ": " << connections[k] << std::endl;
   lui i = 0;
-  _foreach_cauto(LelString,itl,*this){
-    if (itl->lex()==Lelem::LPar || (itl->lex()==Lelem::Bra && !itl->expandedbra())) 
+  for (const auto& le: *this){
+    if (le.lex()==Lelem::LPar || (le.lex()==Lelem::Bra && !le.expandedbra())) 
       return this->expandpar(i,connections);
     ++i;
   }
@@ -256,18 +256,18 @@ LelString LelString::expandterm(ConnectionsMap& connections) const
 }
 bool LelString::expanded() const
 { 
-  _foreach_cauto(LelString,itl,*this) {
-    if (itl->lex()==Lelem::Bra && !itl->expandedbra())
+  for (const auto& le: *this) {
+    if (le.lex()==Lelem::Bra && !le.expandedbra())
       return false;
-    if (itl->lex()==Lelem::LPar)
+    if (le.lex()==Lelem::LPar)
       return false;
   }
   return true;
 }
 bool LelString::expanded_com() const
 { 
-  _foreach_cauto(LelString,itl,*this) {
-    if (itl->lex()==Lelem::LCom )
+  for (const auto& le: *this) {
+    if (le.lex()==Lelem::LCom )
       return false;
   }
   return true;

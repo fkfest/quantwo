@@ -286,13 +286,13 @@ Expression::Expression()
 {
   // add default tensors
   const TsPar& deftensors = Input::sPars["tensor"];
-  _foreach_cauto(TsPar,idt,deftensors) {
+  for (const auto& dt: deftensors) {
     SlotTs sts;
     std::size_t 
-      ibra = idt->first.find_first_of('['),
-      iket = idt->first.find_first_of(']');
+      ibra = dt.first.find_first_of('['),
+      iket = dt.first.find_first_of(']');
     // generate tensor name
-    std::string name = idt->first.substr(0,ibra);
+    std::string name = dt.first.substr(0,ibra);
     if ( ibra == std::string::npos || iket == std::string::npos ){
       if ( ibra != std::string::npos || iket != std::string::npos )
         error("Missmatch in [ ] in the default tensor definition");
@@ -300,12 +300,12 @@ Expression::Expression()
       // slottypes
       for ( std::size_t ii = ibra+1; ii < iket; ){
         SlotTypes::iterator ist = _slottypes.begin();
-        ist = _slottypes.insert( ist, SlotType(ReadAndAdvance(ii,idt->first)) );
+        ist = _slottypes.insert( ist, SlotType(ReadAndAdvance(ii,dt.first)) );
         sts.push_back(&(*ist));
       }
     }
     Tensor tens(sts,name);
-    tens.CreateCutFromDesc(idt->second);
+    tens.CreateCutFromDesc(dt.second);
     _tensors.push_back(tens);
   }
 }
@@ -355,9 +355,9 @@ const Tensor* Expression::add2residual(const Tensor& res, const Summand& sumd)
       if ( it->_parents.size() > 0 ) {
         const Summation * pS = dynamic_cast< const Summation * >(it->_parents.back());
         if ( pS ) {
-          _foreach_auto(std::list<Summation>,its,_summations){
-            if ( pS == &(*its) ) {
-              its->add(sumd);
+          for (auto& ts: _summations){
+            if ( pS == &ts ) {
+              ts.add(sumd);
               return &(*it);
             }
           }
@@ -431,8 +431,8 @@ void print_action(std::ostream& o, const Action * pAct, const Tensor& ten)
   } else {
     const Summation * pSum = dynamic_cast< const Summation * >(pAct);
     assert( pSum );
-    _foreach_cauto(Summands,itsd,pSum->_summands){
-      print_code(o,*(itsd->p_A));
+    for (const auto& sd: pSum->_summands){
+      print_code(o,*(sd.p_A));
     }
     pSum->print(o,ten);
   }
@@ -450,14 +450,14 @@ std::ostream & operator << (std::ostream& o, const Expression& exp) {
   o << "---- decl" << std::endl;
   // index spaces
   const SlotTypes& sts = exp.slottypes();
-  _foreach_cauto(SlotTypes,ists,sts){
-    o << *ists << std::endl;
+  for (const auto& st: sts){
+    o << st << std::endl;
   }
   // tensors....
   const TensorsSet& ts = exp.tensors();
-  _foreach_cauto(TensorsSet,its,ts){
-    if ( !its->_dummy )
-      o << "tensor: " << *its << std::endl;
+  for (const auto& t: ts){
+    if ( !t._dummy )
+      o << "tensor: " << t << std::endl;
   }
   
   // contractions...
@@ -465,9 +465,9 @@ std::ostream & operator << (std::ostream& o, const Expression& exp) {
   std::set< const Tensor * > residuals = exp.residualtensors();
   if ( residuals.size() == 0 )
     o << "// No residual tensors set!" << std::endl;
-  _foreach_cauto(std::set< const Tensor * >,itres,residuals) {
-    xout << "// Residual: " << *(*itres) << std::endl;
-    print_code(o,*(*itres));
+  for (const auto& res: residuals) {
+    xout << "// Residual: " << *res << std::endl;
+    print_code(o,*res);
   }
   
   return o;

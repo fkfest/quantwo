@@ -35,11 +35,11 @@ Matrix::Matrix(Ops::Type t, const Product< Orbital >& pcrea, const Product< Orbi
   _orbs.reserve(pcrea.size()+panni.size());
   if ( t == Ops::DensM && Input::iPars["prog"]["dmsort"] > 0 ) {
     // different order of electrons: 1,2,...2, 1
-    _foreach_cauto(Product<Orbital>,itorb,pcrea){
-      _orbs.push_back(*itorb);
+    for (const auto& orb: pcrea){
+      _orbs.push_back(orb);
       _cranorder.push_back(SQOpT::Creator);
     }
-    _foreach_crauto(Product<Orbital>,itorb,panni){
+    _foreach_crauto(itorb,panni){
       _orbs.push_back(*itorb);
       _cranorder.push_back(SQOpT::Annihilator);
     }
@@ -122,7 +122,9 @@ void Matrix::gen_name(const std::string& name)
         break;
       case Ops::Delta:
         _name = "\\delta";
+        // fall through
       case Ops::Exc0:
+        // fall through
       case Ops::Deexc0:
         if (exc0 != " "){
           _name = exc0;
@@ -130,6 +132,7 @@ void Matrix::gen_name(const std::string& name)
             IL::add2name(_name,Input::aPars["syntax"]["dg"].front());
           break;
         }
+        // fall through
       default:
         _name=name;
     }
@@ -149,8 +152,8 @@ bool Matrix::antisymform() const
 bool Matrix::is_internal(const TOrbSet& sumorbs)
 {
   _internal = true;
-  _foreach_cauto(Product<Orbital>, ito, _orbs){
-    if ( sumorbs.count(*ito) == 0 ) {
+  for (const auto& orb: _orbs){
+    if ( sumorbs.count(orb) == 0 ) {
       _internal = false;
       return false;
     }
@@ -426,13 +429,13 @@ bool Matrix::is0() const
   if (_type == Ops::DensM){
     if ( _orbs.size()%2 != 0 ) return true;
     // only active orbitals!
-    _foreach_cauto(Product<Orbital>,ito,_orbs){
-      if (ito->type() != Orbital::Act) return true;
+    for (const auto& orb: _orbs){
+      if (orb.type() != Orbital::Act) return true;
     }
     // number of creators == annihilators
     int cran = 0;
-    _foreach_cauto(Product<SQOpT::Gender>,itca,_cranorder){
-      if (*itca == SQOpT::Creator) 
+    for (const auto& ca:_cranorder){
+      if (ca == SQOpT::Creator) 
         ++cran;
       else 
         --cran;
@@ -453,8 +456,8 @@ void Matrix::calc_orbtypeshash()
 {
   _orbtypeshash = 0;
   std::vector<uint> ots; 
-  _foreach_cauto(Product<Orbital>,ito,_orbs){
-    uint itype = uint(ito->type());
+  for (const auto& orb: _orbs){
+    uint itype = uint(orb.type());
     if (ots.size() < itype+1)
       ots.resize(itype+1);
     ots[itype] += 1;
@@ -657,6 +660,7 @@ std::ostream & operator << (std::ostream & o, Matrix const & mat)
     case Ops::Exc0:
     case Ops::Deexc0:
       if (exc0 == " ") break;
+      // fall through
     case Ops::Exc:
     case Ops::Deexc:
     case Ops::Interm: {
@@ -822,19 +826,17 @@ std::ostream & operator << (std::ostream & o, Permut const & p)
 }
 
 std::ostream & operator << (std::ostream & o, const EquiVertices& ev){
-  _foreach_cauto(EquiVertices,it,ev){
+  for (const auto& ver: ev){
     o << "(";
-    _foreach_cauto(JointVertices,jv,*it){
-      if (jv != it->begin())
-        o << " ";
-      o << *jv ;
+    for (const auto& jv: ver){
+      o << " " << jv;
     }
     o << ")";
   }
   return o;
 }
 std::ostream & operator << (std::ostream & o, const Equivalents& eqv){
-  _foreach_cauto(Equivalents,it,eqv)
-    o << "[" << *it << "]";
+  for (const auto& e: eqv)
+    o << "[" << e << "]";
   return o;
 }

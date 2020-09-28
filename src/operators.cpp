@@ -130,10 +130,10 @@ Oper::Oper(Ops::Type type, short int exccl, const std::vector<OrbitalTypes>& orb
   std::map<Orbital::Type,Orbital> orbnames;
   if ( p_Term ){
     for ( uint i=0; i<orbtypes.size(); ++i ){
-      _foreach_cauto(OrbitalTypes,iot,orbtypes[i]){
-        if ( orbnames.count(*iot) == 0 ){
+      for ( const auto& ot: orbtypes[i]){
+        if ( orbnames.count(ot) == 0 ){
           // new orb type
-          orbnames[*iot] = p_Term->freeorbname(*iot);
+          orbnames[ot] = p_Term->freeorbname(ot);
         }
       }
     }
@@ -390,21 +390,20 @@ void Oper::create_Oper(const Product< Orbital >& orbs, const std::string& name, 
   }
   if (contrexcop > 0) {
     // add annihilation operators in the opposite order 
-    _foreach_crauto(Product<SQOp>,ita,anniSQprod){
+    _foreach_crauto(ita,anniSQprod){
       _SQprod *= *ita;
     }
   }
   if (!noprefac) {
     // prefactor
-    std::map<uint,uint>::const_iterator is; 
-    _foreach(is,sym){
-      for (uint i = 0; i < is->second; ++i)
+    for (const auto& is: sym){
+      for (uint i = 0; i < is.second; ++i)
         _prefac *= i+1;
     }
     if (spinintegr){
       // take into account the indistinguishability of the electrons
-      _foreach(is,symel){
-        for (uint i = 0; i < is->second; ++i)
+      for (const auto& is: symel){
+        for (uint i = 0; i < is.second; ++i)
           _prefac *= i+1;
       }
     }

@@ -21,8 +21,8 @@ Factorizer::Factorizer(const TermSum& s)
       slotorbs[orb] = _expression.add(Translators::orb2slot(orb));
       ++iorb;
     }
-//    _foreach_cauto(Product<Matrix>,im,term.mat()){
-//      tensormats[*im] = _expression.add(Translators::mat2tensor(*im,slotorbs));
+//    for (const auto& m: term.mat()){
+//      tensormats[m] = _expression.add(Translators::mat2tensor(m,slotorbs));
 //    }
     TermSum sumt = term.resolve_permutations();
     for ( TermSum::const_iterator ist = sumt.begin();ist != sumt.end(); ++ist ) {
@@ -71,9 +71,9 @@ Tensor Translators::mat2tensor(const Matrix& mat, const std::map< Orbital, const
 {
   SlotTs sts;
   const Product<Orbital>& orbs = mat.orbitals();
-  _foreach_cauto(Product<Orbital>,iorb,orbs){
-    assert( slotorbs.count(*iorb) > 0 );
-    sts.push_back(slotorbs.at(*iorb));
+  for (const auto& orb: orbs){
+    assert( slotorbs.count(orb) > 0 );
+    sts.push_back(slotorbs.at(orb));
   }
   Slots slotorder;
   Canonicalize(sts,slotorder);
@@ -101,9 +101,9 @@ Diagram Translators::term2diagram(const Term& term, Factor fact, const std::map<
   // put the orbitals to diag
   if ( orbitals.size() > MAXNINDICES )
     error("Too many indices in the term. Increase MAXNINDICES!","Translators::term2diagram");
-  _foreach_cauto(Array<Orbital>,itorb,orbitals){
-    assert( slotorbs.count(*itorb) > 0 );
-    diag._slottypes.push_back(slotorbs.at(*itorb));
+  for (const auto& orb: orbitals){
+    assert( slotorbs.count(orb) > 0 );
+    diag._slottypes.push_back(slotorbs.at(orb));
   }
   Slots slotorder;
   // use canonical order - then the intermediates will be in canonical order automatically 
@@ -111,15 +111,15 @@ Diagram Translators::term2diagram(const Term& term, Factor fact, const std::map<
   orbitals = orbitals.refarr(slotorder); 
 
   uint nbareops = 0;
-  _foreach_cauto(Product<Matrix>,im,term.mat()){
-    const Product<Orbital>& orbs = im->orbitals();
+  for (const auto& m: term.mat()){
+    const Product<Orbital>& orbs = m.orbitals();
     SlotTs sts;
     Connections con;
     Slots positions;
-    _foreach_cauto(Product<Orbital>,itorb,orbs){
-      assert( slotorbs.count(*itorb) > 0 );
-      sts.push_back(slotorbs.at(*itorb));
-      int ipos = orbitals.find(*itorb);
+    for (const auto& orb: orbs){
+      assert( slotorbs.count(orb) > 0 );
+      sts.push_back(slotorbs.at(orb));
+      int ipos = orbitals.find(orb);
       assert( ipos >= 0 );
       positions.push_back(ipos);
       con.bitmask[ipos] = true;
@@ -136,14 +136,14 @@ Diagram Translators::term2diagram(const Term& term, Factor fact, const std::map<
       assert( icnt < con.slotref.size() );
       con.slotref[icnt] = ist;
     }
-    if ( im->type() == Ops::Exc0 || im->type() == Ops::Deexc0 ) {
+    if ( m.type() == Ops::Exc0 || m.type() == Ops::Deexc0 ) {
       Tensor ten(sts,resultt);
       const Tensor * pTen = expr.find(ten,false);
       // the first tensor is the result tensor (residuum)
-      diag.add(DiagramTensor(con,im->plainname()),pTen,true);
+      diag.add(DiagramTensor(con,m.plainname()),pTen,true);
       ++nbareops;
     } else
-      diag.add(DiagramTensor(con,im->plainname()));
+      diag.add(DiagramTensor(con,m.plainname()));
   }
   #ifdef _RATIONAL
   assert( std::abs(std::abs(boost::rational_cast<Factor>(term.prefac())) - 1) < Numbers::verysmall );

@@ -134,8 +134,8 @@ int Orbital::comp_letname(const Orbital& orb) const
 }
 bool Orbital::is_in_set(const TOrbSet& orbset) const
 {
-  _foreach_cauto(TOrbSet,its,orbset){
-    if (this->comp_letname(*its) == 0)
+  for (const auto& orb: orbset){
+    if (this->comp_letname(orb) == 0)
       return true;
   }
   return false;
@@ -246,6 +246,7 @@ std::ostream& operator<<(std::ostream& o, const Spin& spin)
       break;
     case Spin::GenD:
       o << "\\bar";
+      // fall through
     case Spin::GenS:
       o << "\\sigma_{" << spin.el() << "}";
       break;
@@ -277,8 +278,8 @@ OrbitalTypes::OrbitalTypes(const std::string& types, bool occ)
 
 std::ostream & operator << (std::ostream & o, const OrbitalTypes& orbt)
 {
-  _foreach_cauto( OrbitalTypes, iot, orbt ){
-    o << Orbital(*iot);
+  for (const auto& ot: orbt ){
+    o << Orbital(ot);
   }
   return o;
 }

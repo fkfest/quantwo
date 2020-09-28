@@ -88,8 +88,8 @@ Term& Term::operator*=(const Term& t)
 {
 #ifndef NDEBUG
   // all orbitals should differ!
-  _foreach_cauto( TOrbSet, itorb, _orbs ){
-    assert( t._orbs.find(*itorb) == t._orbs.end() );
+  for ( const auto& orb: _orbs ){
+    assert( t._orbs.find(orb) == t._orbs.end() );
   }
 #endif
   _opProd *= t._opProd;
@@ -203,10 +203,10 @@ TermSum Term::expandtermsfacs()
   Product<TermSum> trmsfacs= _termsfacs;
   _termsfacs.clear();
   ts += *this;
-  _foreach_cauto( Product<TermSum>, itfs, trmsfacs ){
-    _foreach_cauto( TermSum, its, ts ){
-      TermSum trms = its->first.times(*itfs);
-      trms *= its->second;
+  for ( const auto& tfs: trmsfacs ){
+    for ( const auto& t: ts ){
+      TermSum trms = t.first.times(tfs);
+      trms *= t.second;
       tts += trms;
     }
     ts = tts;
@@ -214,8 +214,8 @@ TermSum Term::expandtermsfacs()
   }
 #ifndef NDEBUG
   // all termsfacs in ts should be empty
-  _foreach_cauto( TermSum, its, ts ){
-    assert( its->first._termsfacs.size() == 0 );
+  for ( const auto& t: ts ){
+    assert( t.first._termsfacs.size() == 0 );
   }
 #endif
   return ts;
@@ -348,11 +348,11 @@ TOrbSet Term::extindx() const
 TOrbSet Term::extcreaindx() const
 {
   TOrbSet peo;
-  _foreach_cauto(Product<Matrix>,im,_mat){
-    if (!InSet(im->type(),Ops::Exc0,Ops::Deexc0)) continue;
-    const Product<Orbital> orbs = im->orbitals();
+  for ( const auto& m: _mat){
+    if (!InSet(m.type(),Ops::Exc0,Ops::Deexc0)) continue;
+    const Product<Orbital> orbs = m.orbitals();
     for ( uint i = 0; i < orbs.size(); ++i ){
-      SQOpT::Gender gen = im->genderguess(i);
+      SQOpT::Gender gen = m.genderguess(i);
 //       assert( gen != SQOpT::Gen );
       if ( gen == SQOpT::Creator && _sumorbs.count(orbs[i]) == 0 )
         peo.insert(orbs[i]);
@@ -392,10 +392,10 @@ bool Term::term_is_valid()
       bool found = false;
       if ( it->getel() == 0 ) {
         // electron is not set
-        _foreach_cauto(TOrbSet,itorb,_orbs){
-          if ( it->equal(*itorb) ){
+        for (const auto& orb: _orbs){
+          if ( it->equal(orb) ){
             from.push_back(*it);
-            to.push_back(*itorb);
+            to.push_back(orb);
             found = true;
             break;
           }
@@ -410,10 +410,10 @@ bool Term::term_is_valid()
   for ( uint i = 0; i < from.size(); ++i ) 
     this->replace(from[i],to[i],false);
   // check and set external matrices
-  _foreach_auto( Product<Matrix>, itm, _mat ){
-    itm->is_internal(_sumorbs) ;
+  for ( auto& m: _mat ){
+    m.is_internal(_sumorbs) ;
     // external matrices only of Deexc0 or Exc0 type! 
-    assert ( itm->internal() || InSet(itm->type(),Ops::Deexc0,Ops::Exc0) ); 
+    assert ( m.internal() || InSet(m.type(),Ops::Deexc0,Ops::Exc0) ); 
   }
   return true;
 }
@@ -661,9 +661,9 @@ std::ostream & operator << (std::ostream & o, Term const & t)
   MyOut::pcurout->lenbuf += t.opProd().size()*2;
   if ( t.termsfacs().size() > 0 ) {
     Product<TermSum> tts = t.termsfacs();
-    _foreach_cauto( Product<TermSum>, itts, tts ){
+    for ( const auto& ts: tts ){
       MyOut::pcurout->lenbuf++ ; // for "("
-      o << "(" << *itts << ")";
+      o << "(" << ts << ")";
       MyOut::pcurout->lenbuf++ ; // for ")"
     }
   }
@@ -1295,10 +1295,10 @@ void Term::reduceElectronsInTerm()
 {
   assert( _kProd.size() > 0 );
   TOrbSet::iterator it1, it2;
-  _foreach_cauto(Product<Kronecker>,ik,_kProd){
+  for ( const auto& kr: _kProd){
     Spin 
-      spin1 = ik->orb1().spin(),
-      spin2 = ik->orb2().spin();
+      spin1 = kr.orb1().spin(),
+      spin2 = kr.orb2().spin();
     it1 = Q2::findSpin<TOrbSet>(_sumorbs,spin1);
     it2 = Q2::findSpin<TOrbSet>(_sumorbs,spin2);
     if ( it1 != _sumorbs.end() ) { // found spin1
@@ -1316,8 +1316,8 @@ void Term::krons2mats()
     creators *= mat.crobs();
     annihilators *= mat.crobs(true);
   }
-  _foreach_cauto(Product<Kronecker>,ik,_kProd){
-    _mat.push_back(Matrix(*ik,ik->is_ordered(creators,annihilators)));
+  for ( const auto& kr: _kProd){
+    _mat.push_back(Matrix(kr,kr.is_ordered(creators,annihilators)));
   }
   _kProd = Product<Kronecker>();
 }
@@ -1542,16 +1542,15 @@ bool Term::dmelectrons(uint imat)
     }
   }
   bool replace_el = false;
-  std::map<Electron,int>::const_iterator itel;
   Electron el1 = 0, el2 = 0;
-  _foreach(itel,els){
-    if ( itel->second > 0 && el1 == 0 ) {
+  for (const auto& el: els){
+    if ( el.second > 0 && el1 == 0 ) {
       replace_el = true;
-      el1 = itel->first;
-    } else if ( itel->second < 0 && el2 == 0 ) {
+      el1 = el.first;
+    } else if ( el.second < 0 && el2 == 0 ) {
       replace_el = true;
-      el2 = itel->first;
-    } else if ( itel->second != 0 ) {
+      el2 = el.first;
+    } else if ( el.second != 0 ) {
       error("More than one annihilator-creator pair has different electrons","Term::dmwickstheorem");
 //      return TermSum();
     }
@@ -1574,8 +1573,8 @@ bool Term::dmelectrons(uint imat)
 }
 bool Term::has_generalindices() const
 {
-  _foreach_cauto(TOrbSet,it,_orbs)
-    if (it->type() == Orbital::GenT) return true;
+  for ( const auto& orb: _orbs)
+    if (orb.type() == Orbital::GenT) return true;
   return false;
 }
 TermSum Term::removegeneralindices()
@@ -1584,18 +1583,18 @@ TermSum Term::removegeneralindices()
   TermSum sum;
   this->set_lastorbs();
   Term tt(*this);
-  _foreach_auto(TOrbSet,it,_orbs){
-    if ( it->type() == Orbital::GenT ){
+  for ( auto& o: _orbs){
+    if ( o.type() == Orbital::GenT ){
       // replace
       Orbital orb = tt.freeorbname(Orbital::Occ);
-      orb.setspin(it->spin());
-      tt.replace(*it,orb);
+      orb.setspin(o.spin());
+      tt.replace(o,orb);
       if (active){
         sum += tt;
         tt = *this;
         orb = tt.freeorbname(Orbital::Act);
-        orb.setspin(it->spin());
-        tt.replace(*it,orb);
+        orb.setspin(o.spin());
+        tt.replace(o,orb);
         sum += tt;
         // have to repeat it
         return sum;
@@ -1818,6 +1817,7 @@ void Term::printdiag(Output* pout) const
         break;
       case Ops::None:
         error("Why is Ops::None still there??");
+        break;
       default:
         xout << *it << std::endl;
         error("Diagram for this matrix is not possible yet!");
@@ -1917,9 +1917,9 @@ void Term::set_lastorb(Orbital orb, bool onlylarger)
 }
 void Term::set_lastorbs()
 {
-  _foreach_cauto(TOrbSet,it,_orbs){
-    if (_lastorb[it->type()].name().size() == 0 || _lastorb[it->type()] < *it) 
-      _lastorb[it->type()] = *it;
+  for (const auto& orb: _orbs){
+    if (_lastorb[orb.type()].name().size() == 0 || _lastorb[orb.type()] < orb) 
+      _lastorb[orb.type()] = orb;
   }
 }
 
@@ -1927,8 +1927,8 @@ Electron Term::nextelectron()
 {
   if (_lastel == 0){
     // set to correct value (if there are already electrons )
-    _foreach_cauto(TOrbSet,its,_orbs){
-      Electron el = its->getel();
+    for (const auto& orb: _orbs){
+      Electron el = orb.getel();
       if (el > _lastel)
         _lastel = el;
     }

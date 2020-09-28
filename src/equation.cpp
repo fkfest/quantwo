@@ -48,9 +48,9 @@ LExcitationMap::iterator LExcitationMap::get_add(const std::string& name, int lm
   }
   TOrb4Type orb4t;
   for ( uint i = 0; i < orbtypes.size(); ++i ){
-    _foreach_cauto(OrbitalTypes,iot,orbtypes[i]){
-      if (orb4t.count(*iot) == 0)
-        orb4t[*iot] = _globalterm.freeorbname(*iot);
+    for (const auto& ot: orbtypes[i]){
+      if (orb4t.count(ot) == 0)
+        orb4t[ot] = _globalterm.freeorbname(ot);
     }
   }
   Ops::Type opstype;
@@ -75,11 +75,11 @@ void LExcitationMap::correct_orbs(const Product< Orbital >& orbs)
   //make sure that we haven't used these orbital names already
   for ( uint i = 0; i < orbs.size(); ++i ){
     std::string newname;
-    _foreach_auto(LExcitationMap,itex,*this){
-      _foreach_auto(Product<Orbital>,itorb,itex->second._orbs){
-        if ( itorb->letname() == orbs[i].letname() ){
-          if (newname.empty()) newname = _globalterm.freeorbname(itorb->type()).letname();
-          itorb->replace_letname(newname);
+    for (auto& ex: *this){
+      for (auto& orb: ex.second._orbs){
+        if ( orb.letname() == orbs[i].letname() ){
+          if (newname.empty()) newname = _globalterm.freeorbname(orb.type()).letname();
+          orb.replace_letname(newname);
         }
       }
     }
@@ -121,13 +121,13 @@ LParsedName::LParsedName(const std::string& namein, uint try2set, bool strict)
     error(namein+": Inconsistency in the number of orbital types and the excitation class!", 
           "LParsedName");
   }
-  _foreach_cauto(Product<Orbital>,itorb,occ){
-    if (itorb->type() == Orbital::Virt && strict )
-      warning("Do you really want to have orbital " << *itorb << " as occupied?");
+  for (const auto& orb: occ){
+    if (orb.type() == Orbital::Virt && strict )
+      warning("Do you really want to have orbital " << orb << " as occupied?");
   }
-  _foreach_cauto(Product<Orbital>,itorb,virt){
-    if (itorb->type() == Orbital::Occ && strict )
-      warning("Do you really want to have orbital " << *itorb << " as virtual?");
+  for (const auto& orb: virt){
+    if (orb.type() == Orbital::Occ && strict )
+      warning("Do you really want to have orbital " << orb << " as virtual?");
   }
 }
 
@@ -435,10 +435,10 @@ void LEquation::correct_orbs(Term& term, const Product< Orbital >& occs,
     _excops.correct_orbs(virts);
   } else {
     // set lastorb (if smaller)
-    _foreach_cauto( Product<Orbital>,itorb,occs)
-      term.set_lastorb(Orbital(itorb->letname(),spintype),true);
-    _foreach_cauto( Product<Orbital>,itorb,occs)
-      term.set_lastorb(Orbital(itorb->letname(),spintype),true);
+    for (const auto& orb: occs)
+      term.set_lastorb(Orbital(orb.letname(),spintype),true);
+    for (const auto& orb: occs)
+      term.set_lastorb(Orbital(orb.letname(),spintype),true);
   }
 }
 

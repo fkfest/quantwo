@@ -67,9 +67,9 @@ inline
 Array<T> Array<T>::refarr( const Array<uint>& ref ) const
 {
   Array<T> res;
-  _foreach_cauto(Array<uint>,ir,ref){
-    assert( *ir < this->size() );
-    res.push_back((*this)[*ir]);
+  for ( auto ir: ref){
+    assert( ir < this->size() );
+    res.push_back((*this)[ir]);
   }
   return res;
 }
@@ -77,8 +77,8 @@ template <class T>
 inline
 void Array<T>::canonicalize()
 {
-  _foreach_auto(typename Array<T>,it,*this){
-    it->canonicalize();
+  for ( auto& t: *this){
+    t.canonicalize();
   }
   std::sort(this->begin(), this->end());
 }
