@@ -95,8 +95,34 @@ bool Output::breaklongline()
   return false;
 }
 
-#ifdef _RATIONAL
-std::ostream & operator << (std::ostream & o, TFactor const & p){
+namespace math {
+long int gcd(long int n1, long int n2) {
+  if ( n2 == 0 || n2 == 1 || n1 == 1 ) return 1;
+  n1 = std::abs(n1);
+  n2 = std::abs(n2);
+  // Euclidean algorithm
+#if true
+  long int tmp;
+  while ( n2 != 0 ) {
+    tmp = n2;
+    n2 = n1 % n2;
+    n1 = tmp;
+  }
+#else
+  while ( n1 != n2 ) { 
+    if (n1 > n2)
+      n1 -= n2;
+    else
+      n2 -= n1;
+  }
+#endif
+  return n1;
+}
+TRational abs(const TRational& f){return TRational(std::abs(f.numerator()),f.denominator());}
+double todouble(const TRational& f){return double(f.numerator())/double(f.denominator());}
+}
+TRational operator/(long int i, const TRational& f){return TRational(i*f.denominator(),f.numerator());}
+std::ostream & operator << (std::ostream & o, TRational const & p){
   int digits = 0, number = std::max(std::abs(p.numerator()),std::abs(p.denominator())); 
   if ( p.numerator() < 0 || p.denominator() < 0 ) ++digits;
   do { number /= 10; ++digits; } while(number);
@@ -107,10 +133,6 @@ std::ostream & operator << (std::ostream & o, TFactor const & p){
   MyOut::pcurout->lenbuf += digits;
   return o;
 }
-namespace dboost{
-TFactor abs(const TFactor& f){return boost::abs(f);}
-}
-#endif
 int Input::verbose = 0;
 TsParSet Input::sPars;
 TiParSet Input::iPars;

@@ -8,11 +8,7 @@ Factorizer::Factorizer(const TermSum& s)
 
   // create an expression from the sum
   for ( TermSum::const_iterator i=s.begin();i!=s.end(); ++i) {
-    #ifdef _RATIONAL
-    Factor fac = boost::rational_cast<Factor>(i->second);
-    #else
-    Factor fac = (Factor) i->second;
-    #endif
+    Factor fac = _todouble(i->second);
     Term term = i->first;
     // add slottypes
     uint iorb = 0;
@@ -26,11 +22,7 @@ Factorizer::Factorizer(const TermSum& s)
 //    }
     TermSum sumt = term.resolve_permutations();
     for ( TermSum::const_iterator ist = sumt.begin();ist != sumt.end(); ++ist ) {
-      #ifdef _RATIONAL
-      Factor fact = boost::rational_cast<Factor>(ist->second);
-      #else
-      Factor fact = (Factor) ist->second;
-      #endif
+      Factor fact = _todouble(ist->second);
       fact *= fac;
       Diagram diag = Translators::term2diagram(ist->first,fact,slotorbs,_expression);
       xout << diag; 
@@ -145,11 +137,7 @@ Diagram Translators::term2diagram(const Term& term, Factor fact, const std::map<
     } else
       diag.add(DiagramTensor(con,m.plainname()));
   }
-  #ifdef _RATIONAL
-  assert( std::abs(std::abs(boost::rational_cast<Factor>(term.prefac())) - 1) < Numbers::verysmall );
-  #else
-  assert( std::abs(std::abs(term.prefac()) - 1) < Numbers::verysmall );
-  #endif
+  assert( std::abs(std::abs(_todouble(term.prefac())) - 1) < Numbers::verysmall );
   diag._fac = fact;
   if ( nbareops > 1 ) error("we can handle only upto one bare operator yet...", "Translators::term2diagram");
   return diag;

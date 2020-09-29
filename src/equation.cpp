@@ -540,18 +540,18 @@ TFactor LEquation::handle_factor(const Lelem& lel) const
     ++ipos;
     ipos=IL::skip(lelnam,ipos,"{} ");
     ipos1=IL::nextwordpos(lelnam,ipos);
-    if ( typeid(TFactor) == typeid(double) ){
-      double fac1;
-      if(!str2num<double>(fac1,lelnam.substr(ipos,ipos1-ipos),std::dec))
-        error("Denominator is not a number "+lelnam.substr(ipos,ipos1-ipos),"Lexic::handle_factor");
-      fac /= fac1;
-    } else {
-      // NOTE: won't work for non-integer nominators or denominators 
-      long int denom;
-      if(!str2num<long int>(denom,lelnam.substr(ipos,ipos1-ipos),std::dec))
-        error("Denominator is not an integer "+lelnam.substr(ipos,ipos1-ipos),"Lexic::handle_factor");
-      fac /= denom;
-    }
+#ifdef _RATIONAL
+    // NOTE: won't work for non-integer nominators or denominators 
+    long int denom;
+    if(!str2num<long int>(denom,lelnam.substr(ipos,ipos1-ipos),std::dec))
+      error("Denominator is not an integer "+lelnam.substr(ipos,ipos1-ipos),"Lexic::handle_factor");
+    fac /= denom;
+#else
+    double fac1;
+    if(!str2num<double>(fac1,lelnam.substr(ipos,ipos1-ipos),std::dec))
+      error("Denominator is not a number "+lelnam.substr(ipos,ipos1-ipos),"Lexic::handle_factor");
+    fac /= fac1;
+#endif
   }
   return fac;
 }

@@ -6,9 +6,6 @@
 #include <map>
 #include <list>
 #include <cmath>
-#ifdef _RATIONAL
-#include <boost/rational.hpp>
-#endif
 
 typedef long unsigned int lui;
 typedef unsigned int uint;
@@ -23,24 +20,54 @@ typedef std::map< std::string, TiPar > TiParSet;
 typedef std::map< std::string, TfPar > TfParSet;
 typedef std::map< std::string, TaPar > TaParSet;
 
-#ifdef _RATIONAL
-// something like a strong typedef... 
-class TFactor : public boost::rational<long int>
+namespace math {
+// greatest common divisor
+long int gcd(long int n1, long int n2);
+}
+// rational numbers
+class TRational 
 {
 public:
-  TFactor() : boost::rational<long int>(){};
-  TFactor(long int n) : boost::rational<long int>(n){};
-  TFactor(long int n,long int d) : boost::rational<long int>(n,d){};
-  TFactor(const boost::rational<long int>& f) : boost::rational<long int>(f){};
-  TFactor & operator=(const long int& n){ *this = TFactor(n); return *this;};
-  TFactor & operator=(const boost::rational<long int>& f){ *this = TFactor(f); return *this;};
+  TRational() {};
+  TRational(long int n,long int d = 1) : _numerator(n), _denominator(d){normalize();};
+//   TRational(const TRational& f) : _numerator(f._numerator),_denominator(f._denominator){};
+  long int numerator() const { return _numerator; };
+  long int denominator() const { return _denominator; };
+  
+  TRational & operator*=(const TRational& f){ _numerator*= f._numerator; _denominator*= f._denominator; normalize(); return *this;};
+  TRational & operator/=(const TRational& f){ _numerator*= f._denominator; _denominator*= f._numerator; normalize(); return *this;};
+  TRational & operator+=(const TRational& f){ _numerator*= f._denominator; _numerator+= f._numerator*_denominator; _denominator*= f._denominator; normalize(); return *this;};
+  TRational & operator-=(const TRational& f){ _numerator*= f._denominator; _numerator-= f._numerator*_denominator; _denominator*= f._denominator; normalize(); return *this;};
+  
+  TRational operator*(const TRational& f) const { return TRational(_numerator*f._numerator,_denominator*f._denominator);};
+  TRational operator/(const TRational& f) const { return TRational(_numerator*f._denominator,_denominator*f._numerator);};
+  TRational operator+(const TRational& f) const { return TRational(_numerator*f._denominator+f._numerator*_denominator,_denominator*f._denominator);};
+  TRational operator-(const TRational& f) const { return TRational(_numerator*f._denominator-f._numerator*_denominator,_denominator*f._denominator);};
+  TRational operator-() const { return TRational(-_numerator,_denominator);};
+  
+  bool operator<(const TRational& f) const { return (_numerator*f._denominator < f._numerator*_denominator);};
+  bool operator<=(const TRational& f) const { return (_numerator*f._denominator <= f._numerator*_denominator);};
+  bool operator>(const TRational& f) const { return (_numerator*f._denominator > f._numerator*_denominator);};
+  bool operator>=(const TRational& f) const { return (_numerator*f._denominator >= f._numerator*_denominator);};
+  bool operator==(const TRational& f) const { return (_numerator*f._denominator == f._numerator*_denominator);};
+  bool operator!=(const TRational& f) const { return (_numerator*f._denominator != f._numerator*_denominator);};
+private:
+  long int _numerator = 0, _denominator = 1;  
+  void normalize() {long int div = math::gcd(_numerator,_denominator); 
+                    if (_denominator < 0) div = -div; 
+                    _numerator /= div; _denominator /= div; };
 };
-namespace dboost{
-TFactor abs(const TFactor& f);
+TRational operator/(long int i, const TRational& f);
+namespace math{
+TRational abs(const TRational& f);
+double todouble(const TRational& f);
 }
-std::ostream & operator << (std::ostream & o, TFactor const & p);
-#define _abs dboost::abs
-#define _todouble boost::rational_cast<double>
+std::ostream & operator << (std::ostream & o, TRational const & p);
+
+#ifdef _RATIONAL
+typedef TRational TFactor;
+#define _abs math::abs
+#define _todouble math::todouble
 #else
 typedef double TFactor;
 #define _abs std::abs

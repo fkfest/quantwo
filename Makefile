@@ -6,7 +6,7 @@ CFLAGS := -c -Wall -Wextra -pedantic -std=gnu++11 -Ofast $(PROFILE)
 LDFLAGS = $(PROFILE)
 #comment out to deactivate debug and asserts
 #CFLAGS := $(CFLAGS) -D NDEBUG
-#use rational numbers from boost
+#use rational numbers 
 #CFLAGS := $(CFLAGS) -D _RATIONAL
 INCLUDES=
 # program name
