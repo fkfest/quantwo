@@ -512,6 +512,9 @@ TFactor LEquation::handle_factor(const Lelem& lel) const
     if ( typeid(TFactor) != typeid(double) ){
       // try to bring it to integer over integer form
       // NOTE: won't work for 1e-2 etc.
+      if (int(lelnam.size()) > Input::iPars["prog"]["maxfloatlength"]) {
+        error("Very long number "+lelnam+" for RATIONAL. Increase maxfloatlength or recompile without RATIONAL","Lexic::handle_factor");
+      }
       long int 
         denom = std::pow(10,lelnam.size()),
         nom = facd*denom;

@@ -101,6 +101,7 @@ set="prog",type=i,name="eqway",value=0,desc="compare terms using diagram-compari
 set="prog",type=i,name="permuteq",value=2,desc="(for eqway > 0) if = 1: try to permute indices to make terms equal, if > 1: safe - do it for each vertices-permutation in minimization"
 set="prog",type=s,name="virtspace",value="CAN",desc="virtual space. Possible values: CAN, PAO, PNO"
 set="prog",type=i,name="replacee0",value=0,desc="if > 0: replace e0 by <0|F|0> (can be used for noorder>0), if > 1: replace E^0act too."
+set="prog",type=i,name="maxfloatlength",value=10,desc="Largest allowed float number length when using RATIONAL numbers."
 
 %TENSORS
 set="tensor",type=s,name="T[aaii]",value="",desc="doubles amplitudes, cuts and symmetry" 
