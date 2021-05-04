@@ -16,7 +16,7 @@
 // #include "operators.h" // for Creator/Annihilator types
 
 namespace Ops {
-  // generate Product<Orbital> from occupied and virtual orbitals and excitation class 
+  // generate Product<Orbital> from occupied and virtual orbitals and excitation class
   Product<Orbital> genprodorb(short exccl,Orbital const & occ, Orbital const & virt);
 }
 
@@ -29,7 +29,7 @@ struct ConLine {
   lui idx;
 };
 class Permut;
-/*! 
+/*!
     Implements class matrices (e.g. amplitudes, integrals etc)
 */
 class Matrix {
@@ -41,7 +41,7 @@ class Matrix {
   Matrix(Ops::Type t, const Product<Orbital>& p, uint npairs, short lmel=0, short pmsym=0,
          std::string name="T", Spinsym matspinsym=Singlet, bool antisymW=true);
   // construct from type and orbitals and name
-  Matrix(Ops::Type t, const Product<Orbital>& pcrea, const Product<Orbital>& panni, uint npairs, 
+  Matrix(Ops::Type t, const Product<Orbital>& pcrea, const Product<Orbital>& panni, uint npairs,
          short lmel=0, short pmsym=0, std::string name="T", Spinsym matspinsym=Singlet, bool antisymW=true);
   // construct from kronecker
   Matrix(const Kronecker& d, bool ordered = true);
@@ -85,7 +85,7 @@ class Matrix {
   // equality of two Matrix (including symmetry properties)
   bool operator == (Matrix const & t) const;
   // equivalence of two matrices (i.e., without orbital names)
-  bool equivalent( const Matrix& mat) const; 
+  bool equivalent( const Matrix& mat) const;
   // number of vertices ("electrons") in the matrix
   uint nvertices() const { return _npairs+(_orbs.size()-2*_npairs);};
   // equivalent vertices (starting from 0+offs to nvertices-1+offs) (indistinguishability of electrons...)
@@ -105,16 +105,16 @@ class Matrix {
   void setkind(short exccl, short intlines, short intvirt);
   // return excitation class (has to be set previously!)
   short exccl() const {return _exccl;};
-  // get the position of second orbital for the same electron (from position) 
+  // get the position of second orbital for the same electron (from position)
   long iorbel(lui ipos) const;
   // get the second orbital for the same electron (if not found return blank orbital)
   Orbital orbel(Orbital const & orb) const;
-  // get the second orbital for the same electron (from position) 
+  // get the second orbital for the same electron (from position)
   Orbital orbel(long int const & ipos) const;
   // get the spin symmetry of the electron, which corresponds to the orbital on position ipos
   Spinsym spinsym(long int ipos) const;
   // returns gender of the creation/annihilation operator that corresponds to the orbital on position ipos
-  // information is either taken from _cranorder or guessed 
+  // information is either taken from _cranorder or guessed
   SQOpT::Gender genderguess(uint ipos) const;
   // returns diagram level starting from 0 (excitation ops) to 2 (deexcitation ops)
   uint diaglevel() const;
@@ -146,7 +146,7 @@ class Matrix {
   void permute(const Permut& p);
   // returns a plain name that can be used in algo's
   std::string plainname() const;
-  // names for integrals: 
+  // names for integrals:
   //  J: if orbital types for each electron are the same
   //  K: otherwise
   std::string integralnames() const;
@@ -154,7 +154,7 @@ class Matrix {
   // generate name from type or use the given name
   void gen_name(const std::string& name);
   // sets internal variables. it's used by constructors
-  void create_Matrix(Ops::Type t, uint npairs, short lmel, short pmsym, 
+  void create_Matrix(Ops::Type t, uint npairs, short lmel, short pmsym,
                      std::string name, Spinsym matspinsym, bool antisymW);
   Ops::Type _type;
   // orbitals in the electron-order
@@ -164,13 +164,13 @@ class Matrix {
   Product<SQOpT::Gender> _cranorder; // sets creator or annihilator type for every orbital (for density matrices only!)
   bool _antisymform; // W is constructed in antisymmetrized form, but can be expanded later.
   // for Exc0 and Deexc0 operators: is it completely internal (i.e., part of \sum_\mu T_\mu \tau_mu) or external
-  bool _internal; 
+  bool _internal;
   // number of orbital pairs (== electrons for number-conserving operators and otherwise == conserved particles)
   uint _npairs;
   // non-conserved electrons
   short _lmel;
   // plus/minus symmetry under index permutations (after spin integration!)
-  // i.e., denotes singlet (=1)/triplet (=-1) combinations. default =0 
+  // i.e., denotes singlet (=1)/triplet (=-1) combinations. default =0
   short _pmsym;
   // needed for comparison of terms:
   long int _indx;
@@ -182,12 +182,12 @@ class Matrix {
   short _exccl, _intlines, _intvirt;
   // hash of types of all orbitals
   lui _orbtypeshash;
-    
+
 };
 
 std::ostream & operator << (std::ostream & o, Matrix const & mat);
 
-/*! 
+/*!
     Implements class permutators (\Perm{ia,jb}(ia|jb)=(jb|ia))
 */
 class Permut {
@@ -214,7 +214,7 @@ class Permut {
     // equality of permutators
     bool operator == (Permut const & p) const;
     bool is1() const { return _orbs.size() == 0; };
-  private: 
+  private:
     typedef std::map<Orbital,Orbital> TPerMap;
     // map _orbs[from] = to
     TPerMap _orbs;

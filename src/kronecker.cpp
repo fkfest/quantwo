@@ -1,8 +1,8 @@
 #include "kronecker.h"
 
 Kronecker::Kronecker(Orbital orb1, Orbital orb2) :
-    _orb1(orb1), _orb2(orb2) 
-{ 
+    _orb1(orb1), _orb2(orb2)
+{
   if ( _orb2 < _orb1 ) std::swap(_orb1,_orb2);
   if ( _orb2.name().size() < _orb1.name().size() ) std::swap(_orb1,_orb2);
   if (_orb1.type()==Orbital::GenT) std::swap(_orb1,_orb2);
@@ -31,7 +31,7 @@ bool Kronecker::is_ordered(const Product< Orbital >& crobs, const Product< Orbit
     ordered = false;
   } else if ( orb2anni || orb1crea ) {
     ordered = true;
-  } else { 
+  } else {
     xout << "crobs: " << crobs << std::endl;
     xout << "anobs: " << anobs << std::endl;
     xout << "Kronecker: " << *this << std::endl;

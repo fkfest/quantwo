@@ -15,10 +15,10 @@ class Lelem {
   // enumerate lexic
   enum Lex {None,
             Bra, Ket, LPar, RPar, LCom, RCom, Comma,
-            Oper, Tensor, Num, Frac, 
+            Oper, Tensor, Num, Frac,
             Equal, Plus, Minus, Times, Div, Sum, Perm };
   // enumerate types expressions in parantheses (Normal, Connected, Disconnected, ...)
-  enum Conn {Normal, Connect, Disconnect }; 
+  enum Conn {Normal, Connect, Disconnect };
   // constructor from name and Lex
   Lelem (std::string name, Lex lex, Conn conn=Normal);
   std::string name() const;
@@ -50,14 +50,14 @@ class LelString : public Product<Lelem> {
 public:
   LelString():Product< Lelem >(){};
   LelString(const_iterator beg, const_iterator end):Product< Lelem >(beg,end){};
-  
+
   LelString substring(lui beg, lui end) const {
     lui end1=(end < this->size() ? end + 1 : this->size());
     return LelString(this->begin()+beg,this->begin()+end1);
-  }; 
+  };
   void add(const Lelem& a) { this->push_back(a);}
   void add(const LelString& a) { this->operator*=(a);}
-  
+
   // get position of the closing bracket (which corresponds to the bracket on ipos)
   // if find != None : search for this lexic element inside the brackets
   lui closbrack(lui ipos, Lelem::Lex find = Lelem::None) const;
@@ -85,7 +85,7 @@ public:
   void expand(ConnectionsMap& connections);
   // expand commutators
   void expand_commutators();
-  
+
 };
 
 #endif

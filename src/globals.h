@@ -1,4 +1,4 @@
-#ifndef GLOBAL_H 
+#ifndef GLOBAL_H
 #define GLOBAL_H
 
 #include <iostream>
@@ -25,7 +25,7 @@ namespace math {
 long int gcd(long int n1, long int n2);
 }
 // rational numbers
-class TRational 
+class TRational
 {
 public:
   TRational() {};
@@ -33,18 +33,18 @@ public:
 //   TRational(const TRational& f) : _numerator(f._numerator),_denominator(f._denominator){};
   long int numerator() const { return _numerator; };
   long int denominator() const { return _denominator; };
-  
+
   TRational & operator*=(const TRational& f){ _numerator*= f._numerator; _denominator*= f._denominator; normalize(); return *this;};
   TRational & operator/=(const TRational& f){ _numerator*= f._denominator; _denominator*= f._numerator; normalize(); return *this;};
   TRational & operator+=(const TRational& f){ _numerator*= f._denominator; _numerator+= f._numerator*_denominator; _denominator*= f._denominator; normalize(); return *this;};
   TRational & operator-=(const TRational& f){ _numerator*= f._denominator; _numerator-= f._numerator*_denominator; _denominator*= f._denominator; normalize(); return *this;};
-  
+
   TRational operator*(const TRational& f) const { return TRational(_numerator*f._numerator,_denominator*f._denominator);};
   TRational operator/(const TRational& f) const { return TRational(_numerator*f._denominator,_denominator*f._numerator);};
   TRational operator+(const TRational& f) const { return TRational(_numerator*f._denominator+f._numerator*_denominator,_denominator*f._denominator);};
   TRational operator-(const TRational& f) const { return TRational(_numerator*f._denominator-f._numerator*_denominator,_denominator*f._denominator);};
   TRational operator-() const { return TRational(-_numerator,_denominator);};
-  
+
   bool operator<(const TRational& f) const { return (_numerator*f._denominator < f._numerator*_denominator);};
   bool operator<=(const TRational& f) const { return (_numerator*f._denominator <= f._numerator*_denominator);};
   bool operator>(const TRational& f) const { return (_numerator*f._denominator > f._numerator*_denominator);};
@@ -52,9 +52,9 @@ public:
   bool operator==(const TRational& f) const { return (_numerator*f._denominator == f._numerator*_denominator);};
   bool operator!=(const TRational& f) const { return (_numerator*f._denominator != f._numerator*_denominator);};
 private:
-  long int _numerator = 0, _denominator = 1;  
-  void normalize() {long int div = math::gcd(_numerator,_denominator); 
-                    if (_denominator < 0) div = -div; 
+  long int _numerator = 0, _denominator = 1;
+  void normalize() {long int div = math::gcd(_numerator,_denominator);
+                    if (_denominator < 0) div = -div;
                     _numerator /= div; _denominator /= div; };
 };
 TRational operator/(long int i, const TRational& f);

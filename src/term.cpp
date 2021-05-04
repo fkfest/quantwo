@@ -1,30 +1,30 @@
 #include "term.h"
 
-Term::Term() : _prefac(1), _lastel(0), _matconnectionsset(false) 
+Term::Term() : _prefac(1), _lastel(0), _matconnectionsset(false)
 {
   _nloops=_nintloops=_nocc=0;
   _perm+=Permut();
 }
 
 Term::Term(Product<SQOp> const & opProd) :
-    _opProd(opProd), _prefac(1), _lastel(0), _matconnectionsset(false) 
+    _opProd(opProd), _prefac(1), _lastel(0), _matconnectionsset(false)
 {
   _nloops=_nintloops=_nocc=0;
   _perm+=Permut();
 }
 
 Term::Term(Product<SQOp> const & opProd, Product<Kronecker> const & kProd) :
-    _opProd(opProd), _kProd(kProd), _prefac(1), _lastel(0), _matconnectionsset(false) 
+    _opProd(opProd), _kProd(kProd), _prefac(1), _lastel(0), _matconnectionsset(false)
 {
   _nloops=_nintloops=_nocc=0;
   _perm+=Permut();
 }
-    
-Term::Term(const Product< SQOp >& opProd, const Product< Kronecker >& kProd, 
-           const Product< Matrix >& mat, const TOrbSet& orbs, const TOrbSet& sumorbs, 
+
+Term::Term(const Product< SQOp >& opProd, const Product< Kronecker >& kProd,
+           const Product< Matrix >& mat, const TOrbSet& orbs, const TOrbSet& sumorbs,
            const TFactor& prefac, const ConnectionsMap& connections) :
-    _opProd(opProd), _kProd(kProd), _mat(mat), _orbs(orbs), _sumorbs(sumorbs), 
-    _prefac(prefac), _connections(connections), _lastel(0), _matconnectionsset(false) 
+    _opProd(opProd), _kProd(kProd), _mat(mat), _orbs(orbs), _sumorbs(sumorbs),
+    _prefac(prefac), _connections(connections), _lastel(0), _matconnectionsset(false)
 {
   _nloops=_nintloops=_nocc=0;
   _perm+=Permut();
@@ -146,7 +146,7 @@ void Term::addconnection(const Product< long int >& connections)
 {
   for (lui i=0; i<connections.size(); i++)
   { // Test
-    if (connections[i]==0) 
+    if (connections[i]==0)
       error("Zero in connections-map","Term::addconnection");
     if ((unsigned long)abs(connections[i])>_mat.size())
       error("Value in connections-map is larger than number of matrices in term","Term::addconnection");
@@ -158,7 +158,7 @@ void Term::addsummation(const Orbital& orb, short int excl)
   Orbital orb1;
   std::string excls;
   std::pair<TOrbSet::iterator,bool> ret;
-  for (short i=0; i<excl ; ++i) {  
+  for (short i=0; i<excl ; ++i) {
     if (i>0) excls=num2str(i,std::dec);
     orb1=Orbital(orb.name()+excls,orb.spin());
     ret = _sumorbs.insert(orb1);
@@ -260,7 +260,7 @@ void Term::addoverlaps()
               // overlap is not needed
               continue;
           }
-          
+
           Orbital neworb(orb);
           do {
             neworb.add_prime();
@@ -301,7 +301,7 @@ Product<Kronecker>  Term::kProd() const
 TFactor Term::prefac() const
 { return _prefac; }
 void Term::reset_prefac()
-{ 
+{
   _prefac=1;
   _perm=Sum<Permut,TFactor>();
 }
@@ -367,8 +367,8 @@ ConnectionsMap Term::connections() const
 { return _connections; }
 
 bool Term::term_is_0(double minfac) const
-{ 
-  bool 
+{
+  bool
     is0 = (_opProd.size()==0 && _kProd.size()==0 && _mat.size()==0) || _todouble(_abs(_prefac))<minfac,
     loop = !is0;
   for ( Sum<Permut,TFactor>::const_iterator it = _perm.begin(); loop && it != _perm.end(); ++it )
@@ -407,13 +407,13 @@ bool Term::term_is_valid()
       }
     }
   }
-  for ( uint i = 0; i < from.size(); ++i ) 
+  for ( uint i = 0; i < from.size(); ++i )
     this->replace(from[i],to[i],false);
   // check and set external matrices
   for ( auto& m: _mat ){
     m.is_internal(_sumorbs) ;
-    // external matrices only of Deexc0 or Exc0 type! 
-    assert ( m.internal() || InSet(m.type(),Ops::Deexc0,Ops::Exc0) ); 
+    // external matrices only of Deexc0 or Exc0 type!
+    assert ( m.internal() || InSet(m.type(),Ops::Deexc0,Ops::Exc0) );
   }
   return true;
 }
@@ -439,16 +439,16 @@ bool Term::operator < (Term const & t) const
     return _prefac<t._prefac;
 return true;
 }
-bool Term::equal(Term& t, Permut& perm) 
+bool Term::equal(Term& t, Permut& perm)
 {
-  
+
   if (_mat.size() != t._mat.size() ||
       _orbs.size() != t._orbs.size() ||
       _sumorbs.size() != t._sumorbs.size() ||
       _nintloops != t._nintloops || _nocc != t._nocc) return false;
 //   xout << "compare " << *this << "  and  " << t << std::endl;
   // generate Product of all orbitals and external-lines orbitals
-  TOrbSet peo(extindx()), peot(t.extindx()), 
+  TOrbSet peo(extindx()), peot(t.extindx()),
           // external creator lines
           pceo(extcreaindx()), pceot(t.extcreaindx());
   List<Orbital> po(peo),pot(peot); // start with external lines!
@@ -480,9 +480,9 @@ bool Term::equal(Term& t, Permut& perm)
       oordmatt.push_back(i);
   }
   // put external matrices first
-  for (i=0; i<oordmat.size(); i++) 
+  for (i=0; i<oordmat.size(); i++)
     ordmat.push_back(oordmat[i]);
-  for (i=0; i<oordmatt.size(); i++) 
+  for (i=0; i<oordmatt.size(); i++)
     ordmatt.push_back(oordmatt[i]);
   loop = false;
   while (po.size()>0) {
@@ -543,7 +543,7 @@ bool Term::equal(Term& t, Permut& perm)
         ++ipost;
         ipost = tmat[j].orbitals().find(orb1t,ipost);
         if (ipost >= 0 ) {
-          if ( !exter && tmat[j].genderguess(ipost) != genorb) { 
+          if ( !exter && tmat[j].genderguess(ipost) != genorb) {
             // orbitals come from different gendered operators
             // exclude external indices from the gender-check because of the ambiguity in particle-nonconserved matrices
             --jo; // check same matrix again
@@ -567,18 +567,18 @@ bool Term::equal(Term& t, Permut& perm)
         ipos = mat[ithis].iorbel(ipos);
         if ( ipos < 0 ) break;
         orb1 = mat[ithis].orbitals()[ipos];
-       
+
         const ConLine& clt = tmat[ithist].conline(ipost);
         ithist = clt.imat;
         ipost = clt.idx;
         ipost = tmat[ithist].iorbel(ipost);
         if ( ipost < 0 ) break;
         orb1t = tmat[ithist].orbitals()[ipost];
-        
+
         if (orb1.type() != orb1t.type() || !mat[ithis].vertices(ipos,tmat[ithist],ipost,ithis) ||
             mat[ithis].genderguess(ipos) != tmat[ithist].genderguess(ipost) )
           equal=false;
-        else { 
+        else {
           exter1= (peo.count(orb1));
           extert1= (peot.count(orb1t));
           if (exter1!=extert1) { // if one of indices is external and the other not
@@ -636,7 +636,7 @@ std::ostream & operator << (std::ostream & o, Term const & t)
     MyOut::pcurout->lenbuf += o.tellp()-ipos0;
     printed = true;
   }
-  
+
   if ( t.perm().size() > 1 || t.perm().begin()->second < 0 ){
     MyOut::pcurout->lenbuf++ ; // for "("
     o << "(" << t.perm() << ")";
@@ -646,8 +646,8 @@ std::ostream & operator << (std::ostream & o, Term const & t)
     if ( printed ) o << "*";
     o << t.perm();
   }
-                                    
-  if (t.sumorbs().size()>0) 
+
+  if (t.sumorbs().size()>0)
   {
     o <<"\\" << Input::sPars["command"]["sum"] <<"_{"<<t.sumorbs()<<"}";
     MyOut::pcurout->lenbuf += std::max(3,int(t.sumorbs().size())/MyOut::pcurout->wsi);
@@ -691,12 +691,12 @@ TermSum Term::normalOrder(bool fullyContractedOnly) const
           if ( !fullyContractedOnly || p[_opProd.size()-1].gender()==SQOpT::Creator )
             sum -= Term(p, _kProd, _mat, _orbs, _sumorbs, _prefac, _connections).normalOrder(fullyContractedOnly);
 
-            // handle 2nd term 
+            // handle 2nd term
           Product<SQOp> q(p);   // copy Product<SQOp>
           q.erase(q.begin()+i,q.begin()+i+2);
           // q.erase(std::find(q.begin(), q.end(), p[i]));        // remove
           // q.erase(std::find(q.begin(), q.end(), p[i+1]));      // operators
-        
+
           Product<Kronecker>  d(_kProd);
           d *= Kronecker(p[i].orb(), p[i+1].orb());           // and add kronecker
           // check if we need downward recursion
@@ -725,7 +725,7 @@ TermSum Term::normalOrderPH(bool fullyContractedOnly) const
     // check if two consecutive operators need reordering
     creat2=(( _opProd[i].genderPH()==SQOpT::Annihilator || _opProd[i].genderPH()==SQOpT::Gen )
               &&  _opProd[i+1].genderPH()==SQOpT::Creator );
-    annih1=(_opProd[i].genderPH()==SQOpT::Annihilator 
+    annih1=(_opProd[i].genderPH()==SQOpT::Annihilator
               && ( _opProd[i+1].genderPH()==SQOpT::Creator || _opProd[i+1].genderPH()==SQOpT::Gen));
     if ( creat2 || annih1 ) {   // yes
       // handle 1st term
@@ -734,26 +734,26 @@ TermSum Term::normalOrderPH(bool fullyContractedOnly) const
       // check if we need downward recursion
       if ( !fullyContractedOnly || (p[_opProd.size()-1].genderPH()==SQOpT::Creator)
                 || (p[0].genderPH()==SQOpT::Annihilator))
-        sum -= Term(p, _kProd, _mat, _orbs, _sumorbs, _prefac, _connections).normalOrderPH(fullyContractedOnly); 
-          
-      if ( _opProd[i].orb().type()==_opProd[i+1].orb().type() || 
-               ( ( _opProd[i].orb().type()==Orbital::GenT || _opProd[i+1].orb().type()==Orbital::GenT ) 
+        sum -= Term(p, _kProd, _mat, _orbs, _sumorbs, _prefac, _connections).normalOrderPH(fullyContractedOnly);
+
+      if ( _opProd[i].orb().type()==_opProd[i+1].orb().type() ||
+               ( ( _opProd[i].orb().type()==Orbital::GenT || _opProd[i+1].orb().type()==Orbital::GenT )
                  && _opProd[i].gender()!=_opProd[i+1].gender() )) {
-        // handle 2nd term 
+        // handle 2nd term
         Product<SQOp> q(p);   // copy Product<SQOp>
         q.erase(q.begin()+i,q.begin()+i+2);
-        
+
         Product<Kronecker>  d(_kProd);
         d *= Kronecker(p[i].orb(), p[i+1].orb());           // and add kronecker
         // check if we need downward recursion
-        if ( !fullyContractedOnly || q.size()==0 || q[q.size()-1].genderPH()==SQOpT::Creator 
+        if ( !fullyContractedOnly || q.size()==0 || q[q.size()-1].genderPH()==SQOpT::Creator
                 || q[0].genderPH()==SQOpT::Annihilator)
               sum += Term(q, d, _mat, _orbs, _sumorbs, _prefac, _connections).normalOrderPH(fullyContractedOnly);
       }
       return sum;
     }
   }
-  if ( !fullyContractedOnly || _opProd.size()==0 ) 
+  if ( !fullyContractedOnly || _opProd.size()==0 )
     sum += *this;   // add current term to the intermediate sum
   return sum;
 }
@@ -783,7 +783,7 @@ TermSum Term::wickstheorem(bool genw, int noord) const
       m=0; // search from begin
     } else if (_mat[m].orbitals().find(_opProd[i].orb())>=0) {
       opermat.push_back(i);
-      if ( noord > 1 || 
+      if ( noord > 1 ||
            ( noord == 1 && InSet(_mat[m].type(),Ops::Fock,Ops::OneEl,Ops::FluctP,Ops::XPert) ) ){
         // not normal ordered - add every corresponding SQOp as an individual operator
         opers.push_back(opermat);
@@ -798,7 +798,7 @@ TermSum Term::wickstheorem(bool genw, int noord) const
   }
   if (opermat.size()>0) opers.push_back(opermat);
   opermat=TWMats();
-  
+
 //   for (TWOps::iterator iop = opers.begin(); iop != opers.end(); ++iop) {
 //     for ( TWMats::iterator ijop = iop->begin(); ijop != iop->end(); ++ijop)
 //       std::cout << *ijop << " " ;
@@ -850,7 +850,7 @@ TermSum Term::wick(TWOps& opers, TWMats& krons) const
   krons.push_back(curr);
   sign=0;
   uint ii = 0;
-  for ( TWOps::iterator iop = opers.begin(); iop != opers.end(); ++iop, ++ii ) { // iterate over all Operators 
+  for ( TWOps::iterator iop = opers.begin(); iop != opers.end(); ++iop, ++ii ) { // iterate over all Operators
     if (ii < istart) { //but the first
       //count SQops for sign
       sign+=iop->size();
@@ -943,7 +943,7 @@ TermSum Term::genwick(Term::TWOps& opers, const Term::TWMats& krons, Term::TWMat
   }
   sign=0;
   uint ii = 0;
-  for ( TWOps::iterator iop = opers.begin(); iop != opers.end(); ++iop, ++ii ) { // iterate over all Operators 
+  for ( TWOps::iterator iop = opers.begin(); iop != opers.end(); ++iop, ++ii ) { // iterate over all Operators
     if (ii < istart) { //but the first
       //count SQops for sign
       sign+=iop->size();
@@ -954,7 +954,7 @@ TermSum Term::genwick(Term::TWOps& opers, const Term::TWMats& krons, Term::TWMat
       // check if the first operator and operator i would yield a Kronecker
       const SQOp& op = _opProd[*ijop];
       Orbital::Type oporbtype = op.orb().type();
-      if (op.gender()!=gencurr && op.genderPH() != SQOpT::Annihilator && 
+      if (op.gender()!=gencurr && op.genderPH() != SQOpT::Annihilator &&
           (orbcurrgen || oporbtype == orbtypecurr|| oporbtype == Orbital::GenT)) {
         // copy opers and krons
         TWOps opers1(opers);
@@ -1086,7 +1086,7 @@ TermSum Term::dmwick(Term::TWMats& opers, const Term::TWMats& krons, const Matri
     for ( itelcr = itelc; itelcr != opers.end() && (cranorder[*itelcr] != SQOpT::Creator); ++itelcr, ++cur ){}
     if ( itelcr == opers.end() ) break; // try next time after resolving of kroneckers
 //    assert( itelcr != opers.end() );
-    
+
     for ( ; itelcr != itelc; --itelcr ){
       // move creator to position itelc
       TWMats::iterator it = itelcr;
@@ -1148,7 +1148,7 @@ TermSum Term::dmwick(Term::TWMats& opers, const Term::TWMats& krons, const Matri
       ++sign;
     }
   }
-  
+
   Product<SQOp> p(_opProd);
   // generate Kroneckers
   Product<Kronecker> d(_kProd);
@@ -1243,7 +1243,7 @@ void Term::setmatconnections()
         _mat[i].set_conline(j,i,kj);
         _mat[i].set_conline(kj,i,j);
         continue;
-      } 
+      }
       for(lui k=i+1; k<_mat.size(); ++k)
         if ( (kj = _mat[k].orbitals().find(ijorb)) >= 0) {
           _mat[i].add_connect(k+1);
@@ -1259,16 +1259,16 @@ void Term::reduceTerm()
   TOrbSet::iterator it1, it2;
   for ( int i = 0 ; i < int(_kProd.size()) ; ++i ) // iterate over Product<Kronecker>
   {
-    if (_kProd[i].orb1().type()!=_kProd[i].orb2().type() 
+    if (_kProd[i].orb1().type()!=_kProd[i].orb2().type()
         && _kProd[i].orb2().type()!=Orbital::GenT && _kProd[i].orb1().type()!=Orbital::GenT )
     {
       _prefac=0; // Kronecker between two orbitals of different type
-      return; 
+      return;
     }
     // search for orbitals in summations
     it1 = _sumorbs.find(_kProd[i].orb1());
     it2 = _sumorbs.find(_kProd[i].orb2());
-    Orbital 
+    Orbital
       orb1 = _kProd[i].orb1(),
       orb2 = _kProd[i].orb2();
     bool insum = false;
@@ -1296,14 +1296,14 @@ void Term::reduceElectronsInTerm()
   assert( _kProd.size() > 0 );
   TOrbSet::iterator it1, it2;
   for ( const auto& kr: _kProd){
-    Spin 
+    Spin
       spin1 = kr.orb1().spin(),
       spin2 = kr.orb2().spin();
     it1 = Q2::findSpin<TOrbSet>(_sumorbs,spin1);
     it2 = Q2::findSpin<TOrbSet>(_sumorbs,spin2);
     if ( it1 != _sumorbs.end() ) { // found spin1
       std::swap(spin1,spin2);
-    } 
+    }
     this->replace(spin2,spin1);
   }
 }
@@ -1362,10 +1362,10 @@ void Term::combineMats(Matrix*& pMat, Product< Matrix >::iterator& it, const Set
 }
 
 void Term::deleteNoneMats(bool unite_exc0)
-{ 
-  _mat.erase(std::remove_if(_mat.begin(),_mat.end(),matisnone),_mat.end()); 
+{
+  _mat.erase(std::remove_if(_mat.begin(),_mat.end(),matisnone),_mat.end());
   if (unite_exc0) {
-    Matrix 
+    Matrix
       * pExc0 = 0,
       * pDexc0 = 0;
     Product<Matrix>::iterator it = _mat.begin();
@@ -1399,7 +1399,7 @@ void Term::deleteNoneMats(bool unite_exc0)
 bool Term::brilloin() const
 {
   for ( Product<Matrix>::const_iterator it = _mat.begin(); it != _mat.end(); ++it )
-    if ( it->type() == Ops::Fock && 
+    if ( it->type() == Ops::Fock &&
          (( it->orbitals()[0].type() == Orbital::Occ && it->orbitals()[1].type() == Orbital::Virt ) ||
           ( it->orbitals()[1].type() == Orbital::Occ && it->orbitals()[0].type() == Orbital::Virt )) )
       return true;
@@ -1430,7 +1430,7 @@ bool Term::expandintegral(bool firstpart)
       if ( !firstpart ){
         // electrons have to be swapped in the matrix and all corresponding kroneckers
         assert(_mat[i].orbitals().size() == 4);
-        Orbital 
+        Orbital
           orb1 = _mat[i].orbitals()[1],
           orb3 = _mat[i].orbitals()[3],
           orbn1(orb1), orbn3(orb3);
@@ -1611,7 +1611,7 @@ void Term::spinintegration(bool notfake)
   TOrbSet peo(extindx());
   TOrbSet peo1(peo);
   // internal indices
-  TOrbSet po(_sumorbs); 
+  TOrbSet po(_sumorbs);
   _nocc=_nintloops=_nloops=0;
   Spin nospin(Spin::No);
   bool nonconserve = true, already_done = false;
@@ -1638,7 +1638,7 @@ void Term::spinintegration(bool notfake)
         spinsym=_mat[j].spinsym(ipos);
         break;
       }
-    } 
+    }
     orb1 = orb;
     samespinsym = true;
     number_of_densmat = 0;
@@ -1659,7 +1659,7 @@ void Term::spinintegration(bool notfake)
       ithis = cl.imat;
       ipos = cl.idx;
       samespinsym = samespinsym && (spinsym == _mat[ithis].spinsym(ipos));
-      if ( _mat[ithis].type() == Ops::DensM ) ++number_of_densmat; 
+      if ( _mat[ithis].type() == Ops::DensM ) ++number_of_densmat;
       iorb = _mat[ithis].iorbel(ipos);
       if ( iorb < 0 ) break;
       orb1 = _mat[ithis].orbitals()[iorb];
@@ -1684,7 +1684,7 @@ void Term::spinintegration(bool notfake)
   }
   // set no spin (or no electron in case of fake spinintegration)
   for (unsigned int i=0; i<_mat.size(); i++) {
-    if (notfake) 
+    if (notfake)
       _mat[i].set_no_spin();
     else
       _mat[i].set_no_el();
@@ -1692,7 +1692,7 @@ void Term::spinintegration(bool notfake)
   TOrbSet orbs;
   for ( TOrbSet::iterator it = _orbs.begin(); it != _orbs.end(); ++it ){
     orb = *it;
-    if (notfake) 
+    if (notfake)
       orb.setspin(nospin);
     else
       orb.setel(0);
@@ -1702,7 +1702,7 @@ void Term::spinintegration(bool notfake)
   orbs.clear();
   for ( TOrbSet::iterator it =_sumorbs.begin(); it != _sumorbs.end(); ++it ){
     orb = *it;
-    if (notfake) 
+    if (notfake)
       orb.setspin(nospin);
     else
       orb.setel(0);
@@ -1750,16 +1750,16 @@ void Term::printdiag(Output* pout) const
 {
   TsPar & diag = Input::sPars["diag"];
   short verb = Input::iPars["diag"]["printnames"]; // print names of operators and indices...
-  
+
   *(pout->pout) << diag["bdiag"] << std::endl;
-  
+
 // "numbers"
   Product<Matrix> nums;
   for ( Product<Matrix>::const_iterator it = _mat.begin(); it != _mat.end(); ++it)
     if ( it->type() == Ops::Number ){
       nums.push_back(*it);
     }
-  bool printperm = ( _perm.size() > 1 || _perm.begin()->second < 0 || 
+  bool printperm = ( _perm.size() > 1 || _perm.begin()->second < 0 ||
                     _todouble(_abs(_abs(_perm.begin()->second) - 1)) > MyOut::pcurout->small ||
                     !_perm.begin()->first.is1());
   if ( printperm || nums.size() > 0){
@@ -1769,7 +1769,7 @@ void Term::printdiag(Output* pout) const
       *(pout->pout) << "(" << _perm << ")";
     *(pout->pout) << "$}" << std::endl;
   }
-  
+
   // put tensors
   lui im = 0;
   for ( Product<Matrix>::const_iterator it = _mat.begin(); it != _mat.end(); ++it, ++im ){
@@ -1910,15 +1910,15 @@ Orbital Term::getfreeorbname(void* Obj, Orbital::Type type)
   return myself->freeorbname(type);
 }
 void Term::set_lastorb(Orbital orb, bool onlylarger)
-{ 
+{
   if ( onlylarger && orb.comp_letname(_lastorb[orb.type()]) <= 0 ) return; // do nothing
-  _lastorb[orb.type()]=orb; 
-  
+  _lastorb[orb.type()]=orb;
+
 }
 void Term::set_lastorbs()
 {
   for (const auto& orb: _orbs){
-    if (_lastorb[orb.type()].name().size() == 0 || _lastorb[orb.type()] < orb) 
+    if (_lastorb[orb.type()].name().size() == 0 || _lastorb[orb.type()] < orb)
       _lastorb[orb.type()] = orb;
   }
 }
@@ -1975,7 +1975,7 @@ Return Q2::replace(Set< T >& p, Q orb1, Q orb2, bool smart)
   Set<T> tmp;
   std::pair<typename Set<T>::iterator,bool> ret;
   for ( typename Set<T>::iterator it = p.begin(); it != p.end(); ++it )
-  { 
+  {
     T t(*it);
     rpl += replace(t,orb1, orb2,smart);
     ret = tmp.insert(t);
@@ -1991,7 +1991,7 @@ Return Q2::replace(SQOp& op, T orb1, T orb2, bool smart)
 template <class T, class Q>
 Return Q2::replace(T &orb, Q orb1, Q orb2, bool smart)
 { return orb.replace(orb1,orb2,smart);
-  //if (orb == orb1) orb=orb2; 
+  //if (orb == orb1) orb=orb2;
 }
 template <class T>
 Return Q2::replace(Matrix &mat, T orb1, T orb2, bool smart)

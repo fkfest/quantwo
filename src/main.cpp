@@ -21,7 +21,7 @@ int main(int argc, char **argv) {
   std::string inputfile, outputfile,
     exePath = exepath();
   bool algo = false;
-  // handle options  
+  // handle options
   while ( args.nextoption() ) {
     if ( args.check(ArgOpt("Verbosity level","v","-verbose" )) ) {
       if ( args.optarg(arg) && str2num<int>(Input::verbose,arg,std::dec)){
@@ -53,7 +53,7 @@ int main(int argc, char **argv) {
   inputfile=arg;
   if ( args.nextremaining(arg) ) {
     outputfile=arg;
-  } else 
+  } else
     outputfile = FileName(inputfile,true)+".tex";
   // read input
   Finput finput(exePath);
@@ -95,8 +95,8 @@ int main(int argc, char **argv) {
         continue;
       }
       TermSum sum_final = Q2::evalEq(finput);
-      
-      // input 
+
+      // input
       const std::vector<std::string> & finlines = finput.inlines();
       for ( unsigned int i = 0; i < finlines.size(); ++i ){
         MyOut::pcurout->buf << finlines[i] << endl;
@@ -136,11 +136,11 @@ int main(int argc, char **argv) {
   // set current ouput back to default
   MyOut::pcurout = &MyOut::defout;
   fout.close();
-  
+
 //   // test nextwordpos
 //   std::string
 //     test("\\+\\cmd_ab_{cd}ef");
-// 
+//
 //   lui ipos = 0;
 //   for (uint ii = 0; ii < 10 && ipos < test.size(); ++ii ){
 //     lui ipos1 = IL::nextwordpos(test,ipos,true,true);
@@ -148,7 +148,7 @@ int main(int argc, char **argv) {
 //     ipos = ipos1;
 //   }
 //   xout << std::endl;
-//   
+//
 //   ipos = 0;
 //   for (uint ii = 0; ii < 10 && ipos < test.size(); ++ii ){
 //     lui ipos1 = IL::nextwordpos(test,ipos,false,true);
@@ -156,7 +156,7 @@ int main(int argc, char **argv) {
 //     ipos = ipos1;
 //   }
 //   xout << std::endl;
-//   
+//
 //   ipos = 0;
 //   for (uint ii = 0; ii < 10 && ipos < test.size(); ++ii ){
 //     lui ipos1 = IL::nextwordpos(test,ipos,true,false);
@@ -164,7 +164,7 @@ int main(int argc, char **argv) {
 //     ipos = ipos1;
 //   }
 //   xout << std::endl;
-//   
+//
 //   ipos = 0;
 //   for (uint ii = 0; ii < 10 && ipos < test.size(); ++ii ){
 //     lui ipos1 = IL::nextwordpos(test,ipos,false,false);
@@ -172,7 +172,7 @@ int main(int argc, char **argv) {
 //     ipos = ipos1;
 //   }
 //   xout << std::endl;
-  
+
 //  // test permutation multiplication
 //  Orbital i("i"),j("j"),k("k");
 //  Permut p1,p2;

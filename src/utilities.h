@@ -15,7 +15,7 @@
 #endif
 
 #include "globals.h"
-/*! 
+/*!
     Implements utilities (e.g. error function)
 */
 
@@ -26,7 +26,7 @@ void error(std::string what, std::string where="");
 void say(std::string what, std::string where="");
 
 // warning function
-#define warning(x) { std::cerr << "WARNING: " << x << std::endl; } 
+#define warning(x) { std::cerr << "WARNING: " << x << std::endl; }
 
 // path of executable
 std::string exepath();
@@ -90,40 +90,40 @@ string_t FileName(string_t source, bool remove_ext = false)
 
 // implementation of InSet commands (comparing one value with up to 10 other values)
 template <typename T>
-bool InSet(const T & item, const T & i1, const T & i2) 
+bool InSet(const T & item, const T & i1, const T & i2)
 { return item==i1 || item==i2; }
 template <typename T>
-bool InSet(const T & item, const T & i1, const T & i2, const T & i3) 
+bool InSet(const T & item, const T & i1, const T & i2, const T & i3)
 { return item==i1 || item==i2 || item==i3; }
 template <typename T>
-bool InSet(const T & item, const T & i1, const T & i2, const T & i3, const T & i4 ) 
+bool InSet(const T & item, const T & i1, const T & i2, const T & i3, const T & i4 )
 { return item==i1 || item==i2 || item==i3 || item==i4; }
 template <typename T>
-bool InSet(const T & item, const T & i1, const T & i2, const T & i3, const T & i4, const T & i5 ) 
+bool InSet(const T & item, const T & i1, const T & i2, const T & i3, const T & i4, const T & i5 )
 { return item==i1 || item==i2 || item==i3 || item==i4 || item==i5; }
 template <typename T>
-bool InSet(const T & item, const T & i1, const T & i2, const T & i3, const T & i4, const T & i5, const T & i6 ) 
+bool InSet(const T & item, const T & i1, const T & i2, const T & i3, const T & i4, const T & i5, const T & i6 )
 { return item==i1 || item==i2 || item==i3 || item==i4 || item==i5 || item==i6; }
 template <typename T>
-bool InSet(const T & item, const T & i1, const T & i2, const T & i3, const T & i4, const T & i5, const T & i6, 
-           const T & i7 ) 
+bool InSet(const T & item, const T & i1, const T & i2, const T & i3, const T & i4, const T & i5, const T & i6,
+           const T & i7 )
 { return item==i1 || item==i2 || item==i3 || item==i4 || item==i5 || item==i6 || item==i7; }
 template <typename T>
-bool InSet(const T & item, const T & i1, const T & i2, const T & i3, const T & i4, const T & i5, const T & i6, 
-           const T & i7, const T & i8 ) 
+bool InSet(const T & item, const T & i1, const T & i2, const T & i3, const T & i4, const T & i5, const T & i6,
+           const T & i7, const T & i8 )
 { return item==i1 || item==i2 || item==i3 || item==i4 || item==i5 || item==i6 || item==i7 || item==i8; }
 template <typename T>
-bool InSet(const T & item, const T & i1, const T & i2, const T & i3, const T & i4, const T & i5, const T & i6, 
-           const T & i7, const T & i8, const T & i9 ) 
+bool InSet(const T & item, const T & i1, const T & i2, const T & i3, const T & i4, const T & i5, const T & i6,
+           const T & i7, const T & i8, const T & i9 )
 { return item==i1 || item==i2 || item==i3 || item==i4 || item==i5 || item==i6 || item==i7 || item==i8 || item==i9; }
 template <typename T>
-bool InSet(const T & item, const T & i1, const T & i2, const T & i3, const T & i4, const T & i5, const T & i6, 
-           const T & i7, const T & i8, const T & i9, const T & i10 ) 
+bool InSet(const T & item, const T & i1, const T & i2, const T & i3, const T & i4, const T & i5, const T & i6,
+           const T & i7, const T & i8, const T & i9, const T & i10 )
 { return item==i1 || item==i2 || item==i3 || item==i4 || item==i5 || item==i6 || item==i7 || item==i8 || item==i9 || item==i10; }
 // implementation of InSet command for search in an array
 template <typename ValueType, size_t arraySize>
 bool InSet(const ValueType& val, const ValueType (&arr)[arraySize])
-{ 
+{
   for (size_t i=0; i<arraySize; i++)
     if (val==arr[i]) return true;
   return false;
@@ -132,7 +132,7 @@ bool InSet(const ValueType& val, const ValueType (&arr)[arraySize])
 // implementation of InSet command for search in an map::second
 template <typename ValueType>
 bool InSet(const ValueType& val, const std::map<std::string,ValueType>& m)
-{ 
+{
   for ( typename std::map<std::string,ValueType>::const_iterator it = m.begin(); it != m.end(); ++it )
     if ( val == it->second ) return true;
   return false;
@@ -140,7 +140,7 @@ bool InSet(const ValueType& val, const std::map<std::string,ValueType>& m)
 // implementation of InSet command for search in an list
 template < typename ValueType, class Cont >
 bool InSet(const ValueType& val, const Cont& con)
-{ 
+{
   for ( typename Cont::const_iterator it = con.begin(); it != con.end(); ++it )
     if ( val == *it ) return true;
   return false;

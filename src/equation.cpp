@@ -24,13 +24,13 @@ LExcitationMap::iterator LExcitationMap::get_add(const std::string& name, int lm
 {
   LExcitationMap::iterator itex = this->find(name);
   if ( itex != this->end() ) return itex;
-  // not there yet. add it. 
+  // not there yet. add it.
 #define _LPN LParsedName
   LParsedName exc(name,_LPN::Lmel|_LPN::Dg|_LPN::Excl|_LPN::Orbtypes);
 #undef _LPN
   short excl = exc.excl;
   std::vector<OrbitalTypes> orbtypes = exc.orbtypes;
-  
+
   if ( lmel != 0 && exc.lmel != lmel )
     Error("Mismatch in non-conserving class in "+name);
   if (lmel == 0 ) lmel = exc.lmel;
@@ -59,7 +59,7 @@ LExcitationMap::iterator LExcitationMap::get_add(const std::string& name, int lm
   else
     opstype = Ops::Exc0;
   Oper op(opstype,excl,orb4t,orbtypes,"",lmel,0,&_globalterm);
-  
+
   return (this->insert(std::make_pair(name,LExcitationInfo(op.mat().orbitals(),lmel,exc.spinsym)))).first;
 }
 void LExcitationMap::set_lastorbs(const Product< Orbital >& orbs, Spin::Type spintype)
@@ -92,19 +92,19 @@ LParsedName::LParsedName(const std::string& namein, uint try2set, bool strict)
   std::string upname, downname;
   foundsscipt = IL::nameupdown(name,upname,downname,namein);
   if ( try2set == Name ) return;
- 
+
   const TParArray& csfs = Input::aPars["syntax"]["csf"];
   // we swap sub- and superscript indices in Phi
   bool phi = InSet(name,csfs);
-  
-  if (!upname.empty()) 
+
+  if (!upname.empty())
     this->parse_superscript(upname,try2set);
-  
-  if (!downname.empty()) 
+
+  if (!downname.empty())
     this->parse_subscript(downname,try2set,strict);
 
   if ( found_orbs() && phi ){
-    // swap for \phi 
+    // swap for \phi
     Product<Orbital> tmp(occ);
     occ = virt;
     virt = tmp;
@@ -118,7 +118,7 @@ LParsedName::LParsedName(const std::string& namein, uint try2set, bool strict)
   if (!orbtypes.empty() &&
       ( int(orbtypes[0].size()) != excl ||
         int(orbtypes[1].size()) != lmel+excl )) {
-    error(namein+": Inconsistency in the number of orbital types and the excitation class!", 
+    error(namein+": Inconsistency in the number of orbital types and the excitation class!",
           "LParsedName");
   }
   for (const auto& orb: occ){
@@ -145,8 +145,8 @@ void LParsedName::parse_superscript(const std::string& up, uint try2set)
   while((ipos1=IL::nextwordpos(up,ipos,true,false))!=ipos && ipos < up.size() ) {
     std::string word(up.substr(ipos,ipos1-ipos));
     IL::delbrack(word);
-    lui 
-      iposw = 0, 
+    lui
+      iposw = 0,
       iposw1 = IL::nextwordpos(word,iposw,false,true);
     std::string mainpart(word.substr(iposw,iposw1-iposw));
 //     xout << "word " << word << " mainpart " << mainpart << std::endl;
@@ -175,7 +175,7 @@ void LParsedName::parse_superscript(const std::string& up, uint try2set)
     } else if ( try2set&Orbs && mainpart != "\\"+supername && !found_excitation() ){
       Orbital orb(IL::plainname(word),spintype);
       occ.push_back(orb);
-      
+
     } else if ( try2set&Nameadd ){
       if ( mainpart == "\\"+supername ){
         if ( mainpart == word){
@@ -212,14 +212,14 @@ void LParsedName::parse_subscript(const std::string& down, uint try2set, bool st
   while( (ipos1=IL::nextwordpos(down,ipos,true,false))!=ipos && ipos < down.size() ) {
     std::string word(down.substr(ipos,ipos1-ipos));
     IL::delbrack(word);
-    lui 
-      iposw = 0, 
+    lui
+      iposw = 0,
       iposw1 = IL::nextwordpos(word,iposw,false,true);
     std::string mainpart(word.substr(iposw,iposw1-iposw));
     IL::delbrack(mainpart);
 //     xout << "word: " << word << " mainpart " << mainpart << std::endl;
     short exclass;
-    
+
     if ( try2set&Excl && str2num<short>(exclass,mainpart,std::dec) ) {
       // excitation class
       if (strict && (found_excitation() || found_orbs())) Error("Two excitations in "+down+
@@ -227,27 +227,27 @@ void LParsedName::parse_subscript(const std::string& down, uint try2set, bool st
       excl = exclass;
       if( gen_orbtypes(word.substr(iposw1)) && !(try2set&Orbtypes) )
         Error("Orbtypes present although not asked for in "+down);
-      
+
     } else if ( try2set&Excitation && InSet(mainpart,excits) ){
       // something like \mu_2
       if (strict && (found_excitation() || found_orbs())) Error("Two excitations in "+down);
-      excitation = word; 
-      
+      excitation = word;
+
     } else if ( try2set&Orbs ){
       if (strict && found_excitation()) Error("Excitations and orbitals at the same time in "+down);
       Orbital orb(IL::plainname(word),spintype);
       virt.push_back(orb);
-      
+
     } else {
       Error("Unknown part "+word+" in subscript "+down);
     }
     ipos = ipos1;
     ipos = IL::skip(down,ipos,"} ");
   }
-  
+
   // check
-  if ( excl > 0 && !excitation.empty() ) 
-    error("Found excitation class and explicit excitation in "+down,"LParsedName::parse_subscript"); 
+  if ( excl > 0 && !excitation.empty() )
+    error("Found excitation class and explicit excitation in "+down,"LParsedName::parse_subscript");
 }
 bool LParsedName::gen_orbtypes(const std::string& string)
 {
@@ -326,7 +326,7 @@ Matrix LEquation::do_sumterms(bool excopsonly )
     Lelem::Lex lex = lel.lex();
     if(InSet(lex, Lelem::Bra,Lelem::Ket)) { // handle bra/ket
       if ( lex == Lelem::Bra ) {
-        if (bra) 
+        if (bra)
           error("Cannot handle two BRAs in one term yet...");
         else
           bra = true;
@@ -391,7 +391,7 @@ void LEquation::reset_term(Term& term) const
   }
 }
 
-void LEquation::addterm(Term& term, bool plus, lui beg, lui end, 
+void LEquation::addterm(Term& term, bool plus, lui beg, lui end,
                      Product<long int > const & indxoperterm, bool excopsonly)
 {
   double minfac = Input::fPars["prog"]["minfac"];
@@ -418,12 +418,12 @@ void LEquation::addterm(Term& term, bool plus, lui beg, lui end,
   // validate term
   term.term_is_valid();
   // add term
-  if(plus) 
+  if(plus)
     _sumterms += term.expandtermsfacs();
   else
     _sumterms -= term.expandtermsfacs();
 }
-void LEquation::correct_orbs(Term& term, const Product< Orbital >& occs, 
+void LEquation::correct_orbs(Term& term, const Product< Orbital >& occs,
                              const Product< Orbital >& virts, Spin::Type spintype, bool excopsonly)
 {
   if (excopsonly) {
@@ -450,7 +450,7 @@ Oper LEquation::handle_braket(const Lelem& lel, Term& term, bool excopsonly)
     return Oper(); // Reference, blank operator
   return handle_excitation(term,lelnam,(lel.lex()==Lelem::Bra),0,excopsonly);
 }
-Oper LEquation::handle_excitation(Term& term, const std::string& name, 
+Oper LEquation::handle_excitation(Term& term, const std::string& name,
                                   bool dg, int lmel, bool excopsonly)
 {
   const TParArray& excits = Input::aPars["syntax"]["excitation"];
@@ -515,12 +515,12 @@ TFactor LEquation::handle_factor(const Lelem& lel) const
       if (int(lelnam.size()) > Input::iPars["prog"]["maxfloatlength"]) {
         error("Very long number "+lelnam+" for RATIONAL. Increase maxfloatlength or recompile without RATIONAL","Lexic::handle_factor");
       }
-      long int 
+      long int
         denom = std::pow(10,lelnam.size()),
         nom = facd*denom;
       fac = nom;
       fac /= denom;
-    } else 
+    } else
       fac = facd;
   } else {
     ipos=IL::skip(lelnam,ipos,"{} ");
@@ -531,7 +531,7 @@ TFactor LEquation::handle_factor(const Lelem& lel) const
         error("Numerator is not a number "+lelnam.substr(ipos,ipos1-ipos),"Lexic::handle_factor");
       fac = facd;
     } else {
-      // NOTE: won't work for non-integer nominators or denominators 
+      // NOTE: won't work for non-integer nominators or denominators
       long int nom;
       if(!str2num<long int>(nom,lelnam.substr(ipos,ipos1-ipos),std::dec))
         error("Numerator is not an integer "+lelnam.substr(ipos,ipos1-ipos),"Lexic::handle_factor");
@@ -544,7 +544,7 @@ TFactor LEquation::handle_factor(const Lelem& lel) const
     ipos=IL::skip(lelnam,ipos,"{} ");
     ipos1=IL::nextwordpos(lelnam,ipos);
 #ifdef _RATIONAL
-    // NOTE: won't work for non-integer nominators or denominators 
+    // NOTE: won't work for non-integer nominators or denominators
     long int denom;
     if(!str2num<long int>(denom,lelnam.substr(ipos,ipos1-ipos),std::dec))
       error("Denominator is not an integer "+lelnam.substr(ipos,ipos1-ipos),"Lexic::handle_factor");
@@ -572,7 +572,7 @@ Oper LEquation::handle_operator(const Lelem& lel, Term& term, bool excopsonly)
   std::string name = op.name;
   int lmelec = op.lmel;
   int pmsym = op.pmsym;
-  
+
   // parts of Hamilton operator
   if ( InSet(name, hms)) {
     if (excopsonly) return Oper();
@@ -670,10 +670,10 @@ Matrix LEquation::handle_tensor(const Lelem& lel)
   } else if ( !op.excitation.empty() ){
     // something like \mu_1
     LExcitationMap::const_iterator itex = _excops.get_add(op.excitation,op.lmel);
-  
-    return Matrix(Ops::Interm,itex->second.orbitals(op.dg),itex->second.exccls(op.dg), 
+
+    return Matrix(Ops::Interm,itex->second.orbitals(op.dg),itex->second.exccls(op.dg),
                     itex->second.lmel(op.dg),op.pmsym,name,itex->second.spinsymexcs());
-  } else { 
+  } else {
     // no subscript, tensor is a "number"
     return Matrix(Ops::Number,Product<Orbital>(),0,0,0,name);
   }

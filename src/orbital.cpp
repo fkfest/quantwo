@@ -1,7 +1,7 @@
 #include "orbital.h"
 
-Orbital::Orbital() 
-{ 
+Orbital::Orbital()
+{
   _type = Orbital::NoType;
   _spin = Spin(Spin::No);
 }
@@ -18,7 +18,7 @@ Orbital::Orbital(const std::string& name, Electron el)
   _name=name;
   _name[0] = std::tolower(name[0]);
   gentype();
-  
+
 }
 
 Orbital::Orbital(const std::string& name, Orbital::Type type, Electron el)
@@ -94,8 +94,8 @@ void Orbital::gentype()
   else if (orbs["occorb"].find(_name[0])!=std::string::npos) {_type=Occ;}
   else if (orbs["genorb"].find(_name[0])!=std::string::npos) {_type=GenT;}
   else if (orbs["actorb"].find(_name[0])!=std::string::npos) {_type=Act;}
-  else 
-    error("Unknown type of orbital! "+_name,"Orbital::gentype"); 
+  else
+    error("Unknown type of orbital! "+_name,"Orbital::gentype");
 }
 
 std::string Orbital::letname() const
@@ -123,8 +123,8 @@ void Orbital::add_prime()
 int Orbital::comp_letname(const Orbital& orb) const
 {
   //remove numbers from end
-  std::string 
-    lname = this->letname(), 
+  std::string
+    lname = this->letname(),
     lnameo = orb.letname();
   if ( lname.size() < lnameo.size() ) return -1;
   else if ( lname.size() > lnameo.size() ) return 1;
@@ -142,10 +142,10 @@ bool Orbital::is_in_set(const TOrbSet& orbset) const
 }
 Return Orbital::replace(const Orbital& orb1, const Orbital& orb2, bool smart)
 {
-  if (*this == orb1) { 
-    *this = orb2; 
+  if (*this == orb1) {
+    *this = orb2;
     if (smart) {
-      // restore spin -- will be replaced explicitely 
+      // restore spin -- will be replaced explicitely
       this->_spin = orb1._spin;
     }
   }
@@ -168,14 +168,14 @@ std::ostream & operator << (std::ostream & o, Orbital const & orb)
     o << char(std::toupper(orbname.at(0)));
   else
     o << orbname.at(0);
-  
+
   if (orbname.size() > 1 || !down.empty())
     o <<"_{" << orbname.substr(1) << down << "}";
   if ( !up.empty() )
     o << "^{" << up << "}";
   if ( orb.spin().type() != Spin::Gen )
     o << orb.spin();
-/*  if ( orb.type()==Orbital::Occ ) 
+/*  if ( orb.type()==Orbital::Occ )
     o << "^occ";
   else if ( orb.type()==Orbital::Virt )
     o << "^virt";
@@ -211,7 +211,7 @@ Return Spin::replace(const Spin& s1, const Spin& s2)
     if ( (_type == Up && s2._type == Down) ||
          (_type == Down && s2._type == Up) ||
          (_type == GenS && s2._type == GenD) ||
-         (_type == GenD && s2._type == GenS) ) 
+         (_type == GenD && s2._type == GenS) )
       return Return::Delete;
     // downgrade the spin-sum
     if ( _type == Up || _type == Down || s2._type == Gen ) {

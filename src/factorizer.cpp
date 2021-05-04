@@ -25,7 +25,7 @@ Factorizer::Factorizer(const TermSum& s)
       Factor fact = _todouble(ist->second);
       fact *= fac;
       Diagram diag = Translators::term2diagram(ist->first,fact,slotorbs,_expression);
-      xout << diag; 
+      xout << diag;
       diag.binarize(_expression);
       // contractions
       xout << fact << ist->first << std::endl;
@@ -71,9 +71,9 @@ Tensor Translators::mat2tensor(const Matrix& mat, const std::map< Orbital, const
   Canonicalize(sts,slotorder);
   // look for default cuts
   std::string name = mat.plainname();
-  
+
   // and parents??
-  
+
   return Tensor(sts,name);
 }
 
@@ -81,11 +81,11 @@ Diagram Translators::term2diagram(const Term& term, Factor fact, const std::map<
 {
   const std::string& resultt = Input::sPars["syntax"]["result"];
   Diagram diag;
-  
+
   // all orbitals in term:
   Array<Orbital> orbitals;
   Orbital orb;
-  uint iorb = 0; 
+  uint iorb = 0;
   while ( (orb = term.orb(iorb)) != Orbital() ){
     orbitals.push_back(orb);
     ++iorb;
@@ -98,9 +98,9 @@ Diagram Translators::term2diagram(const Term& term, Factor fact, const std::map<
     diag._slottypes.push_back(slotorbs.at(orb));
   }
   Slots slotorder;
-  // use canonical order - then the intermediates will be in canonical order automatically 
+  // use canonical order - then the intermediates will be in canonical order automatically
   Canonicalize(diag._slottypes,slotorder);
-  orbitals = orbitals.refarr(slotorder); 
+  orbitals = orbitals.refarr(slotorder);
 
   uint nbareops = 0;
   for (const auto& m: term.mat()){

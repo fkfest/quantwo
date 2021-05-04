@@ -1,9 +1,9 @@
 #include "action.h"
 
-Contraction::Contraction(const Tensor& a, const Tensor& b, //const Tensor& r, 
-                         const Slots& AinB, const Slots& BinA, 
+Contraction::Contraction(const Tensor& a, const Tensor& b, //const Tensor& r,
+                         const Slots& AinB, const Slots& BinA,
                          const Slots& AinR, const Slots& RinA, const Slots& BinR, const Slots& RinB, const Factor& fac) :
-  p_A(&a), p_B(&b), //p_R(&r), 
+  p_A(&a), p_B(&b), //p_R(&r),
   _fac(fac), _AinB(AinB), _BinA(BinA), _AinR(AinR), _RinA(RinA), _BinR(BinR), _RinB(RinB), _cost(-1)
 {
   assert( _AinB.size() == _BinA.size() );
@@ -11,7 +11,7 @@ Contraction::Contraction(const Tensor& a, const Tensor& b, //const Tensor& r,
   assert( _BinR.size() == _RinB.size() );
   assert( _AinB.size()+_AinR.size() >= p_A->slots().size() );
   assert( _BinA.size()+_BinR.size() >= p_B->slots().size() );
-  
+
 }
 
 
@@ -28,15 +28,15 @@ Cost Contraction::cost(Cost mincost)
   } else {
     assert( p_A );
     // multiplication: cost = nA*nL*nB (take care of locality!)
-    if ( _cost > mincost ) { 
-      // do less work, we don't need to calculate the whole cost 
+    if ( _cost > mincost ) {
+      // do less work, we don't need to calculate the whole cost
       // if at some point we know that the cost is larger than the previous minimal cost...
     }
   }
   return _cost;
 }
 
-static void slotNames4Refs(Array<std::string>& xslotnames, Array<std::string>& yslotnames, 
+static void slotNames4Refs(Array<std::string>& xslotnames, Array<std::string>& yslotnames,
                            std::map<SlotType::Type,std::string>& oldnames, const Slots& sXinY, const Slots& sYinX,
                            const SlotTs& xslottypes, const SlotTs& yslottypes )
 {
@@ -44,7 +44,7 @@ static void slotNames4Refs(Array<std::string>& xslotnames, Array<std::string>& y
   assert( xslotnames.size() == xslottypes.size() );
   assert( yslotnames.size() == yslottypes.size() );
   for ( uint iSt = 0; iSt < sXinY.size(); ++iSt ){
-    uint 
+    uint
       iSlotX = sXinY[iSt],
       iSlotY = sYinX[iSt];
     assert( iSlotX < xslotnames.size() );
@@ -81,23 +81,23 @@ static void fillFreeSlotNames(Array<std::string>& xslotnames, std::map<SlotType:
 void Contraction::print(std::ostream& o, const Tensor& res) const
 {
   std::map<SlotType::Type,std::string> slotnames;
-  Array<std::string> 
-        resslots(res.slots().size()), 
-        aslots(p_A->slots().size()), 
+  Array<std::string>
+        resslots(res.slots().size()),
+        aslots(p_A->slots().size()),
         bslots(p_B->slots().size());
   slotNames4Refs(resslots,aslots,slotnames,_RinA,_AinR,res.slots(),p_A->slots());
   slotNames4Refs(resslots,bslots,slotnames,_RinB,_BinR,res.slots(),p_B->slots());
   slotNames4Refs(aslots,bslots,slotnames,_AinB,_BinA,p_A->slots(),p_B->slots());
-  
+
   fillFreeSlotNames(resslots,slotnames,res);
   fillFreeSlotNames(aslots,slotnames,*p_A);
   fillFreeSlotNames(bslots,slotnames,*p_B);
-        
+
   o << res.name() << "[" << resslots << "] ";
-  
+
   if ( _fac < 0 )
     o << "-= ";
-  else 
+  else
     o << "+= ";
   if ( std::abs(std::abs(_fac) - 1) > Numbers::verysmall ) o << std::abs(_fac) << " ";
   o << p_A->name() << "[" << aslots << "] ";
@@ -113,10 +113,10 @@ Cost Summation::cost(Cost mincost)
 void Summation::print(std::ostream& o, const Tensor& res) const
 {
   std::map<SlotType::Type,std::string> slotnames;
-  Array<std::string> 
+  Array<std::string>
         resslots(res.slots().size());
   for ( const auto& ts: _summands){
-    Array<std::string> 
+    Array<std::string>
         aslots(ts.p_A->slots().size());
     slotNames4Refs(resslots,aslots,slotnames,ts._RinA,ts._AinR,res.slots(),ts.p_A->slots());
     fillFreeSlotNames(resslots,slotnames,res);
@@ -125,7 +125,7 @@ void Summation::print(std::ostream& o, const Tensor& res) const
     o << res.name() << "[" << resslots << "] ";
     if ( ts._fac < 0 )
       o << "-= ";
-    else 
+    else
       o << "+= ";
     if ( std::abs(std::abs(ts._fac) - 1) > Numbers::verysmall ) o << std::abs(ts._fac) << " ";
     o << ts.p_A->name() << "[" << aslots << "] " << std::endl;

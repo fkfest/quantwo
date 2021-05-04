@@ -25,9 +25,9 @@ public:
 // R = fac * A B
 class Contraction : public Action {
 public:
-  Contraction() : p_A(0), p_B(0), //p_R(0), 
+  Contraction() : p_A(0), p_B(0), //p_R(0),
                   _fac(1), _cost(-1){};
-  Contraction( const Tensor& a, const Tensor& b, //const Tensor& r, 
+  Contraction( const Tensor& a, const Tensor& b, //const Tensor& r,
                const Slots& AinB, const Slots& BinA,
                const Slots& AinR, const Slots& RinA,
                const Slots& BinR, const Slots& RinB,
@@ -38,8 +38,8 @@ public:
 //private:
   const Tensor *p_A, *p_B; //, *p_R;
   Factor _fac;
-  // lists same slots in tensors, e.g., _AinB: slots in tensor A that will be contracted with tensor B 
-  Slots 
+  // lists same slots in tensors, e.g., _AinB: slots in tensor A that will be contracted with tensor B
+  Slots
     _AinB, _BinA,
     _AinR, _RinA,
     _BinR, _RinB;
@@ -50,7 +50,7 @@ public:
 typedef std::list<Tensor> TensorsSet;
 
 struct Summand {
-  Summand( const Tensor * pA, const Slots& AinR, const Slots& RinA, Factor fac ) 
+  Summand( const Tensor * pA, const Slots& AinR, const Slots& RinA, Factor fac )
     : p_A(pA), _AinR(AinR), _RinA(RinA), _fac(fac) {};
   const Tensor * p_A;
   Slots _AinR, _RinA;

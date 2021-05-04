@@ -9,7 +9,7 @@ std::string IL::key(const std::string& line, lui& ipos, const std::string& keywo
       ipos = skip(line,ipos," ");
       if ( line[ipos] == '=' ){
         ++ipos;
-        lui 
+        lui
           ipend = endword(line,ipos),
           ipbeg = ipos;
         ipos = skip(line,ipend," \"},");
@@ -29,10 +29,10 @@ TParArray IL::parray(const std::string& str)
 {
   std::string listsep = Input::sPars["syntax"]["listseparator"];
   TParArray res;
-  lui 
+  lui
     ipos = 0,
     ipend = endword(str,ipos,listsep);
-  
+
   while( ipend != ipos ){
     res.push_back(str.substr(ipos,ipend-ipos));
     ipos = ipend;
@@ -168,8 +168,8 @@ lui IL::closbrack(const std::string& str, lui ipos)
 {
   const std::string& brackets = Input::sPars["syntax"]["brackets"];
   lui i=brackets.find(str[ipos]),ipos1=ipos;
-  if (i==std::string::npos) 
-    error(any2str(str[ipos])+"is not a bracket!","IL::closbrack"); 
+  if (i==std::string::npos)
+    error(any2str(str[ipos])+"is not a bracket!","IL::closbrack");
   char lk(brackets[i]), rk(brackets[i+1]); // left and right brackets
   int nk=1;
   bool backslashed = false;
@@ -187,8 +187,8 @@ lui IL::closbrack(const std::string& str, lui ipos)
     }
     backslashed = !backslashed && ( str[i] == '\\' );
   }
-  if ( nk != 0 ) 
-    error("Number of brackets is incosistent: "+any2str(nk),"IL::closbrack"); 
+  if ( nk != 0 )
+    error("Number of brackets is incosistent: "+any2str(nk),"IL::closbrack");
   return ipos1;
 }
 
@@ -199,7 +199,7 @@ lui IL::nextwordpos(const std::string& str, lui& ipos, bool glue, bool greedy)
   lui nwpos;
   ipos=IL::skip(str,ipos," "); // remove spaces
   if ( ipos < str.size() && str[ipos] == '%' ) return ipos+1; // comment sign is one word
-  
+
   bool
     glued = false,
     is_command = false,
@@ -215,8 +215,8 @@ lui IL::nextwordpos(const std::string& str, lui& ipos, bool glue, bool greedy)
       is_gluer = false;
     }
     if ( is_gluer ) breaknext = false;
-    if ( breaknext ) break; 
-    
+    if ( breaknext ) break;
+
     if ( nwpos == ipos || glued ) {
       if ( glued && is_gluer ) error("Two consecutive gluers in "+str,"IL::nextwordpos");
       if ( char(str[nwpos])=='{' ) {
@@ -235,7 +235,7 @@ lui IL::nextwordpos(const std::string& str, lui& ipos, bool glue, bool greedy)
         is_command = true;
       }
     } else if ( is_separator ) {
-      break;  
+      break;
     } else if ( is_command ) {
       if ( is_gluer ) {
         is_command = false;
@@ -243,7 +243,7 @@ lui IL::nextwordpos(const std::string& str, lui& ipos, bool glue, bool greedy)
     } else if ( !greedy && !is_gluer ) {
       breaknext = true;
     }
-    
+
     glued = is_gluer;
   }
   return nwpos;
@@ -277,7 +277,7 @@ lui IL::lexfind(const std::string& str, const std::string& sstr, const lui& ipos
     if ( str[ipos1] == '{' ) ++level;
     if ( str[ipos1] == '}' ) --level;
   }
-  if (!found) 
+  if (!found)
     ires = std::string::npos;
   return ires;
 }
@@ -292,10 +292,10 @@ bool IL::nameupdown(std::string& name, std::string& nameup, std::string& namedow
   name = lelnam.substr(0,iposnam);
   if (up < lelnam.size()-1){
     nameup = lelnam.substr(up);
-  }  
+  }
   if (down < lelnam.size()-1){
     namedown = lelnam.substr(down);
-  }  
+  }
   if (up < down){
     nameup = nameup.substr(0,down-up);
   } else if (down < up) {
@@ -308,7 +308,7 @@ bool IL::nameupdown(std::string& name, std::string& nameup, std::string& namedow
 }
 void IL::add2name(std::string& name, const std::string& nameadd, bool superscript, bool snam)
 {
-  const std::string& supername = Input::sPars["command"]["supername"]; // environment for name addition 
+  const std::string& supername = Input::sPars["command"]["supername"]; // environment for name addition
   unsigned long int ipos,ipos1;
   std::string ch("^");
   if (!superscript) ch = "_";

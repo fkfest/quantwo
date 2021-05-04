@@ -38,7 +38,7 @@ namespace IL{
   // example: \+\cmd_ab_{cd}ef
   // glue=true, greedy=true:    \+ ;  \cmd_ab_{cd} ; ef
   //      false        true:    \+ ; \cmd ; _ ; ab ; _ ; {cd} ; ef
-  //      true         false:   \+ ; \cmd_a ; b_{cd} ; e ; f 
+  //      true         false:   \+ ; \cmd_a ; b_{cd} ; e ; f
   //      false        false:   \+ ; \cmd ; _ ; a ; b ; _ ; {cd} ; e ; f
   lui nextwordpos(const std::string& str, lui& ipos, bool glue = true, bool greedy = true);
   // get position of the closing bracket (which corresponds to the bracket on ipos)

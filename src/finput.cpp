@@ -1,6 +1,6 @@
 #include "finput.h"
 
-Finput::Finput(bool eq) : 
+Finput::Finput(bool eq) :
 _eq(eq){}
 
 Finput::Finput(std::string paramspath) :
@@ -15,7 +15,7 @@ void Finput::InitInpars(std::string paramspath)
   std::ifstream finp;
   finp.open(finp_file.c_str());
   if (finp.is_open()) {
-    std::string 
+    std::string
       line, type, set, name;
     while (finp.good()) {
       std::getline (finp,line);
@@ -35,9 +35,9 @@ void Finput::InitInpars(std::string paramspath)
             error("integer parameter is not integer :"+line);
           Input::iPars[set][name] = x;
         } else if ( type[0] == 'f' ){
-          double x; 
+          double x;
           if (!str2num<double>(x,IL::key(line,"value"),std::dec))
-            error("float parameter is not float :"+line); 
+            error("float parameter is not float :"+line);
           Input::fPars[set][name] = x;
         } else if ( type[0] == 'a' ){
           Input::aPars[set][name] = IL::parray(IL::key(line,"value"));
@@ -116,21 +116,21 @@ bool Finput::addline(const std::string& line)
 std::string Finput::input() const
 { return _input; }
 LelString Finput::eqn() const
-{ 
+{
   if ( _eqns.size() > 0 )
     return _eqns.back().eqn();
   else
     return LelString();
 }
 TermSum Finput::sumterms() const
-{ 
+{
   if ( _eqns.size() > 0 )
     return _eqns.back().sumterms();
   else
     return TermSum();
 }
 void Finput::sumterms( const TermSum& ts )
-{ 
+{
   if ( _eqns.size() > 0 )
     return _eqns.back().sumterms(ts);
   else
@@ -233,7 +233,7 @@ lui Finput::analyzecommand(lui ipos)
   lui ipos1 = IL::nextwordpos(_input,ipos);
   std::string str = _input.substr(ipos,ipos1-ipos);
   ipos = ipos1;
-  lui 
+  lui
     ipos2, ipos3;
   if (str==commands["operator"]) { // operators
     ipos1=IL::nextwordpos(_input,ipos);
@@ -244,7 +244,7 @@ lui Finput::analyzecommand(lui ipos)
     if ( name == "\\"+commands["integral"] ){ // two sets of indices {pq}{rs}
        ipos1=IL::nextwordpos(_input,ipos1);
        ipos1=IL::nextwordpos(_input,ipos1);
-    } 
+    }
     eqn += Lelem(_input.substr(ipos,ipos1-ipos),Lelem::Tensor);
   } else if (str==commands["fraction"]) { // fraction
     ipos1=IL::nextwordpos(_input,ipos);
@@ -267,7 +267,7 @@ lui Finput::analyzecommand(lui ipos)
     ipos1 = _input.rfind('\\',ipos-str.size());
     assert( ipos1 != std::string::npos );
     _input.replace(ipos1,ipos-ipos1,newcom[str]);
-  } else 
+  } else
     error("Unknown command in equation! "+str,"Finput::analyzecommand");
   return ipos1;
 }
@@ -296,7 +296,7 @@ void Finput::insert_tensors()
   // lhs from the current eqn is not there yet
   assert( _eqns.size() == _lhs.size()+1 );
   for ( uint i = 0; i < _lhs.size(); ++i ){
-    
+
   }
 }
 

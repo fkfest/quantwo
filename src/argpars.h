@@ -10,22 +10,22 @@
 
 //! Main functionality in class ArgPars
 namespace ArgParser {
-/*! 
+/*!
  * Option (can be used to generate help print)
  */
 class ArgOpt {
 public:
   ArgOpt(const std::string& desc, const std::vector<std::string>& opt ) : _opt(opt), _desc(desc) {}
   ArgOpt(const std::string& desc, const std::string& opt1 ) : _desc(desc) { _opt.push_back(opt1);}
-  ArgOpt(const std::string& desc, const std::string& opt1, const std::string& opt2 ) : _desc(desc) 
+  ArgOpt(const std::string& desc, const std::string& opt1, const std::string& opt2 ) : _desc(desc)
   { _opt.push_back(opt1);_opt.push_back(opt2);}
-  ArgOpt(const std::string& desc, const std::string& opt1, const std::string& opt2, const std::string& opt3 ) : _desc(desc) 
+  ArgOpt(const std::string& desc, const std::string& opt1, const std::string& opt2, const std::string& opt3 ) : _desc(desc)
   { _opt.push_back(opt1);_opt.push_back(opt2);_opt.push_back(opt3);}
-  ArgOpt(const std::string& desc, const std::string& opt1, const std::string& opt2, const std::string& opt3, const std::string& opt4  ) : _desc(desc) 
+  ArgOpt(const std::string& desc, const std::string& opt1, const std::string& opt2, const std::string& opt3, const std::string& opt4  ) : _desc(desc)
   { _opt.push_back(opt1);_opt.push_back(opt2);_opt.push_back(opt3);_opt.push_back(opt4);}
-  ArgOpt(const std::string& desc, const std::string& opt1, const std::string& opt2, const std::string& opt3, const std::string& opt4, const std::string& opt5 ) : _desc(desc) 
+  ArgOpt(const std::string& desc, const std::string& opt1, const std::string& opt2, const std::string& opt3, const std::string& opt4, const std::string& opt5 ) : _desc(desc)
   { _opt.push_back(opt1);_opt.push_back(opt2);_opt.push_back(opt3);_opt.push_back(opt4);_opt.push_back(opt5);}
-  // check if opt is equal to one of the option-keywords 
+  // check if opt is equal to one of the option-keywords
   bool equal(const std::string& opt) const {
     for ( unsigned i = 0; i < _opt.size(); ++i )
       if ( opt == _opt[i] )
@@ -58,7 +58,7 @@ public:
   // add and check option
   bool check(const std::string& opt, const ArgOpt& aopt){ return add(aopt)->equal(opt);}
   // print help
-  // with usage information and description. The width reserved for options can be changed using optwidth 
+  // with usage information and description. The width reserved for options can be changed using optwidth
   void printhelp(std::ostream & o, const std::string& usage = "", const std::string& desc = "", int optwidth = 16) const {
     if (!usage.empty()) o << "Usage: " << usage << std::endl << std::endl;
     if (!desc.empty()) o << desc << std::endl;
@@ -78,7 +78,7 @@ public:
 class ArgPars {
 public:
   ArgPars() : _argc(0), _curarg(0), _nextlet(0) {}
-  ArgPars(int argc, char **argv) : _argc(argc), _argv(argv), 
+  ArgPars(int argc, char **argv) : _argc(argc), _argv(argv),
       _options(argc,false), _curarg(0), _nextlet(0) {}
   // next option, if clear is true: clear stored option info
   bool nextoption(std::string & opt, bool clear = true);
@@ -99,7 +99,7 @@ public:
   // unhandled arguments left
   bool nextremaining(std::string& arg);
   // print help
-  // with usage information and description. The width reserved for options can be changed using optwidth 
+  // with usage information and description. The width reserved for options can be changed using optwidth
   void printhelp(std::ostream & o, const std::string& usage = "", const std::string& desc = "", int optwidth = 16) const {
           _argopts.printhelp(o,usage,desc,optwidth);
         }
@@ -132,7 +132,7 @@ bool ArgPars::nextoption(bool clear) {
     ++_nextlet;
     return true;
   }
-  
+
   // next argument
   ++_curarg;
   _nextlet = 0;
@@ -140,7 +140,7 @@ bool ArgPars::nextoption(bool clear) {
     _opt.clear();
     return false;
   }
-  
+
   if ( !_options[_curarg] && _argv[_curarg][0] == '-' ) {
     // get options
     _options[_curarg] = true;
@@ -151,7 +151,7 @@ bool ArgPars::nextoption(bool clear) {
     } else {
       // short options "-wo"
       ++_nextlet;
-    }    
+    }
   }
   return nextoption();
 }

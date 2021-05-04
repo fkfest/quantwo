@@ -17,15 +17,15 @@ class Product : public std::vector<T> {
     Product<T> () : std::vector<T>(){};
     Product<T> ( typename Product<T>::const_iterator beg, typename Product<T>::const_iterator end)
      : std::vector<T>(beg,end){};
-    Product<T> ( const T& a1 ) : std::vector<T>(){ 
+    Product<T> ( const T& a1 ) : std::vector<T>(){
       this->push_back(a1);
     }
-    Product<T> ( const T& a1, const T& a2 ) : std::vector<T>(){ 
-      this->push_back(a1); 
+    Product<T> ( const T& a1, const T& a2 ) : std::vector<T>(){
+      this->push_back(a1);
       this->push_back(a2);
     }
-    Product<T> ( const T& a1, const T& a2, const T& a3 ) : std::vector<T>(){ 
-      this->push_back(a1); 
+    Product<T> ( const T& a1, const T& a2, const T& a3 ) : std::vector<T>(){
+      this->push_back(a1);
       this->push_back(a2);
       this->push_back(a3);
     }
@@ -48,7 +48,7 @@ std::ostream & operator << (std::ostream & o, Product<T> const & p);
 template <class T>
 class Set;
 /*
-    Implements a non-commutative list of Ts  
+    Implements a non-commutative list of Ts
 */
 template <class T>
 class List : public std::list<T> {

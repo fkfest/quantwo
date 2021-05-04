@@ -20,13 +20,13 @@
 typedef TermSum Equation;
 //class Equation : public TermSum {
 //public:
-//  
+//
 //};
 
 typedef std::map< Orbital::Type,Orbital > TOrb4Type;
 class LExcitationMap;
 /*
- *  excitation info (for \mu_i etc) 
+ *  excitation info (for \mu_i etc)
  */
 class LExcitationInfo {
   friend class LExcitationMap;
@@ -34,7 +34,7 @@ public:
   LExcitationInfo() {};
   LExcitationInfo( const Product<Orbital>& orbs, int lmelec, Matrix::Spinsym spin ) :
     _orbs(orbs), _lmel(lmelec), _spinsymexcs(spin){};
-    
+
   // excitation class
   short exccls(bool dg = false) const{ return (_orbs.size()-lmel(dg))/2; };
   // electron non-conserving number
@@ -58,23 +58,23 @@ private:
 class LExcitationMap : public std::map<std::string, LExcitationInfo> {
 public:
   // get excitation info corresponding to excitation index in name.
-  // if not there yet, handle excitation index and add to the map. 
+  // if not there yet, handle excitation index and add to the map.
   // Return iterator to this excitation
   LExcitationMap::iterator get_add( std::string const & name, int lmel = 0 );
-  
+
   // set lastorbs in globalterm (if smaller)
   void set_lastorbs(const Product< Orbital >& orbs, Spin::Type spintype);
   // correct used orbitals
   void correct_orbs(const Product<Orbital>& orbs);
   // term to get lastorbs
   const Term& orbsterm() const { return _globalterm;};
-private:  
-  // global "term" to generate orbitals for excitations 
+private:
+  // global "term" to generate orbitals for excitations
   Term _globalterm;
 };
-/* 
+/*
  * name parsing
-   handle name, ups and downs of operators 
+   handle name, ups and downs of operators
    (name, excitation class, name additions, dagger, non-conserving character, orbital types...)
  */
 struct LParsedName {
@@ -139,7 +139,7 @@ public:
   void sumterms( const TermSum& ts ) { _sumterms = ts;};
 private:
   // add connections to term, and term to _sumterms
-  void addterm(Term& term, bool plus, lui beg, lui end, 
+  void addterm(Term& term, bool plus, lui beg, lui end,
                Product< long int > const & indxoperterm, bool excopsonly);
   // handle bra/ket
   Oper handle_braket(Lelem const & lel, Term & term, bool excopsonly=false);
@@ -156,11 +156,11 @@ private:
   // handle permutation
   Permut handle_permutation(Lelem const & lel) const;
   // correct explicit orbs
-  void correct_orbs(Term& term, const Product<Orbital>& occs, const Product<Orbital>& virts, 
+  void correct_orbs(Term& term, const Product<Orbital>& occs, const Product<Orbital>& virts,
                     Spin::Type spintype, bool excopsonly);
   // reset term (set to Term() and reset lastorbs)
   void reset_term(Term& term) const;
-  
+
   LelString _eqn;
   // final sum of terms
   Equation _sumterms;

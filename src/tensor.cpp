@@ -66,7 +66,7 @@ SlotType::SlotType(const std::string& lettertype)
     _nIndices = Input::iPars["fact"]["nocc"]+Input::iPars["fact"]["nvir"];
     _internalName = "genorb";
     if ( Input::iPars["prog"]["multiref"] > 0 ) _nIndices += Input::iPars["fact"]["nact"];
-  } else { 
+  } else {
     error("Unknown letter-type space!","SlotType constructor");
   }
 }
@@ -91,7 +91,7 @@ void Symmetry::canonicalize()
   assert( _symSlots.size() > 0 );
   Slots ref;
   ref.identity(_symSlots.size());
-//  lui nswaps = 
+//  lui nswaps =
   InsertionSort( &_symSlots[0], &ref[0], ref.size() );
   _symSlots = _symSlots.refarr(ref);
   if ( _simSlots.size() > 0 ) _simSlots = _simSlots.refarr(ref);
@@ -262,7 +262,7 @@ void Tensor::CreateCutFromDesc(const std::string& desc)
 
   std::size_t
       // find the cut description
-      iFirst = desc.find("cut:"), 
+      iFirst = desc.find("cut:"),
       iLast;
   if ( iFirst != std::string::npos ) iFirst += 4;
   bool lastcut = false;
@@ -402,12 +402,12 @@ bool Tensor::equal(const Tensor& ten, bool considerprops) const
 {
   if ( _name == ten._name &&
       _slots.size() == ten._slots.size() &&
-      _syms.size() == ten._syms.size() 
+      _syms.size() == ten._syms.size()
      ) {
     for ( uint i = 0; i < _slots.size(); ++i )
       if ( _slots[i] != ten._slots[i] ) return false;
     if ( considerprops ) {
-      if (_syms.size() != ten._syms.size() || 
+      if (_syms.size() != ten._syms.size() ||
           _cuts.size() != ten._cuts.size()) return false;
       for ( uint i = 0; i < _syms.size(); ++i )
         if ( _syms[i] != ten._syms[i] ) return false;
@@ -444,15 +444,15 @@ std::ostream & operator << (std::ostream& o, const SlotType& st)
       o << orbs["genorb"] << ", MolOrb, r";
       break;
     case SlotType::AO:
-      error("AO space not implemented yet","Printing SlotType"); 
+      error("AO space not implemented yet","Printing SlotType");
       o << orbs["aoorb"] << ", BasisAo, A";
       break;
     case SlotType::DF:
-      error("DF space not implemented yet","Printing SlotType"); 
+      error("DF space not implemented yet","Printing SlotType");
       o << orbs["dforb"] << ", BasisMp2Fit, F";
       break;
     case SlotType::RI:
-      error("RI space not implemented yet","Printing SlotType"); 
+      error("RI space not implemented yet","Printing SlotType");
       o << orbs["riorb"] << ", BasisRi, R";
       break;
     default:
@@ -464,7 +464,7 @@ std::ostream & operator << (std::ostream& o, const SlotType& st)
 
 std::ostream & operator << (std::ostream& o, const Slots& ss) {
   for (const auto& s: ss){
-    if (s > 9) 
+    if (s > 9)
       o << "{" << s << "}";
     else
       o << s;
@@ -473,7 +473,7 @@ std::ostream & operator << (std::ostream& o, const Slots& ss) {
 }
 std::ostream & operator << (std::ostream& o, const SlotUniqueSet& ss) {
   for (const auto& s: ss){
-    if (s > 9) 
+    if (s > 9)
       o << "{" << s << "}";
     else
       o << s;
@@ -516,7 +516,7 @@ std::ostream & operator << (std::ostream& o, const Tensor& t) {
   o << t.name() << "[" << t.slotTypeLetters() << "]";
   o << ", !Create{";
   // type: disk, plain...
-  
+
   // cut info
   if ( t.cuts().size() > 0 ){
     o << "cut:";
@@ -528,7 +528,7 @@ std::ostream & operator << (std::ostream& o, const Tensor& t) {
     }
   }
   // symmetry
-  
+
   o << "}";
   return o;
 }

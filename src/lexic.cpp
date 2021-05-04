@@ -1,6 +1,6 @@
 #include "lexic.h"
 
-Lelem::Lelem(std::string name, Lelem::Lex lex, Conn conn) : 
+Lelem::Lelem(std::string name, Lelem::Lex lex, Conn conn) :
 _name(name), _lex(lex), _conn(conn), _expandedbra(false){}
 std::string Lelem::name() const
 { return _name; }
@@ -11,10 +11,10 @@ Lelem::Conn Lelem::conn() const
 bool Lelem::expandedbra() const
 { return _expandedbra; }
 Lelem Lelem::braexpanded() const
-{ 
+{
   Lelem result(*this);
   result._expandedbra=true;
-  return result; 
+  return result;
 }
 
 bool Lelem::operator==(const Lelem& lel) const
@@ -32,7 +32,7 @@ lui LelString::closbrack(lui ipos, Lelem::Lex find) const
   else if (lk==Lelem::LCom)
     rk=Lelem::RCom;
   else
-    error("Not a bracket!","Lexic::closbrack"); 
+    error("Not a bracket!","Lexic::closbrack");
   Lelem::Lex what = rk;
   if ( find != Lelem::None ) what = find;
   int nk=1;
@@ -42,13 +42,13 @@ lui LelString::closbrack(lui ipos, Lelem::Lex find) const
       ipos1=i;
       break;
     }
-    if ((*this)[i].lex()==lk) 
+    if ((*this)[i].lex()==lk)
       ++nk; // count number of "("
     else if ((*this)[i].lex()==rk) {
       --nk; // count number of ")"
     }
   }
-  if ( nk != 0 ) 
+  if ( nk != 0 )
     error("Number of brackets is incosistent: "+any2str(nk),"Lexic::closbrack");
   if ( ipos1 == ipos )
     error("Not found in "+any2str((*this)[ipos]),"Lexic::closbrack");
@@ -65,7 +65,7 @@ lui LelString::openbrack(lui ipos) const
   else if (rk==Lelem::RCom)
     lk=Lelem::LCom;
   else
-    error("Not a bracket!","Lexic::openbrack"); 
+    error("Not a bracket!","Lexic::openbrack");
   int nk=-1;
   for ( long int i=ipos-1;i>=0;--i) {
     if ((*this)[i].lex()==lk) {
@@ -75,11 +75,11 @@ lui LelString::openbrack(lui ipos) const
         break;
       }
     }
-    else if ((*this)[i].lex()==rk) 
+    else if ((*this)[i].lex()==rk)
       --nk; // count number of ")"
   }
-  if ( nk != 0 ) 
-    error("Number of brackets is incosistent: "+any2str(nk),"Lexic::openbrack"); 
+  if ( nk != 0 )
+    error("Number of brackets is incosistent: "+any2str(nk),"Lexic::openbrack");
   return ipos1;
 }
 Product< long int > LelString::addconnections(lui beg, lui end) const
@@ -101,7 +101,7 @@ LelString LelString::expandnewops(const NewOpMap& newops) const
   for (lui i = 0; i < this->size(); ++i ){
     result.add((*this)[i]);
     lui j = result.size()-1;
-    do { 
+    do {
       if ( result[j].lex() == Lelem::Oper ) {
         NewOpMap::const_iterator itnewop = newops.find(result[j].name());
         if ( itnewop != newops.end() ) {
@@ -121,7 +121,7 @@ lui LelString::elem(lui beg, bool bk) const
 {
   lui i, end, nk=0, ncom=0;
   bool braket=false;
-  
+
   for ( i = beg; i < this->size() ; i++ ) {
     if ((*this)[i].lex()==Lelem::LPar) ++nk;
     if ((*this)[i].lex()==Lelem::RPar) --nk;
@@ -131,33 +131,33 @@ lui LelString::elem(lui beg, bool bk) const
       if ((*this)[i].lex()==Lelem::Bra) braket=true;
       if ((*this)[i].lex()==Lelem::Ket) braket=false;
     }
-    if (InSet((*this)[i].lex(), Lelem::Plus,Lelem::Minus) && 
-        i!= beg && nk==0 && ncom==0 && !braket ) 
+    if (InSet((*this)[i].lex(), Lelem::Plus,Lelem::Minus) &&
+        i!= beg && nk==0 && ncom==0 && !braket )
       break; // end of term
   }
   if (nk!=0 || ncom!=0 || braket) error("Check input, Mismatch in parentheses or bra/ket","Lexic::elem");
-  if (i==beg || i==0 ) 
+  if (i==beg || i==0 )
     end=0;
-  else 
+  else
     end=i-1;
   return end;
 }
 LelString LelString::expandcom(lui beg) const
 { // e.g., [a,b] --> (a)(b)-(b)(a)
-  lui 
+  lui
     end = this->closbrack(beg),
     comma = this->closbrack(beg, Lelem::Comma);
-  LelString result, 
+  LelString result,
     beforecomma = this->substring(beg+1,comma-1),
     aftercomma = this->substring(comma+1,end-1);
   result.add(Lelem("",Lelem::LPar)); // (
   result.add(Lelem("",Lelem::LPar)); //  (
-  result.add(beforecomma);           //   a 
+  result.add(beforecomma);           //   a
   result.add(Lelem("",Lelem::RPar)); //  )
-  result.add(Lelem("",Lelem::LPar)); //  (   
+  result.add(Lelem("",Lelem::LPar)); //  (
   result.add(aftercomma);            //   b
   result.add(Lelem("",Lelem::RPar)); //  )
-  result.add(Lelem("",Lelem::Minus));//  - 
+  result.add(Lelem("",Lelem::Minus));//  -
   result.add(Lelem("",Lelem::LPar)); //  (
   result.add(aftercomma);            //   b
   result.add(Lelem("",Lelem::RPar)); //  )
@@ -165,7 +165,7 @@ LelString LelString::expandcom(lui beg) const
   result.add(beforecomma);           //   a
   result.add(Lelem("",Lelem::RPar)); //  )
   result.add(Lelem("",Lelem::RPar)); // )
-  return result; 
+  return result;
 }
 LelString LelString::expandpar(lui beg, ConnectionsMap& connections) const
 { // e.g., this=-a(b+c)d
@@ -177,7 +177,7 @@ LelString LelString::expandpar(lui beg, ConnectionsMap& connections) const
   connections = ConnectionsMap();
   Product<long int> connect;
   bool coninterm,coninpar;
-  if ((*this)[beg].lex()==Lelem::Bra) 
+  if ((*this)[beg].lex()==Lelem::Bra)
     ipar=1;
   else
     ipar=0;
@@ -188,13 +188,13 @@ LelString LelString::expandpar(lui beg, ConnectionsMap& connections) const
     ipos=inpar.elem(i);
     //add sign
     if (inpar[i].lex()==Lelem::Minus) {// minus in parenthesis
-      if (el0.lex()==Lelem::Minus) 
+      if (el0.lex()==Lelem::Minus)
         result.add(Lelem("",Lelem::Plus)); // -1*-1 == +1
       else
         result.add(inpar[i]); // +1*-1 == -1
       ++i;
     } else if (inpar[i].lex()==Lelem::Plus) {// plus in parenthesis
-      if (el0.lex()==Lelem::Minus) 
+      if (el0.lex()==Lelem::Minus)
         result.add(el0); // -1*+1 == -1
       else
         result.add(inpar[i]); // +1*+1 == +1
@@ -248,14 +248,14 @@ LelString LelString::expandterm(ConnectionsMap& connections) const
 //    std::cout << "in connection " << k << ": " << connections[k] << std::endl;
   lui i = 0;
   for (const auto& le: *this){
-    if (le.lex()==Lelem::LPar || (le.lex()==Lelem::Bra && !le.expandedbra())) 
+    if (le.lex()==Lelem::LPar || (le.lex()==Lelem::Bra && !le.expandedbra()))
       return this->expandpar(i,connections);
     ++i;
   }
   return *this;
 }
 bool LelString::expanded() const
-{ 
+{
   for (const auto& le: *this) {
     if (le.lex()==Lelem::Bra && !le.expandedbra())
       return false;
@@ -265,7 +265,7 @@ bool LelString::expanded() const
   return true;
 }
 bool LelString::expanded_com() const
-{ 
+{
   for (const auto& le: *this) {
     if (le.lex()==Lelem::LCom )
       return false;
@@ -278,7 +278,7 @@ void LelString::expand( ConnectionsMap& connections)
   Product<long int>  connect;
   ConnectionsMap con,con1;
   lui beg=0, end, i,j,conbeg,lastpos;
-  
+
   while (!expanded()) {
     res=*this;
     *this = LelString();
@@ -341,7 +341,7 @@ void LelString::expand_commutators()
 std::ostream& operator<<(std::ostream& o, const Lelem& lel)
 {
   TsPar& commands = Input::sPars["command"];
-  if (lel.lex()==Lelem::Bra) 
+  if (lel.lex()==Lelem::Bra)
     o << "< ";
   else if (lel.lex()==Lelem::Ket)
     o << "| ";
@@ -373,9 +373,9 @@ std::ostream& operator<<(std::ostream& o, const Lelem& lel)
     o << "/";
   else if (lel.lex()==Lelem::Sum)
     o << "\\"<< commands["sum"];
-  
+
   o << lel.name() << " ";
-  if (lel.lex()==Lelem::Bra) 
+  if (lel.lex()==Lelem::Bra)
     o << "| ";
   else if (lel.lex()==Lelem::Ket)
     o << "> ";

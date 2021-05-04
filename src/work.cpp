@@ -9,7 +9,7 @@ TermSum Q2::evalEq(Finput& finput)
   TermSum sum_NO;
   if ( Input::iPars["prog"]["wick"] == 0 )
     sum_NO = Q2::normalOrderPH(sum_finp);
-  else 
+  else
     sum_NO = Q2::wick(sum_finp);
   _xout2(" = " << sum_NO << std::endl);
   TermSum sum_final1(Q2::reduceSum(sum_NO)),
@@ -27,7 +27,7 @@ TermSum Q2::reduceSum(TermSum s)
   bool spinintegr = Input::iPars["prog"]["spinintegr"];
   bool usefock = Input::iPars["prog"]["usefock"];
   usefock = usefock && (Input::iPars["prog"]["noorder"]>0);
-  // 13.12.2016: temporary hack until a proper insert of intermediate tensors is implemented 
+  // 13.12.2016: temporary hack until a proper insert of intermediate tensors is implemented
   bool replaceE0 = Input::iPars["prog"]["replacee0"];
   replaceE0 = replaceE0 && (Input::iPars["prog"]["noorder"]>0);
   bool timing = ( Input::iPars["prog"]["cpu"] > 0 );
@@ -45,7 +45,7 @@ TermSum Q2::reduceSum(TermSum s)
     if (timing) _CPUtiming("",c_start,std::clock());
   }
   _xout3(s << std::endl);
-  
+
   if (replaceE0){
     if (timing) c_start = std::clock();
     // replace E^{\snam{0}} by <0|\op F|0>
@@ -69,13 +69,13 @@ TermSum Q2::reduceSum(TermSum s)
   }
   _xout3(sum << std::endl);
   if (timing) _CPUtiming("",c_start,std::clock());
-  
+
   say("Kroneckers...");
   if (timing) c_start = std::clock();
   sum = Kroneckers(sum);
   _xout3(sum << std::endl);
   if (timing) _CPUtiming("",c_start,std::clock());
-  
+
   // set remaining general indices to the occupied or active space
   say("Handle general indices...");
   if (timing) c_start = std::clock();
@@ -120,7 +120,7 @@ TermSum Q2::reduceSum(TermSum s)
       term=i->first;
       term.deleteNoneMats();
       term.setmatconnections();
-      
+
       prefac=i->second*term.prefac();
       // remove prefactors in terms
       term.reset_prefac();
@@ -155,7 +155,7 @@ TermSum Q2::reduceSum(TermSum s)
   sum.clear();
   for ( TermSum::const_iterator i=s.begin();i!=s.end(); ++i) {
     term=i->first;
-    // use Brilloin condition 
+    // use Brilloin condition
     if ( brill && term.brilloin() ) continue;
     // remove "None" matrices
     term.deleteNoneMats();
@@ -176,9 +176,9 @@ TermSum Q2::reduceSum(TermSum s)
   // now remove everything with small prefactor
   sum = SmallTerms(sum,minfac);
   if (timing) _CPUtiming("",c_start,std::clock());
-  // put overlaps if needed 
+  // put overlaps if needed
   sum = VirtSpace(sum);
-  
+
   return sum;
 }
 TermSum Q2::Kroneckers(const TermSum& s)
@@ -259,7 +259,7 @@ TermSum Q2::SingletDM(TermSum s)
 }
 bool Q2::has_nonsingldm(const TermSum& s)
 {
-  for ( TermSum::const_iterator i=s.begin();i!=s.end(); ++i) 
+  for ( TermSum::const_iterator i=s.begin();i!=s.end(); ++i)
     if (i->first.has_nonsingldm()) return true;
   return false;
 }
@@ -281,7 +281,7 @@ TermSum Q2::GeneralIndices(TermSum s)
 }
 bool Q2::has_generalindices(const TermSum& s)
 {
-  for ( TermSum::const_iterator i=s.begin();i!=s.end(); ++i) 
+  for ( TermSum::const_iterator i=s.begin();i!=s.end(); ++i)
     if (i->first.has_generalindices()) return true;
   return false;
 }
@@ -312,9 +312,9 @@ TermSum Q2::EqualTerms(const TermSum& s, double minfac)
     term.reset_prefac();
     if (eqway > 0) {
       uterms.push_back(term);
-      Term & uterm = uterms.back(); 
+      Term & uterm = uterms.back();
       uterm.set_prefac(prefac);
-//       bool print = ( uterm.mat().size() == 2); 
+//       bool print = ( uterm.mat().size() == 2);
 //       if (print) xout << "Term: " << uterm << std::endl;
       UniGraph ug(uterm);
 //       xout << ug << std::endl;
@@ -389,7 +389,7 @@ TermSum Q2::SmallTerms(const TermSum& s, double minfac)
     const Sum<Permut,TFactor>& perms = term.perm();
     for ( Sum<Permut,TFactor>::const_iterator it = perms.begin(); it != perms.end(); ++it ){
       if ( _todouble(_abs(it->second)) < minfac ) continue;
-      term1 += *it; 
+      term1 += *it;
     }
     sum += term1;
   }
@@ -423,7 +423,7 @@ TermSum Q2::ResolvePermutaions(const TermSum& s)
     const Sum<Permut,TFactor>& perms = term.perm();
     term.reset_prefac();
     for ( Sum<Permut,TFactor>::const_iterator it = perms.begin(); it != perms.end(); ++it ){
-      term1 = term; 
+      term1 = term;
       term1.permute(it->first);
       term1 *= it->second;
       sum += term1;
@@ -532,9 +532,9 @@ void Q2::printalgo(std::ofstream& out, const TermSum& s)
 {
   const std::string& resultt = Input::sPars["syntax"]["result"];
   say("Algorithm...");
-  
+
   Factorizer fact(s);
-  
+
   out << "algorithm..." << std::endl;
   // external indices
   // .....

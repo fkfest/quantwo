@@ -34,7 +34,7 @@ public:
   };
   SlotType(Length n = 0, Type type = NoType) : _nIndices(n), _type(type) {};
   SlotType(const std::string& lettertype);
-  bool operator < ( const SlotType& st) const; 
+  bool operator < ( const SlotType& st) const;
   Length length() const { return _nIndices; };
   SlotType::Type type() const { return _type; };
   std::string name(const std::string & oldname = "") const;
@@ -108,7 +108,7 @@ public:
   void canonicalize();
 //private:
   Cut::Type _cutType;
-  Cut::Strength 
+  Cut::Strength
       _cutStrength,
       // strength of the parent defining cut
       _PDCStrength;
@@ -138,14 +138,14 @@ typedef Array<const Action*> Actions;
 class TensorBase {
 public:
   TensorBase(std::string name = "T") : _name(name){};
-  TensorBase( const Symmetries& syms, std::string name = "T" ) 
+  TensorBase( const Symmetries& syms, std::string name = "T" )
     : _syms(syms), _name(name) {};
   const Symmetries& syms() const { return _syms; };
   const SlotUniqueSet& phantom() const { return _phantomSlots; };
   const std::string& name() const { return _name; };
   bool phantomSlot( uint iSlot ) const { return _phantomSlots.count(iSlot); };
 //  virtual bool operator < ( const TensorBase& ten ) const = 0;
-  
+
 //private:
   Symmetries _syms;
   SlotUniqueSet _phantomSlots;
@@ -156,12 +156,12 @@ const uint MAXNINDICES = 32;
 
 typedef double Factor;
 typedef double Cost;
-const Cost MAXCOST = std::numeric_limits<double>::max()/10.0; 
+const Cost MAXCOST = std::numeric_limits<double>::max()/10.0;
 
 // diagrammatic connections
-// slotref 
+// slotref
 struct Connections {
-  // positions in bitmask correspond to a global reference to a connection line in this diagram 
+  // positions in bitmask correspond to a global reference to a connection line in this diagram
   // (i.e., the orbital-index name in the term)
   std::bitset<MAXNINDICES> bitmask;
   // slotref[(bitmask>>ipos).count()] == iSlot in the tensor
@@ -173,7 +173,7 @@ class DiagramTensor : public TensorBase {
 public:
   DiagramTensor( std::string name = "" ) : TensorBase(name) {};
   DiagramTensor( const Connections& conns, std::string name = "" ) : TensorBase(name), _connect(conns) {};
-//  DiagramTensor( const SlotTs& slots, const Symmetries& syms, const Cuts& cuts, std::string name = "T" ) 
+//  DiagramTensor( const SlotTs& slots, const Symmetries& syms, const Cuts& cuts, std::string name = "T" )
 //    : TensorBase(slots,syms,cuts,name) {};
 //  bool operator < ( const DiagramTensor& ten ) const;
   std::string slotTypeLetters( const SlotTs& slottypes ) const;
@@ -188,7 +188,7 @@ std::ostream & operator << (std::ostream& o, const DiagramTensor& t);
 class Tensor : public TensorBase {
 public:
   Tensor( const SlotTs& slots, std::string name = "T" ) : TensorBase(name), _slots(slots), _dummy(false) {};
-  Tensor( const SlotTs& slots, const Symmetries& syms, const Cuts& cuts, std::string name = "T" ) 
+  Tensor( const SlotTs& slots, const Symmetries& syms, const Cuts& cuts, std::string name = "T" )
     : TensorBase(syms,name), _slots(slots), _cuts(cuts), _dummy(false) {};
   const SlotTs& slots() const { return _slots; };
   const Actions& parents() const { return _parents; };
@@ -216,7 +216,7 @@ public:
   ///      "0/1*,s1*": united domain for strong pairs
   ///      "0/s2*,1/d2*,s2*,d2*": united domains for slot 0 from strong pairs and for slot 1 from distant pairs.
   void CreateCutFromDesc( std::string const &desc );
-  
+
 //private:
   SlotTs _slots;
   Actions _parents;

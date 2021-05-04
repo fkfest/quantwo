@@ -7,7 +7,7 @@ Product< Orbital > Ops::genprodorb(short int exccl, const Orbital& occ, const Or
   Orbital orb;
 
   for (short i=0; i<exccl ; ++i)
-  {  
+  {
     if (i>0) excl=num2str(i,std::dec);
     orb=Orbital(virt.name()+excl,virt.spin());
     porbs*=orb;
@@ -27,8 +27,8 @@ Matrix::Matrix(Ops::Type t, const Product< Orbital >& p, uint npairs, short lmel
   _orbs = p;
   create_Matrix(t,npairs,lmel,pmsym,name,matspinsym,antisymW);
 }
-Matrix::Matrix(Ops::Type t, const Product< Orbital >& pcrea, const Product< Orbital >& panni, 
-               uint npairs, short int lmel, short pmsym, std::string name, 
+Matrix::Matrix(Ops::Type t, const Product< Orbital >& pcrea, const Product< Orbital >& panni,
+               uint npairs, short int lmel, short pmsym, std::string name,
                Matrix::Spinsym matspinsym, bool antisymW)
 {
   assert( pcrea.size() == panni.size()+lmel );
@@ -43,9 +43,9 @@ Matrix::Matrix(Ops::Type t, const Product< Orbital >& pcrea, const Product< Orbi
       _orbs.push_back(*itorb);
       _cranorder.push_back(SQOpT::Annihilator);
     }
-    
+
   } else {
-    uint 
+    uint
       maxlen = std::max(pcrea.size(), panni.size());
     for ( uint iorb = 0; iorb < maxlen; ++iorb ){
       if ( iorb < pcrea.size() ) {
@@ -261,7 +261,7 @@ bool Matrix::operator==(const Matrix& t) const
   if (_type == Ops::FluctP) { // electron-symmetry
     if (_orbs.subprod(0,1) == t._orbs.subprod(2,3) && _orbs.subprod(2,3) == t._orbs.subprod(0,1) ) return true;
   }// else if (InSet(_type, Ops::Exc,Ops::Deexc)) { // electron-symmetry
- 
+
    // for (unsigned int i=0; i<_orbs.size()/2; i++) {
    //   for (unsigned int j=i; j<t._orbs.size()/2; j++) {
    //     if (this->spinsym(i*2) != t.spinsym(j*2)) break;
@@ -273,7 +273,7 @@ bool Matrix::operator==(const Matrix& t) const
 bool Matrix::equivalent(const Matrix& mat) const
 {
   return ( _type == mat._type && _name == mat._name &&
-           _npairs == mat._npairs && _lmel == mat._lmel && 
+           _npairs == mat._npairs && _lmel == mat._lmel &&
            _orbs.size() == mat._orbs.size() && _orbtypeshash == mat._orbtypeshash );
 }
 Equivalents Matrix::equivertices(uint offs) const
@@ -316,7 +316,7 @@ Equivalents Matrix::equivertices(uint offs) const
     if ( ev.size() > 1 ) everts.push_back(ev);
     ev.clear();
   } while (nextvert > 0);
-  
+
   return everts;
 }
 Product< Orbital > Matrix::crobs(bool anni) const
@@ -324,9 +324,9 @@ Product< Orbital > Matrix::crobs(bool anni) const
   Product<Orbital> orbs;
   // first indices - creators
   uint
-    mult = 2, 
-    offs = anni ? 1 : 0, 
-    begin = 0, 
+    mult = 2,
+    offs = anni ? 1 : 0,
+    begin = 0,
     end = _npairs,
     add = 1;
   if ( _type == Ops::DensM ) {
@@ -389,7 +389,7 @@ void Matrix::reset_vertices()
 
 bool Matrix::vertices(long int ipos, Matrix& mat, long int ipos1, unsigned int indx)
 {
-  // compare types, excitation classes and index of matrix 
+  // compare types, excitation classes and index of matrix
   if (_type != mat._type || _name != mat._name || _orbs.size() != mat._orbs.size() || _indx != mat._indx) return false;
   // in the case of external indices orbitals should match exactly
   //if ((_type == Ops::Exc0 || _type == Ops::Deexc0)&&_orbs[ipos]!=mat._orbs.at(ipos)) return false;
@@ -422,7 +422,7 @@ const Product< ConLine >& Matrix::conlines() const
 const ConLine& Matrix::conline(lui iorb) const
 {
   assert( iorb < _conlines.size() );
-  return _conlines[iorb]; 
+  return _conlines[iorb];
 }
 bool Matrix::is0() const
 {
@@ -435,9 +435,9 @@ bool Matrix::is0() const
     // number of creators == annihilators
     int cran = 0;
     for (const auto& ca:_cranorder){
-      if (ca == SQOpT::Creator) 
+      if (ca == SQOpT::Creator)
         ++cran;
-      else 
+      else
         --cran;
     }
     if (cran != 0 ) return true;
@@ -455,7 +455,7 @@ void Matrix::set_cran(const Product< SQOpT::Gender >& cran)
 void Matrix::calc_orbtypeshash()
 {
   _orbtypeshash = 0;
-  std::vector<uint> ots; 
+  std::vector<uint> ots;
   for (const auto& orb: _orbs){
     uint itype = uint(orb.type());
     if (ots.size() < itype+1)
@@ -497,7 +497,7 @@ void Matrix::setkind(short int exccl, short int intlines, short int intvirt)
   calc_orbtypeshash();
 }
 long int Matrix::iorbel(lui ipos) const
-{ 
+{
   assert( ipos < _orbs.size() );
   lui ipos1;
   if ( _type == Ops::DensM && Input::iPars["prog"]["dmsort"] > 0 )
@@ -505,7 +505,7 @@ long int Matrix::iorbel(lui ipos) const
     ipos1 = _orbs.size()-ipos-1;
   else
     ipos1 = ipos%2==0?ipos+1:ipos-1;
-  
+
   if ( ipos1 >= 2*_npairs )
     // one of the non-conserved electrons
     return -1;
@@ -524,8 +524,8 @@ Orbital Matrix::orbel(const long int& ipos) const
 {
   long ipos1 = iorbel(ipos);
   if (ipos1 >= 0 )
-    return _orbs[ipos1]; 
-  else 
+    return _orbs[ipos1];
+  else
     return Orbital();
 }
 
@@ -606,8 +606,8 @@ std::ostream & operator << (std::ostream & o, Matrix const & mat)
     case Ops::FluctP:
       if ( clean > 1 )
         o << "(" << mat.orbitals().subprod(0,1) << "|" << mat.orbitals().subprod(2,3) << ")";
-      else 
-        o << tensor << "\\" << Input::sPars["command"]["integral"] << "{" 
+      else
+        o << tensor << "\\" << Input::sPars["command"]["integral"] << "{"
                    << mat.orbitals().subprod(0,1) << "}{" << mat.orbitals().subprod(2,3) << "}";
       MyOut::pcurout->lenbuf += 7;
       break;
@@ -690,7 +690,7 @@ std::ostream & operator << (std::ostream & o, Matrix const & mat)
 
 Permut::Permut()
 { dummy = 1;}
-Permut::Permut(Product< Orbital > p1, Product< Orbital > p2) 
+Permut::Permut(Product< Orbital > p1, Product< Orbital > p2)
 {
   dummy = 1;
   assert( p1.size() == p2.size() );
@@ -712,7 +712,7 @@ Permut& Permut::operator+=(const Permut& p)
     if ( it == _orbs.end()){
       // the orbital not there yet
       _orbs[pit->first] = pit->second;
-    } else { 
+    } else {
       // have to be completely the same
       assert( it->second == pit->second );
     }
@@ -728,7 +728,7 @@ Permut& Permut::operator*=(const Permut& p)
     if ( it == orbs.end()){
       // the orbital not there yet
       _orbs[pit->first] = pit->second;
-    } else { 
+    } else {
       // replace it
       if ( pit->first != it->second ) // don't add permutation P(p,p)
         _orbs[pit->first] = it->second;
@@ -767,15 +767,15 @@ Permut& Permut::operator/=(const Permut& p)
 }
 
 Product< Orbital > Permut::orbsfrom() const
-{ 
+{
   Product< Orbital > orbs;
   for ( TPerMap::const_iterator it = _orbs.begin(); it != _orbs.end(); ++it )
     orbs.push_back(it->first);
-  return orbs; 
-  
+  return orbs;
+
 }
 Product< Orbital > Permut::orbsto() const
-{ 
+{
   Product< Orbital > orbs;
   for ( TPerMap::const_iterator it = _orbs.begin(); it != _orbs.end(); ++it )
     orbs.push_back(it->second);
@@ -820,7 +820,7 @@ std::ostream & operator << (std::ostream & o, Permut const & p)
     o << "\\" << Input::sPars["command"]["permutation"] << "{" << p.orbsfrom() << "}{" << p.orbsto() << "}";
     MyOut::pcurout->lenbuf += 3+(p.orbsfrom().size()+p.orbsto().size())/MyOut::pcurout->wsi;
     //o << "[" << MyOut::pcurout->lenbuf << "]";
-  } else 
+  } else
     o << "1";
   return o;
 }

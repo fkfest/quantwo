@@ -23,8 +23,8 @@ struct JointVertices : public Array<uint> {
 
 struct EquiVertices : public std::vector<JointVertices> {
   EquiVertices() : std::vector<JointVertices>(){};
-  void add( const JointVertices& jv ) { 
-    assert(size()==0 || begin()->size() == jv.size()); 
+  void add( const JointVertices& jv ) {
+    assert(size()==0 || begin()->size() == jv.size());
     push_back(jv); };
   void add( uint vert ) {
     assert(size()==0 || begin()->size() == 1 );
@@ -42,7 +42,7 @@ struct EquiVertices : public std::vector<JointVertices> {
       vordi = vord[i->front()];
       if ( vordj < vordi ) break;
     }
-    if ( i != end() ) { 
+    if ( i != end() ) {
       for ( j = begin(); vordi <= vord[j->front()]; ++j ) {}
       swap(vord,i,j);
       reverse(vord,begin(),i);
@@ -51,7 +51,7 @@ struct EquiVertices : public std::vector<JointVertices> {
     reverse(vord,begin(),end());
     return false;
   };
-  // swap vertices in vord from JointVertices sets it and jt 
+  // swap vertices in vord from JointVertices sets it and jt
   void swap( Order& vord, const_iterator it, const_iterator jt )
   {
     for ( uint i = 0; i < it->size(); ++i )
@@ -68,7 +68,7 @@ struct EquiVertices : public std::vector<JointVertices> {
 
 };
 
-/// T_2 (0,1) T_2 (2,3) --> [ (0,1)(2,3) ][ (0)(1) ][ (2)(3) ] 
+/// T_2 (0,1) T_2 (2,3) --> [ (0,1)(2,3) ][ (0)(1) ][ (2)(3) ]
 typedef std::vector<EquiVertices> Equivalents;
 
 struct PermVertices : public std::vector<JointVertices> {

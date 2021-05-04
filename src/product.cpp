@@ -111,7 +111,7 @@ std::ostream & operator << (std::ostream & o, List<T> const & p)
 
 template <class T>
 inline
-Set< T > & Set<T>::operator *= (T const & t) 
+Set< T > & Set<T>::operator *= (T const & t)
 {
   this->insert(t);
   return *this;

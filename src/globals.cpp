@@ -21,7 +21,7 @@ Output::Output()
 }
 
 Output::Output(std::ostream& o)
-{ 
+{
   pout=&o;
   setvals();
 }
@@ -35,7 +35,7 @@ void Output::setvals()
   if (maxnlines == 0) maxnlines = 42;
   if (wsi == 0) wsi = 1;
   if (hsum < Numbers::small) hsum = 1.8;
-  lenline=lenbuf=nlines=npages=0; 
+  lenline=lenbuf=nlines=npages=0;
   hline=hbufline=1.0;
   inequation=false;
   small = std::pow(10,-pout->precision());
@@ -74,9 +74,9 @@ void Output::beq()
   inequation=true;
 }
 void Output::eeq(bool doflush)
-{ 
+{
   if (doflush) flushbuf();
-  *pout << "\\eeq" << std::endl; 
+  *pout << "\\eeq" << std::endl;
   inequation=false;
   lenline=0;
   hline=1.0;
@@ -109,7 +109,7 @@ long int gcd(long int n1, long int n2) {
     n1 = tmp;
   }
 #else
-  while ( n1 != n2 ) { 
+  while ( n1 != n2 ) {
     if (n1 > n2)
       n1 -= n2;
     else
@@ -123,7 +123,7 @@ double todouble(const TRational& f){return double(f.numerator())/double(f.denomi
 }
 TRational operator/(long int i, const TRational& f){return TRational(i*f.denominator(),f.numerator());}
 std::ostream & operator << (std::ostream & o, TRational const & p){
-  int digits = 0, number = std::max(std::abs(p.numerator()),std::abs(p.denominator())); 
+  int digits = 0, number = std::max(std::abs(p.numerator()),std::abs(p.denominator()));
   if ( p.numerator() < 0 || p.denominator() < 0 ) ++digits;
   do { number /= 10; ++digits; } while(number);
   if ( p.denominator() != 1 )

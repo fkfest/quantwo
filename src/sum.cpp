@@ -129,7 +129,7 @@ template <class Object, class Field>
 std::ostream & operator << (std::ostream & o, Sum<Object,Field> const & p)
 {
   std::streampos ipos0;
-  typename Sum<Object,Field>::const_iterator last=p.end(); 
+  typename Sum<Object,Field>::const_iterator last=p.end();
   if (p.begin()!=last)last--;
   for ( typename Sum<Object,Field>::const_iterator i=p.begin();i!=p.end(); ++i) {
     ipos0=o.tellp();
@@ -151,7 +151,7 @@ std::ostream & operator << (std::ostream & o, Sum<Object,Field> const & p)
         MyOut::pcurout->lenbuf += o.tellp()-ipos0-1;
     }
     o << i->first ; // lenline should be handled in other routines
-    if ( ! MyOut::pcurout->breaklongline() && i!=last ) 
+    if ( ! MyOut::pcurout->breaklongline() && i!=last )
       MyOut::pcurout->flushbuf();
   }
   return o;

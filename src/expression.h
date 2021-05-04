@@ -17,7 +17,7 @@
 class Expression;
 // max number of tensors in a contraction(needed in binarize)
 const uint MAXNTENS = 12;
-// term in terms of DiagramTensors 
+// term in terms of DiagramTensors
 // TODO: move to a new file
 class Diagram {
 public:
@@ -27,17 +27,17 @@ public:
   // contraction cost of ten1 and ten2 to res (res has to be created before!)
   Cost contractionCost( const DiagramTensor& ten1, const DiagramTensor& ten2, const DiagramTensor& res ) const;
   // search for the best contraction order
-//  std::vector<Action*> 
+//  std::vector<Action*>
   void binarize(Expression& expr) const;
   // generates an expression-tensor from a diagram-tensor
   Tensor exprTensor( const DiagramTensor& ten ) const;
   // generates an expression-contraction from a diagrammatic contraction R=AB
-  Contraction exprContraction( const DiagramTensor& tenA, const DiagramTensor& tenB, const DiagramTensor& tenR, 
+  Contraction exprContraction( const DiagramTensor& tenA, const DiagramTensor& tenB, const DiagramTensor& tenR,
                                const Tensor * pA, const Tensor * pB ) const;
   // generates an expression summation from a diagrammatic "summation" R = a*A
   Summand exprSummation( const DiagramTensor& tenA, Factor fac, const DiagramTensor& tenR, const Tensor * pA ) const;
   // transforms to tensors and intermediates using bitmasks from binarize-function
-  // if accumulate = true: adds the tensor as a new summand 
+  // if accumulate = true: adds the tensor as a new summand
   const Tensor * transform2Expr( Expression& expr, const Array<DiagramTensor>& inters, const Array<std::bitset<MAXNTENS> >& order,
                        std::bitset<MAXNTENS> bt, bool accumulate = false ) const;
   // add tensor
@@ -60,7 +60,7 @@ public:
   const SlotTypes& slottypes() const { return _slottypes; };
   const TensorsSet& tensors() const { return _tensors; };
   const std::set< const Tensor *>& residualtensors() const { return _residuals; };
-  const SlotType * add( const SlotType& slottype ); 
+  const SlotType * add( const SlotType& slottype );
   // if accumulate = true: add as a new summand
   const Tensor * add( const Tensor& tensor, bool accumulate = false );
   const Action * add( const Action * pAction );
@@ -72,7 +72,7 @@ public:
   const Tensor * find( const Tensor& tensor, bool considerprops = true ) const;
   //! new name for a tensor. TODO: Reuse some intermediate names!
   std::string newname( const Symmetries& syms, const Cuts& cuts );
-  
+
 //private:
   SlotTypes _slottypes;
   TensorsSet _tensors;
@@ -80,7 +80,7 @@ public:
   std::list<Contraction> _contractions;
   std::list<Summation> _summations;
   std::string _lastname;
-  // diagrammatic representation  
+  // diagrammatic representation
   std::list<Diagram> _diagrams;
 };
 

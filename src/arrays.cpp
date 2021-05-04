@@ -10,7 +10,7 @@ template <class T>
 inline
 bool Array<T>::is_identity() const
 {
-  for ( uint i = 0; i < this->size(); ++i ) 
+  for ( uint i = 0; i < this->size(); ++i )
     if ( (*this)[i] != i ) return false;
   return true;
 }

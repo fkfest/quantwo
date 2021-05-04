@@ -36,13 +36,13 @@ std::ostream & operator << (std::ostream & o, SQOp const & op)
   o << "\\op{" << op.orb() << "}";
   if ( op.gender()==SQOpT::Creator )
     o << "^\\dg";
-  
+
   return o;
 }
 
 Oper::Oper()
-{  
-  _prefac=1; 
+{
+  _prefac=1;
   _type=Ops::None;
   p_Term = 0;
 }
@@ -78,7 +78,7 @@ Oper::Oper(Ops::Type type, short int exccl, std::string name, int lm, int pmsym,
   }
   create_Oper(exccl,orb1,orb0,name,lm,pmsym);
 }
-Oper::Oper(Ops::Type type, short int exccl, Orbital occ, Orbital virt, std::string name, 
+Oper::Oper(Ops::Type type, short int exccl, Orbital occ, Orbital virt, std::string name,
            int lm, int pmsym, Term* pTerm)
 {
   assert( !InSet(type, Ops::FluctP,Ops::Fock,Ops::OneEl,Ops::XPert) );
@@ -87,7 +87,7 @@ Oper::Oper(Ops::Type type, short int exccl, Orbital occ, Orbital virt, std::stri
   create_Oper(exccl,occ,virt,name,lm,pmsym);
 //   xout << *this << std::endl;
 }
-Oper::Oper(Ops::Type type, short int exccl, const std::map< Orbital::Type, Orbital >& orbnames, 
+Oper::Oper(Ops::Type type, short int exccl, const std::map< Orbital::Type, Orbital >& orbnames,
            const std::vector<OrbitalTypes>& orbtypes, std::string name, int lm, int pmsym, Term* pTerm)
 {
   assert( !InSet(type, Ops::FluctP,Ops::Fock,Ops::OneEl,Ops::XPert) );
@@ -99,7 +99,7 @@ Oper::Oper(Ops::Type type, short int exccl, const std::map< Orbital::Type, Orbit
   create_Oper(exccl,orbnames,orbtypes,name,lm,pmsym);
 }
 
-Oper::Oper(Ops::Type type, short int exccl, const Product< Orbital >& occs, const Product< Orbital >& virts, 
+Oper::Oper(Ops::Type type, short int exccl, const Product< Orbital >& occs, const Product< Orbital >& virts,
            std::string name, int lm, int pmsym, Term* pTerm)
 {
   assert( occs.size() + lm == virts.size() );
@@ -117,14 +117,14 @@ Oper::Oper(Ops::Type type, const Product< Orbital >& orbs, std::string name, int
   create_Oper(orbs,name,lm,pmsym);
 }
 
-Oper::Oper(Ops::Type type, short int exccl, const std::vector<OrbitalTypes>& orbtypes, 
+Oper::Oper(Ops::Type type, short int exccl, const std::vector<OrbitalTypes>& orbtypes,
            std::string name, int lm, int pmsym, Term* pTerm)
 {
   assert( !InSet(type, Ops::FluctP,Ops::Fock,Ops::OneEl,Ops::XPert) );
   assert( orbtypes.size() == 2 );
   assert( int(orbtypes[0].size()) == exccl );
   assert( int(orbtypes[1].size()) == exccl+lm );
-  
+
   _type=type;
   p_Term = pTerm;
   std::map<Orbital::Type,Orbital> orbnames;
@@ -157,7 +157,7 @@ void Oper::create_Oper(const std::string& name, bool antisym, const std::vector<
   // operators with general indices
   std::string orbname("P");
   if (orbtypes.size() > 0) {
-    if (orbtypes.size() != 2 || orbtypes[0].size() == 0 || orbtypes[1].size() == 0) 
+    if (orbtypes.size() != 2 || orbtypes[0].size() == 0 || orbtypes[1].size() == 0)
       error("Wrong type definition of Hamiltonian part","Oper::create_Oper");
     // specified type
     if (p_Term)
@@ -193,7 +193,7 @@ void Oper::create_Oper(const std::string& name, bool antisym, const std::vector<
     if (p_Term) el = p_Term->nextelectron();
     orbname = "R";
     if (orbtypes.size() > 0) {
-      if ( orbtypes[0].size() != 2 || orbtypes[1].size() != 2  ) 
+      if ( orbtypes[0].size() != 2 || orbtypes[1].size() != 2  )
         error("Wrong type definition of Hamiltonian part","Oper::create_Oper");
       // specified type
       if (p_Term) orbname = p_Term->freeorbname(orbtypes[1][1]).name();
@@ -224,17 +224,17 @@ void Oper::create_Oper(const std::string& name, bool antisym, const std::vector<
   // needed for expanding general normal ordered operators later
   if ( Input::iPars["prog"]["contrexcop"] > 1 ) move_SQprod();
 }
-void Oper::create_Oper(short int const & exccl,Orbital const & occ, Orbital const & virt, 
+void Oper::create_Oper(short int const & exccl,Orbital const & occ, Orbital const & virt,
                        std::string const & name, int lm, int pmsym)
 {
   assert( !InSet(_type, Ops::FluctP,Ops::Fock,Ops::OneEl,Ops::XPert) );
   std::string excl;
-  Product<Orbital> occs, virts; 
-  short 
+  Product<Orbital> occs, virts;
+  short
     nocc = exccl,
     nvirt = exccl+lm,
     nmax = std::max(nocc,nvirt);
-  for (short i=0; i<nmax ; ++i) {  
+  for (short i=0; i<nmax ; ++i) {
     if (i>0) excl=num2str(i,std::dec);
     if ( i < nocc )
       occs *= Orbital(occ.name()+excl,occ.spin());
@@ -243,13 +243,13 @@ void Oper::create_Oper(short int const & exccl,Orbital const & occ, Orbital cons
   }
   create_Oper(occs,virts,name,pmsym);
 }
-void Oper::create_Oper(const short int& exccl, const std::map< Orbital::Type, Orbital >& orbnames, 
+void Oper::create_Oper(const short int& exccl, const std::map< Orbital::Type, Orbital >& orbnames,
                        const std::vector<OrbitalTypes>& orbtypes, const std::string& name, int lm, int pmsym)
 {
   assert( !InSet(_type, Ops::FluctP,Ops::Fock,Ops::OneEl,Ops::XPert) );
   std::string excl;
-  Product<Orbital> occs, virts; 
-  short 
+  Product<Orbital> occs, virts;
+  short
     nocc = exccl,
     nvirt = exccl+lm;
   const OrbitalTypes & occtype(orbtypes[0]);
@@ -257,7 +257,7 @@ void Oper::create_Oper(const short int& exccl, const std::map< Orbital::Type, Or
   std::map< Orbital::Type, uint > num4type;
   assert(int(occtype.size()) == nocc);
   assert(int(virtype.size()) == nvirt);
-  for (short i = 0; i < nocc; ++i) {  
+  for (short i = 0; i < nocc; ++i) {
     uint i4t = num4type[occtype[i]];
     ++num4type[occtype[i]];
     if (i4t > 0) {
@@ -268,7 +268,7 @@ void Oper::create_Oper(const short int& exccl, const std::map< Orbital::Type, Or
     const Orbital& occ(orbnames.at(occtype[i]));
     occs *= Orbital(occ.name()+excl,occ.spin());
   }
-  for (short i = 0; i < nvirt; ++i) {  
+  for (short i = 0; i < nvirt; ++i) {
     uint i4t = num4type[virtype[i]];
     ++num4type[virtype[i]];
     if (i4t > 0) {
@@ -282,26 +282,26 @@ void Oper::create_Oper(const short int& exccl, const std::map< Orbital::Type, Or
   create_Oper(occs,virts,name,pmsym);
 }
 
-void Oper::create_Oper(const Product< Orbital >& occs, const Product< Orbital >& virts, 
+void Oper::create_Oper(const Product< Orbital >& occs, const Product< Orbital >& virts,
                        const std::string& name, int pmsym)
 {
   assert( !InSet(_type, Ops::FluctP,Ops::Fock,Ops::OneEl,Ops::XPert) );
   Matrix::Spinsym spinsym = Matrix::Singlet;
   Product<Orbital> porbs;
   // excitation and deexcitation operators
-  const Product<Orbital> 
+  const Product<Orbital>
     * p_orb0 = &virts,
     * p_orb1 = &occs;
   if (InSet(_type, Ops::Deexc,Ops::Deexc0)) std::swap(p_orb0,p_orb1);
-  short 
+  short
     ncrea = p_orb0->size(),
     nanni = p_orb1->size(),
     nmax = std::max(ncrea,nanni);
   Electron el;
-  for (unsigned short i = 0; i < nmax; ++i) {  
+  for (unsigned short i = 0; i < nmax; ++i) {
     Spin spin(Spin::No);
     bool setspindiff = (i == nmax-1 && spinsym != Matrix::Singlet);
-    if ( p_Term ) 
+    if ( p_Term )
       el = p_Term->nextelectron();
     else
       el = i+1;
@@ -341,7 +341,7 @@ void Oper::create_Oper(const Product< Orbital >& orbs, const std::string& name, 
   Product<SQOp> anniSQprod;
   // excitation and deexcitation operators
   assert( (orbs.size()-lm)%2 == 0 && (orbs.size()+lm)%2 == 0 );
-  short 
+  short
     ncrea = (orbs.size()+lm)/2,
     nanni = (orbs.size()-lm)/2,
     nmax = std::max(ncrea,nanni),
@@ -352,13 +352,13 @@ void Oper::create_Oper(const Product< Orbital >& orbs, const std::string& name, 
   uint hash;
   _prefac = 1;
   Product<Orbital>::const_iterator itorb = orbs.begin();
-  for (unsigned short i = 0; i < nmax; ++i) {  
+  for (unsigned short i = 0; i < nmax; ++i) {
     Electron el = 0;
     uint elhash = 0;
     if ( i < ncrea ) {
       _SQprod*=SQOp(SQOpT::Creator, *itorb);
       _orbs.insert(*itorb);
-      if (!InSet(_type, Ops::Exc0,Ops::Deexc0)) 
+      if (!InSet(_type, Ops::Exc0,Ops::Deexc0))
         _sumorbs.insert(*itorb);
       el = itorb->spin().el();
       // add this type of electron-orbital
@@ -374,7 +374,7 @@ void Oper::create_Oper(const Product< Orbital >& orbs, const std::string& name, 
       else
         _SQprod *= SQOp(SQOpT::Annihilator, *itorb);
       _orbs.insert(*itorb);
-      if (!InSet(_type, Ops::Exc0,Ops::Deexc0)) 
+      if (!InSet(_type, Ops::Exc0,Ops::Deexc0))
         _sumorbs.insert(*itorb);
       if ( el != 0 && el != itorb->spin().el() )
         error("Different electrons in the product!","Oper::create_Oper");
@@ -382,14 +382,14 @@ void Oper::create_Oper(const Product< Orbital >& orbs, const std::string& name, 
       hash = Orbital::MaxType + uint(itorb->type()) + 2*Orbital::MaxType*itorb->spin().spinhash(spinintegr);
       sym[hash] += 1;
       // hash for (any) electron
-      elhash += Orbital::MaxType*uint(itorb->type()) + 
+      elhash += Orbital::MaxType*uint(itorb->type()) +
                 Orbital::MaxType*Orbital::MaxType*Spin::MaxType*itorb->spin().spinhash(false);
       ++itorb;
     }
     symel[elhash] += 1;
   }
   if (contrexcop > 0) {
-    // add annihilation operators in the opposite order 
+    // add annihilation operators in the opposite order
     _foreach_crauto(ita,anniSQprod){
       _SQprod *= *ita;
     }
@@ -412,10 +412,10 @@ void Oper::create_Oper(const Product< Orbital >& orbs, const std::string& name, 
   _mat=Matrix(_type,orbs,npairs,lm,pmsym,name,spinsym);
   if ( contrexcop > 1 ) {
     // general normal order
-    if ( ncrea != nanni ) 
-      error("General normal ordering (prog,contrexcop>1) is not implemented for non-conserving case","Oper::create_Oper"); 
+    if ( ncrea != nanni )
+      error("General normal ordering (prog,contrexcop>1) is not implemented for non-conserving case","Oper::create_Oper");
     _sumops += gennormord();
-  } 
+  }
 }
 
 TermSum Oper::gennormord()
@@ -459,11 +459,11 @@ TermSum Oper::gennormordterm(const Product< uint >& creas, const Product< uint >
   std::vector<uint> mask(_SQprod.size(),1);
   TFactor fac(1);
   for ( uint iop = 0; iop < creas.size(); ++iop ){
-    uint 
+    uint
       icr = creas[iop],
       ian0 = annis[iop];
     assert( icr < _SQprod.size() && ian0 < _SQprod.size() );
-    uint 
+    uint
       ian = _SQprod.size() - 1 - ian0,
       ianorig = _SQprod.size() - 1 - icr;
     // should be ordered
@@ -490,9 +490,9 @@ TermSum Oper::gennormordterm(const Product< uint >& creas, const Product< uint >
       sqops.push_back(_SQprod[iop]);
   }
   _SQprod = sqops;
-  
+
   Matrix gamma(Ops::DensM,pcrea,panni,creas.size());
-  
+
   TermSum ret;
   if ( !gamma.is0() ){
     ret += gennormord();
@@ -501,7 +501,7 @@ TermSum Oper::gennormordterm(const Product< uint >& creas, const Product< uint >
     ret *= trmgamma;
     ret *= fac;
   }
-  return ret; 
+  return ret;
 }
 
 void Oper::move_SQprod()

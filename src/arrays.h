@@ -24,7 +24,7 @@ class Array : public std::vector<T> {
     Array<T> & operator += (T const & t);
     // append array to array
     Array<T> & operator += (Array<T> const & p);
-    // get sub array 
+    // get sub array
     Array<T> subarray(unsigned long int beg, unsigned long int end) const;
     // search (starting from position ipos), if not found -> -1
     int find(T const & t, uint ipos = 0) const;
@@ -50,7 +50,7 @@ class BigArray : public std::deque<T> {
     BigArray<T> & operator += (T const & t);
     // append array to array
     BigArray<T> & operator += (BigArray<T> const & p);
-    // get sub array 
+    // get sub array
     BigArray<T> subarray(unsigned long int beg, unsigned long int end) const;
     // search (starting from position ipos), if not found -> -1
     int find(T const & t, uint ipos = 0) const;

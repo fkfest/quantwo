@@ -22,11 +22,11 @@ public:
   // for hash and loops
   static const uint MaxType = 6;
   Spin (Type type = No) : _type(type), _el(0) {};
-  // NOTE: we ignore electron labels for spin = Gen 
-  Spin (const Electron& el, Type type = GenS) : _type(type), _el(el) { if (type == Gen) _el = 0;}; 
-  
-  Type type() const {return _type;}; 
-  Electron el() const {return _el;}; 
+  // NOTE: we ignore electron labels for spin = Gen
+  Spin (const Electron& el, Type type = GenS) : _type(type), _el(el) { if (type == Gen) _el = 0;};
+
+  Type type() const {return _type;};
+  Electron el() const {return _el;};
   // returns hash for spin (type + electrons*MaxType)
   uint spinhash(bool distinguish_el = true) const {return (uint(_type) + (distinguish_el?(MaxType*uint(_el)):0));};
   void settype(Spin::Type type){ _type = type; };
@@ -39,14 +39,14 @@ public:
   bool operator < (const Spin& spin) const;
   // check equality without checking electrons
   bool equal(const Spin& spin) const {return _type == spin._type;};
-  // replace s1 with s2. 
+  // replace s1 with s2.
   // correct handling of Ups and Downs. If the current value is Up or Down and the new one is general - return Return::Repeat
   // By GenS and GenD intesection --> Return::Delete
-  Return replace( const Spin& s1, const Spin& s2); 
+  Return replace( const Spin& s1, const Spin& s2);
 private:
   Type _type;
   Electron _el;
-  
+
 };
 
 std::ostream & operator << (std::ostream & o, const Spin& spin);
@@ -57,12 +57,12 @@ typedef Set<Orbital> TOrbSet;
 typedef Set<Electrons> TElSet;
 
 /*
-    Orbitals (occ, virt, general) with spin (nospin, alpha, beta, general) 
+    Orbitals (occ, virt, general) with spin (nospin, alpha, beta, general)
 */
 class Orbital {
   public:
   // enumerate orbital types. The numbers are important, since we iterate over them
-  enum Type { 
+  enum Type {
     NoType = 0, // not an orbital
     Occ = 1,  // occupied (i)
     Virt = 2, // virtual (a)
@@ -76,7 +76,7 @@ class Orbital {
   Orbital ();
   // constructor from name (a-h: virt, i-o: occ, p-z: general; lower case: no Spin, upper case: general)
   Orbital (const std::string& name, Electron el = 0);
-  // constructor from name and Type 
+  // constructor from name and Type
   Orbital (const std::string& name, Type type, Electron el = 0);
   // constructor from name and Spin
   Orbital (const std::string& name, Spin spin);
@@ -97,7 +97,7 @@ class Orbital {
   // get electron (from _spin)
   Electron getel() const {return _spin.el();};
   // check equality
-  bool operator == (Orbital const & orb) const 
+  bool operator == (Orbital const & orb) const
        { return _spin==orb._spin && _type==orb._type && _name==orb._name;};
   // check inequality
   bool operator != (Orbital const & orb) const { return !(*this==orb); };
@@ -128,7 +128,7 @@ class Orbital {
   Return replace( const Orbital& orb1, const Orbital& orb2, bool smart);
   // replace spin1 with spin2
   Return replace( const Spin& spin1, const Spin& spin2, bool smart);
-  
+
   private:
   // generate orbital type from _name
   void gentype();
@@ -160,7 +160,7 @@ public:
   bool operator == (const Electrons& el) const { return _name == el._name; };
   bool operator != (const Electrons& el) const { return _name != el._name; };
   bool operator < (const Electrons& el) const { return _name < el._name; };
-  
+
 private:
   std::string _name;
 };

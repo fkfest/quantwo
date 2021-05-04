@@ -14,7 +14,7 @@
 #include "equation.h"
 
 /*!
-    Input analyzer 
+    Input analyzer
 */
 class Finput {
 public:
@@ -43,9 +43,9 @@ public:
   // return input lines
   const std::vector<std::string> & inlines() const { return _inlines;};
   const std::vector<std::string> & ineq() const { return _ineq;};
-  
+
 private:
-  // initialyse default input-parameters 
+  // initialyse default input-parameters
   void InitInpars(std::string paramspath);
   // analyse all \newop's and save as a map in _eqns.back().newops
   void analyzenewops();

@@ -1,5 +1,5 @@
-/// \brief Creation and comparison of "unique" graphs (diagrams) 
- 
+/// \brief Creation and comparison of "unique" graphs (diagrams)
+
 #ifndef UNIGRAPH_H
 #define UNIGRAPH_H
 
@@ -13,9 +13,9 @@
 
 class Permutation : public std::map<uint,uint> {
   typedef std::map<uint,uint> Base;
-public: 
+public:
   using Base::Base;
-  bool operator < (const Permutation& perm) const { 
+  bool operator < (const Permutation& perm) const {
     if ( this->size() < perm.size() ) return true;
     if ( perm.size() < this->size() ) return false;
     return static_cast<const Base&>(*this) < static_cast<const Base&>(perm);
@@ -23,7 +23,7 @@ public:
 };
 
 /// The graphs have a canonical order of operators (neglecting orbital names),
-/// sets of equivalent vertices for permutational symmetry handling, 
+/// sets of equivalent vertices for permutational symmetry handling,
 /// and a connection vector (each element is a pointer to the next vertex connected to the
 /// current vertex by an incomming line (i.e., a creator for the current vertex))
 class UniGraph {
@@ -42,7 +42,7 @@ public:
   // search for the minimal _vertconn using _equivs and _eqperms
   void minimize();
   // generate permutation using orbitals from ug (have to be generated before!)
-  std::pair<Permut,TFactor> permutation( const UniGraph& ug ) const; 
+  std::pair<Permut,TFactor> permutation( const UniGraph& ug ) const;
 private:
   // apply permutations to minimize the connections-vector further
   // calls gen_perms to set _perms
@@ -50,7 +50,7 @@ private:
                      PermVertices& ep, PermVertices& epf, PermVertices& epfo);
   // set _perms
   // create neworder from the permvertices
-  void gen_perms(const PermVertices& from, const PermVertices& to, 
+  void gen_perms(const PermVertices& from, const PermVertices& to,
                  Order& neworder );
   // canonical order of matrices
   Order _matsord;
@@ -69,9 +69,9 @@ private:
   // external vertices
   JointVertices _extvertices;
   // vectors of equivalent (joint) vertices for permutational symmetry
-  // T_2 (0,1) T_2 (2,3) --> [ (0,1)(2,3) ][ (0)(1) ][ (2)(3) ] 
+  // T_2 (0,1) T_2 (2,3) --> [ (0,1)(2,3) ][ (0)(1) ][ (2)(3) ]
   Equivalents _equivs;
-  // vertices for allowed permutations (e.g. external lines etc) and vertices connected to those 
+  // vertices for allowed permutations (e.g. external lines etc) and vertices connected to those
   // (needed because of non-conserving stuff)
   // also vertices for permutationally symmetric indices (for plus/minus combination of tensors)
   // for such permutations _eqperms[i].sign is +/-1, otherwise it is 0

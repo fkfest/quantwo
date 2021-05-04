@@ -37,12 +37,12 @@ namespace Q2
   TermSum SmallTerms(const TermSum& s, double minfac);
   TermSum VirtSpace(const TermSum& s);
   TermSum ResolvePermutaions(const TermSum& s);
-  
+
   TermSum normalOrderPH(const TermSum& s);
   TermSum wick(const TermSum& s);
   TermSum postaction(const TermSum& s);
   void printdiags(Output* pout, const TermSum& s);
-  
+
   void printalgo(std::ofstream& out, const TermSum& s);
 }
 #endif

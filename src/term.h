@@ -25,15 +25,15 @@ typedef Sum<Term,TFactor> TermSum;
 */
 class Term {
   public:
-    //! default constructor 
+    //! default constructor
     Term();
     //! construct from Product<SQOp>, Product<Kronecker> will be empty
     Term(Product<SQOp> const & opProd);
     //! construct from Product<SQOp> and Product<Kronecker>
     Term(Product<SQOp> const & opProd, Product<Kronecker> const & kProd);
     //! construct from Product<SQOp>, Product<Kronecker>, Product<Matrix>, summation indices and prefactor
-    Term(Product<SQOp> const & opProd, Product<Kronecker> const & kProd, 
-         Product<Matrix> const & mat, const TOrbSet & orbs, const TOrbSet & sumorbs, 
+    Term(Product<SQOp> const & opProd, Product<Kronecker> const & kProd,
+         Product<Matrix> const & mat, const TOrbSet & orbs, const TOrbSet & sumorbs,
          const TFactor& prefac, const ConnectionsMap& connections);
     //! validate term and finalize settings
     bool term_is_valid();
@@ -44,7 +44,7 @@ class Term {
     //! multiply by a permutation
     Term & operator *= (Permut const & perm);
     Term & operator *= (Sum<Permut,TFactor> const & perm);
-    //! multiply by another term 
+    //! multiply by another term
     // TODO: replace with a template
     Term & operator *= (Term const & t);
     //! multiply by a matrix
@@ -94,12 +94,12 @@ class Term {
     ConnectionsMap connections() const;
     //! return true if term is zero
     bool term_is_0(double minfac) const;
-    //! return true if term has to be removed 
+    //! return true if term has to be removed
     bool removeit() const;
     //! artificial ordering
     bool operator < (Term const & t) const;
     //! equal terms
-    // terms will be not changed! (but const can't be applied) 
+    // terms will be not changed! (but const can't be applied)
     // perm: permutation which brings t-term to this term (if true at return)
     bool equal(Term & t, Permut & perm);
     // expand termsum-prefactors (from e.g. general normal ordered operators)
@@ -134,7 +134,7 @@ class Term {
     //! replace spin spin1 with spin2
     void replace(Spin spin1, Spin spin2, bool smart = true);
     // delete "None" matrices (caution, the order of matrices can be important, so do it AFTER connection stuff!)
-    // if unite_exc0 is true: remove all exc0 and dexc0 matrices and create one single exc0 (and/or dexc0) 
+    // if unite_exc0 is true: remove all exc0 and dexc0 matrices and create one single exc0 (and/or dexc0)
     void deleteNoneMats(bool unite_exc0 = true);
     // if pMat is zero - sets pMat to the it-matrix and increments it (it has to be from _mat)
     // if not zero - combines pMat and it (using skipping norbs-orbitals in *it) and deletes *it
@@ -149,7 +149,7 @@ class Term {
     bool expandintegral(bool firstpart);
     //! check if we have any antisymmetrized matrices in term
     bool antisymmetrized();
-    //! expand all antisymmetrical matrices in term 
+    //! expand all antisymmetrical matrices in term
     TermSum expand_antisym();
     //! one-electron matrices to fock
     TermSum oneel2fock(std::string decoration = "", bool multiref = false);
@@ -184,7 +184,7 @@ class Term {
     //! compare actual connections with the needed (in _connections)
     //! return true if the term is ok
     bool properconnect() const;
-    //! print diagram, which corresponds to this term 
+    //! print diagram, which corresponds to this term
     void printdiag(Output* pout) const;
     //! return free orbital name
     Orbital freeorbname(Orbital::Type type, bool spinfree = false);
@@ -203,7 +203,7 @@ class Term {
     void copy_lastorbs( const Term & term ){ _lastorb = term._lastorb; _lastel = term._lastel;};
     // iterates over all orbitals in the term. Returns Orbital() if iorb > last one
     Orbital orb( uint iorb ) const;
-    
+
   private:
     TermSum  normalOrder(bool fullyContractedOnly) const;
     TermSum  normalOrderPH(bool fullyContractedOnly) const;
