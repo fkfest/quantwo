@@ -1,0 +1,5 @@
+\beq
+&&(-1 - \Perm{ijab}{jiba} - \Perm{ikac}{kica} - \Perm{jkbc}{kjcb} - \Perm{ijkabc}{jkibca}\nl
+ - \Perm{ijkabc}{kijcab})\sum_{l}\tnsr \intg{li}{bj}\tnsr T^{lk}_{ac} + (1 + \Perm{ijab}{jiba} + \Perm{ikac}{kica} + \Perm{jkbc}{kjcb}\nl
+ + \Perm{ijkabc}{jkibca} + \Perm{ijkabc}{kijcab})\sum_{d}\tnsr \intg{ai}{bd}\tnsr T^{jk}_{dc}
+\eeq

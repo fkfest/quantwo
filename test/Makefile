@@ -1,6 +1,6 @@
 # program name
 MAIN = ../quantwo
-OBJ = ccsd sums ip mr names genwick connections
+OBJ = ccsd sums ip mr names genwick connections triples
 
 test : $(OBJ)
 

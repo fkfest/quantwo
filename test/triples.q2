@@ -1,0 +1,7 @@
+prog,contrexcop=0
+
+act,divide=$(1 - \Perm{abc}{cab})$
+
+\beq
+\bract \op H (\op T_2 ) |0>_C
+\eeq
