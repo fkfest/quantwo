@@ -77,8 +77,8 @@ typedef double TFactor;
 namespace Numbers
 {
   // "zero"
-  static const double verysmall=1.e-18;
-  static const double small=1.e-16;
+  static const double verysmall=1.e-12;
+  static const double small=1.e-6;
   static const int big=1000;
 }
 

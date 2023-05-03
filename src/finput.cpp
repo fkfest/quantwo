@@ -1,7 +1,9 @@
 #include "finput.h"
 
 Finput::Finput(bool eq) :
-_eq(eq){}
+_eq(eq){
+  _eqns.push_back(LEquation());
+}
 
 Finput::Finput(std::string paramspath) :
 _eq(false)

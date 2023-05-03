@@ -58,6 +58,7 @@ Sum<Object, Field> &  Sum<Object, Field>::operator *= (Object const & o)
   }
   return *this;
 }
+
 template <class Object, class Field>
 inline
 Sum<Object, Field> &  Sum<Object, Field>::operator /= (const Sum<Object, Field> & s)
@@ -66,29 +67,48 @@ Sum<Object, Field> &  Sum<Object, Field>::operator /= (const Sum<Object, Field> 
     error("Can not divide by empty sum!");
   }
   Sum<Object, Field> rest(*this),result;
-  typename Sum<Object,Field>::iterator it1;
+  typename Sum<Object,Field>::iterator it1, it1test;
   typename Sum<Object,Field>::const_iterator its1;
   Object o1,os;
   Field f1,fs;
   rest.clean();
   int n = 0;
   while( !rest.empty() && n < Numbers::big ){
-    it1 = rest.begin();
-    o1 = it1->first;
-    f1 = it1->second;
-    its1 = s.begin();
-    o1 /= its1->first;
-    f1 /= its1->second;
-    rest.erase(it1);
-    result[o1] += f1;
-    for ( ++its1 ; its1 != s.end(); ++its1 ){
-      os = its1->first;
-      fs = its1->second;
-      os *= o1;
-      fs *= f1;
-      rest += std::pair<Object,Field>(os,-fs);
+    for ( it1 = rest.begin(); it1 != rest.end(); ++it1 ) {
+      // try to find a starting point which would reduce the number of terms...
+      // if not found - use the last...
+      o1 = it1->first;
+      f1 = it1->second;
+      its1 = s.begin();
+      o1 /= its1->first;
+      f1 /= its1->second;
+      auto rest_try = rest;
+      for ( ++its1 ; its1 != s.end(); ++its1 ){
+        os = its1->first;
+        fs = its1->second;
+        os *= o1;
+        fs *= f1;
+        rest_try += std::pair<Object,Field>(os,-fs);
+      }
+      rest_try.clean();
+      it1test = it1;
+      ++it1test;
+      if ( rest_try.size() <= rest.size() || it1test == rest.end()) {
+        // the number of terms will be reduced, accept the division
+        rest.erase(it1);
+        result[o1] += f1;
+        its1 = s.begin();
+        for ( ++its1 ; its1 != s.end(); ++its1 ){
+          os = its1->first;
+          fs = its1->second;
+          os *= o1;
+          fs *= f1;
+          rest += std::pair<Object,Field>(os,-fs);
+        }
+        rest.clean();
+        break;
+      }
     }
-    rest.clean();
     ++n;
   }
   if ( n == Numbers::big ){

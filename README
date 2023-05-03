@@ -184,3 +184,10 @@ PERMUTATIONS
 \Perm(<from>,<to>)
 Indices in the expression have to be permuted, the first set of indices is "from", the second is "to", e.g.,
 \Perm(ijk,jki)T_{aibjck} => T_{ajbkci}
+
+It is possible to divide all expressions by the sum of permutations using `act,divide=$(<sum of permutations>)$, e.g.,
+in order to derive spin-summed perturbative triples equations:
+act,divide=$(1 - \Perm{abc}{cab})$
+\beq
+\bract \op H (\op T_2 ) |0>_C
+\eeq

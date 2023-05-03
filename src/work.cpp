@@ -456,7 +456,7 @@ TermSum Q2::postaction(const TermSum& s)
       divperm += divpermadd;
     }
     sum1.clear();
-//    xout << "permutations: " << divperm << std::endl;
+    xout << "divide by permutations: " << divperm << std::endl;
     Term term;
     for ( TermSum::const_iterator i=sum.begin();i!=sum.end(); ++i) {
       term=i->first;
