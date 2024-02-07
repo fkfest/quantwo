@@ -203,6 +203,7 @@ Return Matrix::replace(Spin spin1, Spin spin2, bool smart)
   }
   return rpl;
 }
+
 bool Matrix::expandantisym(bool firstpart)
 {
   if (_antisymform) {
@@ -387,6 +388,14 @@ OrbitalTypes Matrix::orbtypes4vertex(uint vertex, bool dmo) const
 void Matrix::reset_vertices()
 { _indx=-1; }
 
+bool Matrix::samespin() const
+{
+  for( Product<Orbital>::const_iterator it = _orbs.begin(); it != std::prev(_orbs.end()); it++ ){
+    if( it->spin() != std::next(it)->spin() ) return false;
+  };
+  return true;
+}
+
 bool Matrix::vertices(long int ipos, Matrix& mat, long int ipos1, unsigned int indx)
 {
   // compare types, excitation classes and index of matrix
@@ -450,6 +459,14 @@ void Matrix::set_cran(const Product< SQOpT::Gender >& cran)
   assert( _type == Ops::DensM );
   assert( cran.size() == _orbs.size() );
   _cranorder = cran;
+}
+
+void Matrix::set_orbs( Product<Orbital>& crobs, Product<Orbital>& anobs )
+{
+  for( uint i = 0; i != _npairs; i++ ){
+    _orbs[2*i] = crobs[i];
+    _orbs[2*i+1] = anobs[i];
+  }
 }
 
 void Matrix::calc_orbtypeshash()
@@ -774,6 +791,7 @@ Product< Orbital > Permut::orbsfrom() const
   return orbs;
 
 }
+
 Product< Orbital > Permut::orbsto() const
 {
   Product< Orbital > orbs;
@@ -781,6 +799,7 @@ Product< Orbital > Permut::orbsto() const
     orbs.push_back(it->second);
   return orbs;
 }
+
 Orbital Permut::permutorb(const Orbital& orb) const
 {
   TPerMap::const_iterator it = _orbs.find(orb);
@@ -790,6 +809,19 @@ Orbital Permut::permutorb(const Orbital& orb) const
   } else {
     return it->second;
   }
+}
+
+Array<Product<Orbital>> Matrix::elecorbs(){
+  Array<Product<Orbital>> outorbs;
+  Product<Orbital> elecorbs;
+  for( size_t i=0; i < _orbs.size(); i+=2 ){
+    elecorbs.clear();
+    for( size_t j=i; j<i+2; j++ ){
+      elecorbs.push_back(_orbs[j]);
+    }
+    outorbs.push_back(elecorbs);
+  }
+  return outorbs;
 }
 
 bool Permut::operator<(const Permut& p) const

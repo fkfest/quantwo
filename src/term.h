@@ -173,6 +173,14 @@ class Term {
     TermSum removegeneralindices();
     //! Spin integration (if notfake false: calculate only _nloops, _nintloops, _nocc)
     void spinintegration(bool notfake);
+    //!Maximize overlap of two body integrals and amplitudes with <\Phi^{ij}_{ab}|
+    void order();
+    void maxloops();
+     //!returns true if a loop with orbs1 and orbs2 is possible
+    bool loop(Product<Orbital> orbs1, Product<Orbital> orbs2);
+    bool loop(Array<Product<Orbital>>& elecorbs1, Array<Product<Orbital>>& elecorbs2);
+    //! permute the first and third orbital in _orb of the j-th amplitude in _mat
+    void permuteT(uint j);
     //! set prefactor of term to one
     void reset_prefac();
     // set permutations to p

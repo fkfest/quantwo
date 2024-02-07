@@ -102,6 +102,18 @@ void List<T>::resort()
 
 template <class T>
 inline
+Product<T> Product<T>::refpro( Product<uint>& ref )
+{
+  Product<T> res;
+  for ( auto ir: ref){
+    assert( ir < this->size() );
+    res.push_back((*this)[ir]);
+  }
+  return res;
+}
+
+template <class T>
+inline
 std::ostream & operator << (std::ostream & o, List<T> const & p)
 {
   for ( typename List<T>::const_iterator i=p.begin(); i!=p.end(); ++i )

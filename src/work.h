@@ -40,6 +40,8 @@ namespace Q2
 
   TermSum normalOrderPH(const TermSum& s);
   TermSum wick(const TermSum& s);
+  //!helps EqualTerms to find equal terms. Assumes full anti-symmetry of amplitudes!
+  TermSum PreConditioner(const TermSum& s);
   TermSum postaction(const TermSum& s);
   void printdiags(Output* pout, const TermSum& s);
 

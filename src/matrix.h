@@ -61,6 +61,8 @@ class Matrix {
   // plus/minus symmetry for index permutations in spin-integrated form
   short pmsym() const { return _pmsym;};
   bool has_pmsym() const { return _pmsym != 0; };
+  // check if all electrons of Matrix have same spin
+  bool samespin() const;
   Spinsym matspinsym() const { return _matspinsym;};
   // check whether all orbitals are in sumorbs and set _internal variable
   bool is_internal(const TOrbSet& sumorbs);
@@ -74,6 +76,10 @@ class Matrix {
   Return replace(Spin spin1, Spin spin2, bool smart);
   // set orbital at iorb to orb
   void set_orb(Orbital orb, lui iorb) { assert(iorb<_orbs.size()); _orbs[iorb] = orb;};
+  // set orbs based on crobs and anobs
+  void set_orbs(Product<Orbital>& crobs, Product<Orbital>& anobs);
+  //!returns orbitals corresponding to electrons in an array of size nelec.
+  Array<Product<Orbital>> elecorbs();
   // expand antisymmetrized matrix ( from antisymmetrized form < AB || CD > to the normal form < AB | CD > - < AB | DC > )
   // if firstpart=true : < AB | CD >, if firstpart=false : < AB | DC >
   // if return is true: expanded, if false: don't need to expand
@@ -150,6 +156,7 @@ class Matrix {
   //  J: if orbital types for each electron are the same
   //  K: otherwise
   std::string integralnames() const;
+  Product<Orbital>& get_orbs(){return _orbs;}
   private:
   // generate name from type or use the given name
   void gen_name(const std::string& name);

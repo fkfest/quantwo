@@ -439,13 +439,14 @@ bool Term::operator < (Term const & t) const
     return _prefac<t._prefac;
 return true;
 }
+
 bool Term::equal(Term& t, Permut& perm)
 {
-
   if (_mat.size() != t._mat.size() ||
       _orbs.size() != t._orbs.size() ||
       _sumorbs.size() != t._sumorbs.size() ||
-      _nintloops != t._nintloops || _nocc != t._nocc) return false;
+      // _nintloops != t._nintloops || 
+      _nocc != t._nocc) return false;
 //   xout << "compare " << *this << "  and  " << t << std::endl;
   // generate Product of all orbitals and external-lines orbitals
   TOrbSet peo(extindx()), peot(t.extindx()),
@@ -1712,6 +1713,92 @@ void Term::spinintegration(bool notfake)
   if ( notfake && dm_warning ) {
     // It is probably relevant for explicitly inserted terms only (e.g. by creating fock from h)...
     warning("spin summation in " << *this << " relies on \\gamma^t\\alpha_u\\alpha = \\gamma^t\\beta_u\\beta = \\half \\gamma^t_u");
+  }
+}
+
+void Term::maxloops(){
+  Array<Product<Orbital>> weorbs;
+  Array<Product<Orbital>> teorbs;
+  Array<Product<Orbital>> torbs;
+  bool foundloop = false;
+  for( Product<Matrix>::iterator it = _mat.begin(); it != _mat.end(); ++it ){
+    if( it->name() == "W") weorbs = it->elecorbs();
+    if( it->name() == "T" && it->get_orbs().size() >= 4 ){
+      torbs.push_back( it->get_orbs() );
+      teorbs.clear();
+      teorbs = it->elecorbs();
+      if( loop( weorbs, teorbs ) ) foundloop = true;
+    }
+  }
+  Array<Product<Orbital>>::iterator wt = weorbs.begin();
+  if( !foundloop && !torbs.empty() && torbs[0].size() >= 4 ){
+    for( size_t i = 0; i < weorbs.size(); i++ ){
+      for( size_t j = 0; j < torbs.size(); j++ ){
+        if( loop(*wt,torbs[j]) ){
+          permuteT(j+1);
+          return;
+        }
+      }
+      wt++;
+    }
+  }
+}
+
+bool Term::loop(Product<Orbital> orbs1, Product<Orbital> orbs2){
+  orbs1.resort();
+  orbs2.resort();
+  Product<Orbital> orbsorted;
+  std::set_intersection(orbs1.begin(),orbs1.end(),orbs2.begin(),orbs2.end(),std::back_inserter(orbsorted));
+  if(orbsorted.size() > 1) return true;
+  else return false;
+}
+
+bool Term::loop(Array<Product<Orbital>>& elecorbs1, Array<Product<Orbital>>& elecorbs2){
+  for(Array<Product<Orbital>>::iterator wt = elecorbs1.begin(); wt != elecorbs1.end(); wt++){
+    for(Array<Product<Orbital>>::iterator tt = elecorbs2.begin(); tt != elecorbs2.end(); tt++){
+      if(loop(*wt,*tt)) return true;
+    }
+  }
+  return false;
+}
+
+void Term::order(){
+  Product<Orbital> crobs, anobs;
+  uint nswaps;
+  for( Product<Matrix>::iterator it = _mat.begin(); it != _mat.end(); ++it ){
+    if( it->name() == "T" && it->samespin() ){
+      Product<uint> ref;
+      crobs = it->crobs();
+      anobs = it->crobs(true);
+      for( size_t i=0; i<crobs.size(); i++ ){
+        ref.push_back(i);
+      }
+      nswaps = InsertionSort( &crobs[0], &ref[0], crobs.size() );
+      crobs = crobs.refpro(ref);
+      if ( nswaps % 2 != 1 ) *this *= -1;
+      ref.clear();
+      for( size_t i=0; i<crobs.size(); i++ ){
+        ref.push_back(i);
+      }
+      nswaps = InsertionSort( &anobs[0], &ref[0], crobs.size() );
+      anobs = anobs.refpro(ref);
+      if ( nswaps % 2 != 1 ) *this *= -1;
+      it->set_orbs( crobs, anobs );
+    }
+  }
+}
+
+void Term::permuteT(uint j){
+  uint ampcount = 0;
+  for( Product<Matrix>::iterator it = _mat.begin(); it != _mat.end(); ++it ){
+    if( it->name() == "T" && it->get_orbs().size() >= 4 ){
+      assert( it->samespin() );
+      ampcount++;
+      if( j == ampcount ){
+        if( it->get_orbs().size() == 4 ){ std::swap( it->get_orbs()[0], it->get_orbs()[2] ); *this *= -1.0; }
+        if( it->get_orbs().size() > 4 ){ std::swap( it->get_orbs()[2], it->get_orbs()[4] ); *this *= -1.0; }
+      }
+    }
   }
 }
 

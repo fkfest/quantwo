@@ -1,0 +1,16 @@
+prog,spinintegr=0
+prog,nobrafac=1
+output,level=2
+
+CCSD doubles amplitude equation with $\exp(\op T_1)$-similiarity transformed $\op H$:
+\beq
+&&<\Phi^{ab}_{ij}| \op H (1+\op T_2 + \half \op T_2 \op T_2) |0>_C
+=\nl
+(1 - \Perm{AB}{BA})\sum_{KLCD}\tnsr \intg{KC}{LD}\tnsr T^{IK}_{AC}\tnsr T^{JL}_{BD} + (1 - \Perm{AB}{BA})\sum_{KK_{1}CD}\tnsr \intg{KC}{K_{1}D}\tnsr T^{KK_{1}}_{CA}\tnsr T^{IJ}_{BD} + (1\nl
+ - \Perm{IJ}{JI})\sum_{KLCC_{1}}\tnsr \intg{KC}{LC_{1}}\tnsr T^{IK}_{C_{1}C}\tnsr T^{JL}_{AB} + (1 - \Perm{IJ}{JI} - \Perm{AB}{BA}\nl
+ + \Perm{IJAB}{JIBA})\sum_{KC}\tnsr \intg{KC}{AI}\tnsr T^{JK}_{BC} + (-1 + \Perm{AB}{BA})\sum_{KLCD}\tnsr \intg{KD}{LC}\tnsr T^{IK}_{AC}\tnsr T^{JL}_{BD} + (1\nl
+ - \Perm{IJ}{JI})\sum_{K}\tnsr f_{KI}\tnsr T^{JK}_{AB} + (-1 + \Perm{AB}{BA})\sum_{C}\tnsr f_{AC}\tnsr T^{IJ}_{BC} + (0.5*1\nl
+ - 0.5*\Perm{AB}{BA})\sum_{KK_{1}}\tnsr \intg{KI}{K_{1}J}\tnsr T^{KK_{1}}_{AB} + (-1 + \Perm{IJ}{JI} + \Perm{AB}{BA}\nl
+ - \Perm{IJAB}{JIBA})\sum_{KC}\tnsr \intg{KI}{AC}\tnsr T^{JK}_{BC} + (0.25*1 - 0.25*\Perm{AB}{BA})\sum_{KK_{1}DD_{1}}\tnsr \intg{KD}{K_{1}D_{1}}\tnsr T^{KK_{1}}_{AB}\tnsr T^{IJ}_{DD_{1}} + (1\nl
+ - \Perm{AB}{BA})\tnsr \intg{AI}{BJ} + (0.5*1 - 0.5*\Perm{AB}{BA})\sum_{CC_{1}}\tnsr \intg{AC}{BC_{1}}\tnsr T^{IJ}_{CC_{1}}
+\eeq

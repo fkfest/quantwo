@@ -1,0 +1,8 @@
+prog,spinintegr=0
+prog,nobrafac=1
+output,level=2
+
+CCSD doubles amplitude equation with $\exp(\op T_1)$-similiarity transformed $\op H$:
+\beq
+<\Phi^{ab}_{ij}| \op H (1+\op T_2 + \half \op T_2 \op T_2) |0>_C
+\eeq

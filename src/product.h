@@ -5,6 +5,7 @@
 #include <set>
 #include <algorithm>
 #include <iostream>
+#include <cassert>
 #include "utilities.h"
 
 
@@ -39,6 +40,8 @@ class Product : public std::vector<T> {
     int find(T const & t, uint ipos = 0) const;
     // quick sort in increasing order
     void resort();
+    // permute Product according to ref
+    Product<T> refpro( Product<uint>& ref );
     // erase element at position ipos
     void eraseelem( uint ipos ) {this->erase(this->begin()+ipos);}
 };

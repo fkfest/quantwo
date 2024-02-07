@@ -168,7 +168,8 @@ TermSum Q2::reduceSum(TermSum s)
 
   say("Equal terms and permutations...");
   if (timing) c_start = std::clock();
-  //std::cout << "SUM:" << sum << std::endl;
+  if( Input::iPars["prog"]["spinintegr"] == 0 )
+    sum = PreConditioner(sum);
   sum = EqualTerms(sum,minfac);
   if (timing) _CPUtiming("",c_start,std::clock());
   say("Remove terms with small prefactors...");
@@ -181,6 +182,21 @@ TermSum Q2::reduceSum(TermSum s)
 
   return sum;
 }
+
+TermSum Q2::PreConditioner( const TermSum& s ){
+  TermSum sum;
+  Term term;
+  for ( TermSum::const_iterator j=s.begin(); j!=s.end(); ++j ){
+    term = j->first;
+    term.order();
+    if( j->first.mat().size() > 2 ) term.maxloops();
+    //update connections, crucial for EqualTerms()
+    term.setmatconnections();
+    sum += std::make_pair(term,j->second);
+  }
+  return sum;
+}
+
 TermSum Q2::Kroneckers(const TermSum& s)
 {
   TermSum sum;
@@ -307,6 +323,7 @@ TermSum Q2::EqualTerms(const TermSum& s, double minfac)
   bool added;
   for ( TermSum::const_iterator j=s.begin();j!=s.end(); ++j) {
     term=j->first;
+    if( term.perm().size() > 1 ) error("ResolvePermutations() before EqualTerms()");
     prefac=j->second*term.prefac();
     // remove prefactors in terms
     term.reset_prefac();
@@ -376,7 +393,8 @@ TermSum Q2::EqualTerms(const TermSum& s, double minfac)
     }
   }
   return sum;
-}
+} 
+
 TermSum Q2::SmallTerms(const TermSum& s, double minfac)
 {
   TermSum sum;
