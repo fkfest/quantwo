@@ -105,6 +105,7 @@ Term& Term::operator*=(const Term& t)
 }
 Term& Term::operator*=(const Matrix& mat)
 {
+  _orbs *= mat.orbitals();
   _mat *= mat;
   return *this;
 }
@@ -413,7 +414,7 @@ bool Term::term_is_valid()
   for ( auto& m: _mat ){
     m.is_internal(_sumorbs) ;
     // external matrices only of Deexc0 or Exc0 type!
-    assert ( m.internal() || InSet(m.type(),Ops::Deexc0,Ops::Exc0) );
+    assert ( m.internal() || InSet(m.type(),Ops::Deexc0,Ops::Exc0) || this->get_isinput() );
   }
   return true;
 }
@@ -2008,6 +2009,11 @@ void Term::set_lastorbs()
     if (_lastorb[orb.type()].name().size() == 0 || _lastorb[orb.type()] < orb)
       _lastorb[orb.type()] = orb;
   }
+}
+
+void Term::set_no_el(){
+for (unsigned int i=0; i<_mat.size(); i++)
+  _mat[i].set_no_el();
 }
 
 Electron Term::nextelectron()

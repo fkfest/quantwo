@@ -36,7 +36,7 @@ namespace Q2
   TermSum EqualTerms(const TermSum& s, double minfac);
   TermSum SmallTerms(const TermSum& s, double minfac);
   TermSum VirtSpace(const TermSum& s);
-  TermSum ResolvePermutaions(const TermSum& s);
+  TermSum ResolvePermutaions(const TermSum& s, bool inputterms = false);
 
   TermSum normalOrderPH(const TermSum& s);
   TermSum wick(const TermSum& s);

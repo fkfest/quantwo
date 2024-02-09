@@ -205,13 +205,16 @@ class Term {
     //! set last orbital (onlylarger: only if it's larger than current one)
     void set_lastorb(Orbital orb, bool onlylarger = false);
     void set_lastel(Electron el, bool onlylarger = false);
+    void set_isinput(bool isinputterm) {_isinputterm = isinputterm;};
+    bool get_isinput() const {return _isinputterm;};
     // set _lastorb using _orbs
     void set_lastorbs();
     // copy lastorbs and last electron from another term
     void copy_lastorbs( const Term & term ){ _lastorb = term._lastorb; _lastel = term._lastel;};
     // iterates over all orbitals in the term. Returns Orbital() if iorb > last one
     Orbital orb( uint iorb ) const;
-
+    void set_no_el();
+    void clear_opProd() {_opProd.clear();}
   private:
     TermSum  normalOrder(bool fullyContractedOnly) const;
     TermSum  normalOrderPH(bool fullyContractedOnly) const;
@@ -239,6 +242,7 @@ class Term {
     lui _nloops, _nintloops, _nocc;
     // stores whether the matconnections have been set
     bool _matconnectionsset;
+    bool _isinputterm = false;
 };
 
 //! output operator for Term

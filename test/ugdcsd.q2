@@ -1,0 +1,8 @@
+prog,spinintegr=0
+prog,nobrafac=1
+output,level=2
+
+DCSD doubles amplitude equation with $\exp(\op T_1)$-similiarity transformed $\op H$:
+\beq
+<\Phi^{ab}_{ij}| \op H (1 + \op T_2 + \half \op T_2 \op T_2 ) |0>_C + (-\frac{1}{4}*1  +\frac{1}{4}* \Perm{AB}{BA})\sum_{KLDC} \tnsr \intg{KD}{LC} \tnsr T^{KL}_{AB} \tnsr T^{IJ}_{DC} + ( 1 - \Perm{AB}{BA} ) \sum_{KLCD} \tnsr \intg{KD}{LC}\tnsr T^{IK}_{AC}\tnsr T^{JL}_{BD} + (-0.5 + 0.5*\Perm{IJ}{JI} ) \sum_{KLDC} \tnsr \intg{KC}{LD} \tnsr T^{IK}_{DC} \tnsr T^{JL}_{AB} + (-0.5 + 0.5 * \Perm{AB}{BA}) \sum_{KLDC} \tnsr \intg{KC}{LD} \tnsr T^{KL}_{CA} \tnsr T^{IJ}_{BD}
+\eeq

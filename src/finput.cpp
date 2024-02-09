@@ -79,8 +79,11 @@ bool Finput::addline(const std::string& line)
   std::string linesp;
   // remove comments
   for (unsigned long int i=ipos; i<line.size(); i++) {
-    if(InSet(line.substr(i,1),comments)) // comment
-      break;
+    if(InSet(line.substr(i,1),comments) && i==0){ // comment
+      if (_ineq.size() > 0)
+        _ineq.pop_back();
+      return neweq;
+    }
     linesp += line[i];
   }
   // remove spaces at the end
@@ -142,10 +145,9 @@ void Finput::sumterms( const TermSum& ts )
 bool Finput::analyzeq()
 {
   assert( _eqns.size() > 0 );
-  insert_tensors();
   _eqns.back().extractit();
   _eqns.back().do_sumterms(true);
-  _lhs.push_back( _eqns.back().do_sumterms() );
+  _eqns.back().do_sumterms();
   return true;
 }
 bool Finput::analyzeline()
@@ -289,17 +291,6 @@ void Finput::analyzenewops()
     eqn.reseteq();
   }
   _input = "";
-}
-
-void Finput::insert_tensors()
-{
-  // at least the current eqn should be there
-  assert( _eqns.size() > 0 );
-  // lhs from the current eqn is not there yet
-  assert( _eqns.size() == _lhs.size()+1 );
-  for ( uint i = 0; i < _lhs.size(); ++i ){
-
-  }
 }
 
 std::ostream& operator<<(std::ostream& o, const Finput& inp)

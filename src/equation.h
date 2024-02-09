@@ -111,6 +111,7 @@ struct LParsedName {
 private:
   void parse_superscript( const std::string& up, uint try2set );
   void parse_subscript( const std::string& down, uint try2set, bool strict );
+  void parse_inputtensors( const std::string& namein );
   bool gen_orbtypes(const std::string& string);
 };
 

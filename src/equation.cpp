@@ -89,8 +89,12 @@ void LExcitationMap::correct_orbs(const Product< Orbital >& orbs)
 LParsedName::LParsedName(const std::string& namein, uint try2set, bool strict)
               : lmel(0),dg(false),excl(-1),spinsym(Matrix::Singlet),pmsym(0)
 {
+  const TParArray& inputtensors = Input::aPars["syntax"]["inputtensor"];
   std::string upname, downname;
   foundsscipt = IL::nameupdown(name,upname,downname,namein);
+  bool inputten = InSet(namein.substr(0,5), inputtensors);
+  if( inputten )
+    this->parse_inputtensors(namein);
   if ( try2set == Name ) return;
 
   const TParArray& csfs = Input::aPars["syntax"]["csf"];
@@ -111,8 +115,14 @@ LParsedName::LParsedName(const std::string& namein, uint try2set, bool strict)
   }
   if ( found_orbs() ) {
     assert( excl == -1 );
-    excl = occ.size();
-    lmel = virt.size() - occ.size();
+    if(inputten) {
+      excl = (virt.size() + occ.size())/2;
+      lmel = 0;
+    }
+    else{
+      excl = occ.size();
+      lmel = virt.size() - occ.size();
+    }
   }
   // few checks
   if (!orbtypes.empty() &&
@@ -128,6 +138,37 @@ LParsedName::LParsedName(const std::string& namein, uint try2set, bool strict)
   for (const auto& orb: virt){
     if (orb.type() == Orbital::Occ && strict )
       warning("Do you really want to have orbital " << orb << " as virtual?");
+  }
+}
+
+void LParsedName::parse_inputtensors( const std::string& namein )
+{
+  lui ipos,ipos1;
+  // currently we only have to separately parse input integrals signified by \intg
+  ipos = 5; //skip \intg
+  Product<Orbital> orbs;
+  while((ipos1=IL::nextwordpos(namein,ipos,true,false))!=ipos && ipos < namein.size() ) {
+    std::string word(namein.substr(ipos,ipos1-ipos));
+    IL::delbrack(word);
+    for(uint i = 0; i < word.size(); i++){
+      if(isdigit(word[i])) error("Please remove subscripts in orbital names of input terms.");
+      if(InSet(std::tolower(word[i]),Input::sPars["syntax"]["occorb"])){
+        std::string orbi(1,word[i]);
+        Orbital occorb(orbi);
+        occ.push_back(occorb);
+        orbs *= occorb;
+      }
+      if(InSet(std::tolower(word[i]),Input::sPars["syntax"]["virorb"])){
+        std::string orba(1,word[i]);
+        Orbital virorb(orba);
+        virt.push_back(virorb);
+        orbs *= virorb;
+      }
+    }
+    ipos=ipos1;
+  }
+  if (orbs[0].type() > orbs[1].type() || orbs[2].type() > orbs[3].type()){
+    error("This orbital order is currently not implemented.", "LParsedName::parse_inputtensors");
   }
 }
 
@@ -260,11 +301,19 @@ bool LParsedName::gen_orbtypes(const std::string& string)
 }
 Product< Orbital > LParsedName::orbs() const
 {
+  const TParArray& inputtensors = Input::aPars["syntax"]["inputtensor"];
+  bool inputten = InSet(this->name.substr(0,5), inputtensors);
   Product<Orbital> orb;
   uint nels = std::max(occ.size(),virt.size());
   for ( uint iel = 0; iel < nels; ++iel ){
-    if ( iel < virt.size() ) orb *= virt[iel];
-    if ( iel < occ.size() ) orb *= occ[iel];
+    if( inputten){
+      if ( iel < occ.size() ) orb *= occ[iel];
+      if ( iel < virt.size() ) orb *= virt[iel];
+    }
+    else{
+      if ( iel < virt.size() ) orb *= virt[iel];
+      if ( iel < occ.size() ) orb *= occ[iel];
+    }
   }
   return orb;
 }
@@ -316,6 +365,7 @@ Matrix LEquation::do_sumterms(bool excopsonly )
   Matrix LHS;
   lui beg=0;
   bool plus=true, bra=false, ket=false;
+  const TParArray& inputtensors = Input::aPars["syntax"]["inputtensor"];
   if (!_eqn.expanded())
     error("Expand the lexic equation first!","Lexic::do_sumterms");
   Term term;
@@ -363,8 +413,13 @@ Matrix LEquation::do_sumterms(bool excopsonly )
       if (!excopsonly)
         term.addsummation(handle_sum(lel));
     } else if (lex == Lelem::Tensor) { // handle Tensor
-      if (!excopsonly)
-        term *= handle_tensor(lel);
+      if (!excopsonly){
+        if(InSet(lel.name().substr(0,5), inputtensors)) {
+          term.set_isinput(true);
+          term *= handle_tensor(lel);
+        }
+        else term *= handle_tensor(lel);
+      }
       indxoperterm.push_back(i+1);
     } else if (lex == Lelem::Perm) { // handle Permutation
       if (!excopsonly)
@@ -415,6 +470,8 @@ void LEquation::addterm(Term& term, bool plus, lui beg, lui end,
       connect=Product<long int>();
     }
   }
+  if(term.get_isinput())
+    term.set_no_el();
   // validate term
   term.term_is_valid();
   // add term
@@ -666,7 +723,12 @@ Matrix LEquation::handle_tensor(const Lelem& lel)
   IL::add2name(name,op.nameadd); // add nameadd to name (as superscript)
   if ( op.found_orbs() ){
     // orbitals
-    return Matrix(Ops::Interm,op.orbs(),op.excl,op.lmel,op.pmsym,name,op.spinsym);
+    if (name == "T")
+      return Matrix(Ops::Exc,op.orbs(),op.excl,op.lmel,op.pmsym,name,op.spinsym);
+    else if (name.substr(1,4) == "intg")
+      return Matrix(Ops::FluctP,op.orbs(),op.excl,op.lmel,op.pmsym,"W",op.spinsym);
+    else
+      return Matrix(Ops::Interm,op.orbs(),op.excl,op.lmel,op.pmsym,name,op.spinsym);
   } else if ( !op.excitation.empty() ){
     // something like \mu_1
     LExcitationMap::const_iterator itex = _excops.get_add(op.excitation,op.lmel);

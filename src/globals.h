@@ -6,6 +6,7 @@
 #include <map>
 #include <list>
 #include <cmath>
+#include "utilities.h"
 
 typedef long unsigned int lui;
 typedef unsigned int uint;

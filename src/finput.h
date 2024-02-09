@@ -36,8 +36,6 @@ public:
   void sumterms( const TermSum& ts );
   // analyze input line
   bool analyzeline();
-  // try to insert tensors into the last lexic expression from the previously calculated expressions
-  void insert_tensors();
   // clear all arrays
   void clear() {_inlines.clear(); _ineq.clear(); _input.clear(); _eq = false;};
   // return input lines
@@ -54,8 +52,6 @@ private:
   // variables
   std::string _input;
   bool _eq;
-  // left-hand-sides
-  std::vector<Matrix> _lhs;
   // equations
   std::vector<LEquation> _eqns;
   std::vector<std::string> _inlines;

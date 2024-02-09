@@ -43,7 +43,26 @@ void Output::setvals()
 
 void Output::flushbuf()
 {
-  *pout << buf.str();
+  uint offset = 60;
+  std::list<char> pm = {'+', '-', '('};
+  if(buf.str().size() > maxlenline+offset){
+    std::streampos ipos0, ipos;
+    ipos0 = 0;
+    ipos = ipos0;
+    for(char& c : buf.str()){
+      if(ipos > maxlenline+offset && InSet(c,pm)){
+        *pout <<"\\nl"<<std::endl;
+        lenline=0;
+        nlines+=hline;
+        hline=1.0;
+        ipos = 0;
+      }
+      *pout << c;
+      ipos += 1;
+    }
+  }
+  else
+    *pout << buf.str();
   buf.str("");
   hline=std::max(hline, hbufline);
   hbufline=1.0;

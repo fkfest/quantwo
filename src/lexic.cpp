@@ -302,6 +302,12 @@ void LelString::expand( ConnectionsMap& connections)
         connect=Product<long int>();
         ++conbeg;
       }
+      if( res.back().lex() != Lelem::Ket ){
+        // input terms after braket.
+        end = res.size() - 1;
+        //put braket around input terms
+        res.braketinputterms();
+      }
       // construct a term as a subvector and expand it:
       lastpos=this->size();
       this->add(res.substring(beg,end).expandterm(con1));
@@ -335,6 +341,19 @@ void LelString::expand_commutators()
         this->add(res[beg]);
       }
     }
+  }
+}
+
+void LelString::braketinputterms(){
+  uint ipos = 0;
+  for( auto it : *this ){
+    if( it.lex()==Lelem::Ket ){
+      Lelem ket(it);
+      this->eraseelem(ipos);
+      *this *= ket;
+      break;
+    }
+    ipos += 1;
   }
 }
 

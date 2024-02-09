@@ -60,12 +60,16 @@ TermSum Q2::reduceSum(TermSum s)
   say("Antisymmetry...");
   if (timing) c_start = std::clock();
   sum.clear();
-  for ( TermSum::const_iterator i=s.begin();i!=s.end(); ++i) {
+  for (TermSum::const_iterator i=s.begin();i!=s.end(); ++i) {
     term=i->first;
-    // expand antisymmetrized integrals
-    sum1 = term.expand_antisym();
-    sum1 *= i->second;
-    sum += sum1;
+    if (! term.get_isinput()){
+      // expand antisymmetrized integrals
+      sum1 = term.expand_antisym();
+      sum1 *= i->second;
+      sum += sum1;
+    }
+    else
+      sum += std::make_pair(term,i->second);
   }
   _xout3(sum << std::endl);
   if (timing) _CPUtiming("",c_start,std::clock());
@@ -93,10 +97,15 @@ TermSum Q2::reduceSum(TermSum s)
     if (timing) _CPUtiming("",c_start,std::clock());
   }
 
+  // important for permutations in input terms
+  TermSum sum2;
+  sum2 = ResolvePermutaions(sum,true);
+  sum.clear();
+
   say("Connections...");
   if (timing) c_start = std::clock();
-  s = sum;
-  sum.clear();
+  s = sum2;
+  sum2.clear();
   for ( TermSum::const_iterator i=s.begin();i!=s.end(); ++i) {
     term=i->first;
     // generate Kallay's "triplets of integers"
@@ -304,8 +313,8 @@ bool Q2::has_generalindices(const TermSum& s)
 TermSum Q2::ZeroTerms(const TermSum& s)
 {
   TermSum sum;
-  for ( TermSum::const_iterator i=s.begin();i!=s.end(); ++i) {
-    if ( ! i->first.removeit()){
+  for (TermSum::const_iterator i=s.begin(); i!=s.end(); ++i) {
+    if (! i->first.removeit() || i->first.get_isinput()){
       sum += std::make_pair(i->first,i->second);
     }
   }
@@ -432,19 +441,26 @@ TermSum Q2::VirtSpace(const TermSum& s)
   return sum;
 }
 
-TermSum Q2::ResolvePermutaions(const TermSum& s)
+TermSum Q2::ResolvePermutaions(const TermSum& s, bool inputterms)
 {
   TermSum sum;
   Term term,term1;
   for ( TermSum::const_iterator j=s.begin(); j!=s.end(); ++j) {
     term1 = term = j->first;
-    const Sum<Permut,TFactor>& perms = term.perm();
-    term.reset_prefac();
-    for ( Sum<Permut,TFactor>::const_iterator it = perms.begin(); it != perms.end(); ++it ){
-      term1 = term;
-      term1.permute(it->first);
-      term1 *= it->second;
-      sum += term1;
+    if(inputterms && !term.get_isinput()){ 
+      sum += std::make_pair(j->first,j->second);
+    }
+    else{
+      if(j->second != 1.0 && !term.get_isinput()) error("We are loosing factors in Q2:ResolvePermutaions");
+      const Sum<Permut,TFactor>& perms = term.perm();
+      term.reset_prefac();
+      for ( Sum<Permut,TFactor>::const_iterator it = perms.begin(); it != perms.end(); ++it ){
+        term1 = term;
+        term1.permute(it->first);
+        if(term.get_isinput()) term1 *= it->second*j->second*j->first.prefac();
+        else term1 *= it->second;
+        sum += term1;
+      }
     }
   }
   return sum;
@@ -525,12 +541,18 @@ TermSum Q2::wick(const TermSum& s)
   _xout3(s << std::endl);
   say("Wick's theorem");
   if (timing) c_start = std::clock();
-  for ( TermSum::const_iterator i=s.begin();i!=s.end(); ++i) {
+  for (TermSum::const_iterator i=s.begin(); i!=s.end(); ++i){
     term=i->first;
-    sum0 += term.wickstheorem(genwick,noorder);
-    sum0 *= i->second;
-    sum += sum0;
-    sum0=TermSum();
+    if(term.get_isinput()){
+      term.clear_opProd();
+      sum += std::make_pair(term,i->second);
+    }
+    else{
+      sum0 += term.wickstheorem(genwick,noorder);
+      sum0 *= i->second;
+      sum += sum0;
+      sum0=TermSum();
+    }
   }
   if (timing) _CPUtiming("",c_start,std::clock());
   return sum;

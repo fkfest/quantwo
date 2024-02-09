@@ -85,7 +85,8 @@ public:
   void expand(ConnectionsMap& connections);
   // expand commutators
   void expand_commutators();
-
+  //put braket around input terms f.e. <2||0> + IPT1 + IPT2 -> <2|IPT1+IPT2|0>
+  void braketinputterms();
 };
 
 #endif
