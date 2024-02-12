@@ -10,9 +10,29 @@ const DiagramTensor* Diagram::add(DiagramTensor dten, const Tensor* pTen, bool p
     dten._phantomSlots = pTen->_phantomSlots;
   }
   if ( pushfront){
+    //residual tensor
+    if( pTen->slots().size() > 4 ){
+      dten._connect.slotref[0] = 5;
+      dten._connect.slotref[1] = 4;
+      dten._connect.slotref[2] = 3;
+      dten._connect.slotref[3] = 2;
+      dten._connect.slotref[4] = 1;
+      dten._connect.slotref[5] = 0;
+    }
+    else if( pTen->slots().size() > 2 ){
+      dten._connect.slotref[0] = 3;
+      dten._connect.slotref[1] = 2;
+      dten._connect.slotref[2] = 1;
+      dten._connect.slotref[3] = 0;
+    }
+    else{
+      dten._connect.slotref[0] = 1;
+      dten._connect.slotref[1] = 0;
+    }
     _tensors.push_front(dten);
     return &(_tensors.front());
-  } else {
+  }
+  else{
     _tensors.push_back(dten);
     return &(_tensors.back());
   }
@@ -54,7 +74,37 @@ Tensor Diagram::exprTensor(const DiagramTensor& ten) const
   if ( _cuts.size() > 0 )
     error("generate cuts for expr Tensor");
   std::string name(ten._name);
+  if(ten._connect.bitmask == _tensors[0]._connect.bitmask){
+    if( ten.type() != "I" ) name ="R";
+  }
   return Tensor( slots, ten._syms, cuts, name );
+}
+
+bool Diagram::isresidual(const DiagramTensor& dten) const
+{
+  assert(dten._connect.bitmask.count() < 7);
+  if (dten._connect.bitmask.count() == 2){
+  assert(dten._connect.bitmask.count() < 5);
+    if(_tensors[0]._connect.bitmask.count() > 2){//double and single residual in _tensors
+      if(dten._connect.bitmask == _tensors[1]._connect.bitmask ) return true;
+      else return false;}
+    else{//only single residual in _tensors (and therefore at first place)
+      if(dten._connect.bitmask == _tensors[0]._connect.bitmask ) return true;
+      else return false;
+    }
+  }
+  else if(dten._connect.bitmask.count() == 4){
+    if(dten._connect.bitmask == _tensors[0]._connect.bitmask ) return true;
+    else return false;
+  }
+  else if(dten._connect.bitmask.count() == 6){
+    if(dten._connect.bitmask == _tensors[0]._connect.bitmask ) return true;
+    else return false;
+  }
+  else{
+    error("Something is wrong in Diagram::isresidual()");
+    return 0;
+  }
 }
 
 static void setContractionSlots( Slots& sXinY, Slots& sYinX, const DiagramTensor& tenX, const DiagramTensor& tenY ) {
@@ -82,17 +132,26 @@ Contraction Diagram::exprContraction(const DiagramTensor& tenA, const DiagramTen
   setContractionSlots(sAinB,sBinA,tenA,tenB);
   setContractionSlots(sAinR,sRinA,tenA,tenR);
   setContractionSlots(sBinR,sRinB,tenB,tenR);
-
-  return Contraction(*pA,*pB,sAinB,sBinA,sAinR,sRinA,sBinR,sRinB);
+  if(pA->name() == "T"){
+    if(_tensors[0]._connect.bitmask == tenR._connect.bitmask)
+      return Contraction(*pB,*pA,sBinA,sAinB,sBinR,sRinB,sAinR,sRinA,_fac);
+    else
+      return Contraction(*pB,*pA,sBinA,sAinB,sBinR,sRinB,sAinR,sRinA);
+  }
+  else{
+    if(_tensors[0]._connect.bitmask == tenR._connect.bitmask)
+      return Contraction(*pA,*pB,sAinB,sBinA,sAinR,sRinA,sBinR,sRinB,_fac);
+    else
+      return Contraction(*pA,*pB,sAinB,sBinA,sAinR,sRinA,sBinR,sRinB);
+  }
 }
 
-Summand Diagram::exprSummation(const DiagramTensor& tenA, Factor fac, const DiagramTensor& tenR, const Tensor* pA) const
+Summation Diagram::exprSummation(const DiagramTensor& tenA, const DiagramTensor& tenR, const Tensor* pA) const
 {
   Slots
     sAinR, sRinA;
   setContractionSlots(sAinR,sRinA,tenA,tenR);
-
-  return Summand(pA,sAinR,sRinA,fac);
+  return Summation(*pA,sAinR,sRinA,_fac);
 }
 
 Cost Diagram::contractionCost( const DiagramTensor& ten1, const DiagramTensor& ten2, const DiagramTensor& res ) const
@@ -117,7 +176,6 @@ Cost Diagram::contractionCost( const DiagramTensor& ten1, const DiagramTensor& t
   return cost;
 }
 
-//std::vector<Action*>
 void Diagram::binarize(Expression& expr) const
 {
   uint nmats = _tensors.size();
@@ -194,20 +252,26 @@ void Diagram::binarize(Expression& expr) const
       }
     } while(next_combination(mat_idx.begin(),itmat,mat_idx.end()));
   }
-//  xout << "in " << nsteps << " steps" << std::endl;
-//  for ( uint i = 0; i < mat_idx.size(); ++i ) bt[i] = true;
   assert( _tensors[0]._connect.bitmask == inters[bt.to_ulong()]._connect.bitmask );
-  xout << std::endl;
-  xout << "_tensors[0] " << _tensors[0] << std::endl;
-  xout << "inters" << inters.size() << std::endl;
-  xout << "inters[bt.to_ulong()] " << inters[bt.to_ulong()] << std::endl;
-  const Tensor * pSummand = transform2Expr(expr,inters,order,bt,true);
-
   // residual tensor
   Tensor res = exprTensor(_tensors[0]);
-  Summand sumd = exprSummation(inters[bt.to_ulong()],_fac,_tensors[0],pSummand);
-  const Tensor * pRes = expr.add2residual(res,sumd);
-  expr.addresidual(pRes);
+  if(inters.size() == 2){//we have R=a*A
+    Tensor ten(exprTensor(inters[1]));
+    const Tensor *pTen = expr.add(ten);
+    Summation sum = exprSummation(inters[1],_tensors[0],pTen);
+    const Action * pAct = expr.add(&sum);
+    expr.add2residual(res,pAct);
+  }
+  else{//we have R=a*A*B*..
+    //recursive calls of transform2Expr inside depending on "relations" of residual tensor bt
+    transform2Expr(expr,inters,order,bt,true);
+  }
+  for ( TensorsSet::iterator it = expr._tensors.begin(); it != expr._tensors.end(); ++it) {
+    if ( it->equal(res) ) {
+      const Tensor * pRes = &(*it);
+      expr.addresidual(pRes);
+    }
+  }
 //  LOOP STRUCTURE USING bitset next_combination
 //  nsteps = 0;
 //  std::bitset<MAXNTENS> xx, xxt;
@@ -262,8 +326,13 @@ const Tensor * Diagram::transform2Expr(Expression& expr, const Array< DiagramTen
   assert( bt.count() > 0 );
   // add the intermediate
   Tensor ten(exprTensor(inters[ibt]));
-  ten.add(pAct);
-  return expr.add(ten, accumulate);
+  if(inters[ibt].name() == "" && isresidual(inters[ibt])){
+    return expr.add2residual(ten,pAct);
+  }
+  else{
+    ten.add(pAct);
+    return expr.add(ten, accumulate);
+  }
 }
 
 
@@ -321,15 +390,22 @@ const Tensor* Expression::add(const Tensor& tensor, bool accumulate)
 {
   for ( TensorsSet::iterator it = _tensors.begin(); it != _tensors.end(); ++it) {
     if ( it->equal(tensor) ) {
-      if ( tensor._parents.size() > 0 )
-        it->add(tensor._parents.back());
       return &(*it);
     }
   }
   _tensors.push_back(tensor);
   if ( tensor.name() == "" ){
-    // generate a name for the noname (intermediate) tensor
-    _tensors.back()._name = newname(tensor.syms(),tensor.cuts());
+    const Contraction * pContr = dynamic_cast< const Contraction * >(_tensors.back().parents().back());
+    if( pContr ){
+      if ( _internames.count((*pContr).fingerprint(tensor)) > 0 ){
+          _tensors.back()._name = _internames[(*pContr).fingerprint(tensor)];}
+      else{
+          _tensors.back()._name = newname(tensor.syms(),tensor.cuts());
+          _internames[(*pContr).fingerprint(tensor)] = _tensors.back()._name;
+      }
+    }
+    else
+      _tensors.back()._name = newname(tensor.syms(),tensor.cuts());
   }
   _tensors.back()._dummy = accumulate;
   return &(_tensors.back());
@@ -348,31 +424,14 @@ const Action* Expression::add(const Action* pAction)
   return &(_summations.back());
 }
 
-const Tensor* Expression::add2residual(const Tensor& res, const Summand& sumd)
+const Tensor* Expression::add2residual(const Tensor& res, const Action * pAct)
 {
   for ( TensorsSet::iterator it = _tensors.begin(); it != _tensors.end(); ++it) {
     if ( it->equal(res) ) {
-      if ( it->_parents.size() > 0 ) {
-        const Summation * pS = dynamic_cast< const Summation * >(it->_parents.back());
-        if ( pS ) {
-          for (auto& ts: _summations){
-            if ( pS == &ts ) {
-              ts.add(sumd);
-              return &(*it);
-            }
-          }
-          error("Something is wrong: a summation not found!","Expression::add2residual");
-        }
-      }
-      // create a new summation and add to it
-      Summation sum;
-      sum.add(sumd);
-      const Action * pAct = this->add(&sum);
       it->add(pAct);
       return &(*it);
     }
   }
-  // create a new tensor and add a new summation to it
   error("Something is wrong: residual not found!","Expression::add2residual");
   return 0;
 }
@@ -427,13 +486,11 @@ void print_action(std::ostream& o, const Action * pAct, const Tensor& ten)
     print_code(o,*(pContr->p_A));
     print_code(o,*(pContr->p_B));
     pContr->print(o,ten);
-    o << std::endl;
-  } else {
+  }
+  else{
     const Summation * pSum = dynamic_cast< const Summation * >(pAct);
     assert( pSum );
-    for (const auto& sd: pSum->_summands){
-      print_code(o,*(sd.p_A));
-    }
+    print_code(o,*(pSum->p_A));
     pSum->print(o,ten);
   }
 }
@@ -441,9 +498,150 @@ void print_action(std::ostream& o, const Action * pAct, const Tensor& ten)
 void print_code(std::ostream& o, const Tensor& ten)
 {
   if (ten._parents.size() > 0) {
-    const Action * pAct = ten._parents.back();
-    print_action(o,pAct,ten);
+    for(const Action * pAct : ten._parents)
+      print_action(o,pAct,ten);
   }
+}
+
+void Expression::elemcosort_diags()
+{
+  _diagrams.sort(elemcocompare_diags);
+}
+
+void Expression::printjulia(std::ofstream& out) const
+{
+  for( std::list<Diagram>::const_iterator diagcit = _diagrams.begin(); diagcit != _diagrams.end(); diagcit++ ){
+
+    std::map<SlotType::Type,std::string> slotnames;
+    std::vector<Array<std::string>> slots;
+    std::vector<SlotTs> slottypes;
+    Diagram diag = *diagcit;
+
+    for( auto dtit = diag._tensors.begin(); dtit != diag._tensors.end(); dtit++ ){
+      Tensor ten(diag.exprTensor(*dtit));
+      slottypes.push_back(ten._slots);
+    }
+    
+    if ( slottypes.size() == 2 )//R=fac*A
+    {
+      Slots
+        sAinR, sRinA;
+    
+      Array<std::string>
+          resslots(slottypes[0].size()),
+          aslots(slottypes[1].size());
+
+      setContractionSlots(sAinR,sRinA,diag._tensors[1],diag._tensors[0]);
+
+      slotNames4Refs(resslots,aslots,slotnames,sRinA,sAinR,slottypes[0],slottypes[1]);
+
+      out << "@tensoropt ";
+      out << elemconame(diag._tensors[0].name(),slottypes[0]) << "[" << container2csstring(resslots) << "] ";
+      out << sgnchar(diag._fac) << "= " << std::abs(diag._fac) << " * ";
+      out << elemconame(diag._tensors[1].name(),slottypes[1]) << "[" << container2csstring(aslots) << "]" << std::endl;
+    }
+    else if ( slottypes.size() == 3 )//R=fac*A*B
+    {
+      Slots
+        sAinB, sBinA,
+        sAinR, sRinA,
+        sBinR, sRinB;
+    
+      Array<std::string>
+          resslots(slottypes[0].size()),
+          aslots(slottypes[1].size()),
+          bslots(slottypes[2].size());
+
+      setContractionSlots(sAinB,sBinA,diag._tensors[1],diag._tensors[2]);
+      setContractionSlots(sAinR,sRinA,diag._tensors[1],diag._tensors[0]);
+      setContractionSlots(sBinR,sRinB,diag._tensors[2],diag._tensors[0]);
+
+      slotNames4Refs(aslots,bslots,slotnames,sAinB,sBinA,slottypes[1],slottypes[2]);
+      slotNames4Refs(resslots,aslots,slotnames,sRinA,sAinR,slottypes[0],slottypes[1]);
+      slotNames4Refs(resslots,bslots,slotnames,sRinB,sBinR,slottypes[0],slottypes[2]);
+
+      out << "@tensoropt ";
+      out << elemconame(diag._tensors[0].name(),slottypes[0]) << "[" << container2csstring(resslots) << "] ";
+      out << sgnchar(diag._fac) << "= " << std::abs(diag._fac) << " * ";
+      out << elemconame(diag._tensors[1].name(),slottypes[1]) << "[" << container2csstring(aslots) << "] * ";
+      out << elemconame(diag._tensors[2].name(),slottypes[2]) << "[" << container2csstring(bslots) << "]" << std::endl;
+
+    }
+    else if ( slottypes.size() == 4 )//R=fac*A*B*C
+    {
+      Slots
+        sAinB, sBinA,
+        sAinC, sCinA,
+        sAinR, sRinA,
+        sBinR, sRinB,
+        sBinC, sCinB,
+        sCinR, sRinC;
+    
+      Array<std::string>
+          resslots(slottypes[0].size()),
+          aslots(slottypes[1].size()),
+          bslots(slottypes[2].size()),
+          cslots(slottypes[3].size());
+
+      setContractionSlots(sAinB,sBinA,diag._tensors[1],diag._tensors[2]);
+      setContractionSlots(sAinC,sCinA,diag._tensors[1],diag._tensors[3]);
+      setContractionSlots(sAinR,sRinA,diag._tensors[1],diag._tensors[0]);
+      setContractionSlots(sBinR,sRinB,diag._tensors[2],diag._tensors[0]);
+      setContractionSlots(sBinC,sCinB,diag._tensors[2],diag._tensors[3]);
+      setContractionSlots(sCinR,sRinC,diag._tensors[3],diag._tensors[0]);
+
+      slotNames4Refs(resslots,aslots,slotnames,sRinA,sAinR,slottypes[0],slottypes[1]);
+      slotNames4Refs(resslots,bslots,slotnames,sRinB,sBinR,slottypes[0],slottypes[2]);
+      slotNames4Refs(resslots,cslots,slotnames,sRinC,sCinR,slottypes[0],slottypes[3]);
+      slotNames4Refs(aslots,bslots,slotnames,sAinB,sBinA,slottypes[1],slottypes[2]);
+      slotNames4Refs(aslots,cslots,slotnames,sAinC,sCinA,slottypes[1],slottypes[3]);
+      slotNames4Refs(bslots,cslots,slotnames,sBinC,sCinB,slottypes[2],slottypes[3]);
+
+      out << "@tensoropt ";
+      out << elemconame(diag._tensors[0].name(),slottypes[0]) << "[" << container2csstring(resslots) << "] ";
+      out << sgnchar(diag._fac) << "= " << std::abs(diag._fac) << " * ";
+      out << elemconame(diag._tensors[1].name(),slottypes[1]) << "[" << container2csstring(aslots) << "] * ";
+      out << elemconame(diag._tensors[2].name(),slottypes[2]) << "[" << container2csstring(bslots) << "] * ";
+      out << elemconame(diag._tensors[3].name(),slottypes[3]) << "[" << container2csstring(cslots) << "]" << std::endl;
+
+    }
+    else
+      error("printjulia not implemented for more than 4 tensors in a diagram");
+  }
+}
+
+std::string Expression::elemconame(const std::string& name, const SlotTs& slottypes) const{
+  std::string newname = name;
+  // bool alpha = false;
+  // bool beta = false;
+  // for (const auto it : slottypes ){
+  //   if ( it->type() == SlotType::Type::OccA || it->type() == SlotType::Type::VirtA)
+  //     alpha = true;
+  //   if ( it->type() == SlotType::Type::OccB || it->type() == SlotType::Type::VirtB)
+  //     beta = true;
+  // }
+  // if ( alpha && beta ){
+  //   if ( name == "R" ) newname = "R2ab";
+  //   else if ( name == "T" ) newname = "T2ab";
+  // }
+  // else if ( alpha && !beta ){
+  //   if ( name == "R" ) newname = "R2a";
+  //   else if (name == "T" ) newname = "T2a";
+  //   else if (name == "f" ){
+  //     if ( slottypes[0]->type() == SlotType::OccA ) newname = "fij";
+  //     else newname = "fab";
+  //   }
+  // }
+  // else if (beta && !alpha ){
+  //   if (name == "R" ) newname = "R2b";
+  //   else if (name == "T" ) newname = "T2b";
+  //   else if (name == "f" ){
+  //     if ( slottypes[0]->type() == SlotType::OccB ) newname = "fIJ";
+  //     else newname = "fAB";
+  //   }
+  // }
+  // return newname;
+  return name;
 }
 
 std::ostream & operator << (std::ostream& o, const Expression& exp) {
@@ -455,13 +653,26 @@ std::ostream & operator << (std::ostream& o, const Expression& exp) {
   }
   // tensors....
   const TensorsSet& ts = exp.tensors();
+  std::set<Tensor> uniquetensortypes;
   for (const auto& t: ts){
-    if ( !t._dummy )
-      o << "tensor: " << t << std::endl;
+    if ( !t._dummy ){
+      if( (uniquetensortypes.insert(t)).second)
+        o << "tensor: " << t << std::endl;
+    }
   }
+  uniquetensortypes.clear();
 
   // contractions...
   o << std::endl << "---- code (\"eval_residual\")" << std::endl;
+  // print init and save statements for Koeppel's algoopt program
+  for (const auto& t: ts){
+    if ( !t._dummy ){
+      if( (t.name() != "T" && t.name()[0] != 'f' && t.type() != "I") && uniquetensortypes.insert(t).second){
+        o << "init " << t.name() << "[" << t.slotTypeLetters() << "]" << std::endl;
+        if( t.name() == "R" ) o << "save " << t.name() << "[" << t.slotTypeLetters() << "]" << std::endl;
+      }
+    }
+  }
   std::set< const Tensor * > residuals = exp.residualtensors();
   if ( residuals.size() == 0 )
     o << "// No residual tensors set!" << std::endl;

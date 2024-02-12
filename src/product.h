@@ -30,6 +30,12 @@ class Product : public std::vector<T> {
       this->push_back(a2);
       this->push_back(a3);
     }
+    Product<T> ( const T& a1, const T& a2, const T& a3, const T& a4 ) : std::vector<T>(){
+      this->push_back(a1);
+      this->push_back(a2);
+      this->push_back(a3);
+      this->push_back(a4);
+    }
     // append t to product
     Product<T> & operator *= (T const & t);
     // append product to product

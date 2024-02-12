@@ -126,7 +126,9 @@ int main(int argc, char **argv) {
           algofile = outputfile.substr(0,outputfile.size()-4);
         else
           algofile = outputfile;
-        algofile += ".alg";
+        if ( Input::iPars["prog"]["algo"] == 1 ) algofile += ".alg";
+        else if ( Input::iPars["prog"]["algo"] == 2 ) algofile += ".jl";
+        else error("Unknown algorithm output format!");
         falgout.open(algofile.c_str());
         Q2::printalgo(falgout,sum_final);
       }

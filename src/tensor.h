@@ -143,6 +143,7 @@ public:
   const Symmetries& syms() const { return _syms; };
   const SlotUniqueSet& phantom() const { return _phantomSlots; };
   const std::string& name() const { return _name; };
+  std::string type() const;
   bool phantomSlot( uint iSlot ) const { return _phantomSlots.count(iSlot); };
 //  virtual bool operator < ( const TensorBase& ten ) const = 0;
 
@@ -195,6 +196,10 @@ public:
   const Cuts& cuts() const { return _cuts; };
   // add a parent action (if it's not there already)
   void add( const Action * pAct );
+  // returns an iterator pointing to the last position the object was found in the _parent Array
+  void insert_action(const Action* pAct, const Tensor* p_A);
+  // checks if a Contraction with A already exists in _parents
+  bool find(const Tensor* p_A);
   std::string slotTypeLetters() const;
   bool equal( const Tensor& ten, bool considerprops = true ) const;
   bool operator < ( const Tensor& ten ) const;

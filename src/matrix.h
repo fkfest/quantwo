@@ -47,8 +47,19 @@ class Matrix {
   Matrix(const Kronecker& d, bool ordered = true);
   // return Type
   Ops::Type type() const;
+  //calculate number of virtual electrons per electron pair and return as vector
+  std::vector<uint> calc_virtelvec(const Product<Orbital>& orbs) const;
+  //calculate number of alpha electrons per electron pair and return as vector
+  std::vector<uint> calc_nalpha(const Product<Orbital>& orbs) const;
   // return const reference to Product of orbitals
   const Product<Orbital>& orbitals() const;
+  // check if orbs are ordered, and if not
+  // use particle-exchange symmetry to return orbs in canonical order
+  // also change order if necessary to fit ITF integralnames
+  Product<Orbital> itforder() const;
+  //Permute two electron integrals from chemist to physicist notation
+  //and bring excitation operators in the right order
+  Product<Orbital> elemcoorder() const;
   // return name
   std::string name() const;
   void set_name(const std::string& newname) { _name = newname; };
@@ -156,6 +167,8 @@ class Matrix {
   //  J: if orbital types for each electron are the same
   //  K: otherwise
   std::string integralnames() const;
+  std::string itfintegralnames() const;
+  std::string elemcointegralnames() const;
   Product<Orbital>& get_orbs(){return _orbs;}
   private:
   // generate name from type or use the given name

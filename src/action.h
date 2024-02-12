@@ -35,7 +35,9 @@ public:
   // for mincost > 0: will return either actual cost if it's smaller than mincost, or (mincost + 1)
   Cost cost( Cost mincost = -1 );
   void print( std::ostream& o, const Tensor& res ) const;
+  std::string fingerprint(const Tensor& ten) const;
 //private:
+  inline static std::set<std::string> _printed;
   const Tensor *p_A, *p_B; //, *p_R;
   Factor _fac;
   // lists same slots in tensors, e.g., _AinB: slots in tensor A that will be contracted with tensor B
@@ -49,29 +51,29 @@ public:
 
 typedef std::list<Tensor> TensorsSet;
 
-struct Summand {
-  Summand( const Tensor * pA, const Slots& AinR, const Slots& RinA, Factor fac )
-    : p_A(pA), _AinR(AinR), _RinA(RinA), _fac(fac) {};
-  const Tensor * p_A;
-  Slots _AinR, _RinA;
-  Factor _fac;
-};
-typedef std::list<Summand> Summands;
 // R = \sum_i fac_i A_i
 class Summation : public Action {
 public:
-  Summation() {};
-  void add( const Summand& sumd ) { _summands.push_back(sumd);};
+  Summation() : p_A(0), _fac(1), _cost(-1){};
+  Summation( const Tensor& a, //const Tensor& r,
+               const Slots& AinR, const Slots& RinA, const Factor& fac =1) : p_A(&a), _fac(fac), _AinR(AinR), _RinA(RinA) {};
   // for mincost > 0: will return either actual cost if it's smaller than mincost, or (mincost + 1)
   Cost cost( Cost mincost = -1 );
   void print( std::ostream& o, const Tensor& res ) const;
+  const Tensor * p_A;
+  Factor _fac;
+  Slots _AinR, _RinA;
 //private:
-  Summands _summands;
   // save cost
   Cost _cost;
 };
 
+void slotNames4Refs(Array<std::string>& xslotnames, Array<std::string>& yslotnames,
+                           std::map<SlotType::Type,std::string>& oldnames, const Slots& sXinY, const Slots& sYinX,
+                           const SlotTs& xslottypes, const SlotTs& yslottypes );
 
+void fillFreeSlotNames(Array<std::string>& xslotnames, std::map<SlotType::Type,std::string>& oldnames,
+                              const Tensor& xten);
 
 
 #endif

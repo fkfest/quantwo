@@ -20,14 +20,12 @@
 namespace Translators{
   SlotType orb2slot(const Orbital& orb);
   Tensor mat2tensor(const Matrix& mat, const std::map<Orbital,const SlotType*>& slotorbs);
-  Diagram term2diagram(const Term& term, Factor fact, const std::map<Orbital,const SlotType*>& slotorbs, const Expression& expr);
+  Diagram term2diagram(const Term& term, Factor fact, const std::map<Orbital,const SlotType*>& slotorbs, Expression& expr);
 }
 
 class Factorizer {
 public:
   Factorizer(const TermSum& s);
-
-
 
   Expression _expression;
 };

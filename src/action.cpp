@@ -36,7 +36,7 @@ Cost Contraction::cost(Cost mincost)
   return _cost;
 }
 
-static void slotNames4Refs(Array<std::string>& xslotnames, Array<std::string>& yslotnames,
+void slotNames4Refs(Array<std::string>& xslotnames, Array<std::string>& yslotnames,
                            std::map<SlotType::Type,std::string>& oldnames, const Slots& sXinY, const Slots& sYinX,
                            const SlotTs& xslottypes, const SlotTs& yslottypes )
 {
@@ -63,7 +63,7 @@ static void slotNames4Refs(Array<std::string>& xslotnames, Array<std::string>& y
     assert( xslotnames[iSlotX] == yslotnames[iSlotY] );
   }
 }
-static void fillFreeSlotNames(Array<std::string>& xslotnames, std::map<SlotType::Type,std::string>& oldnames,
+void fillFreeSlotNames(Array<std::string>& xslotnames, std::map<SlotType::Type,std::string>& oldnames,
                               const Tensor& xten)
 {
   const SlotTs& xslottypes = xten.slots();
@@ -78,30 +78,57 @@ static void fillFreeSlotNames(Array<std::string>& xslotnames, std::map<SlotType:
   }
 }
 
+std::string Contraction::fingerprint(const Tensor& ten) const
+{
+  std::string fingerprint;
+  for(auto elem : _RinA){
+    fingerprint += std::to_string(elem);}
+  for(auto elem : _AinR){
+    fingerprint += std::to_string(elem);}
+  for(auto elem : _RinB){
+    fingerprint += std::to_string(elem);}
+  for(auto elem : _BinR){
+    fingerprint += std::to_string(elem);}
+  for(auto elem : _AinB){
+    fingerprint += std::to_string(elem);}
+  for(auto elem : _BinA){
+    fingerprint += std::to_string(elem);}
+  for(auto elem : ten.slots()){
+    fingerprint += std::to_string(elem->type());}
+  for(auto elem : p_A->slots()){
+    fingerprint += std::to_string(elem->type());}
+  return fingerprint;
+}
+
 void Contraction::print(std::ostream& o, const Tensor& res) const
 {
   std::map<SlotType::Type,std::string> slotnames;
   Array<std::string>
-        resslots(res.slots().size()),
-        aslots(p_A->slots().size()),
-        bslots(p_B->slots().size());
-  slotNames4Refs(resslots,aslots,slotnames,_RinA,_AinR,res.slots(),p_A->slots());
-  slotNames4Refs(resslots,bslots,slotnames,_RinB,_BinR,res.slots(),p_B->slots());
-  slotNames4Refs(aslots,bslots,slotnames,_AinB,_BinA,p_A->slots(),p_B->slots());
+      resslots(res.slots().size()),
+      aslots(p_A->slots().size()),
+      bslots(p_B->slots().size());
 
-  fillFreeSlotNames(resslots,slotnames,res);
-  fillFreeSlotNames(aslots,slotnames,*p_A);
-  fillFreeSlotNames(bslots,slotnames,*p_B);
+    slotNames4Refs(resslots,aslots,slotnames,_RinA,_AinR,res.slots(),p_A->slots());
+    slotNames4Refs(resslots,bslots,slotnames,_RinB,_BinR,res.slots(),p_B->slots());
+    slotNames4Refs(aslots,bslots,slotnames,_AinB,_BinA,p_A->slots(),p_B->slots());
 
-  o << res.name() << "[" << resslots << "] ";
+    fillFreeSlotNames(resslots,slotnames,res);
+    fillFreeSlotNames(aslots,slotnames,*p_A);
+    fillFreeSlotNames(bslots,slotnames,*p_B);
 
-  if ( _fac < 0 )
-    o << "-= ";
-  else
-    o << "+= ";
-  if ( std::abs(std::abs(_fac) - 1) > Numbers::verysmall ) o << std::abs(_fac) << " ";
-  o << p_A->name() << "[" << aslots << "] ";
-  o << p_B->name() << "[" << bslots << "]";
+    if( ! (_printed.find(res.name()) != _printed.end())){
+      o << "." << res.name() << "[" << resslots << "] ";
+
+      if ( _fac < 0 )
+        o << "-= ";
+      else
+        o << "+= ";
+      if ( std::abs(std::abs(_fac) - 1) > Numbers::verysmall ) o << std::abs(_fac) << "*";
+      o << p_A->name() << "[" << aslots << "] ";
+      o << p_B->name() << "[" << bslots << "]";
+      o << std::endl;
+    }
+    if ( res.type() == "A" ) _printed.insert(res.name());
 }
 
 Cost Summation::cost(Cost mincost)
@@ -113,22 +140,21 @@ Cost Summation::cost(Cost mincost)
 void Summation::print(std::ostream& o, const Tensor& res) const
 {
   std::map<SlotType::Type,std::string> slotnames;
-  Array<std::string>
-        resslots(res.slots().size());
-  for ( const auto& ts: _summands){
-    Array<std::string>
-        aslots(ts.p_A->slots().size());
-    slotNames4Refs(resslots,aslots,slotnames,ts._RinA,ts._AinR,res.slots(),ts.p_A->slots());
-    fillFreeSlotNames(resslots,slotnames,res);
-    std::map<SlotType::Type,std::string> slotnamesA(slotnames);
-    fillFreeSlotNames(aslots,slotnamesA,*(ts.p_A));
-    o << res.name() << "[" << resslots << "] ";
-    if ( ts._fac < 0 )
-      o << "-= ";
-    else
-      o << "+= ";
-    if ( std::abs(std::abs(ts._fac) - 1) > Numbers::verysmall ) o << std::abs(ts._fac) << " ";
-    o << ts.p_A->name() << "[" << aslots << "] " << std::endl;
-  }
-}
+  Array<std::string> 
+      resslots(res.slots().size()),
+      aslots(p_A->slots().size());
 
+  slotNames4Refs(resslots,aslots,slotnames,_RinA,_AinR,res.slots(),p_A->slots());
+  fillFreeSlotNames(resslots,slotnames,res);
+
+  std::map<SlotType::Type,std::string> slotnamesA(slotnames);
+  fillFreeSlotNames(aslots,slotnamesA,*(p_A));
+
+  o << "." << res.name() << "[" << resslots << "] ";
+  if ( _fac < 0 )
+    o << "-= ";
+  else
+    o << "+= ";
+  if ( std::abs(std::abs(_fac) - 1) > Numbers::verysmall ) o << std::abs(_fac) << " ";
+  o << p_A->name() << "[" << aslots << "] " << std::endl;
+}

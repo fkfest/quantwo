@@ -35,6 +35,19 @@ std::string exepath();
 // find position of a substring what on the current level of the string str (i.e. don't search inside of {})
 std::size_t curlyfind(const std::string& str, const std::string& what, std::size_t ipos = 0);
 
+//Transform container of strings to a comma separated string
+template <template<typename> class T>
+inline 
+std::string container2csstring(const T<std::string>& arr)
+{
+  std::string res;
+  for( auto it = arr.begin(); it != arr.end()-1; ++it ){
+    res += *it + ",";
+  }
+  res += arr.back();
+  return res;
+}
+
 // string to number transformation
 // call: str2num<double>(x,"3.14",std::dec), number will be in x
 template <class T>
@@ -65,6 +78,14 @@ std::string any2str(const T& t)
   std::ostringstream oss;
   oss << t;
   return oss.str();
+}
+
+//return sign of a number as a char '-' or '+'
+template <class T>
+inline 
+char sgnchar(const T& val) {
+  if ( std::signbit(val) ) return '-' ;
+  else return '+';
 }
 
 #define Error(what) error(what,"file "+std::string(__FILE__)+" line "+any2str<int>(__LINE__))

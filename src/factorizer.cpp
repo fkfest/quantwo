@@ -17,21 +17,14 @@ Factorizer::Factorizer(const TermSum& s)
       slotorbs[orb] = _expression.add(Translators::orb2slot(orb));
       ++iorb;
     }
-//    for (const auto& m: term.mat()){
-//      tensormats[m] = _expression.add(Translators::mat2tensor(m,slotorbs));
-//    }
     TermSum sumt = term.resolve_permutations();
     for ( TermSum::const_iterator ist = sumt.begin();ist != sumt.end(); ++ist ) {
       Factor fact = _todouble(ist->second);
       fact *= fac;
       Diagram diag = Translators::term2diagram(ist->first,fact,slotorbs,_expression);
-      xout << diag;
-      diag.binarize(_expression);
-      // contractions
-      xout << fact << ist->first << std::endl;
+      if ( Input::iPars["prog"]["algo"] == 1 ) diag.binarize(_expression);
     }
   }
-  xout << _expression << std::endl;
 }
 
 
@@ -77,7 +70,7 @@ Tensor Translators::mat2tensor(const Matrix& mat, const std::map< Orbital, const
   return Tensor(sts,name);
 }
 
-Diagram Translators::term2diagram(const Term& term, Factor fact, const std::map< Orbital, const SlotType* >& slotorbs, const Expression& expr)
+Diagram Translators::term2diagram(const Term& term, Factor fact, const std::map< Orbital, const SlotType* >& slotorbs, Expression& expr)
 {
   const std::string& resultt = Input::sPars["syntax"]["result"];
   Diagram diag;
@@ -104,9 +97,19 @@ Diagram Translators::term2diagram(const Term& term, Factor fact, const std::map<
 
   uint nbareops = 0;
   for (const auto& m: term.mat()){
-    const Product<Orbital>& orbs = m.orbitals();
+    Product<Orbital> orbs;
+    if ( Input::iPars["prog"]["algo"] == 1 ){//ITF code
+      orbs = m.itforder();
+    }
+    else if ( Input::iPars["prog"]["algo"] == 2 ){//ElemCo code
+      orbs = m.elemcoorder();
+    }
+    else
+      error("Unknown algorithm in prog, algo!");
     SlotTs sts;
     Connections con;
+    //positions of orbitals (electron-order) in the tensor relative to the reference string
+    //e.g. (ki|bj) relative to abijk -> 4213
     Slots positions;
     for (const auto& orb: orbs){
       assert( slotorbs.count(orb) > 0 );
@@ -116,10 +119,14 @@ Diagram Translators::term2diagram(const Term& term, Factor fact, const std::map<
       positions.push_back(ipos);
       con.bitmask[ipos] = true;
     }
+    // stores info about performed permutations
+    // e.g. kibj -> bkij slotorder = 2013
     slotorder = Slots();
-    Canonicalize(sts,slotorder);
-    // reorder positions according to the canonical order
-    positions = positions.refarr(slotorder);
+    if ( m.type() == Ops::Exc0 || m.type() == Ops::Deexc0 || m.type() == Ops::Exc || Input::iPars["prog"]["algo"] < 2 ){
+      Canonicalize(sts,slotorder);
+      // reorder positions according to the canonical order
+      positions = positions.refarr(slotorder);
+    }
     // set slotref for bitset
     con.slotref.resize(positions.size());
     for ( uint ist = 0; ist < positions.size(); ++ist ){
@@ -140,5 +147,6 @@ Diagram Translators::term2diagram(const Term& term, Factor fact, const std::map<
   assert( std::abs(std::abs(_todouble(term.prefac())) - 1) < Numbers::verysmall );
   diag._fac = fact;
   if ( nbareops > 1 ) error("we can handle only upto one bare operator yet...", "Translators::term2diagram");
+  expr._diagrams.push_back(diag);
   return diag;
 }

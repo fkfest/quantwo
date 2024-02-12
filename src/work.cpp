@@ -570,18 +570,20 @@ void Q2::printdiags(Output* pout, const TermSum& s)
 
 void Q2::printalgo(std::ofstream& out, const TermSum& s)
 {
-  const std::string& resultt = Input::sPars["syntax"]["result"];
   say("Algorithm...");
 
   Factorizer fact(s);
-
-  out << "algorithm..." << std::endl;
-  // external indices
-  // .....
-  for ( TermSum::const_iterator i=s.begin();i!=s.end(); ++i) {
-    out << resultt << "[abij]" << " += ";
-    // call term ...
-    out << std::endl;
+  if ( Input::iPars["prog"]["algo"] == 1 ){//ITF code
+    say("Printing algo file...");
+    out << "algorithm..." << std::endl;
+    out << fact._expression << std::endl;
   }
+  else if ( Input::iPars["prog"]["algo"] == 2 ){//Julia code
+    say("Printing Julia TensorOperations code...");
+    fact._expression.elemcosort_diags();
+    fact._expression.printjulia(out);
+  }
+  else
+    error("prog, algo has to be either 0, 1 or 2! Check params.reg file!");
 }
 

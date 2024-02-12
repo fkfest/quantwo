@@ -1,4 +1,13 @@
 #include "tensor.h"
+#include "action.h"
+
+std::string TensorBase::type() const
+{
+  if (_name.size() > 4 ) return std::string("I"); //an integral
+  if (_name == "T") return std::string("T"); // an amplitude
+  if (_name == "R") return std::string("R"); // a residual
+  return std::string("A"); //an intermediate
+}
 
 // return -1 if not able to read
 static int ReadIndexAndAdvance(std::size_t& ipos, const std::string s){
@@ -358,7 +367,16 @@ void Tensor::add(const Action* pAct)
     for (const auto& act: _parents){
       if ( pAct == act ) return;
     }
-    _parents.push_back(pAct);
+    const Contraction * pContr = dynamic_cast< const Contraction * >( pAct );
+    if(pContr){
+      if(find(pContr->p_A))
+        insert_action(pAct, pContr->p_A);
+      else
+        _parents.push_back(pAct);
+    }
+    else{
+      _parents.push_back(pAct);
+    }
   }
 }
 
@@ -396,6 +414,30 @@ bool Tensor::operator<(const Tensor& ten) const
     if ( ten._cuts[i] < _cuts[i] ) return false;
   }
   return false;
+}
+
+bool Tensor::find( const Tensor* p_A){
+  for(auto it = _parents.rbegin(); it != _parents.rend(); ++it ){
+    const Contraction * pContr = dynamic_cast< const Contraction * >( *(it) );
+    if (pContr){
+      if(*(pContr->p_A) == *p_A ){
+        return true;
+      }
+    }
+  }
+  return false;
+}
+
+void Tensor::insert_action(const Action* pAct, const Tensor* p_A){
+  for(auto it = _parents.rbegin(); it != _parents.rend(); ++it ){
+  const Contraction * pContr = dynamic_cast< const Contraction * >( *(it) );
+    if (pContr){
+      if (*(pContr->p_A) == *p_A ){
+        _parents.insert(it.base(),pAct);
+        return;
+      }
+    }
+  }
 }
 
 bool Tensor::equal(const Tensor& ten, bool considerprops) const

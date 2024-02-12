@@ -1,0 +1,66 @@
+algorithm...
+---- decl
+index-space: ijklmno, Closed, c // optimization length: 60
+index-space: abcdefgh, External, e // optimization length: 500
+tensor: R[aaii], !Create{}
+tensor: R[ai], !Create{}
+tensor: T[aaii], !Create{}
+tensor: T[ai], !Create{}
+tensor: I3142[aaii], !Create{}
+tensor: A[aaii], !Create{}
+tensor: B[aa], !Create{}
+tensor: C[ii], !Create{}
+tensor: dI1342[aaii], !Create{}
+tensor: D[aaii], !Create{}
+tensor: f[ii], !Create{}
+tensor: f[aa], !Create{}
+tensor: dI1324[iiii], !Create{}
+tensor: dI1234[aaii], !Create{}
+tensor: E[iiii], !Create{}
+tensor: dI1324[aaii], !Create{}
+tensor: dI1324[aaaa], !Create{}
+
+---- code ("eval_residual")
+init R[aaii]
+save R[aaii]
+init R[ai]
+save R[ai]
+init A[aaii]
+init B[aa]
+init C[ii]
+init D[aaii]
+init E[iiii]
+.A[baji] += I3142[acik] T[bcjk]
+.R[baji] += A[acik] T[bcjk]
+.R[abji] -= A[acik] T[bcjk]
+.B[ba] += I3142[caij] T[cbij]
+.R[abij] += B[ac] T[bcij]
+.R[baij] -= B[ac] T[bcij]
+.C[ji] += I3142[abki] T[bajk]
+.R[abij] += C[ik] T[abjk]
+.R[abji] -= C[ik] T[abjk]
+.R[abij] += dI1342[acik] T[bcjk]
+.R[baij] -= dI1342[acik] T[bcjk]
+.R[abji] -= dI1342[acik] T[bcjk]
+.R[baji] += dI1342[acik] T[bcjk]
+.D[baji] += I3142[caik] T[bcjk]
+.R[baji] -= D[acik] T[bcjk]
+.R[abji] += D[acik] T[bcjk]
+.R[abij] += f[ki] T[abjk]
+.R[abji] -= f[ki] T[abjk]
+.R[abij] -= f[ac] T[bcij]
+.R[baij] += f[ac] T[bcij]
+.R[abij] += 0.5*dI1324[klij] T[abkl]
+.R[abij] -= 0.5*dI1324[klij] T[bakl]
+.R[abij] -= dI1234[acki] T[bcjk]
+.R[baij] += dI1234[acki] T[bcjk]
+.R[abji] += dI1234[acki] T[bcjk]
+.R[baji] -= dI1234[acki] T[bcjk]
+.E[klij] += I3142[abij] T[abkl]
+.R[abij] += 0.25*E[ijkl] T[abkl]
+.R[abij] -= 0.25*E[ijkl] T[bakl]
+.R[abij] += dI1324[abij] 
+.R[abij] -= dI1324[baij] 
+.R[abij] += 0.5*dI1324[abcd] T[cdij]
+.R[abij] -= 0.5*dI1324[bacd] T[cdij]
+

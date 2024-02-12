@@ -1,5 +1,6 @@
 prog,spinintegr=0
 prog,nobrafac=1
+prog,algo=2
 output,level=2
 
 DCSD doubles amplitude equation with $\exp(\op T_1)$-similiarity transformed $\op H$:
