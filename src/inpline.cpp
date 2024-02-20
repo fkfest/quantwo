@@ -44,6 +44,9 @@ TParArray IL::parray(const std::string& str)
 }
 lui IL::addnewcom(const std::string& str, lui ipos, std::string what)
 {
+  std::list<std::string> contravariantbras = {"bracs","bracd","bract"};
+  if (Input::iPars["prog"]["explspin"] && InSet(std::string(str),contravariantbras))
+    error("contravariant bra not available with explspin.");
   if ( str[ipos] != '{' )
     error("bad \\"+what+" "+str);
   lui ipend = closbrack(str,ipos);

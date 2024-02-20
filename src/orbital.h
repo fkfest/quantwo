@@ -24,7 +24,7 @@ public:
   Spin (Type type = No) : _type(type), _el(0) {};
   // NOTE: we ignore electron labels for spin = Gen
   Spin (const Electron& el, Type type = GenS) : _type(type), _el(el) { if (type == Gen) _el = 0;};
-
+  static Type totype(const std::string& spinpar);
   Type type() const {return _type;};
   Electron el() const {return _el;};
   // returns hash for spin (type + electrons*MaxType)
@@ -138,6 +138,7 @@ class Orbital {
 };
 
 std::ostream & operator << (std::ostream & o, Orbital const & orb);
+std::ostream & operator << (std::ostream & o, TOrbSet const & orbset);
 
 /*
  * list of orbital types

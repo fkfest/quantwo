@@ -160,6 +160,17 @@ Return Orbital::replace(const Spin& spin1, const Spin& spin2, bool smart)
   return this->_spin.replace(spin1,spin2);
 }
 
+std::ostream & operator << (std::ostream & o, TOrbSet const & orbset)
+{
+  bool explspin = Input::iPars["prog"]["explspin"];
+  for( auto it : orbset ){
+    if (explspin) o << "{";
+    o << it;
+    if (explspin) o << "}";
+  }
+  return o;
+}
+
 std::ostream & operator << (std::ostream & o, Orbital const & orb)
 {
   std::string orbname, up, down;
@@ -194,6 +205,14 @@ bool Spin::operator<(const Spin& spin) const
   if (_el < spin._el) return true;
   if (spin._el < _el) return false;
   return  (_type < spin._type);
+}
+
+Spin::Type Spin::totype(const std::string& spinpar)
+{
+  if ((spinpar == "\\alpha") || (spinpar == "\\Up")){return Spin::Up;}
+  if ((spinpar == "\\beta") || (spinpar == "\\Down")){return Spin::Down;}
+  error("Could not identify spintype.");
+  return Spin::Up;
 }
 
 Return Spin::replace(const Spin& s1, const Spin& s2)

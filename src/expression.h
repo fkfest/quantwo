@@ -7,6 +7,8 @@
 #include <list>
 #include <iostream>
 #include <fstream>
+#include <stack>
+#include <algorithm>
 #include <assert.h>
 #include <stdint.h>
 #include "globals.h"
@@ -76,9 +78,13 @@ public:
   std::string newname( const Symmetries& syms, const Cuts& cuts );
   // print Julia TensorOperations code
   void printjulia(std::ofstream& out) const;
+  // print Julia tensor load and drop
+  void printjulia(std::ofstream& out, const std::string& tensorname, std::stack<std::string>& LIFO) const;
   std::string elemconame(const std::string& name, const SlotTs& slottypes) const;
   // sort diagram list with elemcocompare_diags compare function
   void elemcosort_diags();
+  // compare function to sort diagrams by integral names according to order provided in the function
+  static bool elemcocompare_diags(const Diagram& diagA, const Diagram& diagB);
 
 //private:
   SlotTypes _slottypes;
@@ -92,29 +98,6 @@ public:
   std::map<std::string,std::string> _internames;
 };
 
-// compare function to sort diagrams by containing integral names according to order provided in names vector
-static bool elemcocompare_diags(const Diagram& diagA, const Diagram& diagB){
-  std::set<std::string> sorted;
-  std::vector<std::string> names = {"oovv","OOVV","oOvV",
-                                    "d_voov","d_VOOV","d_vOoV",
-                                    "d_oooo","d_OOOO","d_oOoO",
-                                    "d_vovo","d_VOVO","d_vOvO",
-                                    "d_vvoo","d_VVOO","d_vVoO",
-                                    "d_vvvv","d_VVVV","d_vVvV",
-                                    "d_ovvo","d_OVVO","d_oVvO",
-                                    "d_oVoV"};
-  std::vector<std::string>::iterator posend = names.begin();
-  for( std::vector<std::string>::iterator name = names.begin(); name != names.end(); name++ ){
-    if ( diagA._tensors[1].name() == *name ){
-      posend += std::distance(names.begin(),name);
-      for( std::vector<std::string>::iterator it = names.begin(); it != posend; ++it ){
-        if ( *it == diagB._tensors[1].name() ) return false;
-      }
-      return true;
-    }
-  }
-  return false;
-}
 
 // prints contractions recursively
 void print_code(std::ostream& o, const Tensor& ten);

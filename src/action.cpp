@@ -115,7 +115,12 @@ void Contraction::print(std::ostream& o, const Tensor& res) const
     fillFreeSlotNames(resslots,slotnames,res);
     fillFreeSlotNames(aslots,slotnames,*p_A);
     fillFreeSlotNames(bslots,slotnames,*p_B);
-
+    
+    if( p_A->name() == "dI1324" ){
+      if( (InSet(*(aslots[1].c_str()),Input::sPars["syntax"]["occAorb"]) && (InSet(*(aslots[2].c_str()),Input::sPars["syntax"]["occBorb"]))) ||
+          ((InSet(*(aslots[1].c_str()),Input::sPars["syntax"]["virAorb"])) && (InSet(*(aslots[2].c_str()),Input::sPars["syntax"]["virBorb"]))) )
+        std::iter_swap(aslots.begin() + 1, aslots.begin() + 2);
+    }
     if( ! (_printed.find(res.name()) != _printed.end())){
       o << "." << res.name() << "[" << resslots << "] ";
 

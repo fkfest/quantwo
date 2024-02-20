@@ -177,6 +177,7 @@ void LParsedName::parse_superscript(const std::string& up, uint try2set)
   const TParArray& dgs = Input::aPars["syntax"]["dg"];
   const TParArray& lessmore = Input::aPars["syntax"]["lessmore"];
   const TParArray& plusminus = Input::aPars["syntax"]["plusminus"];
+  const TParArray& spins = Input::aPars["syntax"]["spin"];
   bool spinintegr = Input::iPars["prog"]["spinintegr"];
   const std::string& supername = Input::sPars["command"]["supername"];
   Spin::Type spintype = Spin::Gen;
@@ -213,7 +214,11 @@ void LParsedName::parse_superscript(const std::string& up, uint try2set)
       } else {
         Error("Number of non-conserved electrons not recognized in "+up);
       }
-    } else if ( try2set&Orbs && mainpart != "\\"+supername && !found_excitation() ){
+    } 
+    else if (InSet(word,spins)){
+      spintype = Spin::totype(word);
+    }
+    else if ( try2set&Orbs && mainpart != "\\"+supername && !found_excitation() && !InSet(word,spins) ){
       Orbital orb(IL::plainname(word),spintype);
       occ.push_back(orb);
 
@@ -245,6 +250,7 @@ void LParsedName::parse_subscript(const std::string& down, uint try2set, bool st
 {
   const TParArray& excits = Input::aPars["syntax"]["excitation"];
   bool spinintegr = Input::iPars["prog"]["spinintegr"];
+  const TParArray& spins = Input::aPars["syntax"]["spin"];
   Spin::Type spintype = Spin::Gen;
   if (spinintegr) spintype = Spin::GenS;
   lui ipos, ipos1;
@@ -273,8 +279,11 @@ void LParsedName::parse_subscript(const std::string& down, uint try2set, bool st
       // something like \mu_2
       if (strict && (found_excitation() || found_orbs())) Error("Two excitations in "+down);
       excitation = word;
-
-    } else if ( try2set&Orbs ){
+    } 
+    else if (InSet(word,spins)){
+      spintype = Spin::totype(word);
+    }
+    else if ( try2set&Orbs && !InSet(word,spins) ){
       if (strict && found_excitation()) Error("Excitations and orbitals at the same time in "+down);
       Orbital orb(IL::plainname(word),spintype);
       virt.push_back(orb);

@@ -2,8 +2,10 @@ algorithm...
 ---- decl
 index-space: ijklmno, Closed, c // optimization length: 60
 index-space: abcdefgh, External, e // optimization length: 500
+tensor: R[aaaiii], !Create{}
 tensor: R[aaii], !Create{}
 tensor: R[ai], !Create{}
+tensor: T[aaaiii], !Create{}
 tensor: T[aaii], !Create{}
 tensor: T[ai], !Create{}
 tensor: I3142[aaii], !Create{}
@@ -21,6 +23,8 @@ tensor: dI1324[aaii], !Create{}
 tensor: dI1324[aaaa], !Create{}
 
 ---- code ("eval_residual")
+init R[aaaiii]
+save R[aaaiii]
 init R[aaii]
 save R[aaii]
 init R[ai]

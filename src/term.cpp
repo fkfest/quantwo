@@ -502,6 +502,10 @@ bool Term::equal(Term& t, Permut& perm)
         equal=false;
         continue;
       }
+      if (orb.spin()!=orbt.spin()){
+        equal=false;
+        continue;
+      }
       extert=(peot.count(orbt));
       if (exter!=extert) {// one is external orbital and the other not
         equal=false;
@@ -592,6 +596,10 @@ bool Term::equal(Term& t, Permut& perm)
           if ((loop != loopt)&&!exter1) { // in one of matrices we have a loop and in the other not, and the index is not external!
               equal=false;
               break;
+          }
+          if (orb1.spin()!=orb1t.spin()){
+            equal=false;
+            break;
           }
           // add orbitals to the product for removing
           por*=orb1;
@@ -1331,6 +1339,7 @@ void Term::replace(Orbital orb1, Orbital orb2, bool smart)
   Q2::replace(_kProd,orb1,orb2,smart);
   Q2::replace(_sumorbs,orb1,orb2,smart);
   Q2::replace(_orbs,orb1,orb2,smart);
+  Q2::replace(_perm,orb1,orb2);
 }
 void Term::replace(Spin spin1, Spin spin2, bool smart)
 {
@@ -1789,6 +1798,99 @@ void Term::order(){
   }
 }
 
+TermSum Term::addpermuteT(const TFactor fac){
+  //will potentially add a new Term to TermSum. 
+  //But only a term which would be killed by check_spin() without using antisymmetry of T.
+  //This is why we don't have to delete the term from the TermSum
+  TermSum sum;
+  TOrbSet peo(extindx());
+  Product<uint> ref;
+  Array<Product<Orbital>> weorbs;
+  Array<Product<Orbital>> teorbs,teorbs1;
+  Array<Product<uint>> refvec;
+  for( Product<Matrix>::iterator it = std::next(_mat.begin()); it != _mat.end(); ++it ){
+    if( it->name() == "W") weorbs = it->elecorbs();
+    if( it->name() == "T"){
+      Product<Orbital> crobs = it->crobs();
+      Product<Orbital> anobs = it->crobs(true);
+      teorbs.clear();
+      teorbs = it->elecorbs();
+      if(crobs.size() == 1) continue;
+      else if(crobs.size() == 3){
+        ref = {0,2,1};
+        teorbs1 = teorbs.subarray(1,2);
+        //don't permute a loop
+        if(loop(weorbs,teorbs1)) goto label1;
+        if(crobs[1].spin() == crobs[2].spin()) goto label1;
+        if(anobs[1].spin() == anobs[2].spin()) goto label1;
+        if(crobs[1].spin() == anobs[1].spin()) goto label1;
+        if(crobs[2].spin() == anobs[2].spin()) goto label1;
+        //permute those orbitals which are not both open orbitals
+        if(peo.count(crobs[1]) && peo.count(crobs[2])) anobs = anobs.refpro(ref);
+        else crobs = crobs.refpro(ref);
+        it->set_orbs(crobs,anobs);
+        *this *= -1;
+        this->setmatconnections();
+        sum += std::make_pair(*this,fac);
+        label1: ref = {2,1,0};
+        teorbs1 = teorbs.subarray(0,0);
+        teorbs1 += teorbs.subarray(2,2);
+        //don't permute a loop
+        if(loop(weorbs,teorbs1)) goto label2;
+        //don't permute same-spin
+        if(crobs[0].spin() == crobs[2].spin()) goto label2;
+        if(anobs[0].spin() == anobs[2].spin()) goto label2;
+        if(crobs[0].spin() == anobs[0].spin()) goto label2;
+        if(crobs[2].spin() == anobs[2].spin()) goto label2;
+        //permute those orbitals which are not both open orbitals
+        if(peo.count(crobs[0]) && peo.count(crobs[2])) anobs = anobs.refpro(ref);
+        else crobs = crobs.refpro(ref);
+        it->set_orbs(crobs,anobs);
+        *this *= -1;
+        this->setmatconnections();
+        sum += std::make_pair(*this,fac);
+        label2: ref = {1,0,2};
+        teorbs1 = teorbs.subarray(0,1);
+        //don't permute a loop
+        if(loop(weorbs,teorbs1)) continue;
+        //don't permute same-spin
+        if(crobs[0].spin() == crobs[1].spin()) continue;
+        if(anobs[0].spin() == anobs[1].spin()) continue;
+        if(crobs[0].spin() == anobs[0].spin()) continue;
+        if(crobs[1].spin() == anobs[1].spin()) continue;
+        //permute those orbitals which are not both open orbitals
+        if(peo.count(crobs[0]) && peo.count(crobs[1])) anobs = anobs.refpro(ref);
+        else crobs = crobs.refpro(ref);
+        it->set_orbs(crobs,anobs);
+        *this *= -1;
+        this->setmatconnections();
+        sum += std::make_pair(*this,fac);
+      }
+      else if(crobs.size() == 2){
+        ref = {1,0};
+        //don't permute a loop
+        if(loop(weorbs,teorbs)) continue;
+        //don't permute same-spin
+        if(crobs[0].spin() == crobs[1].spin()) continue;
+        if(anobs[0].spin() == anobs[1].spin()) continue;
+        if(crobs[0].spin() == anobs[0].spin()) continue;
+        if(crobs[1].spin() == anobs[1].spin()) continue;
+
+        //permute those orbitals which are not both open orbitals
+        if(peo.count(crobs[0]) && peo.count(crobs[1])) anobs = anobs.refpro(ref);
+        else crobs = crobs.refpro(ref);
+        it->set_orbs(crobs,anobs);
+        *this *= -1;
+        this->setmatconnections();
+        sum += std::make_pair(*this,fac);
+      }
+      else
+        error("More than 4 open orbitals not implemented yet.");
+    }
+  }
+  return sum;
+}
+
 void Term::permuteT(uint j){
   uint ampcount = 0;
   for( Product<Matrix>::iterator it = _mat.begin(); it != _mat.end(); ++it ){
@@ -1801,6 +1903,186 @@ void Term::permuteT(uint j){
       }
     }
   }
+}
+
+TermSum Term::spinexpansion(const TFactor fac){
+  TermSum sum;
+  std::vector<TOrbSet> orbsetvec;
+  
+  orbsetvec = spinpermute(_orbs);
+  for(uint i =0; i<orbsetvec.size(); i++){
+    Term term;
+    term = *(this);
+    term.replace(orbsetvec[i]);
+    sum += std::make_pair(term,fac);
+  }
+  return sum;
+}
+
+void Term::recspinperm(std::vector<Spin::Type> spintypes, std::vector<Spin::Type> comb, std::vector<std::vector<Spin::Type>>& spinperms, int nset, int ndraw){
+  if (ndraw == 0){spinperms.push_back(comb);return;}
+  
+  for( int i = 0; i < nset; i++ ){
+    std::vector<Spin::Type> newspinset;
+    newspinset = comb;
+    newspinset.push_back(spintypes[i]);
+    recspinperm(spintypes, newspinset, spinperms, nset, ndraw-1);
+  }
+}
+
+std::vector<std::vector<Spin::Type>> Term::spinpermutations(int norbs){
+  std::vector<Spin::Type> spintypes = {Spin::Up, Spin::Down};
+  std::vector<std::vector<Spin::Type>> spinperms;
+  std::vector<Spin::Type> dummy;
+  recspinperm(spintypes, dummy, spinperms, spintypes.size(), norbs);
+  return spinperms;
+}
+
+std::vector<TOrbSet> Term::spinpermute(const TOrbSet& genorbs){
+  for(auto it : genorbs){
+    if( it.spin() != Spin::Gen){ error("I expected general spin-orbitals here");}
+  }
+  
+  std::vector<TOrbSet> spinorbs;
+  std::set<TOrbSet> testset;
+  Orbital orb;
+  TOrbSet orbs;
+  std::vector<std::vector<Spin::Type>> spinperms;
+  spinperms = spinpermutations(genorbs.size());
+  for(size_t i = 0; i < spinperms.size(); i++){
+    int j = 0;
+    for ( TOrbSet::iterator it = _orbs.begin(); it != _orbs.end(); ++it ){
+      orb = *it;
+      orb.setspin(spinperms[i][j]);
+      orbs.insert(orb);
+      j++;
+    }
+    spinorbs.push_back(orbs);
+    orbs.clear();
+  }
+  return spinorbs;
+}
+
+void Term::replace(TOrbSet& orbs){
+  TOrbSet curorbs = _orbs;
+  for ( TOrbSet::iterator it = orbs.begin(), jt=curorbs.begin(); it != orbs.end() && jt != curorbs.end(); ++it, jt++ ){
+    this->replace(*jt,*it,false);
+  }
+}
+
+bool Term::samespin() const{
+  for( Set<Orbital>::const_iterator it = _orbs.begin(); it != std::prev(_orbs.end()); it++){
+    if (it->spin() != std::next(it)->spin()) return false;
+  };
+  return true;
+}
+
+Return::Vals Term::check_spin() const{
+  //this function traces the "paths" of the electrons in a CC diagram and returns false if
+  //a spin-flip is found and true otherwise 
+  for( Product<Matrix>::const_iterator it = _mat.begin(); it != _mat.end(); ++it ){
+    if( it->name() == "W" || it->name() == "U" ){
+      for( Product<Orbital>::const_iterator it1 = it->orbitals().begin(); it1 != it->orbitals().end(); ++it1){
+        if( it1->spin() != it->orbel(*it1).spin() ) return Return::Delete;
+      }
+    }
+    if( it->name() == "T" ){
+      Product<Orbital> crobs = it->crobs();
+      Product<Orbital> anobs = it->crobs(true);
+      if(crobs[0].spin() != anobs[0].spin() ) return Return::Delete;
+      if(crobs.size() > 1 && crobs[1].spin() != anobs[1].spin() ) return Return::Delete;
+//       for(Product<Orbital>::iterator it1 = it->crobs().begin(),
+//           jt1 = it->crobs(true).begin();
+//           it1 != it->crobs().end() && jt1 != it->crobs(true).end();
+//           ++it1, ++jt1){
+//         xout << it1->spin() << jt1->spin() << std::endl;
+//         if(it1->spin() != jt1->spin()) return Return::Delete;
+//       }
+    }
+  }
+  // generate Product of all orbitals and external-lines orbitals
+  TOrbSet peo(extindx());
+  TOrbSet peo1(peo);
+  // internal indices
+  TOrbSet po(_sumorbs);
+  Orbital orb,orb1,startorb;
+  lui ithis = 0;
+  long int ipos, iorb = 0;
+  TOrbSet::iterator it, it1;
+  startorb = *(peo.begin());
+  bool already_done;
+  Spin::Type spintype;
+  
+  while ( po.size() > 0 || peo.size() > 0 ) {
+    // start with external lines!
+    if ( peo.size() > 0 )
+      orb = *peo.begin();
+    else
+      orb = *po.begin();
+    // find the orbital
+    for (unsigned int j=0; j<_mat.size(); j++) {
+      ipos=_mat[j].orbitals().find(orb);
+      if (ipos >= 0) {
+        iorb = ipos;
+        ithis=j;
+        break;
+      }
+    }
+    orb1 = orb;
+    spintype = orb.spin().type();
+    do {
+      // remove orb1 from product of orbitals (we dont need to handle this orbital again!)
+      it = peo.find(orb1);
+      if ( it != peo.end() ){
+        peo.erase(it);
+        if( *(it) != startorb){
+          for (unsigned int j=0; j<_mat.size(); j++) {
+            ipos=_mat[j].orbitals().find(orb);
+            if (ipos >= 0) {
+              iorb = ipos;
+              ithis=j;
+              break;
+            }
+          }
+          orb1 = orb;
+          spintype = orb.spin().type();
+      //           break;
+        }
+      }
+      else if ( (it = po.find(orb1)) != po.end() )
+        po.erase(it);
+      else {
+        assert( false );
+      }
+      // find orbital which corresponds to the same electron
+      const ConLine& cl = _mat[ithis].conline(iorb);
+      ithis = cl.imat;
+      ipos = cl.idx;
+      iorb = _mat[ithis].iorbel(ipos);
+      if ( iorb < 0 ) break;
+      orb1 = _mat[ithis].orbitals()[iorb];
+      it = peo.find(orb1);
+      if( *it != startorb && it != peo.end()){
+        peo.erase(it);
+        break;
+      };
+      if( spintype != orb1.spin().type() && orb1 != startorb ) return Return::Delete;
+      spintype = orb1.spin().type();
+        // test whether still in sets
+        already_done = ( peo.count(orb1) == 0 && po.count(orb1) == 0 );
+    } while (orb1!=orb && !already_done && _orbs.count(orb1));
+  }
+  return Return::Done;
+}
+
+Return::Vals Term::selectspin(const std::vector<Spin::Type>& spins) const{
+  TOrbSet peo(extindx());
+  int i=0;
+  for( auto it : peo ){
+    if( it.spin().type() != spins[i] ) return Return::Delete;
+    i++;
+  }
+  return Return::Done;
 }
 
 bool Term::properconnect() const
@@ -2050,6 +2332,19 @@ Orbital Term::orb(uint iorb) const
   return *it;
 }
 
+template <class T, class Q>
+Return Q2::replace(Sum< T,TFactor >& p, Q orb1, Q orb2)
+{
+  Return rpl;
+  Sum<T,TFactor> tmp;
+  for (typename Sum<T,TFactor>::iterator it = p.begin(); it != p.end(); ++it){
+    T t(it->first);
+    rpl += t.replace(orb1, orb2);
+    tmp.insert(std::make_pair(t,it->second));
+  }
+  p = tmp;
+  return rpl;
+}
 
 template <class T, class Q>
 Return Q2::replace(Product< T >& p, Q orb1, Q orb2, bool smart)

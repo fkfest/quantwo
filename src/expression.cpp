@@ -75,7 +75,8 @@ Tensor Diagram::exprTensor(const DiagramTensor& ten) const
     error("generate cuts for expr Tensor");
   std::string name(ten._name);
   if(ten._connect.bitmask == _tensors[0]._connect.bitmask){
-    if( ten.type() != "I" ) name ="R";
+    if( ten.type() == "f" ) name ="f";
+    else if( ten.type() != "I" ) name ="R";
   }
   return Tensor( slots, ten._syms, cuts, name );
 }
@@ -353,8 +354,14 @@ static std::string ReadAndAdvance(std::size_t& ipos, const std::string& s)
 
 Expression::Expression()
 {
+  bool explspin = Input::iPars["prog"]["explspin"];
+  std::string tensor;
   // add default tensors
-  const TsPar& deftensors = Input::sPars["tensor"];
+  if(explspin)
+    tensor = "xtensor";
+  else
+    tensor = "tensor";
+  const TsPar& deftensors = Input::sPars[tensor];
   for (const auto& dt: deftensors) {
     SlotTs sts;
     std::size_t
@@ -490,7 +497,6 @@ void print_action(std::ostream& o, const Action * pAct, const Tensor& ten)
   else{
     const Summation * pSum = dynamic_cast< const Summation * >(pAct);
     assert( pSum );
-    print_code(o,*(pSum->p_A));
     pSum->print(o,ten);
   }
 }
@@ -503,6 +509,39 @@ void print_code(std::ostream& o, const Tensor& ten)
   }
 }
 
+bool Expression::elemcocompare_diags(const Diagram& diagA, const Diagram& diagB){
+  std::set<std::string> sorted;
+  std::vector<std::string> order = {
+                                    "d_vvvv","d_VVVV","d_vVvV",
+                                    "d_vvvo","d_VVVO","d_vVvO",
+                                    "d_vovv","d_VOVV","d_vOvV",
+                                    "d_vvov","d_VVOV","d_vVoV",
+                                    "d_vvoo","d_VVOO","d_vVoO",
+                                    "d_vovo","d_VOVO","d_vOvO",
+                                    "d_voov","d_VOOV","d_vOoV",
+                                    "d_vooo","d_VOOO","d_vOoO",
+                                    "d_oooo","d_OOOO","d_oOoO",
+                                    "d_ovoo","d_OVOO","d_oVoO",
+                                    "d_oovo","d_OOVO","d_oOvO",
+                                    "d_ooov","d_OOOV","d_oOoV",
+                                    "d_ovvo","d_OVVO","d_oVvO",
+                                    "d_ovov","d_OVOV","d_oVoV",
+                                    "oovv","OOVV","oOvV",
+                                    "d_ovvv","d_OVVV","d_oVvV"
+                                    };
+  std::vector<std::string>::iterator posend = order.begin();
+  for( std::vector<std::string>::iterator name = order.begin(); name != order.end(); name++ ){
+    if ( diagA._tensors[1].name() == *name ){
+      posend += std::distance(order.begin(),name);
+      for( std::vector<std::string>::iterator it = order.begin(); it != posend; ++it ){
+        if ( *it == diagB._tensors[1].name() ) return false;
+      }
+      return true;
+    }
+  }
+  return false;
+}
+
 void Expression::elemcosort_diags()
 {
   _diagrams.sort(elemcocompare_diags);
@@ -510,6 +549,7 @@ void Expression::elemcosort_diags()
 
 void Expression::printjulia(std::ofstream& out) const
 {
+  std::stack<std::string> LIFO;
   for( std::list<Diagram>::const_iterator diagcit = _diagrams.begin(); diagcit != _diagrams.end(); diagcit++ ){
 
     std::map<SlotType::Type,std::string> slotnames;
@@ -535,9 +575,17 @@ void Expression::printjulia(std::ofstream& out) const
 
       slotNames4Refs(resslots,aslots,slotnames,sRinA,sAinR,slottypes[0],slottypes[1]);
 
+      // print load and drop statements
+      printjulia(out, diag._tensors[1].name(), LIFO);
+
       out << "@tensoropt ";
       out << elemconame(diag._tensors[0].name(),slottypes[0]) << "[" << container2csstring(resslots) << "] ";
-      out << sgnchar(diag._fac) << "= " << std::abs(diag._fac) << " * ";
+      if (std::abs(std::abs(diag._fac) - 1.0) > 1.e-6){
+        out << sgnchar(diag._fac) << "= " << std::abs(diag._fac) << " * ";
+      }
+      else{
+        out << sgnchar(diag._fac) << "= ";
+      }
       out << elemconame(diag._tensors[1].name(),slottypes[1]) << "[" << container2csstring(aslots) << "]" << std::endl;
     }
     else if ( slottypes.size() == 3 )//R=fac*A*B
@@ -560,9 +608,17 @@ void Expression::printjulia(std::ofstream& out) const
       slotNames4Refs(resslots,aslots,slotnames,sRinA,sAinR,slottypes[0],slottypes[1]);
       slotNames4Refs(resslots,bslots,slotnames,sRinB,sBinR,slottypes[0],slottypes[2]);
 
+      // print load and drop statements
+      printjulia(out, diag._tensors[1].name(), LIFO);
+
       out << "@tensoropt ";
       out << elemconame(diag._tensors[0].name(),slottypes[0]) << "[" << container2csstring(resslots) << "] ";
-      out << sgnchar(diag._fac) << "= " << std::abs(diag._fac) << " * ";
+      if (std::abs(std::abs(diag._fac) - 1.0) > 1.e-6){
+        out << sgnchar(diag._fac) << "= " << std::abs(diag._fac) << " * ";
+      }
+      else{
+        out << sgnchar(diag._fac) << "= ";
+      }
       out << elemconame(diag._tensors[1].name(),slottypes[1]) << "[" << container2csstring(aslots) << "] * ";
       out << elemconame(diag._tensors[2].name(),slottypes[2]) << "[" << container2csstring(bslots) << "]" << std::endl;
 
@@ -597,9 +653,17 @@ void Expression::printjulia(std::ofstream& out) const
       slotNames4Refs(aslots,cslots,slotnames,sAinC,sCinA,slottypes[1],slottypes[3]);
       slotNames4Refs(bslots,cslots,slotnames,sBinC,sCinB,slottypes[2],slottypes[3]);
 
+      // print load and drop statements
+      printjulia(out, diag._tensors[1].name(), LIFO);
+
       out << "@tensoropt ";
       out << elemconame(diag._tensors[0].name(),slottypes[0]) << "[" << container2csstring(resslots) << "] ";
-      out << sgnchar(diag._fac) << "= " << std::abs(diag._fac) << " * ";
+      if (std::abs(std::abs(diag._fac) - 1.0) > 1.e-6){
+        out << sgnchar(diag._fac) << "= " << std::abs(diag._fac) << " * ";
+      }
+      else{
+        out << sgnchar(diag._fac) << "= ";
+      }
       out << elemconame(diag._tensors[1].name(),slottypes[1]) << "[" << container2csstring(aslots) << "] * ";
       out << elemconame(diag._tensors[2].name(),slottypes[2]) << "[" << container2csstring(bslots) << "] * ";
       out << elemconame(diag._tensors[3].name(),slottypes[3]) << "[" << container2csstring(cslots) << "]" << std::endl;
@@ -607,41 +671,82 @@ void Expression::printjulia(std::ofstream& out) const
     }
     else
       error("printjulia not implemented for more than 4 tensors in a diagram");
+    if (std::next(diagcit) == _diagrams.end() && ! LIFO.empty())
+      out << LIFO.top() << " = " << "nothing" << std::endl;
+  }
+}
+
+void Expression::printjulia(std::ofstream& out, const std::string& tensorname, std::stack<std::string>& LIFO) const{
+  std::string upper = tensorname;
+  transform(tensorname.begin(), tensorname.end(), upper.begin(), toupper);
+  if ( !LIFO.empty() && LIFO.top() != tensorname ) {
+    out << LIFO.top() << " = " << "nothing" << std::endl;  
+    LIFO.pop();
+  }
+  if ( tensorname != "f" ){
+    if ( LIFO.empty() ) {
+      if (upper == "OOVV" ) //undressed
+        out << tensorname << " = " << "ints2(EC,\"" << tensorname << "\")" << std::endl;  
+      else //dressed
+        out << tensorname << " = " << "load(EC,\"" << tensorname << "\")" << std::endl;  
+      LIFO.push(tensorname);
+    }
   }
 }
 
 std::string Expression::elemconame(const std::string& name, const SlotTs& slottypes) const{
   std::string newname = name;
-  // bool alpha = false;
-  // bool beta = false;
-  // for (const auto it : slottypes ){
-  //   if ( it->type() == SlotType::Type::OccA || it->type() == SlotType::Type::VirtA)
-  //     alpha = true;
-  //   if ( it->type() == SlotType::Type::OccB || it->type() == SlotType::Type::VirtB)
-  //     beta = true;
-  // }
-  // if ( alpha && beta ){
-  //   if ( name == "R" ) newname = "R2ab";
-  //   else if ( name == "T" ) newname = "T2ab";
-  // }
-  // else if ( alpha && !beta ){
-  //   if ( name == "R" ) newname = "R2a";
-  //   else if (name == "T" ) newname = "T2a";
-  //   else if (name == "f" ){
-  //     if ( slottypes[0]->type() == SlotType::OccA ) newname = "fij";
-  //     else newname = "fab";
-  //   }
-  // }
-  // else if (beta && !alpha ){
-  //   if (name == "R" ) newname = "R2b";
-  //   else if (name == "T" ) newname = "T2b";
-  //   else if (name == "f" ){
-  //     if ( slottypes[0]->type() == SlotType::OccB ) newname = "fIJ";
-  //     else newname = "fAB";
-  //   }
-  // }
-  // return newname;
-  return name;
+  bool alpha = false;
+  bool beta = false;
+  std::vector<std::string> T = {"T1","T2","T3"};
+  std::vector<std::string> R = {"R1","R2","R3"};
+  assert(slottypes.size() % 2 == 0);
+  uint exclevel = (slottypes.size()/2)-1;
+  for (const auto it : slottypes ){
+    if ( it->type() == SlotType::Type::OccA || it->type() == SlotType::Type::VirtA)
+      alpha = true;
+    if ( it->type() == SlotType::Type::OccB || it->type() == SlotType::Type::VirtB)
+      beta = true;
+  }
+  if ( alpha && beta ){
+    assert(exclevel > 0);
+    std::string spinstring;
+    if ( exclevel == 1 )
+      spinstring = "ab";
+    else if (exclevel == 2){
+      if (slottypes[1]->type() == SlotType::Type::VirtA)
+        spinstring = "aab";
+      else if (slottypes[1]->type() == SlotType::Type::VirtB)
+        spinstring = "abb";
+      else
+        error("Unexpected orbital type. Maybe orbital order unexpected?","Expression::elemconame");
+    }
+    else
+      error("Higher than triples not implemented","Expression::elemconame");
+    if ( name == "R" ) newname = R[exclevel]+spinstring;
+    else if ( name == "T" ) newname = T[exclevel]+spinstring;
+  }
+  else if ( alpha && !beta ){
+    if ( name == "R" ) newname = R[exclevel]+"a";
+    else if (name == "T" ) newname = T[exclevel]+"a";
+    else if (name == "f" ){
+      if ( slottypes[0]->type() == SlotType::OccA && slottypes[1]->type() == SlotType::OccA) newname = "fij";
+      else if ( slottypes[0]->type() == SlotType::OccA && slottypes[1]->type() == SlotType::VirtA) newname = "fia";
+      else if ( slottypes[0]->type() == SlotType::VirtA && slottypes[1]->type() == SlotType::OccA) newname = "fai";
+      else newname = "fab";
+    }
+  }
+  else if (beta && !alpha ){
+    if (name == "R" ) newname = R[exclevel]+"b";
+    else if (name == "T" ) newname = T[exclevel]+"b";
+    else if (name == "f" ){
+      if ( slottypes[0]->type() == SlotType::OccB && slottypes[1]->type() == SlotType::OccB) newname = "fIJ";
+      else if ( slottypes[0]->type() == SlotType::OccB && slottypes[1]->type() == SlotType::VirtB) newname = "fIA";
+      else if ( slottypes[0]->type() == SlotType::VirtB && slottypes[1]->type() == SlotType::OccB) newname = "fAI";
+      else newname = "fAB";
+    }
+  }
+  return newname;
 }
 
 std::ostream & operator << (std::ostream& o, const Expression& exp) {

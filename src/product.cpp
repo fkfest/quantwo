@@ -41,8 +41,12 @@ template <class T>
 inline
 std::ostream & operator << (std::ostream & o, Product<T> const & p)
 {
-  for ( typename Product<T>::const_iterator i=p.begin(); i!=p.end(); ++i )
+  bool explspin = Input::iPars["prog"]["explspin"];
+  for ( typename Product<T>::const_iterator i=p.begin(); i!=p.end(); ++i ){
+    if (explspin) o << "{";
     o << *i;
+    if (explspin) o << "}";
+  }
   return o;
 }
 

@@ -6,6 +6,7 @@
 #include <list>
 #include <sstream>
 #include <iostream>
+#include <fstream>
 #include <stdlib.h>
 #include <algorithm>
 #include <unistd.h>
@@ -30,6 +31,12 @@ void say(std::string what, std::string where="");
 
 // path of executable
 std::string exepath();
+
+// return true if file exists, false otherwise
+bool exists(const std::string& filepath);
+
+// update of file name with consecutive numbers
+void update(std::string& filename);
 
 // copied from IL namespace...
 // find position of a substring what on the current level of the string str (i.e. don't search inside of {})

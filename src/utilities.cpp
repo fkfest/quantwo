@@ -49,6 +49,28 @@ std::string exepath(){
   return DirName(path);
 }
 
+bool exists(const std::string& filepath){
+  std::ifstream f(filepath.c_str());                                            
+  return f.good();
+}
+
+void update(std::string& filename){                                             
+  int exitcode;                                                                 
+  std::string oldfilename, newfilename;                                         
+  if( exists(filename) ){                                                       
+    uint i=0;                                                                   
+    newfilename = filename+"_"+std::to_string(i);                               
+    do{                                                                         
+      i+=1;                                                                     
+      newfilename = filename+"_"+std::to_string(i);                             
+    }                                                                           
+    while ( exists(newfilename) );                                              
+    exitcode = rename(filename.c_str(), (filename+"_"+std::to_string(i)).c_str());
+    if ( exitcode != 0 )                                                        
+      error("Update of file name failed.");
+  }                                                                             
+}  
+
 std::size_t curlyfind(const std::string& str, const std::string& what, std::size_t ipos)
 {
   std::size_t ipos1, ires(ipos), icur(0);

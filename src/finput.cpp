@@ -61,7 +61,11 @@ bool Finput::addline(const std::string& line)
   const TParArray& newcs = Input::aPars["syntax"]["newcommand"];
   const TParArray& newops = Input::aPars["syntax"]["newoperator"];
   const TParArray& comments = Input::aPars["syntax"]["comment"];
+  bool explspin = Input::iPars["prog"]["explspin"];
   short iprint = Input::iPars["output"]["level"];
+
+  //explspin requires to print at least the input equation
+  if( explspin && iprint < 1 ) iprint = 1;
   if ( Input::iPars["prog"]["noorder"] > 0 ) {
     // default non-normal-ordered Hamiltonian: \op H = \op h + \op W
     TsPar& newops = Input::sPars["newoperator"];
@@ -291,6 +295,14 @@ void Finput::analyzenewops()
     eqn.reseteq();
   }
   _input = "";
+}
+
+void Finput::sanity_check()
+{
+  if (Input::iPars["prog"]["explspin"] && Input::iPars["prog"]["diagrams"])
+    error("printing of diagrams with explicit spins not implemented yet.","Finput::sanity_check");
+  if (Input::iPars["prog"]["explspin"] && Input::iPars["prog"]["spinintegr"])
+    error("spinintegr and explspin are not allowed at the same time.","Finput::sanity_check");
 }
 
 std::ostream& operator<<(std::ostream& o, const Finput& inp)

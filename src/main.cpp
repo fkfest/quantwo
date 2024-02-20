@@ -2,6 +2,7 @@
 #include <cstring>
 #include <iostream>
 #include <fstream>
+#include <cstdio>
 #include "argpars.h"
 #include "utilities.h"
 #include "term.h"
@@ -18,7 +19,7 @@ int main(int argc, char **argv) {
   // handle input and output
   ArgPars args(argc,argv);
   std::string arg;
-  std::string inputfile, outputfile,
+  std::string inputfile, outputfile, algofile,
     exePath = exepath();
   bool algo = false;
   // handle options
@@ -72,6 +73,7 @@ int main(int argc, char **argv) {
       inp.push_back(line);
       temp.addline(inp.back());
     }
+    temp.sanity_check();
   }
   else
     error("Bad input file!");
@@ -86,16 +88,33 @@ int main(int argc, char **argv) {
     say("Empty input file!");
     return 1;
   }
+  bool explspin = Input::iPars["prog"]["explspin"];
+  std::vector<TermSum> sums_final;
+  if ( Input::iPars["prog"]["algo"] > 0 ){
+    if ( outputfile.substr(outputfile.size()-4).compare(".tex") == 0 )
+      algofile = outputfile.substr(0,outputfile.size()-4);
+    else
+      algofile = outputfile;
+    if ( Input::iPars["prog"]["algo"] == 1 ) algofile += ".alg";
+    else if ( Input::iPars["prog"]["algo"] == 2 ) algofile += ".jl";
+    else error("Unknown algorithm output format!");
+    if ( exists(algofile) )
+      std::remove(algofile.c_str());
+  }
+  //loop over all lines in the input file
   for ( lui il = 0; il < inp.size(); ++il ){
     if ( algo ) {
-    } else if ( finput.addline(inp[il]) ){
+    } 
+    else if ( finput.addline(inp[il]) ){
+      //detected equation in input line
       finput.analyzeq();
       if ( finput.sumterms().size() == 0 ){
         say("Empty equation!");
         continue;
       }
       TermSum sum_final = Q2::evalEq(finput);
-
+      if (explspin) Q2::SpinExpansion(finput, sum_final, sums_final);
+      else sums_final.push_back(sum_final);
       // input
       const std::vector<std::string> & finlines = finput.inlines();
       for ( unsigned int i = 0; i < finlines.size(); ++i ){
@@ -103,36 +122,44 @@ int main(int argc, char **argv) {
         MyOut::pcurout->flushbuf();
       }
       // write to a file
-      MyOut::pcurout->beq();
       // input-equation
       const std::vector<std::string> & fineq = finput.ineq();
-      for ( unsigned int i = 0; i < fineq.size(); ++i ){
-        MyOut::pcurout->buf << fineq[i] << endl;
-        if ( i + 1 == fineq.size() ) {
+      if (explspin){
+        for ( unsigned int i = 0; i < fineq.size(); ++i ){
+          MyOut::pcurout->beq();
+          MyOut::pcurout->buf << fineq[i] << endl;
           MyOut::pcurout->buf << "=";
           MyOut::pcurout->flushbuf();
           MyOut::pcurout->newlineeqn();
+          MyOut::pcurout->buf << sums_final[i] << endl;
+          MyOut::pcurout->eeq();
         }
       }
-      if ( !sum_final.empty() )
-        MyOut::pcurout->buf <<sum_final << endl;
-      MyOut::pcurout->eeq();
-      if ( Input::iPars["prog"]["diagrams"] > 0 )
-        Q2::printdiags(MyOut::pcurout ,sum_final);
+      else{
+      // for explspin = 0, fineq.size() > 0 only if output,level > 0!
+        MyOut::pcurout->beq();
+        for ( unsigned int i = 0; i < fineq.size(); ++i ){
+          MyOut::pcurout->buf << fineq[i] << endl;
+          if ( i + 1 == fineq.size() ) {
+            MyOut::pcurout->buf << "=";
+            MyOut::pcurout->flushbuf();
+            MyOut::pcurout->newlineeqn();
+          }
+        }
+        if ( !sum_final.empty() )
+          MyOut::pcurout->buf <<sum_final << endl;
+        MyOut::pcurout->eeq();
+        if ( Input::iPars["prog"]["diagrams"] > 0 )
+          Q2::printdiags(MyOut::pcurout ,sum_final);
+      }
       if ( Input::iPars["prog"]["algo"] > 0 ){
         ofstream falgout;
-        std::string algofile;
-        if ( outputfile.substr(outputfile.size()-4).compare(".tex") == 0 )
-          algofile = outputfile.substr(0,outputfile.size()-4);
-        else
-          algofile = outputfile;
-        if ( Input::iPars["prog"]["algo"] == 1 ) algofile += ".alg";
-        else if ( Input::iPars["prog"]["algo"] == 2 ) algofile += ".jl";
-        else error("Unknown algorithm output format!");
-        falgout.open(algofile.c_str());
-        Q2::printalgo(falgout,sum_final);
+        falgout.open(algofile.c_str(), std::ios_base::app);
+        Q2::printalgo(falgout,sums_final);
+        falgout.close();
       }
       finput.clear();
+      sums_final.clear();
     }
   }
   // set current ouput back to default

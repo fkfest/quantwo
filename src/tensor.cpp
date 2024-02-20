@@ -4,9 +4,10 @@
 std::string TensorBase::type() const
 {
   if (_name.size() > 4 ) return std::string("I"); //an integral
-  if (_name == "T") return std::string("T"); // an amplitude
-  if (_name == "R") return std::string("R"); // a residual
-  return std::string("A"); //an intermediate
+  else if (_name == "T") return std::string("T"); // an amplitude
+  else if (_name == "R") return std::string("R"); // a residual
+  else if (_name == "f") return std::string("f"); // a fock matrix
+  else return std::string("A"); //an intermediate
 }
 
 // return -1 if not able to read
@@ -57,26 +58,53 @@ static std::string nextName(const std::string& s, const std::string& oldname){
 
 SlotType::SlotType(const std::string& lettertype)
 {
+  bool explspin = Input::iPars["prog"]["explspin"];
   TsPar& orbs = Input::sPars["syntax"];
-  if ( curlyfind(orbs["occorb"],lettertype) != std::string::npos ) {
-    _type = SlotType::Occ;
-    _nIndices = Input::iPars["fact"]["nocc"];
-    _internalName = "occorb";
-  } else if ( curlyfind(orbs["virorb"],lettertype) != std::string::npos ) {
-    _type = SlotType::Virt;
-    _nIndices = Input::iPars["fact"]["nvir"];
-    _internalName = "virorb";
-  } else if ( curlyfind(orbs["actorb"],lettertype) != std::string::npos ) {
-    _type = SlotType::Act;
-    _nIndices = Input::iPars["fact"]["nact"];
-    _internalName = "actorb";
-  } else if ( curlyfind(orbs["genorb"],lettertype) != std::string::npos ) {
-    _type = SlotType::GenT;
-    _nIndices = Input::iPars["fact"]["nocc"]+Input::iPars["fact"]["nvir"];
-    _internalName = "genorb";
-    if ( Input::iPars["prog"]["multiref"] > 0 ) _nIndices += Input::iPars["fact"]["nact"];
-  } else {
-    error("Unknown letter-type space!","SlotType constructor");
+  if (explspin){
+    if ( curlyfind(orbs["occAorb"],lettertype) != std::string::npos ) {
+      _type = SlotType::OccA;
+      _nIndices = Input::iPars["fact"]["nocc"];
+      _internalName = "occAorb";
+    } 
+    else if ( curlyfind(orbs["occBorb"],lettertype) != std::string::npos ) {
+      _type = SlotType::OccB;
+      _nIndices = Input::iPars["fact"]["nocc"];
+      _internalName = "occBorb";
+    } 
+    else if ( curlyfind(orbs["virAorb"],lettertype) != std::string::npos ) {
+      _type = SlotType::VirtA;
+      _nIndices = Input::iPars["fact"]["nvir"];
+      _internalName = "virAorb";
+    } 
+    else if ( curlyfind(orbs["virBorb"],lettertype) != std::string::npos ) {
+      _type = SlotType::VirtB;
+      _nIndices = Input::iPars["fact"]["nvir"];
+      _internalName = "virBorb";
+    } 
+    else
+      error("Unknown letter-type space!","SlotType constructor");
+  }
+  else{
+    if ( curlyfind(orbs["occorb"],lettertype) != std::string::npos ) {
+      _type = SlotType::Occ;
+      _nIndices = Input::iPars["fact"]["nocc"];
+      _internalName = "occorb";
+    } else if ( curlyfind(orbs["virorb"],lettertype) != std::string::npos ) {
+      _type = SlotType::Virt;
+      _nIndices = Input::iPars["fact"]["nvir"];
+      _internalName = "virorb";
+    } else if ( curlyfind(orbs["actorb"],lettertype) != std::string::npos ) {
+      _type = SlotType::Act;
+      _nIndices = Input::iPars["fact"]["nact"];
+      _internalName = "actorb";
+    } else if ( curlyfind(orbs["genorb"],lettertype) != std::string::npos ) {
+      _type = SlotType::GenT;
+      _nIndices = Input::iPars["fact"]["nocc"]+Input::iPars["fact"]["nvir"];
+      _internalName = "genorb";
+      if ( Input::iPars["prog"]["multiref"] > 0 ) _nIndices += Input::iPars["fact"]["nact"];
+    } else {
+      error("Unknown letter-type space!","SlotType constructor");
+    }
   }
 }
 
@@ -476,8 +504,20 @@ std::ostream & operator << (std::ostream& o, const SlotType& st)
     case SlotType::Occ:
       o << orbs["occorb"] << ", Closed, c";
       break;
+    case SlotType::OccA:
+      o << orbs["occAorb"] << ", OccA, j";
+      break;
+    case SlotType::OccB:
+      o << orbs["occBorb"] << ", OccB, J";
+      break;
     case SlotType::Virt:
       o << orbs["virorb"] << ", External, e";
+      break;
+    case SlotType::VirtA:
+      o << orbs["virAorb"] << ", ExtA, z";
+      break;
+    case SlotType::VirtB:
+      o << orbs["virBorb"] << ", ExtB, Z";
       break;
     case SlotType::Act:
       o << orbs["actorb"] << ", Active, a";

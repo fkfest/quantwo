@@ -37,76 +37,55 @@ std::vector<uint> Matrix::calc_nalpha(const Product<Orbital>& inorbs) const
   return alphavec;
 }
 
-Product<Orbital> Matrix::itforder() const
+void Matrix::itforder()
 {
-  Product<Orbital> outorbs = this->orbitals();
-  if (outorbs.size() == 4){
+  Product<uint> permute(0,2,1,3);
+  Product<uint> permute12(2,3,0,1);
+  if (this->orbitals().size() == 4){
     uint virtel1, virtel2, occel;
     virtel1 = virtel2 = occel = 0;
     for(uint i = 0; i < 2; i++){
-      if (outorbs[i].type() == 2)
+      if (this->orbitals()[i].type() == 2)
         ++virtel1;
       else
         ++occel;
     }
     for(uint i = 2; i < 4; i++){
-      if (outorbs[i].type() == 2)
+      if (this->orbitals()[i].type() == 2)
         ++virtel2;
       else
         ++occel;
     }
-    if (occel == 4 || virtel1 + virtel2 == 4){ //(ij|kl) -> I1324[ikjl] or (ab|cd) -> I1324[acbd]
-      Orbital orb1 = outorbs[0];
-      Orbital orb2 = outorbs[2];
-      Orbital orb3 = outorbs[1];
-      Orbital orb4 = outorbs[3];
-      outorbs.eraseelem(3);
-      outorbs.eraseelem(2);
-      outorbs.eraseelem(1);
-      outorbs.eraseelem(0);
-      outorbs *= orb1;
-      outorbs *= orb2;
-      outorbs *= orb3;
-      outorbs *= orb4;
-    }
-    else if(virtel2 > virtel1|| ((virtel1 == virtel2) && outorbs[0].type() == 1 && outorbs[2].type() == 2)){
-      Orbital orb1 = outorbs[0];
-      Orbital orb2 = outorbs[1];
-      outorbs.eraseelem(1);
-      outorbs.eraseelem(0);
-      outorbs *= orb1;
-      outorbs *= orb2;
-    }
-    return outorbs;
+    if (occel == 4 || virtel1 + virtel2 == 4) //(ij|kl) -> I1324[ikjl] or (ab|cd) -> I1324[acbd]
+      this->set_orbs(this->get_orbs().refpro(permute));
+    else if(virtel2 > virtel1|| ((virtel1 == virtel2) && this->orbitals()[0].type() == 1 && this->orbitals()[2].type() == 2))
+      this->set_orbs(this->get_orbs().refpro(permute12));
   }
-  return this->orbitals();
 }
 
-Product<Orbital> Matrix::elemcoorder() const
+void Matrix::elemcoorder()
 {
-  Product<Orbital> outorbs = this->orbitals();
   Product<uint> permute(0,2,1,3);
   Product<uint> permute12(2,3,0,1);
-  std::vector<uint> alphavec = calc_nalpha(outorbs);
+  std::vector<uint> alphavec = calc_nalpha(this->orbitals());
   if ( this->type() == Ops::FluctP ){
-    std::vector<uint> virtelvec = calc_virtelvec(outorbs);
+    std::vector<uint> virtelvec = calc_virtelvec(this->orbitals());
     if ( alphavec[0] < alphavec[1] ){
-      outorbs = outorbs.refpro(permute12);
+      this->set_orbs(this->get_orbs().refpro(permute12));
     }
     else if ( alphavec[0] == alphavec[1] ){
-      if ( outorbs[0].spin() == Spin::Down ){
-        outorbs = outorbs.refpro(permute12);
+      if ( this->get_orbs()[0].spin() == Spin::Down ){
+        this->set_orbs(this->get_orbs().refpro(permute12));
       }
       else if ( virtelvec[0] < virtelvec[1] ){
-        outorbs = outorbs.refpro(permute12);
+        this->set_orbs(this->get_orbs().refpro(permute12));
       }
-      else if ( virtelvec[0] == virtelvec[1] && outorbs[0].type() == Orbital::Occ ){
-        outorbs = outorbs.refpro(permute12);
+      else if ( virtelvec[0] == virtelvec[1] && this->get_orbs()[0].type() == Orbital::Occ ){
+        this->set_orbs(this->get_orbs().refpro(permute12));
       }
     }
   }
-  if ( outorbs.size() == 4 ) outorbs = outorbs.refpro(permute);
-  return outorbs;
+  if ( this->get_orbs().size() == 4 ) this->set_orbs(this->get_orbs().refpro(permute));
 }
 
 Matrix::Matrix() // : _type(Interm)
@@ -283,6 +262,11 @@ Return Matrix::replace(Orbital orb1, Orbital orb2, bool smart)
   for ( unsigned int i=0; i<_orbs.size(); ++i )
   {
     rpl += _orbs[i].replace(orb1,orb2,smart);
+  }
+  if(orb2.spin().type() == Spin::Up || orb2.spin().type() == Spin::Down){
+    for ( unsigned int i=0; i<_intorbs.size(); ++i ){
+      _intorbs[i].replace(orb1,orb2,smart);
+    }
   }
   return rpl;
 }
@@ -605,20 +589,31 @@ void Matrix::setkind(short int exccl, short int intlines, short int intvirt)
   _intvirt=intvirt;
   calc_orbtypeshash();
 }
-long int Matrix::iorbel(lui ipos) const
+long int Matrix::iorbel(lui ipos, bool physicist) const
 {
   assert( ipos < _orbs.size() );
   lui ipos1;
-  if ( _type == Ops::DensM && Input::iPars["prog"]["dmsort"] > 0 )
-    // different order of electrons: 1,2,...2, 1
-    ipos1 = _orbs.size()-ipos-1;
-  else
-    ipos1 = ipos%2==0?ipos+1:ipos-1;
+  if (physicist){
+    assert(_orbs.size() % 2 == 0);
+    uint step = _orbs.size()/2;
+    if( ipos + 1 > step )
+      ipos1 = ipos - 2;
+    else
+      ipos1 = ipos + 2;
+    return ipos1;
+  }
+  else{
+    if ( _type == Ops::DensM && Input::iPars["prog"]["dmsort"] > 0 )
+      // different order of electrons: 1,2,...2, 1
+      ipos1 = _orbs.size()-ipos-1;
+    else
+      ipos1 = ipos%2==0?ipos+1:ipos-1;
 
-  if ( ipos1 >= 2*_npairs )
-    // one of the non-conserved electrons
-    return -1;
-  return ipos1;
+    if ( ipos1 >= 2*_npairs )
+      // one of the non-conserved electrons
+      return -1;
+    return ipos1;
+  }
 }
 
 Orbital Matrix::orbel(const Orbital& orb) const
@@ -679,7 +674,8 @@ std::string Matrix::plainname() const
       plainnam += _name[i];
     }
   }
-  if ( type() == Ops::FluctP ) {
+  if ( type() == Ops::FluctP || type() == Ops::Fock ) {
+    if ( type() == Ops::Fock && Input::iPars["prog"]["algo"] == 2 ) return plainnam;
     plainnam = integralnames();
   }
   return plainnam;
@@ -687,7 +683,7 @@ std::string Matrix::plainname() const
 
 std::string Matrix::integralnames() const
 {
-  assert( _type == Ops::FluctP );
+  assert( _type == Ops::FluctP || _type == Ops::Fock );
   if ( Input::iPars["prog"]["algo"] == 1 ){//ITF code
     return itfintegralnames();
   }
@@ -772,17 +768,15 @@ std::string Matrix::itfintegralnames() const
     }
     return name;
   }
-  else{
-    assert( _type == Ops::FluctP );
-  std::string name = Input::sPars["syntax"]["coulombint"];
-  for ( uint iorb = 0; iorb < _orbs.size(); ++iorb ) {
-    assert( iorbel(iorb) >= 0 );
-    if ( _orbs[iorb].type() != _orbs[iorbel(iorb)].type() ) {
-      name = Input::sPars["syntax"]["exchangeint"];
-      break;
-    }
+  else if (_type == Ops::Fock )
+  {
+    if( this->_orbs[0].type() == Orbital::Occ && this->_orbs[1].type() == Orbital::Virt ) return "f21";
+    else return "f";
   }
-  return name;
+  else
+  {
+    error("Unimplemented ITF name required.");
+    __builtin_unreachable();
   }
 }
 
@@ -790,91 +784,122 @@ std::string Matrix::elemcointegralnames() const
 {
   //orbitals in electron order
   //ElemCo names in physicist notation
+  assert( _type == Ops::FluctP );
+  std::string name="dummy";
+  bool exchange = false;
+  for ( uint iorb = 0; iorb < this->orbitals().size(); ++iorb ) {
+    assert( iorbel(iorb,true) >= 0 );
+    if ( this->orbitals()[iorb].type() != this->orbitals()[iorbel(iorb,true)].type() )
+      exchange = true;
+  }
   if (_orbs.size() == 4) {
     Product<Orbital> orbs = this->orbitals();
-    uint virtel1, virtel2;
-    virtel1 = virtel2 = 0;
-    if (orbs[0].type() == Orbital::Virt) ++virtel1;
-    if (orbs[1].type() == Orbital::Virt) ++virtel1;
-    if (orbs[2].type() == Orbital::Virt) ++virtel2;
-    if (orbs[3].type() == Orbital::Virt) ++virtel2;
-    if(virtel2 > virtel1 || ((virtel1 == virtel2) && orbs[0].type() == Orbital::Occ && orbs[2].type() == Orbital::Virt)){
-      Orbital orb1 = orbs[0];
-      Orbital orb2 = orbs[1];
-      orbs.eraseelem(1);
-      orbs.eraseelem(0);
-      orbs *= orb1;
-      orbs *= orb2;
-    }
-    assert( _type == Ops::FluctP );
-    std::string name = Input::sPars["syntax"]["coulombint"]; //(ab|cd) (ij|kl) (ab|kl)
-    if ( orbs[0].type() == Orbital::Occ ){ //(ij|kl)
-      name = "d_oooo";
-    }
-    else if (orbs[2].type() == Orbital::Occ){ // (ab|kl)
-      name = "d_vovo";
-    }
-    else{ //(ab|cd)
-      name = "d_vvvv";
-    }
-    for ( uint iorb = 0; iorb < orbs.size(); ++iorb ) {
-      assert( iorbel(iorb) >= 0 );
-      if ( orbs[iorb].type() != orbs[iorbel(iorb)].type() ) {
-        name = Input::sPars["syntax"]["exchangeint"];
-        if (orbs[0].type() == Orbital::Virt ){ //(aj|kd) (aj|cl) (aj|kl) (ab|cl) (ab|kd)
-            if (orbs[1].type() == Orbital::Occ ){ //(aj|kd) (aj|cl) (aj|kl)
-              if (orbs[2].type() == Orbital::Virt){ //(aj|cl)
-                name = "d_vvoo";
-              }
-              else if (orbs[3].type() == Orbital::Virt){ //(aj|kd)
-                name = "d_voov";
-              }
-              else{ //(aj|kl)
-                name = "d_vooo";
-              }
-            }
-            else{//(ab|cl) (ab|kd)
-              if (orbs[2].type() == Orbital::Virt){ //(ab|cl)
-                name = "d_vvvo";
-              }
-              else{
-                name = "d_vovv";
-              }
-            }
+    if ( !exchange ){ // <ik|jl> <ak|bl> <ac|bd> <ib|kd>
+      if ( orbs[0].type() == Orbital::Occ ){ //<ik|jl> <ib|kd>
+        if ( orbs[1].type() == Orbital::Occ ){
+          name = "d_oooo";
+          if( orbs[0].spin() == Spin::Up && orbs[1].spin() == Spin::Down ) name = "d_oOoO";
+          else if( orbs[0].spin() == Spin::Down && orbs[1].spin() == Spin::Down ) name = "d_OOOO";
         }
-        else{//(ib|kd) (ib|kl)
-          if(orbs[3].type() == Orbital::Virt){ //(ib|kd)
-            name = "oovv";
-            if( orbs[0].spin() == Spin::Up && orbs[2].spin() == Spin::Up ) name = "oovv";
-            else if( orbs[0].spin() == Spin::Up && orbs[2].spin() == Spin::Down ) name = "oOvV";
-            else if( orbs[0].spin() == Spin::Down && orbs[2].spin() == Spin::Up ) name = "oOvV";
-            else if( orbs[0].spin() == Spin::Down && orbs[2].spin() == Spin::Down ) name = "OOVV";
-          }
-          else{
-            name = "oovo";
-            if( orbs[0].spin() == Spin::Up && orbs[2].spin() == Spin::Up ) name = "d_oovo";
-            else if( orbs[0].spin() == Spin::Up && orbs[2].spin() == Spin::Down ) name = "d_oOvO";
-            else if( orbs[0].spin() == Spin::Down && orbs[2].spin() == Spin::Up ) name = "d_oOvO";
-            else if( orbs[0].spin() == Spin::Down && orbs[2].spin() == Spin::Down ) name = "d_OOVO";
-          }
+        else{ //<
+          name = "d_ovov";
+          if( orbs[0].spin() == Spin::Up && orbs[1].spin() == Spin::Down ) name = "d_oVoV";
+          else if( orbs[0].spin() == Spin::Down && orbs[1].spin() == Spin::Down ) name = "d_OVOV";
         }
-  //       break;
+      }
+      else if (orbs[1].type() == Orbital::Occ){ // <ak|bl>
+        name = "d_vovo";
+        if( orbs[0].spin() == Spin::Up && orbs[1].spin() == Spin::Down ) name = "d_vOvO";
+        else if( orbs[0].spin() == Spin::Down && orbs[1].spin() == Spin::Down ) name = "d_VOVO";
+      }
+      else{ //<ac|bd>
+        name = "d_vvvv";
+        if( orbs[0].spin() == Spin::Up && orbs[1].spin() == Spin::Down ) name = "d_vVvV";
+        else if( orbs[0].spin() == Spin::Down && orbs[1].spin() == Spin::Down ) name = "d_VVVV";
       }
     }
-    return name;
-  }
-  else{
-    assert( _type == Ops::FluctP );
-  std::string name = Input::sPars["syntax"]["coulombint"];
-  for ( uint iorb = 0; iorb < _orbs.size(); ++iorb ) {
-    assert( iorbel(iorb) >= 0 );
-    if ( _orbs[iorb].type() != _orbs[iorbel(iorb)].type() ) {
-      name = Input::sPars["syntax"]["exchangeint"];
-      break;
+    else{ //exchange integral
+      if (orbs[0].type() == Orbital::Virt ){ // <vo|ov> <vv|oo> <vo|oo> <vv|vo> <vo|vv> <vv|ov>
+        if (orbs[2].type() == Orbital::Occ ){ // <vv|oo> <vo|ov> <vo|oo> <vv|ov>
+          if (orbs[1].type() == Orbital::Virt){ // <vv|oo> <vv|ov>
+            if (orbs[3].type() == Orbital::Virt){
+              name = "d_vvov";
+              if( orbs[0].spin() == Spin::Up && orbs[1].spin() == Spin::Down ) name = "d_vVoV";
+              else if( orbs[0].spin() == Spin::Down && orbs[1].spin() == Spin::Down ) name = "d_VVOV";
+            }
+            else{
+              name = "d_vvoo";
+              if( orbs[0].spin() == Spin::Up && orbs[1].spin() == Spin::Down ) name = "d_vVoO";
+              else if( orbs[0].spin() == Spin::Down && orbs[1].spin() == Spin::Down ) name = "d_VVOO";
+            }
+          }
+          else if (orbs[3].type() == Orbital::Virt){ //<vo|ov>
+            name = "d_voov";
+            if( orbs[0].spin() == Spin::Up && orbs[1].spin() == Spin::Down ) name = "d_vOoV";
+            else if( orbs[0].spin() == Spin::Down && orbs[1].spin() == Spin::Down ) name = "d_VOOV";
+          }
+          else{ //<vo|oo>
+            name = "d_vooo";
+            if( orbs[0].spin() == Spin::Up && orbs[1].spin() == Spin::Down ) name = "d_vOoO";
+            else if( orbs[0].spin() == Spin::Down && orbs[1].spin() == Spin::Down ) name = "d_VOOO";
+          }
+        }
+        else{//(vv|vo) (vv|ov)
+          if (orbs[1].type() == Orbital::Virt){ //<ac|bl>
+            name = "d_vvvo";
+            if( orbs[0].spin() == Spin::Up && orbs[1].spin() == Spin::Down ) name = "d_vVvO";
+            else if( orbs[0].spin() == Spin::Down && orbs[1].spin() == Spin::Down ) name = "d_VVVO";
+          }
+          else{
+            name = "d_vovv";
+            if( orbs[0].spin() == Spin::Up && orbs[1].spin() == Spin::Down ) name = "d_vOvV";
+            else if( orbs[0].spin() == Spin::Down && orbs[1].spin() == Spin::Down ) name = "d_VOVV";
+          }
+        }
+      }
+      else{//<oo|vv> <ov|vo> <ov|vv> <oo|vo> <oo|ov> <ov|oo>
+        if(orbs[3].type() == Orbital::Virt){ // <oo|vv> <ov|vv> <oo|ov>
+          if(orbs[1].type() == Orbital::Occ){// <oo|vv> <oo|ov> 
+            if(orbs[2].type() == Orbital::Occ){ 
+              name = "d_ooov";
+              if( orbs[0].spin() == Spin::Up && orbs[1].spin() == Spin::Down ) name = "d_oOoV";
+              else if( orbs[0].spin() == Spin::Down && orbs[1].spin() == Spin::Down ) name = "d_OOOV";
+            }
+            else{
+            name = "oovv";
+            if( orbs[0].spin() == Spin::Up && orbs[1].spin() == Spin::Down ) name = "oOvV";
+            else if( orbs[0].spin() == Spin::Down && orbs[1].spin() == Spin::Down ) name = "OOVV";
+            }
+          }
+          else{// <ov|vv>
+            name = "d_ovvv";
+            if( orbs[0].spin() == Spin::Up && orbs[1].spin() == Spin::Down ) name = "d_oVvV";
+            else if( orbs[0].spin() == Spin::Down && orbs[1].spin() == Spin::Down ) name = "d_OVVV";
+          }
+        }
+        else{ //<ov|vo> <oo|vo> <ov|oo>
+          if(orbs[1].type() == Orbital::Virt){//<ov|vo> <ov|oo>
+            if(orbs[2].type() == Orbital::Virt){
+              name = "d_ovvo";
+              if( orbs[0].spin() == Spin::Up && orbs[1].spin() == Spin::Down ) name = "d_oVvO";
+              else if( orbs[0].spin() == Spin::Down && orbs[1].spin() == Spin::Down ) name = "d_OVVO";
+            }
+            else{
+              name = "d_ovoo";
+              if( orbs[0].spin() == Spin::Up && orbs[1].spin() == Spin::Down ) name = "d_oVoO";
+              else if( orbs[0].spin() == Spin::Down && orbs[1].spin() == Spin::Down ) name = "d_OVOO";
+            }
+          }
+          else{
+            name = "d_oovo";
+            if( orbs[0].spin() == Spin::Up && orbs[1].spin() == Spin::Down ) name = "d_oOvO";
+            else if( orbs[0].spin() == Spin::Down && orbs[1].spin() == Spin::Down ) name = "d_OOVO";
+          }
+        }
+      }
     }
   }
   return name;
-  }
 }
 
 std::ostream & operator << (std::ostream & o, Matrix const & mat)
@@ -993,6 +1018,24 @@ Permut::Permut(Orbital o1, Orbital o2)
   assert( o1.type() == o2.type() );
   _orbs[o1] = o2;
 }
+
+Return::Vals Permut::replace(const Orbital& orb1, const Orbital& orb2){
+  for ( TPerMap::const_iterator it = _orbs.begin(); it != _orbs.end(); ++it ){
+    if( it->second == orb1 ){
+      Orbital orbfrom = it->first;
+      _orbs.erase(it);
+      _orbs[orbfrom] = orb2;
+    }
+  }
+  TPerMap::const_iterator it = _orbs.find(orb1);
+  if ( it == _orbs.end()){return Return::Delete;}
+  Orbital orbto;
+  orbto = it->second;
+  _orbs.erase(it);
+  _orbs[orb2] = orbto;
+  return Return::Done;
+}
+
 Permut& Permut::operator+=(const Permut& p)
 {
   for ( TPerMap::const_iterator pit = p._orbs.begin(); pit != p._orbs.end(); ++pit ){

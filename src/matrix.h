@@ -56,10 +56,10 @@ class Matrix {
   // check if orbs are ordered, and if not
   // use particle-exchange symmetry to return orbs in canonical order
   // also change order if necessary to fit ITF integralnames
-  Product<Orbital> itforder() const;
+  void itforder();
   //Permute two electron integrals from chemist to physicist notation
   //and bring excitation operators in the right order
-  Product<Orbital> elemcoorder() const;
+  void elemcoorder();
   // return name
   std::string name() const;
   void set_name(const std::string& newname) { _name = newname; };
@@ -85,10 +85,6 @@ class Matrix {
   Return replace(Orbital orb1, Orbital orb2, bool smart);
   // replace spin spin1 with spin2
   Return replace(Spin spin1, Spin spin2, bool smart);
-  // set orbital at iorb to orb
-  void set_orb(Orbital orb, lui iorb) { assert(iorb<_orbs.size()); _orbs[iorb] = orb;};
-  // set orbs based on crobs and anobs
-  void set_orbs(Product<Orbital>& crobs, Product<Orbital>& anobs);
   //!returns orbitals corresponding to electrons in an array of size nelec.
   Array<Product<Orbital>> elecorbs();
   // expand antisymmetrized matrix ( from antisymmetrized form < AB || CD > to the normal form < AB | CD > - < AB | DC > )
@@ -123,7 +119,7 @@ class Matrix {
   // return excitation class (has to be set previously!)
   short exccl() const {return _exccl;};
   // get the position of second orbital for the same electron (from position)
-  long iorbel(lui ipos) const;
+  long iorbel(lui ipos, bool physicist=false) const;
   // get the second orbital for the same electron (if not found return blank orbital)
   Orbital orbel(Orbital const & orb) const;
   // get the second orbital for the same electron (from position)
@@ -169,7 +165,14 @@ class Matrix {
   std::string integralnames() const;
   std::string itfintegralnames() const;
   std::string elemcointegralnames() const;
+  // set orbital at iorb to orb
+  void set_orb(Orbital orb, lui iorb) { assert(iorb<_orbs.size()); _orbs[iorb] = orb;};
+  // set orbs based on crobs and anobs
+  void set_orbs(Product<Orbital>& crobs, Product<Orbital>& anobs);
+  void set_orbs(const Product<Orbital>& orbs) {_orbs = orbs;};
   Product<Orbital>& get_orbs(){return _orbs;}
+  Product<Orbital> _intorbs;
+
   private:
   // generate name from type or use the given name
   void gen_name(const std::string& name);
@@ -229,6 +232,8 @@ class Permut {
     Product<Orbital> orbsto() const;
     // permute orbital
     Orbital permutorb(const Orbital& orb) const;
+    // replace orb1 with orb2
+    Return::Vals replace(const Orbital& orb1, const Orbital& orb2);
     // artificial ordering
     bool operator < (Permut const & p) const;
     // equality of permutators

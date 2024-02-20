@@ -1,43 +1,61 @@
 #include "factorizer.h"
 #include <bitset> // for test
 
-Factorizer::Factorizer(const TermSum& s)
+Factorizer::Factorizer(const std::vector<TermSum>& s)
 {
   std::map<Orbital,const SlotType*> slotorbs;
   std::map<Matrix,const Tensor*> tensormats;
 
-  // create an expression from the sum
-  for ( TermSum::const_iterator i=s.begin();i!=s.end(); ++i) {
-    Factor fac = _todouble(i->second);
-    Term term = i->first;
-    // add slottypes
-    uint iorb = 0;
-    Orbital orb;
-    while ( (orb = term.orb(iorb)) != Orbital() ){
-      slotorbs[orb] = _expression.add(Translators::orb2slot(orb));
-      ++iorb;
-    }
-    TermSum sumt = term.resolve_permutations();
-    for ( TermSum::const_iterator ist = sumt.begin();ist != sumt.end(); ++ist ) {
-      Factor fact = _todouble(ist->second);
-      fact *= fac;
-      Diagram diag = Translators::term2diagram(ist->first,fact,slotorbs,_expression);
-      if ( Input::iPars["prog"]["algo"] == 1 ) diag.binarize(_expression);
+  for ( std::vector<TermSum>::const_iterator it=s.begin(); it!=s.end(); ++it) {
+    // create an expression from the sum
+    for ( TermSum::const_iterator i=it->begin();i!=it->end(); ++i) {
+      Factor fac = _todouble(i->second);
+      Term term = i->first;
+      // add slottypes
+      uint iorb = 0;
+      Orbital orb;
+      while ( (orb = term.orb(iorb)) != Orbital() ){
+        slotorbs[orb] = _expression.add(Translators::orb2slot(orb));
+        ++iorb;
+      }
+      TermSum sumt = term.resolve_permutations();
+      for ( TermSum::const_iterator ist = sumt.begin();ist != sumt.end(); ++ist ) {
+        Factor fact = _todouble(ist->second);
+        fact *= fac;
+        Term term = ist->first;
+        Diagram diag = Translators::term2diagram(term,fact,slotorbs,_expression);
+        if ( Input::iPars["prog"]["algo"] == 1 ) diag.binarize(_expression);
+      }
     }
   }
 }
 
-
-
-
-
 SlotType Translators::orb2slot(const Orbital& orb)
 {
+  bool explspin = Input::iPars["prog"]["explspin"];
   switch (orb.type()) {
     case Orbital::Occ:
-      return SlotType(Input::iPars["fact"]["nocc"],SlotType::Occ);
+      if (explspin)
+        if( orb.spin().type() == Spin::Up )
+          return SlotType(Input::iPars["fact"]["nocc"],SlotType::OccA);
+        else if( orb.spin().type() == Spin::Down )
+          return SlotType(Input::iPars["fact"]["nocc"],SlotType::OccB);
+        else
+          error("What am i doing here?","Translators::orb2slot");
+      else
+        return SlotType(Input::iPars["fact"]["nocc"],SlotType::Occ);
+      break;
     case Orbital::Virt:
-      return SlotType(Input::iPars["fact"]["nvir"],SlotType::Virt);
+      if (explspin)
+        if( orb.spin().type() == Spin::Up ){
+          return SlotType(Input::iPars["fact"]["nvir"],SlotType::VirtA);}
+        else if( orb.spin().type() == Spin::Down ){ 
+          return SlotType(Input::iPars["fact"]["nvir"],SlotType::VirtB);}
+        else{
+          error("What am i doing here?","Translators::orb2slot");}
+      else
+        return SlotType(Input::iPars["fact"]["nvir"],SlotType::Virt);
+      break;
     case Orbital::Act:
       return SlotType(Input::iPars["fact"]["nact"],SlotType::Act);
     case Orbital::GenT:
@@ -70,7 +88,7 @@ Tensor Translators::mat2tensor(const Matrix& mat, const std::map< Orbital, const
   return Tensor(sts,name);
 }
 
-Diagram Translators::term2diagram(const Term& term, Factor fact, const std::map< Orbital, const SlotType* >& slotorbs, Expression& expr)
+Diagram Translators::term2diagram(Term& term, Factor fact, const std::map< Orbital, const SlotType* >& slotorbs, Expression& expr)
 {
   const std::string& resultt = Input::sPars["syntax"]["result"];
   Diagram diag;
@@ -96,13 +114,13 @@ Diagram Translators::term2diagram(const Term& term, Factor fact, const std::map<
   orbitals = orbitals.refarr(slotorder);
 
   uint nbareops = 0;
-  for (const auto& m: term.mat()){
+  for (auto& m: term.get_mat()){
     Product<Orbital> orbs;
     if ( Input::iPars["prog"]["algo"] == 1 ){//ITF code
-      orbs = m.itforder();
+      m.itforder();
     }
     else if ( Input::iPars["prog"]["algo"] == 2 ){//ElemCo code
-      orbs = m.elemcoorder();
+      m.elemcoorder();
     }
     else
       error("Unknown algorithm in prog, algo!");
@@ -111,7 +129,7 @@ Diagram Translators::term2diagram(const Term& term, Factor fact, const std::map<
     //positions of orbitals (electron-order) in the tensor relative to the reference string
     //e.g. (ki|bj) relative to abijk -> 4213
     Slots positions;
-    for (const auto& orb: orbs){
+    for (const auto& orb: m.get_orbs()){
       assert( slotorbs.count(orb) > 0 );
       sts.push_back(slotorbs.at(orb));
       int ipos = orbitals.find(orb);

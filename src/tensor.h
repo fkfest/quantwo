@@ -30,7 +30,11 @@ public:
     Act = 4,
     AO = 5,
     DF = 6,
-    RI = 7
+    RI = 7,
+    OccB = 8,
+    OccA = 9,
+    VirtB = 10,
+    VirtA = 11
   };
   SlotType(Length n = 0, Type type = NoType) : _nIndices(n), _type(type) {};
   SlotType(const std::string& lettertype);

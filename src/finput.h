@@ -36,11 +36,14 @@ public:
   void sumterms( const TermSum& ts );
   // analyze input line
   bool analyzeline();
+  // check input parameters for consistency
+  void sanity_check();
   // clear all arrays
   void clear() {_inlines.clear(); _ineq.clear(); _input.clear(); _eq = false;};
   // return input lines
   const std::vector<std::string> & inlines() const { return _inlines;};
   const std::vector<std::string> & ineq() const { return _ineq;};
+  void set_ineq(std::vector<std::string> ineq){_ineq = ineq;}
 
 private:
   // initialyse default input-parameters

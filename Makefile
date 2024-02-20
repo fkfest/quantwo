@@ -49,7 +49,7 @@ veryclean :
 equation :
 	 $(MAIN) $(in).q2
 	 @test -e $(out).tex || cp equation.tex $(out).tex
-	 pdflatex "\newcommand\QuantwoInputFileName{$(in)}\input{$(out)}"
+	 pdflatex "\newcommand\QuantwoInputFileName{$(in)}\input{$(out)}" > /dev/null
 	 rm $(out).log $(out).aux
 
 base : $(FILIN)

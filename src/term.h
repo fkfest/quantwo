@@ -179,8 +179,25 @@ class Term {
      //!returns true if a loop with orbs1 and orbs2 is possible
     bool loop(Product<Orbital> orbs1, Product<Orbital> orbs2);
     bool loop(Array<Product<Orbital>>& elecorbs1, Array<Product<Orbital>>& elecorbs2);
+    //!permute T using its antisymmetry and return the new terms as a TermSum
+    TermSum addpermuteT(const TFactor fac);
     //! permute the first and third orbital in _orb of the j-th amplitude in _mat
     void permuteT(uint j);
+    //! Spin expansion
+    TermSum spinexpansion(const TFactor fac);
+    //permute spins in TOrbSet in all possible (and partially unphysical ways)
+    std::vector<TOrbSet> spinpermute(const TOrbSet& genorbs);
+    //returns all possible permutations of spin in norbs orbitals
+    std::vector<std::vector<Spin::Type>> spinpermutations(int norbs);
+    //solves the combinatorical problem of spinpermutations() recursively
+    void recspinperm(std::vector<Spin::Type> spintypes, std::vector<Spin::Type> comb, std::vector<std::vector<Spin::Type>>& spinperms, int nset, int ndraw);
+    //check spin of term
+    Return::Vals check_spin() const;
+    //set spin of Term according to spin in TOrbSet
+    void replace(TOrbSet& orbs);
+    //select term if external orbitals have Spin::Type
+    Return::Vals selectspin(const std::vector<Spin::Type>& spins) const;
+    bool samespin() const;
     //! set prefactor of term to one
     void reset_prefac();
     // set permutations to p
@@ -215,6 +232,8 @@ class Term {
     Orbital orb( uint iorb ) const;
     void set_no_el();
     void clear_opProd() {_opProd.clear();}
+    //! return matrices
+    Product<Matrix>& get_mat(){return _mat;};
   private:
     TermSum  normalOrder(bool fullyContractedOnly) const;
     TermSum  normalOrderPH(bool fullyContractedOnly) const;
@@ -262,6 +281,8 @@ namespace Q2
   Return replace(Product<T> &p, Q orb1, Q orb2, bool smart);
   template <class T, class Q>
   Return replace(Set<T> &p, Q orb1, Q orb2, bool smart);
+  template <class T, class Q>
+  Return replace(Sum<T,TFactor> &p, Q orb1, Q orb2);
   template <class T>
   Return replace(SQOp &op, T orb1, T orb2, bool smart);
   template <class T, class Q>

@@ -25,6 +25,7 @@ TermSum Q2::reduceSum(TermSum s)
   bool brill = ( Input::iPars["prog"]["brill"] > 0 );
   bool quan3 = ( Input::iPars["prog"]["quan3"] > 0 );
   bool spinintegr = Input::iPars["prog"]["spinintegr"];
+  bool explspin = Input::iPars["prog"]["explspin"];
   bool usefock = Input::iPars["prog"]["usefock"];
   usefock = usefock && (Input::iPars["prog"]["noorder"]>0);
   // 13.12.2016: temporary hack until a proper insert of intermediate tensors is implemented
@@ -88,7 +89,7 @@ TermSum Q2::reduceSum(TermSum s)
   _xout3(sum << std::endl);
   if (timing) _CPUtiming("",c_start,std::clock());
 
-  if (spinintegr){
+  if (spinintegr || explspin){
     // bring all the density matrices into singlet-order
     say("Singlet order...");
     if (timing) c_start = std::clock();
@@ -140,7 +141,6 @@ TermSum Q2::reduceSum(TermSum s)
         if (term.equal(term1,perm)) {
           sum.erase(k);
           term1+=std::make_pair(perm,prefac);
-          //std::cout<<"term old" << term1 <<std::endl;
           if ( !term1.term_is_0(minfac) ) sum+=term1;
           added=true;
           break;
@@ -149,12 +149,8 @@ TermSum Q2::reduceSum(TermSum s)
       if (!added) {
         term+=std::make_pair(Permut(),prefac);
         if ( !term.term_is_0(minfac) ) sum+=term;
-        //std::cout<<"term new" << term <<std::endl;
       }
-//      Termel termel(term);
-//      sum += std::make_pair(term,i->second);
     }
-//    _xout3(sum << std::endl);
     if (timing) _CPUtiming("",c_start,std::clock());
     return sum;
   }
@@ -441,6 +437,171 @@ TermSum Q2::VirtSpace(const TermSum& s)
   return sum;
 }
 
+
+std::string spinstring(Spin::Type& type)
+{
+  switch (type) {
+    case Spin::Up:
+      return "\\alpha";
+    case Spin::Down:
+      return "\\beta";
+    case Spin::GenD:
+      return "\\bar";
+      // fall through
+    case Spin::GenS:
+      return "\\sigma_{ }";
+    default:
+      error("could not determine spin type");
+  }
+  return "error";
+}
+
+TermSum Q2::spinSwap(TermSum s){
+  double minfac = Input::fPars["prog"]["minfac"];
+  TermSum sum = s;
+  TermSum sum1;
+  TOrbSet neworbs;
+  Orbital orb;
+  Spin::Type spintype;
+  sum = ResolvePermutaions(sum);
+  for(TermSum::iterator i=sum.begin(); i!=sum.end(); ++i){
+    neworbs.clear();
+    for(TOrbSet::iterator it = i->first.orbs().begin(); it != i->first.orbs().end(); ++it){
+      if(it->spin() == Spin::Up){spintype=Spin::Down;}
+      else if(it->spin() == Spin::Down){spintype=Spin::Up;}
+      else error("Expected either spin up or down here.");
+      orb = *it;
+      orb.setspin(spintype);
+      neworbs.insert(orb);
+    }
+    Term term = i->first;
+    term.replace(neworbs);
+    sum1 += std::make_pair(term,i->second);
+  }
+  sum1 = EqualTerms(sum1,minfac);
+  sum1 = SmallTerms(sum1,minfac);
+  return sum1;
+}
+
+void Q2::SpinExpansion(Finput& finput, TermSum sum_final, std::vector<TermSum>& sums_final)
+{
+  say("Spin expanding...");
+  double minfac = Input::fPars["prog"]["minfac"];
+  lui i=0, ipos;
+  char ch;
+  bool found = false;
+  std::vector<std::string> newvec;
+  std::string upname, downname, name, oldbra, newbra, ineq, modeq, betaineq, newineq, newname, spin;
+  int iupname, idownname;
+  std::stringstream ss;
+  for( auto it : finput.ineq() ){
+    ineq = it;
+    while(i<it.size() && !found){
+      ch = it[i];
+      if(ch=='<'){
+        ipos=it.find('|',i);
+//         ipos1=IL::nextwordpos(it,i);
+        oldbra = it.substr(i+1,ipos-1);
+        found = true;
+      }
+      i++;
+    }
+  }
+    IL::nameupdown(name,upname,downname,oldbra);
+    std::string spintype;
+    std::vector<std::vector<Spin::Type>> spins;
+    if( upname.size() == 0 ){spins.push_back({Spin::No});}
+    else if( upname.size() == 1 ){
+      spins.push_back({Spin::Up, Spin::Up});
+      spins.push_back({Spin::Down, Spin::Down});
+    }
+    else if( upname.size() == 2 ){
+      spins.push_back({Spin::Up, Spin::Up, Spin::Up, Spin::Up});
+      spins.push_back({Spin::Down, Spin::Down, Spin::Down, Spin::Down});
+      spins.push_back({Spin::Up, Spin::Down, Spin::Up, Spin::Down});
+    }
+    else if( upname.size() == 3 ){
+      spins.push_back({Spin::Up, Spin::Up, Spin::Up, Spin::Up, Spin::Up, Spin::Up});
+      spins.push_back({Spin::Down, Spin::Down, Spin::Down, Spin::Down, Spin::Down, Spin::Down});
+      spins.push_back({Spin::Up, Spin::Down, Spin::Down, Spin::Up, Spin::Down, Spin::Down});
+      spins.push_back({Spin::Down, Spin::Up, Spin::Up, Spin::Down, Spin::Up, Spin::Up});
+    }
+    else
+      error("In the moment Q2 can only use explicit spin-orbitals for nvertices <= 3.");
+    for( size_t i = 0; i<spins.size(); ++i ){
+      modeq = ineq;
+    if( upname.size() > 0 ){
+      if( upname.size() == 1 ){
+        iupname = 0;
+        idownname =0;
+      }
+      else{
+        iupname = idownname = upname.size();
+      }
+    for( char const &it : upname ){
+      ss << "{";
+      ch = it;
+      if( it == upname.front()){
+        ipos=modeq.find(ch,5);
+      }
+      else{
+        ipos=modeq.find(ch,15);
+      }
+      if( modeq.substr(ipos,4) == "beta" ){ 
+        ipos += 5;
+      }
+      ss << ch << spinstring(spins[i][iupname]);
+      ss << "}";
+      newname = ss.str();
+      ss.str("");
+      modeq.replace(ipos,1,newname);
+      iupname += 1;
+    }
+    for( char const &it : downname ){
+      ss << "{";
+      ch = it;
+      ipos=modeq.find(ch,5);
+      ss << ch << spinstring(spins[i][idownname]);
+      ss << "}";
+      newname = ss.str();
+      ss.str("");
+      modeq.replace(ipos,1,newname);
+      idownname += 1;
+    }
+    }
+    newvec.push_back(modeq);
+    }
+  TermSum sum;
+  sum_final = ResolvePermutaions(sum_final);
+  for( Sum<Term,TFactor>::iterator it = sum_final.begin(); it != sum_final.end(); it++ ){
+      Term term = it->first;
+      sum += term.spinexpansion(it->second);
+  }
+  for( size_t i = 0; (i<spins.size() && i < 3); ++i ){
+    TermSum sum_spin, sum1, sum2;
+    sum2 = sum;
+    if( i==2 ){
+      for( auto it : sum ){
+        Term term = it.first;
+        sum1 += term.addpermuteT(it.second);
+      }
+      sum2 += sum1;
+    }
+
+    for( Sum<Term,TFactor>::iterator it = sum2.begin(); it != sum2.end(); it++ ){
+      if( (it->first.selectspin(spins[i]) == Return::Done && it->first.check_spin() == Return::Done) || upname.size() == 0)
+        sum_spin += std::make_pair(it->first,it->second);
+    }
+    sum_spin = EqualTerms(sum_spin,minfac);
+    sum_spin = SmallTerms(sum_spin,minfac);
+    sums_final.push_back(sum_spin);
+  }
+  if(spins[0].size() > 4){
+    sums_final.push_back(spinSwap(sums_final.back()));
+  }
+  finput.set_ineq(newvec);
+}
+
 TermSum Q2::ResolvePermutaions(const TermSum& s, bool inputterms)
 {
   TermSum sum;
@@ -568,7 +729,7 @@ void Q2::printdiags(Output* pout, const TermSum& s)
   }
 }
 
-void Q2::printalgo(std::ofstream& out, const TermSum& s)
+void Q2::printalgo(std::ofstream& out, const std::vector<TermSum>& s)
 {
   say("Algorithm...");
 
@@ -584,6 +745,6 @@ void Q2::printalgo(std::ofstream& out, const TermSum& s)
     fact._expression.printjulia(out);
   }
   else
-    error("prog, algo has to be either 0, 1 or 2! Check params.reg file!");
+    error("prog, algo has to be either 0, 1 or 2! Check params.reg file!", "Q2::printalgo");
 }
 
