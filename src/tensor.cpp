@@ -231,11 +231,36 @@ void Cut::canonicalize()
   _defSlots.resort();
 }
 
+bool threeelecsort(const SlotType st1, const SlotType st2){
+  if( st1.type() == SlotType::OccA && st2.type() == SlotType::OccB )
+    return false;
+  else if( st1.type() == SlotType::OccB && st2.type() == SlotType::OccA )
+    return false;
+  else if( st1.type() == SlotType::VirtA && st2.type() == SlotType::VirtB )
+    return false;
+  else if( st1.type() == SlotType::VirtB && st2.type() == SlotType::VirtA )
+    return false;
+  else return st1 < st2;
+}
 
-void Canonicalize(SlotTs& sts, Slots& ref)
+long unsigned int InsertionPSortD3eint( const SlotType** pIn , uint* pSel, uint N )
+{
+  long unsigned int nswaps = 0;
+  for ( uint* p = pSel+1; p != pSel+N; ++p ){
+    uint s = *p,
+      * q = p;
+    const SlotType& curr = *pIn[s];
+    for ( ; q != pSel && threeelecsort(*pIn[*(q-1)],curr); --q, ++nswaps ) *q = *(q-1);
+    *q = s;
+  }
+  return nswaps;
+}
+
+void Canonicalize(SlotTs& sts, Slots& ref, bool threeelectronint)
 {
   ref.identity(sts.size());
-  InsertionPSortD(&sts[0],&ref[0],sts.size());
+  if( threeelectronint ) InsertionPSortD3eint(&sts[0],&ref[0],sts.size());
+  else InsertionPSortD(&sts[0],&ref[0],sts.size());
   sts = sts.refarr(ref);
 }
 

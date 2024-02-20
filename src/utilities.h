@@ -191,6 +191,20 @@ long unsigned int InsertionSort( const T *RESTRICT pIn, P *RESTRICT pSel, uint N
   return nswaps;
 }
 
+template<class T, class P>
+long unsigned int InsertionSortD( const T *RESTRICT pIn, P *RESTRICT pSel, uint N )
+{
+  long unsigned int nswaps = 0;
+  for ( P* p = pSel+1; p != pSel+N; ++p ){
+    P   s = *p,
+      * q = p;
+    const T& curr = pIn[s];
+    for ( ; q != pSel && curr > pIn[*(q-1)]; --q, ++nswaps ) *q = *(q-1);
+    *q = s;
+  }
+  return nswaps;
+}
+
 // insertion pointer sort, the new order will be in pSel, returns the number of swaps
 template<class T, class P>
 long unsigned int InsertionPSort( const T **RESTRICT pIn, P *RESTRICT pSel, uint N )

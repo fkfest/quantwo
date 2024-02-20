@@ -19,7 +19,7 @@ Product< Orbital > Ops::genprodorb(short int exccl, const Orbital& occ, const Or
 
 std::vector<uint> Matrix::calc_virtelvec(const Product<Orbital>& inorbs) const
 {
-  std::vector<uint> virtelvec (inorbs.size()/2,0);
+  std::vector<uint> virtelvec (_npairs);
   for(uint i = 0; i < virtelvec.size(); i++){
     if( inorbs[i*2].type() == Orbital::Virt ) virtelvec[i]++;
     if( inorbs[(i*2)+1].type() == Orbital::Virt ) virtelvec[i]++;
@@ -165,6 +165,10 @@ void Matrix::create_Matrix(Ops::Type t, uint npairs, short int lmel, short int p
   } else
     _antisymform=false;
   _exccl = _intlines = _intvirt = _orbtypeshash = 0;
+  if ( name == "U" && npairs == 3 )
+    _threeelectronint = true;
+  else
+    _threeelectronint = false;
 }
 
 void Matrix::gen_name(const std::string& name)
@@ -674,16 +678,15 @@ std::string Matrix::plainname() const
       plainnam += _name[i];
     }
   }
-  if ( type() == Ops::FluctP || type() == Ops::Fock ) {
-    if ( type() == Ops::Fock && Input::iPars["prog"]["algo"] == 2 ) return plainnam;
-    plainnam = integralnames();
+  if ( type() == Ops::FluctP || type() == Ops::Fock || _threeelectronint ) {
+    if ( (type() == Ops::Fock && Input::iPars["prog"]["algo"] == 2) || (Input::iPars["prog"]["algo"] == 2 && _threeelectronint) ) return plainnam;
+    else return integralnames();
   }
   return plainnam;
 }
 
 std::string Matrix::integralnames() const
 {
-  assert( _type == Ops::FluctP || _type == Ops::Fock );
   if ( Input::iPars["prog"]["algo"] == 1 ){//ITF code
     return itfintegralnames();
   }
@@ -698,80 +701,15 @@ std::string Matrix::integralnames() const
 
 std::string Matrix::itfintegralnames() const
 {
-  if (_orbs.size() == 4) {
-    Product<Orbital> orbs = this->orbitals();
-    uint virtel1, virtel2;
-    virtel1 = virtel2 = 0;
-    if (orbs[0].type() == Orbital::Virt) ++virtel1;
-    if (orbs[1].type() == Orbital::Virt) ++virtel1;
-    if (orbs[2].type() == Orbital::Virt) ++virtel2;
-    if (orbs[3].type() == Orbital::Virt) ++virtel2;
-    if(virtel2 > virtel1 || ((virtel1 == virtel2) && orbs[0].type() == Orbital::Occ && orbs[2].type() == Orbital::Virt)){
-      Orbital orb1 = orbs[0];
-      Orbital orb2 = orbs[1];
-      orbs.eraseelem(1);
-      orbs.eraseelem(0);
-      orbs *= orb1;
-      orbs *= orb2;
-    }
-    std::string name = Input::sPars["syntax"]["coulombint"]; //(ab|cd) (ij|kl) (ab|kl)
-    if ( orbs[0].type() == Orbital::Occ ){ //(ij|kl)
-  //     if ((orbs[0].spin() == Spin::Up || orbs[0].spin() == Spin::Down) && orbs[0].spin() != orbs[2].spin()) name = "dI1234";
-  //     else name = "dI1324";}
-      name = "dI1324";}
-    else if (orbs[2].type() == Orbital::Occ) // (ab|kl)
-      name = "dI1234";
-    else{ //(ab|cd)
-  //     if((orbs[0].spin() == Spin::Up || orbs[0].spin() == Spin::Down) && orbs[0].spin() != orbs[2].spin()) name = "dI1234";
-  //     else name = "dI1324";
-      name = "dI1324";
-    }
-    for ( uint iorb = 0; iorb < orbs.size(); ++iorb ) {
-      assert( iorbel(iorb) >= 0 );
-      if ( orbs[iorb].type() != orbs[iorbel(iorb)].type() ) {
-        name = Input::sPars["syntax"]["exchangeint"];
-        if (orbs[0].type() == Orbital::Virt ){ //(aj|kd) (aj|cl) (aj|kl) (ab|cl) (ab|kd)
-          if (orbs[1].type() == Orbital::Occ ){ //(aj|kd) (aj|cl) (aj|kl)
-            if (orbs[2].type() == Orbital::Virt){
-              name = "dI1324";} //(aj|cl);
-            else if (orbs[3].type() == Orbital::Virt){ //(aj|kd)
-              if( orbs[0].spin() == Spin::Down && orbs[2].spin() == Spin::Up ) name = "dI3124";
-              else name = "dI1342";
-            }
-          else{ //(aj|kl)
-            if(orbs[0].spin() == Spin::Down && orbs[2].spin() == Spin::Up)
-              name = "dI1423";
-            else
-              name = "dI1234";
-          }
-        }
-        else{//(ab|cl) (ab|kd)
-              if (orbs[2].type() == Orbital::Virt) //(ab|cl)
-                if(orbs[0].spin() == Spin::Down && orbs[2].spin() == Spin::Up) // (AB|cl)
-                  name = "dI2314";
-                else
-                  name = "dI1234";
-              else if(orbs[0].spin() == Spin::Down && orbs[2].spin() == Spin::Up)
-                name = "dI2341";
-              else name ="dI1243";
-            }
-        }
-        else{//(ib|kd) (ib|kl)
-          if(orbs[3].type() == Orbital::Virt) //(ib|kd)
-            name = "I3142";
-          else if(orbs[0].spin() == Spin::Down && orbs[2].spin() == Spin::Up) //(IB|kl) which will be canonicalized for ITF to [BklI]
-            name = "dI4123";
-          else name ="dI2134";
-        }
-  //       break;
-      }
-    }
-    return name;
-  }
-  else if (_type == Ops::Fock )
+  if (_type == Ops::Fock )
   {
-    if( this->_orbs[0].type() == Orbital::Occ && this->_orbs[1].type() == Orbital::Virt ) return "f21";
-    else return "f";
+    return itf1eint();
+  }
+  else if (_orbs.size() == 4) {
+    return itf2eint();
+  }
+  else if (_orbs.size() == 6) {
+    return itf3eint();
   }
   else
   {
@@ -780,10 +718,142 @@ std::string Matrix::itfintegralnames() const
   }
 }
 
+std::string Matrix::itf1eint() const{
+  assert(_orbs.size() == 2);
+  assert(_type == Ops::Fock);
+  if( this->_orbs[0].type() == Orbital::Occ && this->_orbs[1].type() == Orbital::Virt ) return "f21";
+  else return "f";
+}
+
+std::string Matrix::itf2eint() const{
+  assert(_orbs.size() == 4);
+  assert(_type == Ops::FluctP);
+  Product<Orbital> orbs = this->orbitals();
+  uint virtel1, virtel2;
+  virtel1 = virtel2 = 0;
+  if (orbs[0].type() == Orbital::Virt) ++virtel1;
+  if (orbs[1].type() == Orbital::Virt) ++virtel1;
+  if (orbs[2].type() == Orbital::Virt) ++virtel2;
+  if (orbs[3].type() == Orbital::Virt) ++virtel2;
+  if(virtel2 > virtel1 || ((virtel1 == virtel2) && orbs[0].type() == Orbital::Occ && orbs[2].type() == Orbital::Virt)){
+    Orbital orb1 = orbs[0];
+    Orbital orb2 = orbs[1];
+    orbs.eraseelem(1);
+    orbs.eraseelem(0);
+    orbs *= orb1;
+    orbs *= orb2;
+  }
+  std::string name = Input::sPars["syntax"]["coulombint"]; //(ab|cd) (ij|kl) (ab|kl)
+  if ( orbs[0].type() == Orbital::Occ ){ //(ij|kl)
+//     if ((orbs[0].spin() == Spin::Up || orbs[0].spin() == Spin::Down) && orbs[0].spin() != orbs[2].spin()) name = "dI1234";
+//     else name = "dI1324";}
+    name = "dI1324";}
+  else if (orbs[2].type() == Orbital::Occ) // (ab|kl)
+    name = "dI1234";
+  else{ //(ab|cd)
+//     if((orbs[0].spin() == Spin::Up || orbs[0].spin() == Spin::Down) && orbs[0].spin() != orbs[2].spin()) name = "dI1234";
+//     else name = "dI1324";
+    name = "dI1324";
+  }
+  for ( uint iorb = 0; iorb < orbs.size(); ++iorb ) {
+    assert( iorbel(iorb) >= 0 );
+    if ( orbs[iorb].type() != orbs[iorbel(iorb)].type() ) {
+      name = Input::sPars["syntax"]["exchangeint"];
+      if (orbs[0].type() == Orbital::Virt ){ //(aj|kd) (aj|cl) (aj|kl) (ab|cl) (ab|kd)
+        if (orbs[1].type() == Orbital::Occ ){ //(aj|kd) (aj|cl) (aj|kl)
+          if (orbs[2].type() == Orbital::Virt){
+            name = "dI1324";} //(aj|cl);
+          else if (orbs[3].type() == Orbital::Virt){ //(aj|kd)
+            if( orbs[0].spin() == Spin::Down && orbs[2].spin() == Spin::Up ) name = "dI3124";
+            else name = "dI1342";
+          }
+        else{ //(aj|kl)
+          if(orbs[0].spin() == Spin::Down && orbs[2].spin() == Spin::Up)
+            name = "dI1423";
+          else
+            name = "dI1234";
+        }
+      }
+      else{//(ab|cl) (ab|kd)
+            if (orbs[2].type() == Orbital::Virt) //(ab|cl)
+              if(orbs[0].spin() == Spin::Down && orbs[2].spin() == Spin::Up) // (AB|cl)
+                name = "dI2314";
+              else
+                name = "dI1234";
+            else if(orbs[0].spin() == Spin::Down && orbs[2].spin() == Spin::Up)
+              name = "dI2341";
+            else name ="dI1243";
+          }
+      }
+      else{//(ib|kd) (ib|kl)
+        if(orbs[3].type() == Orbital::Virt) //(ib|kd)
+          name = "I3142";
+        else if(orbs[0].spin() == Spin::Down && orbs[2].spin() == Spin::Up) //(IB|kl) which will be canonicalized for ITF to [BklI]
+          name = "dI4123";
+        else name ="dI2134";
+      }
+//       break;
+    }
+  }
+  return name;
+}
+
+std::string Matrix::itf3eint() const{
+  assert( _orbs.size() == 6 ); //three electron integrals
+  std::string name;
+  std::vector<uint> virtelvec = calc_virtelvec(_orbs);
+  Product<uint> ref, refref;
+  Product<Orbital> orbs = _orbs;
+  ref.identity(_npairs);
+  // for(uint i = 0; i < _npairs; i++){
+  //   if( _orbs[i*2].type() == Orbital::Virt ) virtelvec[i]++;
+  //   if( _orbs[(i*2)+1].type() == Orbital::Virt ) virtelvec[i]++;
+  // }
+  InsertionSortD(&virtelvec[0],&ref[0],virtelvec.size());
+  for(Product<uint>::iterator it = ref.begin(); it != ref.end(); it++){
+    refref.push_back(*it*2);
+    refref.push_back(((*it*2)+1));
+  }
+  orbs = orbs.refpro(refref);
+  std::fill(virtelvec.begin(), virtelvec.end(), 0);
+  for(uint i = 0; i < _npairs; i++){
+    if( orbs[i*2].type() == Orbital::Virt ) virtelvec[i]++;
+    if( orbs[(i*2)+1].type() == Orbital::Virt ) virtelvec[i]++;
+  }
+  
+  if( virtelvec[0] == virtelvec[1] && virtelvec[2] == 0 ){
+    if( virtelvec[0] == 1 ){
+      if( orbs[0].type() == Orbital::Virt ){
+        if( orbs[2].type() == Orbital::Virt ) name = "dI132456";
+        else name = "dI134256";
+      }
+      else name = "dI314256";
+    }
+    else if( virtelvec[0] == 2 ){
+      name = "dI123456";
+    }
+  }
+  else if( virtelvec[0] == 2 && virtelvec[1] == virtelvec[2] ){
+    if( virtelvec[1] == 1 ){
+      if(orbs[2].type() == Orbital::Occ) name = "dI125364";
+      else name = "dI123564";
+    }
+    if( virtelvec[1] == 0 )
+      name = "dI123456";
+  }
+  else{
+    name = "dummy";}
+  return name;
+}
+
 std::string Matrix::elemcointegralnames() const
 {
-  //orbitals in electron order
-  //ElemCo names in physicist notation
+  assert(_orbs.size() == 4);
+  return elemco2eint();
+}
+
+std::string Matrix::elemco2eint() const
+{
   assert( _type == Ops::FluctP );
   std::string name="dummy";
   bool exchange = false;
@@ -792,109 +862,107 @@ std::string Matrix::elemcointegralnames() const
     if ( this->orbitals()[iorb].type() != this->orbitals()[iorbel(iorb,true)].type() )
       exchange = true;
   }
-  if (_orbs.size() == 4) {
-    Product<Orbital> orbs = this->orbitals();
-    if ( !exchange ){ // <ik|jl> <ak|bl> <ac|bd> <ib|kd>
-      if ( orbs[0].type() == Orbital::Occ ){ //<ik|jl> <ib|kd>
-        if ( orbs[1].type() == Orbital::Occ ){
-          name = "d_oooo";
-          if( orbs[0].spin() == Spin::Up && orbs[1].spin() == Spin::Down ) name = "d_oOoO";
-          else if( orbs[0].spin() == Spin::Down && orbs[1].spin() == Spin::Down ) name = "d_OOOO";
-        }
-        else{ //<
-          name = "d_ovov";
-          if( orbs[0].spin() == Spin::Up && orbs[1].spin() == Spin::Down ) name = "d_oVoV";
-          else if( orbs[0].spin() == Spin::Down && orbs[1].spin() == Spin::Down ) name = "d_OVOV";
-        }
+  const Product<Orbital>& orbs = this->orbitals();
+  if ( !exchange ){ // <ik|jl> <ak|bl> <ac|bd> <ib|kd>
+    if ( orbs[0].type() == Orbital::Occ ){ //<ik|jl> <ib|kd>
+      if ( orbs[1].type() == Orbital::Occ ){
+        name = "d_oooo";
+        if( orbs[0].spin() == Spin::Up && orbs[1].spin() == Spin::Down ) name = "d_oOoO";
+        else if( orbs[0].spin() == Spin::Down && orbs[1].spin() == Spin::Down ) name = "d_OOOO";
       }
-      else if (orbs[1].type() == Orbital::Occ){ // <ak|bl>
-        name = "d_vovo";
-        if( orbs[0].spin() == Spin::Up && orbs[1].spin() == Spin::Down ) name = "d_vOvO";
-        else if( orbs[0].spin() == Spin::Down && orbs[1].spin() == Spin::Down ) name = "d_VOVO";
-      }
-      else{ //<ac|bd>
-        name = "d_vvvv";
-        if( orbs[0].spin() == Spin::Up && orbs[1].spin() == Spin::Down ) name = "d_vVvV";
-        else if( orbs[0].spin() == Spin::Down && orbs[1].spin() == Spin::Down ) name = "d_VVVV";
+      else{ //<
+        name = "d_ovov";
+        if( orbs[0].spin() == Spin::Up && orbs[1].spin() == Spin::Down ) name = "d_oVoV";
+        else if( orbs[0].spin() == Spin::Down && orbs[1].spin() == Spin::Down ) name = "d_OVOV";
       }
     }
-    else{ //exchange integral
-      if (orbs[0].type() == Orbital::Virt ){ // <vo|ov> <vv|oo> <vo|oo> <vv|vo> <vo|vv> <vv|ov>
-        if (orbs[2].type() == Orbital::Occ ){ // <vv|oo> <vo|ov> <vo|oo> <vv|ov>
-          if (orbs[1].type() == Orbital::Virt){ // <vv|oo> <vv|ov>
-            if (orbs[3].type() == Orbital::Virt){
-              name = "d_vvov";
-              if( orbs[0].spin() == Spin::Up && orbs[1].spin() == Spin::Down ) name = "d_vVoV";
-              else if( orbs[0].spin() == Spin::Down && orbs[1].spin() == Spin::Down ) name = "d_VVOV";
-            }
-            else{
-              name = "d_vvoo";
-              if( orbs[0].spin() == Spin::Up && orbs[1].spin() == Spin::Down ) name = "d_vVoO";
-              else if( orbs[0].spin() == Spin::Down && orbs[1].spin() == Spin::Down ) name = "d_VVOO";
-            }
-          }
-          else if (orbs[3].type() == Orbital::Virt){ //<vo|ov>
-            name = "d_voov";
-            if( orbs[0].spin() == Spin::Up && orbs[1].spin() == Spin::Down ) name = "d_vOoV";
-            else if( orbs[0].spin() == Spin::Down && orbs[1].spin() == Spin::Down ) name = "d_VOOV";
-          }
-          else{ //<vo|oo>
-            name = "d_vooo";
-            if( orbs[0].spin() == Spin::Up && orbs[1].spin() == Spin::Down ) name = "d_vOoO";
-            else if( orbs[0].spin() == Spin::Down && orbs[1].spin() == Spin::Down ) name = "d_VOOO";
-          }
-        }
-        else{//(vv|vo) (vv|ov)
-          if (orbs[1].type() == Orbital::Virt){ //<ac|bl>
-            name = "d_vvvo";
-            if( orbs[0].spin() == Spin::Up && orbs[1].spin() == Spin::Down ) name = "d_vVvO";
-            else if( orbs[0].spin() == Spin::Down && orbs[1].spin() == Spin::Down ) name = "d_VVVO";
+    else if (orbs[1].type() == Orbital::Occ){ // <ak|bl>
+      name = "d_vovo";
+      if( orbs[0].spin() == Spin::Up && orbs[1].spin() == Spin::Down ) name = "d_vOvO";
+      else if( orbs[0].spin() == Spin::Down && orbs[1].spin() == Spin::Down ) name = "d_VOVO";
+    }
+    else{ //<ac|bd>
+      name = "d_vvvv";
+      if( orbs[0].spin() == Spin::Up && orbs[1].spin() == Spin::Down ) name = "d_vVvV";
+      else if( orbs[0].spin() == Spin::Down && orbs[1].spin() == Spin::Down ) name = "d_VVVV";
+    }
+  }
+  else{ //exchange integral
+    if (orbs[0].type() == Orbital::Virt ){ // <vo|ov> <vv|oo> <vo|oo> <vv|vo> <vo|vv> <vv|ov>
+      if (orbs[2].type() == Orbital::Occ ){ // <vv|oo> <vo|ov> <vo|oo> <vv|ov>
+        if (orbs[1].type() == Orbital::Virt){ // <vv|oo> <vv|ov>
+          if (orbs[3].type() == Orbital::Virt){
+            name = "d_vvov";
+            if( orbs[0].spin() == Spin::Up && orbs[1].spin() == Spin::Down ) name = "d_vVoV";
+            else if( orbs[0].spin() == Spin::Down && orbs[1].spin() == Spin::Down ) name = "d_VVOV";
           }
           else{
-            name = "d_vovv";
-            if( orbs[0].spin() == Spin::Up && orbs[1].spin() == Spin::Down ) name = "d_vOvV";
-            else if( orbs[0].spin() == Spin::Down && orbs[1].spin() == Spin::Down ) name = "d_VOVV";
+            name = "d_vvoo";
+            if( orbs[0].spin() == Spin::Up && orbs[1].spin() == Spin::Down ) name = "d_vVoO";
+            else if( orbs[0].spin() == Spin::Down && orbs[1].spin() == Spin::Down ) name = "d_VVOO";
           }
+        }
+        else if (orbs[3].type() == Orbital::Virt){ //<vo|ov>
+          name = "d_voov";
+          if( orbs[0].spin() == Spin::Up && orbs[1].spin() == Spin::Down ) name = "d_vOoV";
+          else if( orbs[0].spin() == Spin::Down && orbs[1].spin() == Spin::Down ) name = "d_VOOV";
+        }
+        else{ //<vo|oo>
+          name = "d_vooo";
+          if( orbs[0].spin() == Spin::Up && orbs[1].spin() == Spin::Down ) name = "d_vOoO";
+          else if( orbs[0].spin() == Spin::Down && orbs[1].spin() == Spin::Down ) name = "d_VOOO";
         }
       }
-      else{//<oo|vv> <ov|vo> <ov|vv> <oo|vo> <oo|ov> <ov|oo>
-        if(orbs[3].type() == Orbital::Virt){ // <oo|vv> <ov|vv> <oo|ov>
-          if(orbs[1].type() == Orbital::Occ){// <oo|vv> <oo|ov> 
-            if(orbs[2].type() == Orbital::Occ){ 
-              name = "d_ooov";
-              if( orbs[0].spin() == Spin::Up && orbs[1].spin() == Spin::Down ) name = "d_oOoV";
-              else if( orbs[0].spin() == Spin::Down && orbs[1].spin() == Spin::Down ) name = "d_OOOV";
-            }
-            else{
-            name = "oovv";
-            if( orbs[0].spin() == Spin::Up && orbs[1].spin() == Spin::Down ) name = "oOvV";
-            else if( orbs[0].spin() == Spin::Down && orbs[1].spin() == Spin::Down ) name = "OOVV";
-            }
-          }
-          else{// <ov|vv>
-            name = "d_ovvv";
-            if( orbs[0].spin() == Spin::Up && orbs[1].spin() == Spin::Down ) name = "d_oVvV";
-            else if( orbs[0].spin() == Spin::Down && orbs[1].spin() == Spin::Down ) name = "d_OVVV";
-          }
+      else{//(vv|vo) (vv|ov)
+        if (orbs[1].type() == Orbital::Virt){ //<ac|bl>
+          name = "d_vvvo";
+          if( orbs[0].spin() == Spin::Up && orbs[1].spin() == Spin::Down ) name = "d_vVvO";
+          else if( orbs[0].spin() == Spin::Down && orbs[1].spin() == Spin::Down ) name = "d_VVVO";
         }
-        else{ //<ov|vo> <oo|vo> <ov|oo>
-          if(orbs[1].type() == Orbital::Virt){//<ov|vo> <ov|oo>
-            if(orbs[2].type() == Orbital::Virt){
-              name = "d_ovvo";
-              if( orbs[0].spin() == Spin::Up && orbs[1].spin() == Spin::Down ) name = "d_oVvO";
-              else if( orbs[0].spin() == Spin::Down && orbs[1].spin() == Spin::Down ) name = "d_OVVO";
-            }
-            else{
-              name = "d_ovoo";
-              if( orbs[0].spin() == Spin::Up && orbs[1].spin() == Spin::Down ) name = "d_oVoO";
-              else if( orbs[0].spin() == Spin::Down && orbs[1].spin() == Spin::Down ) name = "d_OVOO";
-            }
+        else{
+          name = "d_vovv";
+          if( orbs[0].spin() == Spin::Up && orbs[1].spin() == Spin::Down ) name = "d_vOvV";
+          else if( orbs[0].spin() == Spin::Down && orbs[1].spin() == Spin::Down ) name = "d_VOVV";
+        }
+      }
+    }
+    else{//<oo|vv> <ov|vo> <ov|vv> <oo|vo> <oo|ov> <ov|oo>
+      if(orbs[3].type() == Orbital::Virt){ // <oo|vv> <ov|vv> <oo|ov>
+        if(orbs[1].type() == Orbital::Occ){// <oo|vv> <oo|ov> 
+          if(orbs[2].type() == Orbital::Occ){ 
+            name = "d_ooov";
+            if( orbs[0].spin() == Spin::Up && orbs[1].spin() == Spin::Down ) name = "d_oOoV";
+            else if( orbs[0].spin() == Spin::Down && orbs[1].spin() == Spin::Down ) name = "d_OOOV";
           }
           else{
-            name = "d_oovo";
-            if( orbs[0].spin() == Spin::Up && orbs[1].spin() == Spin::Down ) name = "d_oOvO";
-            else if( orbs[0].spin() == Spin::Down && orbs[1].spin() == Spin::Down ) name = "d_OOVO";
+          name = "oovv";
+          if( orbs[0].spin() == Spin::Up && orbs[1].spin() == Spin::Down ) name = "oOvV";
+          else if( orbs[0].spin() == Spin::Down && orbs[1].spin() == Spin::Down ) name = "OOVV";
           }
+        }
+        else{// <ov|vv>
+          name = "d_ovvv";
+          if( orbs[0].spin() == Spin::Up && orbs[1].spin() == Spin::Down ) name = "d_oVvV";
+          else if( orbs[0].spin() == Spin::Down && orbs[1].spin() == Spin::Down ) name = "d_OVVV";
+        }
+      }
+      else{ //<ov|vo> <oo|vo> <ov|oo>
+        if(orbs[1].type() == Orbital::Virt){//<ov|vo> <ov|oo>
+          if(orbs[2].type() == Orbital::Virt){
+            name = "d_ovvo";
+            if( orbs[0].spin() == Spin::Up && orbs[1].spin() == Spin::Down ) name = "d_oVvO";
+            else if( orbs[0].spin() == Spin::Down && orbs[1].spin() == Spin::Down ) name = "d_OVVO";
+          }
+          else{
+            name = "d_ovoo";
+            if( orbs[0].spin() == Spin::Up && orbs[1].spin() == Spin::Down ) name = "d_oVoO";
+            else if( orbs[0].spin() == Spin::Down && orbs[1].spin() == Spin::Down ) name = "d_OVOO";
+          }
+        }
+        else{
+          name = "d_oovo";
+          if( orbs[0].spin() == Spin::Up && orbs[1].spin() == Spin::Down ) name = "d_oOvO";
+          else if( orbs[0].spin() == Spin::Down && orbs[1].spin() == Spin::Down ) name = "d_OOVO";
         }
       }
     }

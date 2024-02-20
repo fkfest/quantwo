@@ -164,14 +164,20 @@ class Matrix {
   //  K: otherwise
   std::string integralnames() const;
   std::string itfintegralnames() const;
+  std::string itf1eint() const;
+  std::string itf2eint() const;
+  std::string itf3eint() const;
   std::string elemcointegralnames() const;
+  std::string elemco2eint() const;
   // set orbital at iorb to orb
   void set_orb(Orbital orb, lui iorb) { assert(iorb<_orbs.size()); _orbs[iorb] = orb;};
   // set orbs based on crobs and anobs
   void set_orbs(Product<Orbital>& crobs, Product<Orbital>& anobs);
   void set_orbs(const Product<Orbital>& orbs) {_orbs = orbs;};
   Product<Orbital>& get_orbs(){return _orbs;}
+  const Product<Orbital>& getc_orbs() const {return _orbs;}
   Product<Orbital> _intorbs;
+  bool _threeelectronint;
 
   private:
   // generate name from type or use the given name

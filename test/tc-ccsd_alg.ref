@@ -1,0 +1,231 @@
+algorithm...
+---- decl
+index-space: ijklmno, Closed, c // optimization length: 60
+index-space: abcdefgh, External, e // optimization length: 500
+tensor: R[aaaiii], !Create{}
+tensor: R[aaii], !Create{}
+tensor: R[ai], !Create{}
+tensor: T[aaaiii], !Create{}
+tensor: T[aaii], !Create{}
+tensor: T[ai], !Create{}
+tensor: dI314256[aaiiii], !Create{}
+tensor: A[aaii], !Create{}
+tensor: B[ii], !Create{}
+tensor: C[aaii], !Create{}
+tensor: dI125364[aaaaii], !Create{}
+tensor: D[aa], !Create{}
+tensor: E[aaii], !Create{}
+tensor: F[aaii], !Create{}
+tensor: G[ii], !Create{}
+tensor: H[aaii], !Create{}
+tensor: I[iiii], !Create{}
+tensor: J[iiii], !Create{}
+tensor: K[iiii], !Create{}
+tensor: L[iiii], !Create{}
+tensor: M[aaii], !Create{}
+tensor: N[aaii], !Create{}
+tensor: O[ii], !Create{}
+tensor: P[aa], !Create{}
+tensor: Q[aaaa], !Create{}
+tensor: U[aaaa], !Create{}
+tensor: V[aaii], !Create{}
+tensor: W[aa], !Create{}
+tensor: X[aaii], !Create{}
+tensor: Y[aaaa], !Create{}
+tensor: Z[aaaa], !Create{}
+tensor: AA[aaii], !Create{}
+tensor: AB[aaii], !Create{}
+tensor: AC[aaii], !Create{}
+tensor: dI123456[aaiiii], !Create{}
+tensor: AD[ii], !Create{}
+tensor: AE[iiii], !Create{}
+tensor: AF[iiii], !Create{}
+tensor: dI123456[aaaaii], !Create{}
+tensor: AG[aa], !Create{}
+tensor: AH[aaaa], !Create{}
+tensor: AI[aaaa], !Create{}
+
+---- code ("eval_residual")
+init R[aaaiii]
+save R[aaaiii]
+init R[aaii]
+save R[aaii]
+init R[ai]
+save R[ai]
+init A[aaii]
+init B[ii]
+init C[aaii]
+init D[aa]
+init E[aaii]
+init F[aaii]
+init G[ii]
+init H[aaii]
+init I[iiii]
+init J[iiii]
+init K[iiii]
+init L[iiii]
+init M[aaii]
+init N[aaii]
+init O[ii]
+init P[aa]
+init Q[aaaa]
+init U[aaaa]
+init V[aaii]
+init W[aa]
+init X[aaii]
+init Y[aaaa]
+init Z[aaaa]
+init AA[aaii]
+init AB[aaii]
+init AC[aaii]
+init AD[ii]
+init AE[iiii]
+init AF[iiii]
+init AG[aa]
+init AH[aaaa]
+init AI[aaaa]
+.A[baij] += dI314256[cakilj] T[bckl]
+.R[abij] += 0.5*A[acik] T[bcjk]
+.R[baij] -= 0.5*A[acik] T[bcjk]
+.R[abji] -= 0.5*A[acik] T[bcjk]
+.R[baji] += 0.5*A[acik] T[bcjk]
+.B[ij] += dI314256[abjikl] T[abkl]
+.R[abij] -= 0.25*B[ik] T[abjk]
+.R[abji] += 0.25*B[ik] T[abjk]
+.C[baij] += dI314256[caklij] T[bckl]
+.R[abij] -= 0.5*C[acik] T[bcjk]
+.R[baij] += 0.5*C[acik] T[bcjk]
+.R[abji] += 0.5*C[acik] T[bcjk]
+.R[baji] -= 0.5*C[acik] T[bcjk]
+.D[ab] += dI125364[cdabij] T[cdij]
+.R[abij] += 0.25*D[ac] T[bcij]
+.R[baij] -= 0.25*D[ac] T[bcij]
+.E[abji] += dI125364[cbadki] T[cdjk]
+.R[abij] += 0.5*E[acik] T[bcjk]
+.R[baij] -= 0.5*E[acik] T[bcjk]
+.R[abji] -= 0.5*E[acik] T[bcjk]
+.R[baji] += 0.5*E[acik] T[bcjk]
+.F[abji] += dI125364[bdacik] T[cdjk]
+.R[abij] -= 0.5*F[acik] T[bcjk]
+.R[baij] += 0.5*F[acik] T[bcjk]
+.R[abji] += 0.5*F[acik] T[bcjk]
+.R[baji] -= 0.5*F[acik] T[bcjk]
+.G[ij] += dI314256[bakilj] T[abkl]
+.R[abij] += 0.5*G[ik] T[abjk]
+.R[abji] -= 0.5*G[ik] T[abjk]
+.R[baij] += 0.5*dI314256[cakilj] T[bckl]
+.R[abij] -= 0.5*dI314256[cakilj] T[bckl]
+.R[baij] -= 0.5*dI314256[cakjli] T[bckl]
+.R[abij] += 0.5*dI314256[cakjli] T[bckl]
+.R[baij] -= 0.5*dI314256[caklij] T[bckl]
+.R[abij] += 0.5*dI314256[caklij] T[bckl]
+.R[baij] += 0.5*dI314256[caklji] T[bckl]
+.R[abij] -= 0.5*dI314256[caklji] T[bckl]
+.H[baij] += dI314256[ackilj] T[bckl]
+.R[abij] -= 0.5*H[acik] T[bcjk]
+.R[baij] += 0.5*H[acik] T[bcjk]
+.R[abji] += 0.5*H[acik] T[bcjk]
+.R[baji] -= 0.5*H[acik] T[bcjk]
+.I[iljk] += dI314256[abjikm] T[ablm]
+.R[abij] -= 0.25*I[ijkl] T[abkl]
+.R[abij] += 0.25*I[ijkl] T[bakl]
+.J[lijk] += dI314256[abjikm] T[ablm]
+.R[abij] += 0.25*J[ijkl] T[abkl]
+.R[abij] -= 0.25*J[ijkl] T[bakl]
+.K[iljk] += dI314256[bajikm] T[ablm]
+.R[abij] += 0.25*K[ijkl] T[abkl]
+.R[abij] -= 0.25*K[ijkl] T[bakl]
+.L[lijk] += dI314256[bajikm] T[ablm]
+.R[abij] -= 0.25*L[ijkl] T[abkl]
+.R[abij] += 0.25*L[ijkl] T[bakl]
+.M[baij] += dI314256[acjikl] T[bckl]
+.R[abij] -= 0.5*M[acik] T[bcjk]
+.R[baij] += 0.5*M[acik] T[bcjk]
+.R[abji] += 0.5*M[acik] T[bcjk]
+.R[baji] -= 0.5*M[acik] T[bcjk]
+.N[baij] += dI314256[cajikl] T[bckl]
+.R[abij] += 0.5*N[acik] T[bcjk]
+.R[baij] -= 0.5*N[acik] T[bcjk]
+.R[abji] -= 0.5*N[acik] T[bcjk]
+.R[baji] += 0.5*N[acik] T[bcjk]
+.O[ij] += dI314256[bajikl] T[abkl]
+.R[abij] += 0.25*O[ik] T[abjk]
+.R[abji] -= 0.25*O[ik] T[abjk]
+.P[ab] += dI125364[cbadij] T[cdij]
+.R[abij] -= 0.5*P[ac] T[bcij]
+.R[baij] += 0.5*P[ac] T[bcij]
+.Q[adbc] += dI125364[ebacij] T[deij]
+.R[abij] += 0.25*Q[abcd] T[cdij]
+.R[abij] -= 0.25*Q[abcd] T[cdji]
+.U[dabc] += dI125364[ebacij] T[deij]
+.R[abij] -= 0.25*U[abcd] T[cdij]
+.R[abij] += 0.25*U[abcd] T[cdji]
+.V[abji] += dI125364[cdabki] T[cdjk]
+.R[abij] -= 0.5*V[acik] T[bcjk]
+.R[baij] += 0.5*V[acik] T[bcjk]
+.R[abji] += 0.5*V[acik] T[bcjk]
+.R[baji] -= 0.5*V[acik] T[bcjk]
+.R[abij] += 0.5*dI125364[cabdki] T[cdjk]
+.R[abij] -= 0.5*dI125364[cbadki] T[cdjk]
+.R[abji] -= 0.5*dI125364[cabdki] T[cdjk]
+.R[abji] += 0.5*dI125364[cbadki] T[cdjk]
+.R[abij] -= 0.5*dI125364[dabcki] T[cdjk]
+.R[abij] += 0.5*dI125364[dbacki] T[cdjk]
+.R[abji] += 0.5*dI125364[dabcki] T[cdjk]
+.R[abji] -= 0.5*dI125364[dbacki] T[cdjk]
+.W[ab] += dI125364[dcabij] T[cdij]
+.R[abij] -= 0.25*W[ac] T[bcij]
+.R[baij] += 0.25*W[ac] T[bcij]
+.X[baij] += dI314256[acklij] T[bckl]
+.R[abij] += 0.5*X[acik] T[bcjk]
+.R[baij] -= 0.5*X[acik] T[bcjk]
+.R[abji] -= 0.5*X[acik] T[bcjk]
+.R[baji] += 0.5*X[acik] T[bcjk]
+.Y[adbc] += dI125364[beacij] T[deij]
+.R[abij] -= 0.25*Y[abcd] T[cdij]
+.R[abij] += 0.25*Y[abcd] T[cdji]
+.Z[dabc] += dI125364[beacij] T[deij]
+.R[abij] += 0.25*Z[abcd] T[cdij]
+.R[abij] -= 0.25*Z[abcd] T[cdji]
+.AA[abji] += dI125364[bcadki] T[cdjk]
+.R[abij] -= 0.5*AA[acik] T[bcjk]
+.R[baij] += 0.5*AA[acik] T[bcjk]
+.R[abji] += 0.5*AA[acik] T[bcjk]
+.R[baji] -= 0.5*AA[acik] T[bcjk]
+.AB[abji] += dI125364[cdabik] T[cdjk]
+.R[abij] += 0.5*AB[acik] T[bcjk]
+.R[baij] -= 0.5*AB[acik] T[bcjk]
+.R[abji] -= 0.5*AB[acik] T[bcjk]
+.R[baji] += 0.5*AB[acik] T[bcjk]
+.AC[abji] += dI125364[dbacik] T[cdjk]
+.R[abij] += 0.5*AC[acik] T[bcjk]
+.R[baij] -= 0.5*AC[acik] T[bcjk]
+.R[abji] -= 0.5*AC[acik] T[bcjk]
+.R[baji] += 0.5*AC[acik] T[bcjk]
+.R[abij] += 0.5*dI123456[ackilj] T[bckl]
+.R[baij] -= 0.5*dI123456[ackilj] T[bckl]
+.R[abij] -= 0.5*dI123456[ackjli] T[bckl]
+.R[baij] += 0.5*dI123456[ackjli] T[bckl]
+.AD[ij] += dI314256[abkilj] T[abkl]
+.R[abij] -= 0.5*AD[ik] T[abjk]
+.R[abji] += 0.5*AD[ik] T[abjk]
+.AE[iljk] += dI314256[abmijk] T[ablm]
+.R[abij] -= 0.25*AE[ijkl] T[abkl]
+.R[abij] += 0.25*AE[ijkl] T[bakl]
+.AF[lijk] += dI314256[abmijk] T[ablm]
+.R[abij] += 0.25*AF[ijkl] T[abkl]
+.R[abij] -= 0.25*AF[ijkl] T[bakl]
+.R[abij] -= 0.5*dI123456[acbdki] T[cdjk]
+.R[abij] += 0.5*dI123456[bcadki] T[cdjk]
+.R[abji] += 0.5*dI123456[acbdki] T[cdjk]
+.R[abji] -= 0.5*dI123456[bcadki] T[cdjk]
+.AG[ab] += dI125364[dbacij] T[cdij]
+.R[abij] += 0.5*AG[ac] T[bcij]
+.R[baij] -= 0.5*AG[ac] T[bcij]
+.AH[adbc] += dI125364[bcaeij] T[deij]
+.R[abij] += 0.25*AH[abcd] T[cdij]
+.R[abij] -= 0.25*AH[abcd] T[cdji]
+.AI[dabc] += dI125364[bcaeij] T[deij]
+.R[abij] -= 0.25*AI[abcd] T[cdij]
+.R[abij] += 0.25*AI[abcd] T[cdji]
+

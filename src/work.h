@@ -44,6 +44,7 @@ namespace Q2
   //!helps EqualTerms to find equal terms. Assumes full anti-symmetry of amplitudes!
   TermSum PreConditioner(const TermSum& s);
   TermSum postaction(const TermSum& s);
+  bool transcorrelation(TermSum s);
   void printdiags(Output* pout, const TermSum& s);
 
   void printalgo(std::ofstream& out, const std::vector<TermSum>& s);

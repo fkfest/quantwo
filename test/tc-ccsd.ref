@@ -1,0 +1,44 @@
+prog,nobrafac=1
+prog,spinintegr=0
+prog,explspin=0
+prog,algo=1
+output,level=2
+
+\beq
+&&<\Phi^{ab}_{ij} |-6 \op U_{3^{ppp}_{ppp}} (1+\op T_2 + \half \op T_2 \op T_2)| 0>_C
+=\nl
+(0.5*1 - 0.5*\Perm{IJ}{JI} - 0.5*\Perm{AB}{BA} + 0.5*\Perm{IJAB}{JIBA})\sum_{KK_{1}LC_{1}D}\tnsr U^{IC_{1}D}_{KK_{1}L}\tnsr T^{KK_{1}}_{AC_{1}}\tnsr T^{JL}_{BD}\nl
+ + (-0.25*1 + 0.25*\Perm{IJ}{JI})\sum_{KLL_{1}DD_{1}}\tnsr U^{IDD_{1}}_{KLL_{1}}\tnsr T^{JK}_{AB}\tnsr T^{LL_{1}}_{DD_{1}} + (-0.5*1 + 0.5*\Perm{IJ}{JI}\nl
+ + 0.5*\Perm{AB}{BA} - 0.5*\Perm{IJAB}{JIBA})\sum_{KK_{1}LCD}\tnsr U^{CID}_{KK_{1}L}\tnsr T^{KK_{1}}_{AC}\tnsr T^{JL}_{BD} + (0.25*1\nl
+ - 0.25*\Perm{AB}{BA})\sum_{KK_{1}CC_{1}D}\tnsr U^{CC_{1}D}_{KK_{1}A}\tnsr T^{KK_{1}}_{CC_{1}}\tnsr T^{IJ}_{BD} + (0.5*1 - 0.5*\Perm{IJ}{JI} - 0.5*\Perm{AB}{BA}\nl
+ + 0.5*\Perm{IJAB}{JIBA})\sum_{KLCC_{1}D}\tnsr U^{CDC_{1}}_{KLA}\tnsr T^{IK}_{CC_{1}}\tnsr T^{JL}_{BD} + (-0.5*1 + 0.5*\Perm{IJ}{JI} + 0.5*\Perm{AB}{BA}\nl
+ - 0.5*\Perm{IJAB}{JIBA})\sum_{KL_{1}CDD_{1}}\tnsr U^{CD_{1}D}_{KL_{1}A}\tnsr T^{JK}_{BC}\tnsr T^{IL_{1}}_{DD_{1}} + (0.5*1\nl
+ - 0.5*\Perm{IJ}{JI})\sum_{KK_{1}LCC_{1}}\tnsr U^{IC_{1}C}_{KK_{1}L}\tnsr T^{KK_{1}}_{CC_{1}}\tnsr T^{JL}_{AB} + (0.5*1 - 0.5*\Perm{IJ}{JI} - 0.5*\Perm{AB}{BA}\nl
+ + 0.5*\Perm{IJAB}{JIBA})\sum_{KK_{1}C_{1}}\tnsr U^{IC_{1}J}_{KK_{1}B}\tnsr T^{KK_{1}}_{AC_{1}} + (-0.5*1 + 0.5*\Perm{IJ}{JI} + 0.5*\Perm{AB}{BA}\nl
+ - 0.5*\Perm{IJAB}{JIBA})\sum_{KK_{1}LC_{1}D}\tnsr U^{IDC_{1}}_{KK_{1}L}\tnsr T^{KK_{1}}_{AC_{1}}\tnsr T^{JL}_{BD} + (-0.25*1 + 0.25*\Perm{IJ}{JI}\nl
+ + 0.25*\Perm{AB}{BA} - 0.25*\Perm{IJAB}{JIBA})\sum_{KK_{1}L_{1}DD_{1}}\tnsr U^{IDD_{1}}_{KK_{1}L_{1}}\tnsr T^{KK_{1}}_{AB}\tnsr T^{JL_{1}}_{DD_{1}} + (0.25*1\nl
+ - 0.25*\Perm{IJ}{JI} - 0.25*\Perm{AB}{BA} + 0.25*\Perm{IJAB}{JIBA})\sum_{KK_{1}LDD_{1}}\tnsr U^{ID_{1}D}_{KK_{1}L}\tnsr T^{KK_{1}}_{AB}\tnsr T^{JL}_{DD_{1}}\nl
+ + (-0.5*1 + 0.5*\Perm{IJ}{JI} + 0.5*\Perm{AB}{BA} - 0.5*\Perm{IJAB}{JIBA})\sum_{KLL_{1}CD_{1}}\tnsr U^{ICD_{1}}_{KLL_{1}}\tnsr T^{JK}_{BC}\tnsr T^{LL_{1}}_{AD_{1}}\nl
+ + (0.5*1 - 0.5*\Perm{IJ}{JI} - 0.5*\Perm{AB}{BA} + 0.5*\Perm{IJAB}{JIBA})\sum_{KLL_{1}CD}\tnsr U^{IDC}_{KLL_{1}}\tnsr T^{JK}_{BC}\tnsr T^{LL_{1}}_{AD}\nl
+ + (0.25*1 - 0.25*\Perm{IJ}{JI})\sum_{KLL_{1}DD_{1}}\tnsr U^{ID_{1}D}_{KLL_{1}}\tnsr T^{JK}_{AB}\tnsr T^{LL_{1}}_{DD_{1}} + (-0.5*1 + 0.5*\Perm{IJ}{JI}\nl
+ + 0.5*\Perm{AB}{BA} - 0.5*\Perm{IJAB}{JIBA})\sum_{KK_{1}C}\tnsr U^{CIJ}_{KK_{1}B}\tnsr T^{KK_{1}}_{AC} + (-0.5*1\nl
+ + 0.5*\Perm{AB}{BA})\sum_{KK_{1}CC_{1}D}\tnsr U^{CDC_{1}}_{KK_{1}A}\tnsr T^{KK_{1}}_{CC_{1}}\tnsr T^{IJ}_{BD} + (0.25*1 - 0.25*\Perm{IJ}{JI} - 0.25*\Perm{AB}{BA}\nl
+ + 0.25*\Perm{IJAB}{JIBA})\sum_{KK_{1}CDD_{1}}\tnsr U^{CDD_{1}}_{KK_{1}A}\tnsr T^{KK_{1}}_{BC}\tnsr T^{IJ}_{DD_{1}} + (-0.5*1 + 0.5*\Perm{IJ}{JI} + 0.5*\Perm{AB}{BA} \newpg
+\eeq
+\beq
+&& - 0.5*\Perm{IJAB}{JIBA})\sum_{KLCC_{1}D}\tnsr U^{CC_{1}D}_{KLA}\tnsr T^{IK}_{CC_{1}}\tnsr T^{JL}_{BD} + (0.5*1 - 0.5*\Perm{IJ}{JI} - 0.5*\Perm{AB}{BA}\nl
+ + 0.5*\Perm{IJAB}{JIBA})\sum_{KCC_{1}}\tnsr U^{CIC_{1}}_{KAB}\tnsr T^{JK}_{CC_{1}} + (-0.25*1\nl
+ + 0.25*\Perm{AB}{BA})\sum_{KK_{1}CC_{1}D}\tnsr U^{C_{1}CD}_{KK_{1}A}\tnsr T^{KK_{1}}_{CC_{1}}\tnsr T^{IJ}_{BD} + (0.5*1 - 0.5*\Perm{IJ}{JI} - 0.5*\Perm{AB}{BA}\nl
+ + 0.5*\Perm{IJAB}{JIBA})\sum_{KK_{1}LCD}\tnsr U^{DIC}_{KK_{1}L}\tnsr T^{KK_{1}}_{AC}\tnsr T^{JL}_{BD} + (-0.25*1 + 0.25*\Perm{IJ}{JI}\nl
+ + 0.25*\Perm{AB}{BA} - 0.25*\Perm{IJAB}{JIBA})\sum_{KK_{1}C_{1}DD_{1}}\tnsr U^{DC_{1}D_{1}}_{KK_{1}A}\tnsr T^{KK_{1}}_{BC_{1}}\tnsr T^{IJ}_{DD_{1}} + (-0.5*1 + 0.5*\Perm{IJ}{JI}\nl
+ + 0.5*\Perm{AB}{BA} - 0.5*\Perm{IJAB}{JIBA})\sum_{KLCC_{1}D}\tnsr U^{DCC_{1}}_{KLA}\tnsr T^{IK}_{CC_{1}}\tnsr T^{JL}_{BD} + (0.5*1 - 0.5*\Perm{IJ}{JI}\nl
+ - 0.5*\Perm{AB}{BA} + 0.5*\Perm{IJAB}{JIBA})\sum_{KL_{1}CDD_{1}}\tnsr U^{DD_{1}C}_{KL_{1}A}\tnsr T^{JK}_{BC}\tnsr T^{IL_{1}}_{DD_{1}} + (0.5*1 - 0.5*\Perm{IJ}{JI}\nl
+ - 0.5*\Perm{AB}{BA} + 0.5*\Perm{IJAB}{JIBA})\sum_{KL_{1}CDD_{1}}\tnsr U^{D_{1}CD}_{KL_{1}A}\tnsr T^{JK}_{BC}\tnsr T^{IL_{1}}_{DD_{1}} + (-0.5*1 + 0.5*\Perm{IJ}{JI}\nl
+ + 0.5*\Perm{AB}{BA} - 0.5*\Perm{IJAB}{JIBA})\sum_{K_{1}CC_{1}}\tnsr U^{C_{1}IC}_{K_{1}AB}\tnsr T^{JK_{1}}_{CC_{1}} + (0.5*1 - 0.5*\Perm{IJ}{JI}\nl
+ - 0.5*\Perm{AB}{BA} + 0.5*\Perm{IJAB}{JIBA})\sum_{KK_{1}C}\tnsr U^{IJC}_{KK_{1}A}\tnsr T^{KK_{1}}_{BC} + (-0.5*1\nl
+ + 0.5*\Perm{IJ}{JI})\sum_{KK_{1}LCC_{1}}\tnsr U^{ICC_{1}}_{KK_{1}L}\tnsr T^{KK_{1}}_{CC_{1}}\tnsr T^{JL}_{AB} + (-0.25*1 + 0.25*\Perm{IJ}{JI} + 0.25*\Perm{AB}{BA}\nl
+ - 0.25*\Perm{IJAB}{JIBA})\sum_{KLL_{1}CC_{1}}\tnsr U^{ICC_{1}}_{KLL_{1}}\tnsr T^{JK}_{CC_{1}}\tnsr T^{LL_{1}}_{AB} + (-0.5*1 + 0.5*\Perm{IJ}{JI} + 0.5*\Perm{AB}{BA}\nl
+ - 0.5*\Perm{IJAB}{JIBA})\sum_{KCC_{1}}\tnsr U^{ICC_{1}}_{KAB}\tnsr T^{JK}_{CC_{1}} + (0.5*1 - 0.5*\Perm{AB}{BA})\sum_{KK_{1}CC_{1}D}\tnsr U^{C_{1}DC}_{KK_{1}A}\tnsr T^{KK_{1}}_{CC_{1}}\tnsr T^{IJ}_{BD}\nl
+ + (0.25*1 - 0.25*\Perm{IJ}{JI} - 0.25*\Perm{AB}{BA}\nl
+ + 0.25*\Perm{IJAB}{JIBA})\sum_{KK_{1}CDD_{1}}\tnsr U^{DD_{1}C}_{KK_{1}A}\tnsr T^{KK_{1}}_{BC}\tnsr T^{IJ}_{DD_{1}}
+\eeq

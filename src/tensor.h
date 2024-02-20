@@ -132,8 +132,11 @@ class Action;
 //slot types
 typedef Array<const SlotType*> SlotTs;
 
+//insertion pointer sort analog to the ones in utilities, but modified for three electron integrals
+long unsigned int InsertionPSortD3eint( const SlotType* pIn , uint* pSel, uint N );
+
 // sort in decreasing order (e.g. [Fai])
-void Canonicalize( SlotTs& sts, Slots& ref );
+void Canonicalize( SlotTs& sts, Slots& ref, bool threeelectronint = false );
 
 typedef Array<Symmetry> Symmetries;
 typedef Array<Cut> Cuts;

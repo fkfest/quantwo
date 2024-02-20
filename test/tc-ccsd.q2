@@ -1,0 +1,9 @@
+prog,nobrafac=1
+prog,spinintegr=0
+prog,explspin=0
+prog,algo=1
+output,level=2
+
+\beq
+<\Phi^{ab}_{ij} |-6 \op U_{3^{ppp}_{ppp}} (1+\op T_2 + \half \op T_2 \op T_2)| 0>_C
+\eeq

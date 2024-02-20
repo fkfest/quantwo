@@ -79,7 +79,7 @@ Tensor Translators::mat2tensor(const Matrix& mat, const std::map< Orbital, const
     sts.push_back(slotorbs.at(orb));
   }
   Slots slotorder;
-  Canonicalize(sts,slotorder);
+  Canonicalize(sts,slotorder,mat._threeelectronint);
   // look for default cuts
   std::string name = mat.plainname();
 
@@ -115,7 +115,6 @@ Diagram Translators::term2diagram(Term& term, Factor fact, const std::map< Orbit
 
   uint nbareops = 0;
   for (auto& m: term.get_mat()){
-    Product<Orbital> orbs;
     if ( Input::iPars["prog"]["algo"] == 1 ){//ITF code
       m.itforder();
     }
@@ -141,7 +140,7 @@ Diagram Translators::term2diagram(Term& term, Factor fact, const std::map< Orbit
     // e.g. kibj -> bkij slotorder = 2013
     slotorder = Slots();
     if ( m.type() == Ops::Exc0 || m.type() == Ops::Deexc0 || m.type() == Ops::Exc || Input::iPars["prog"]["algo"] < 2 ){
-      Canonicalize(sts,slotorder);
+      Canonicalize(sts,slotorder,m._threeelectronint);
       // reorder positions according to the canonical order
       positions = positions.refarr(slotorder);
     }

@@ -1981,7 +1981,7 @@ Return::Vals Term::check_spin() const{
   //this function traces the "paths" of the electrons in a CC diagram and returns false if
   //a spin-flip is found and true otherwise 
   for( Product<Matrix>::const_iterator it = _mat.begin(); it != _mat.end(); ++it ){
-    if( it->name() == "W" || it->name() == "U" ){
+    if( it->name() == "W" || it->_threeelectronint ){
       for( Product<Orbital>::const_iterator it1 = it->orbitals().begin(); it1 != it->orbitals().end(); ++it1){
         if( it1->spin() != it->orbel(*it1).spin() ) return Return::Delete;
       }

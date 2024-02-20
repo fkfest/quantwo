@@ -469,7 +469,7 @@ TermSum Q2::spinSwap(TermSum s){
     for(TOrbSet::iterator it = i->first.orbs().begin(); it != i->first.orbs().end(); ++it){
       if(it->spin() == Spin::Up){spintype=Spin::Down;}
       else if(it->spin() == Spin::Down){spintype=Spin::Up;}
-      else error("Expected either spin up or down here.");
+      else {error("Expected either spin up or down here.");__builtin_unreachable();}
       orb = *it;
       orb.setspin(spintype);
       neworbs.insert(orb);
@@ -580,7 +580,7 @@ void Q2::SpinExpansion(Finput& finput, TermSum sum_final, std::vector<TermSum>& 
   for( size_t i = 0; (i<spins.size() && i < 3); ++i ){
     TermSum sum_spin, sum1, sum2;
     sum2 = sum;
-    if( i==2 ){
+    if( i==2 || transcorrelation(sum) ){
       for( auto it : sum ){
         Term term = it.first;
         sum1 += term.addpermuteT(it.second);
@@ -600,6 +600,18 @@ void Q2::SpinExpansion(Finput& finput, TermSum sum_final, std::vector<TermSum>& 
     sums_final.push_back(spinSwap(sums_final.back()));
   }
   finput.set_ineq(newvec);
+}
+
+bool Q2::transcorrelation(TermSum s){
+  for( Sum<Term,TFactor>::iterator it = s.begin(); it != s.end(); it++ ){
+    Term term = it->first;
+    for( Product<Matrix>::const_iterator jt = term.mat().begin(); jt != term.mat().end(); ++jt ){
+      if( jt->_threeelectronint ){
+        return true;
+      }
+    }
+  }
+  return false;
 }
 
 TermSum Q2::ResolvePermutaions(const TermSum& s, bool inputterms)

@@ -36,6 +36,8 @@ class Product : public std::vector<T> {
       this->push_back(a3);
       this->push_back(a4);
     }
+    // set from 0 to n
+    void identity( unsigned long int n );
     // append t to product
     Product<T> & operator *= (T const & t);
     // append product to product

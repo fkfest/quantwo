@@ -1,4 +1,13 @@
 #include "product.h"
+
+template <class T>
+inline
+void Product<T>::identity(unsigned long int n)
+{
+  this->reserve(n);
+  for ( uint i = 0; i < n; ++i ) this->push_back(i);
+}
+
 template <class T>
 inline
 Product< T > & Product<T>::operator *= (T const & t) // append t to product
