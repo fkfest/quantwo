@@ -252,7 +252,7 @@ By default, closed-shell expressions in spatial orbitals are generated.
 
 * Occupied indices: `ijklmno` (`syntax:occorb`)
 * Virtual indices: `abcdefgh` (`syntax:virorb`)
-* General indices: `pqrs`tuvwxyz (`syntax:genorb`)
+* General indices: `pqrs` (`syntax:genorb`)
 * Active indices: `tuvwxyz` (`syntax:actorb`)
 
 For explicit-spin orbitals, lowercase letters are used for alpha-spin orbitals and uppercase letters for beta-spin orbitals.
