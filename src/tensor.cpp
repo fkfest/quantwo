@@ -452,8 +452,6 @@ bool Tensor::operator<(const Tensor& ten) const
   if ( ten._syms.size() < _syms.size() ) return false;
   if ( _cuts.size() < ten._cuts.size() ) return true;
   if ( ten._cuts.size() < _cuts.size() ) return false;
-  if ( _dummy < ten._dummy ) return true;
-  if ( ten._dummy < _dummy ) return false;
   for ( uint i = 0; i < _slots.size(); ++i ){
     if ( _slots[i] < ten._slots[i] ) return true;
     if ( ten._slots[i] < _slots[i] ) return false;

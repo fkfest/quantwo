@@ -265,7 +265,7 @@ void Diagram::binarize(Expression& expr) const
   }
   else{//we have R=a*A*B*..
     //recursive calls of transform2Expr inside depending on "relations" of residual tensor bt
-    transform2Expr(expr,inters,order,bt,true);
+    transform2Expr(expr,inters,order,bt);
   }
   for ( TensorsSet::iterator it = expr._tensors.begin(); it != expr._tensors.end(); ++it) {
     if ( it->equal(res) ) {
@@ -305,7 +305,7 @@ void Diagram::binarize(Expression& expr) const
 }
 
 const Tensor * Diagram::transform2Expr(Expression& expr, const Array< DiagramTensor >& inters, const Array< std::bitset< MAXNTENS > >& order,
-                             std::bitset< MAXNTENS > bt, bool accumulate ) const
+                             std::bitset< MAXNTENS > bt ) const
 {
   unsigned long ibt = bt.to_ulong();
   const Action * pAct = 0;
@@ -332,7 +332,7 @@ const Tensor * Diagram::transform2Expr(Expression& expr, const Array< DiagramTen
   }
   else{
     ten.add(pAct);
-    return expr.add(ten, accumulate);
+    return expr.add(ten);
   }
 }
 
@@ -393,7 +393,7 @@ const SlotType* Expression::add(const SlotType& slottype)
   return &(*it);
 }
 
-const Tensor* Expression::add(const Tensor& tensor, bool accumulate)
+const Tensor* Expression::add(const Tensor& tensor)
 {
   for ( TensorsSet::iterator it = _tensors.begin(); it != _tensors.end(); ++it) {
     if ( it->equal(tensor) ) {
@@ -414,7 +414,6 @@ const Tensor* Expression::add(const Tensor& tensor, bool accumulate)
     else
       _tensors.back()._name = newname(tensor.syms(),tensor.cuts());
   }
-  _tensors.back()._dummy = accumulate;
   return &(_tensors.back());
 }
 
@@ -760,10 +759,8 @@ std::ostream & operator << (std::ostream& o, const Expression& exp) {
   const TensorsSet& ts = exp.tensors();
   std::set<Tensor> uniquetensortypes;
   for (const auto& t: ts){
-    if ( !t._dummy ){
-      if( (uniquetensortypes.insert(t)).second)
-        o << "tensor: " << t << std::endl;
-    }
+    if( (uniquetensortypes.insert(t)).second)
+      o << "tensor: " << t << std::endl;
   }
   uniquetensortypes.clear();
 
@@ -771,11 +768,9 @@ std::ostream & operator << (std::ostream& o, const Expression& exp) {
   o << std::endl << "---- code (\"eval_residual\")" << std::endl;
   // print init and save statements for Koeppel's algoopt program
   for (const auto& t: ts){
-    if ( !t._dummy ){
-      if( (t.name() != "T" && t.name()[0] != 'f' && t.type() != "I") && uniquetensortypes.insert(t).second){
-        o << "init " << t.name() << "[" << t.slotTypeLetters() << "]" << std::endl;
-        if( t.name() == "R" ) o << "save " << t.name() << "[" << t.slotTypeLetters() << "]" << std::endl;
-      }
+    if( (t.name() != "T" && t.name()[0] != 'f' && t.type() != "I") && uniquetensortypes.insert(t).second){
+      o << "init " << t.name() << "[" << t.slotTypeLetters() << "]" << std::endl;
+      if( t.name() == "R" ) o << "save " << t.name() << "[" << t.slotTypeLetters() << "]" << std::endl;
     }
   }
   std::set< const Tensor * > residuals = exp.residualtensors();

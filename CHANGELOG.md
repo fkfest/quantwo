@@ -6,6 +6,8 @@
 
 ### Changed
 
+* removed _dummy variable from Tensor
+
 ### Added
 
 ### Fixed
