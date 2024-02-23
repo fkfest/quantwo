@@ -490,46 +490,47 @@ void Q2::SpinExpansion(Finput& finput, TermSum sum_final, std::vector<TermSum>& 
   lui i=0, ipos;
   char ch;
   bool found = false;
-  std::vector<std::string> newvec;
+  std::vector<std::string> newvec, linebreakinput;
   std::string upname, downname, name, oldbra, newbra, ineq, modeq, betaineq, newineq, newname, spin;
   int iupname, idownname;
   std::stringstream ss;
   for( auto it : finput.ineq() ){
+    if (it[0] != '<'){linebreakinput.push_back(it) ;continue;}
     ineq = it;
     while(i<it.size() && !found){
       ch = it[i];
       if(ch=='<'){
         ipos=it.find('|',i);
-//         ipos1=IL::nextwordpos(it,i);
         oldbra = it.substr(i+1,ipos-1);
         found = true;
       }
       i++;
     }
   }
-    IL::nameupdown(name,upname,downname,oldbra);
-    std::string spintype;
-    std::vector<std::vector<Spin::Type>> spins;
-    if( upname.size() == 0 ){spins.push_back({Spin::No});}
-    else if( upname.size() == 1 ){
-      spins.push_back({Spin::Up, Spin::Up});
-      spins.push_back({Spin::Down, Spin::Down});
-    }
-    else if( upname.size() == 2 ){
-      spins.push_back({Spin::Up, Spin::Up, Spin::Up, Spin::Up});
-      spins.push_back({Spin::Down, Spin::Down, Spin::Down, Spin::Down});
-      spins.push_back({Spin::Up, Spin::Down, Spin::Up, Spin::Down});
-    }
-    else if( upname.size() == 3 ){
-      spins.push_back({Spin::Up, Spin::Up, Spin::Up, Spin::Up, Spin::Up, Spin::Up});
-      spins.push_back({Spin::Down, Spin::Down, Spin::Down, Spin::Down, Spin::Down, Spin::Down});
-      spins.push_back({Spin::Up, Spin::Down, Spin::Down, Spin::Up, Spin::Down, Spin::Down});
-      spins.push_back({Spin::Down, Spin::Up, Spin::Up, Spin::Down, Spin::Up, Spin::Up});
-    }
-    else
-      error("In the moment Q2 can only use explicit spin-orbitals for nvertices <= 3.");
-    for( size_t i = 0; i<spins.size(); ++i ){
-      modeq = ineq;
+  assert(found);
+  IL::nameupdown(name,upname,downname,oldbra);
+  std::string spintype;
+  std::vector<std::vector<Spin::Type>> spins;
+  if( upname.size() == 0 ){spins.push_back({Spin::No});}
+  else if( upname.size() == 1 ){
+    spins.push_back({Spin::Up, Spin::Up});
+    spins.push_back({Spin::Down, Spin::Down});
+  }
+  else if( upname.size() == 2 ){
+    spins.push_back({Spin::Up, Spin::Up, Spin::Up, Spin::Up});
+    spins.push_back({Spin::Down, Spin::Down, Spin::Down, Spin::Down});
+    spins.push_back({Spin::Up, Spin::Down, Spin::Up, Spin::Down});
+  }
+  else if( upname.size() == 3 ){
+    spins.push_back({Spin::Up, Spin::Up, Spin::Up, Spin::Up, Spin::Up, Spin::Up});
+    spins.push_back({Spin::Down, Spin::Down, Spin::Down, Spin::Down, Spin::Down, Spin::Down});
+    spins.push_back({Spin::Up, Spin::Down, Spin::Down, Spin::Up, Spin::Down, Spin::Down});
+    spins.push_back({Spin::Down, Spin::Up, Spin::Up, Spin::Down, Spin::Up, Spin::Up});
+  }
+  else
+    error("In the moment Q2 can only use explicit spin-orbitals for nvertices <= 3.");
+  for( size_t i = 0; i<spins.size(); ++i ){
+    modeq = ineq;
     if( upname.size() > 0 ){
       if( upname.size() == 1 ){
         iupname = 0;
@@ -538,39 +539,46 @@ void Q2::SpinExpansion(Finput& finput, TermSum sum_final, std::vector<TermSum>& 
       else{
         iupname = idownname = upname.size();
       }
-    for( char const &it : upname ){
-      ss << "{";
-      ch = it;
-      if( it == upname.front()){
+      for( char const &it : upname ){
+        ss << "{";
+        ch = it;
+        if( it == upname.front()){
+          ipos=modeq.find(ch,5);
+        }
+        else{
+          ipos=modeq.find(ch,15);
+        }
+        if( modeq.substr(ipos,4) == "beta" ){ 
+          ipos += 5;
+        }
+        ss << ch << spinstring(spins[i][iupname]);
+        ss << "}";
+        newname = ss.str();
+        ss.str("");
+        modeq.replace(ipos,1,newname);
+        iupname += 1;
+      }
+      for( char const &it : downname ){
+        ss << "{";
+        ch = it;
         ipos=modeq.find(ch,5);
+        ss << ch << spinstring(spins[i][idownname]);
+        ss << "}";
+        newname = ss.str();
+        ss.str("");
+        modeq.replace(ipos,1,newname);
+        idownname += 1;
       }
-      else{
-        ipos=modeq.find(ch,15);
-      }
-      if( modeq.substr(ipos,4) == "beta" ){ 
-        ipos += 5;
-      }
-      ss << ch << spinstring(spins[i][iupname]);
-      ss << "}";
-      newname = ss.str();
-      ss.str("");
-      modeq.replace(ipos,1,newname);
-      iupname += 1;
-    }
-    for( char const &it : downname ){
-      ss << "{";
-      ch = it;
-      ipos=modeq.find(ch,5);
-      ss << ch << spinstring(spins[i][idownname]);
-      ss << "}";
-      newname = ss.str();
-      ss.str("");
-      modeq.replace(ipos,1,newname);
-      idownname += 1;
-    }
     }
     newvec.push_back(modeq);
+  }
+  if (!linebreakinput.empty()){
+    for (std::vector<std::string>::iterator it = newvec.begin(); it != newvec.end(); it++){
+      for( auto jt : linebreakinput ){
+        it->append(jt);
+      }
     }
+  }
   TermSum sum;
   sum_final = ResolvePermutaions(sum_final);
   for( Sum<Term,TFactor>::iterator it = sum_final.begin(); it != sum_final.end(); it++ ){
