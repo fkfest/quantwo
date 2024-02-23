@@ -6,5 +6,6 @@ output,level=1
 output,maxlenline=70
 
 \beq
-<\Phi^{ab}_{ij}| \op H (1 + \op T_2 + \half \op T_2 \op T_2) |0>_C 
+<\Phi^{ab}_{ij}| \op H (1 + \op T_2 
++ \half \op T_2 \op T_2) |0>_C 
 \eeq
