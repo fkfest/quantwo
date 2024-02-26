@@ -7,6 +7,7 @@
 ### Changed
 
 * removed _dummy variable from Tensor
+* renamed TensorsSet to TensorsList
 
 ### Added
 

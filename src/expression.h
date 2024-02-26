@@ -60,7 +60,7 @@ class Expression {
 public:
   Expression();
   const SlotTypes& slottypes() const { return _slottypes; };
-  const TensorsSet& tensors() const { return _tensors; };
+  const TensorsList& tensors() const { return _tensors; };
   const std::set< const Tensor *>& residualtensors() const { return _residuals; };
   const SlotType * add( const SlotType& slottype );
   const Tensor * add( const Tensor& tensor);
@@ -86,7 +86,7 @@ public:
 
 //private:
   SlotTypes _slottypes;
-  TensorsSet _tensors;
+  TensorsList _tensors;
   std::set< const Tensor * > _residuals;
   std::list<Contraction> _contractions;
   std::list<Summation> _summations;

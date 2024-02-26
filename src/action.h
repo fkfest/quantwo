@@ -49,7 +49,7 @@ public:
   Cost _cost;
 };
 
-typedef std::list<Tensor> TensorsSet;
+typedef std::list<Tensor> TensorsList;
 
 // R = \sum_i fac_i A_i
 class Summation : public Action {
