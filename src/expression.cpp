@@ -773,7 +773,7 @@ std::ostream & operator << (std::ostream& o, const Expression& exp) {
       if( t.name() == "R" ) o << "save " << t.name() << "[" << t.slotTypeLetters() << "]" << std::endl;
     }
   }
-  std::set< const Tensor * > residuals = exp.residualtensors();
+  std::set< const Tensor *, Expression::comp_pTen > residuals = exp.residualtensors();
   if ( residuals.size() == 0 )
     o << "// No residual tensors set!" << std::endl;
   for (const auto& res: residuals) {

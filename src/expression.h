@@ -59,9 +59,16 @@ std::ostream & operator << (std::ostream& o, const Diagram& d);
 class Expression {
 public:
   Expression();
+  struct comp_pTen{
+    bool operator()(const Tensor* lhs, const Tensor* rhs) const{
+      if (*lhs < *rhs) return true;
+      else if (*rhs < *lhs) return false;
+      else return false;
+    }
+  };
   const SlotTypes& slottypes() const { return _slottypes; };
   const TensorsList& tensors() const { return _tensors; };
-  const std::set< const Tensor *>& residualtensors() const { return _residuals; };
+  const std::set< const Tensor *, comp_pTen >& residualtensors() const { return _residuals; };
   const SlotType * add( const SlotType& slottype );
   const Tensor * add( const Tensor& tensor);
   const Action * add( const Action * pAction );
@@ -87,7 +94,7 @@ public:
 //private:
   SlotTypes _slottypes;
   TensorsList _tensors;
-  std::set< const Tensor * > _residuals;
+  std::set< const Tensor *,comp_pTen > _residuals;
   std::list<Contraction> _contractions;
   std::list<Summation> _summations;
   std::string _lastname;
