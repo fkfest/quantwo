@@ -195,9 +195,9 @@ std::ostream & operator << (std::ostream& o, const DiagramTensor& t);
 
 class Tensor : public TensorBase {
 public:
-  Tensor( const SlotTs& slots, std::string name = "T" ) : TensorBase(name), _slots(slots), _dummy(false) {};
+  Tensor( const SlotTs& slots, std::string name = "T" ) : TensorBase(name), _slots(slots) {};
   Tensor( const SlotTs& slots, const Symmetries& syms, const Cuts& cuts, std::string name = "T" )
-    : TensorBase(syms,name), _slots(slots), _cuts(cuts), _dummy(false) {};
+    : TensorBase(syms,name), _slots(slots), _cuts(cuts) {};
   const SlotTs& slots() const { return _slots; };
   const Actions& parents() const { return _parents; };
   const Cuts& cuts() const { return _cuts; };
@@ -233,7 +233,6 @@ public:
   SlotTs _slots;
   Actions _parents;
   Cuts _cuts;
-  bool _dummy;
 };
 
 //! output operator for tensors

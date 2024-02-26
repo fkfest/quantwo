@@ -39,9 +39,8 @@ public:
   // generates an expression summation from a diagrammatic "summation" R = a*A
   Summation exprSummation( const DiagramTensor& tenA, const DiagramTensor& tenR, const Tensor * pA ) const;
   // transforms to tensors and intermediates using bitmasks from binarize-function
-  // if accumulate = true: adds the tensor as a new summand
   const Tensor * transform2Expr( Expression& expr, const Array<DiagramTensor>& inters, const Array<std::bitset<MAXNTENS> >& order,
-                       std::bitset<MAXNTENS> bt, bool accumulate = false ) const;
+                       std::bitset<MAXNTENS> bt ) const;
   // add tensor
   const DiagramTensor * add( DiagramTensor dten, const Tensor * pTen = 0, bool pushfront = false );
   bool isresidual(const DiagramTensor& dten) const;
@@ -60,12 +59,18 @@ std::ostream & operator << (std::ostream& o, const Diagram& d);
 class Expression {
 public:
   Expression();
+  struct comp_pTen{
+    bool operator()(const Tensor* lhs, const Tensor* rhs) const{
+      if (*lhs < *rhs) return true;
+      else if (*rhs < *lhs) return false;
+      else return false;
+    }
+  };
   const SlotTypes& slottypes() const { return _slottypes; };
-  const TensorsSet& tensors() const { return _tensors; };
-  const std::set< const Tensor *>& residualtensors() const { return _residuals; };
+  const TensorsList& tensors() const { return _tensors; };
+  const std::set< const Tensor *, comp_pTen >& residualtensors() const { return _residuals; };
   const SlotType * add( const SlotType& slottype );
-  // if accumulate = true: add as a new summand
-  const Tensor * add( const Tensor& tensor, bool accumulate = false );
+  const Tensor * add( const Tensor& tensor);
   const Action * add( const Action * pAction );
   // add residual tensor
   void addresidual( const Tensor * pRes ) {_residuals.insert(pRes);};
@@ -88,8 +93,8 @@ public:
 
 //private:
   SlotTypes _slottypes;
-  TensorsSet _tensors;
-  std::set< const Tensor * > _residuals;
+  TensorsList _tensors;
+  std::set< const Tensor *,comp_pTen > _residuals;
   std::list<Contraction> _contractions;
   std::list<Summation> _summations;
   std::string _lastname;
