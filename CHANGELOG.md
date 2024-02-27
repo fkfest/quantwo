@@ -1,16 +1,12 @@
 # Release notes
 
-## Unreleased
-
-### Breaking
+## Version [v1.0.1] - 2024.02.27
 
 ### Changed
 
 * removed _dummy variable from Tensor
 * renamed TensorsSet to TensorsList
 * improved test Makefile
-
-### Added
 
 ### Fixed
 
