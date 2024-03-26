@@ -24,8 +24,7 @@ It generates an executable `quantwo`
 * `make depend` : analyzes dependencies in src
 * `make base` : creates working environment (see the next paragraph)
 
-By default rational numbers from `boost`-library are used as factors. If you don't have `boost` installed or if you
-prefer double precision numbers, you can switch it off in `Makefile` by commenting out line
+Rational numbers can be used instead of double precision numbers by activating the following line in `Makefile`
 
 ```bash
 CFLAGS := $(CFLAGS) -D _RATIONAL
