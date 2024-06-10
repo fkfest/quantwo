@@ -745,6 +745,10 @@ std::string Expression::elemconame(const std::string& name, const SlotTs& slotty
       else newname = "fAB";
     }
   }
+  else{
+    if (name == "R" ) newname = R[exclevel];
+    else if (name == "T" ) newname = T[exclevel];
+  }
   return newname;
 }
 
