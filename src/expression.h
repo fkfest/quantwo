@@ -20,7 +20,6 @@
 
 class Diagram;
 
-// term in terms of DiagramTensors
 class Expression {
 public:
   Expression();
