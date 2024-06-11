@@ -1,5 +1,11 @@
 # Release notes
 
+### Changed
+
+* separated diagram from expression
+
+### Fixed
+
 ## Version [v1.0.1] - 2024.02.27
 
 ### Changed
@@ -14,3 +20,5 @@
 * implemented pointer comparison for set of pointers _residuals to get consistent orders with different gcc versions
 
 ## Version [v1.0.0] - 2024.02.21
+
+Initial release
