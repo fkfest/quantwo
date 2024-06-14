@@ -3,6 +3,7 @@ MAIN = ../quantwo
 OBJ = ccsd ugccsd ugdcsd uccsd uccsdt udc-ccsdt tc-ccsd tc-uccsd sums ip mr names genwick connections
 
 test : $(OBJ)
+			 @echo "$(shell tput -Txterm setaf 2)All tests passed."
 
 $(OBJ) :
 	@test -e $@ || $(MAIN) $@.q2
