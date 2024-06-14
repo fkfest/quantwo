@@ -119,7 +119,7 @@ int main(int argc, char **argv) {
       const std::vector<std::string> & finlines = finput.inlines();
       for ( unsigned int i = 0; i < finlines.size(); ++i ){
         MyOut::pcurout->buf << finlines[i] << endl;
-        MyOut::pcurout->flushbuf();
+        MyOut::pcurout->flushbuf(false);
       }
       // write to a file
       // input-equation

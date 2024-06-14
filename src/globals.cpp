@@ -41,7 +41,7 @@ void Output::setvals()
   small = std::pow(10,-pout->precision());
 }
 
-void Output::flushbuf()
+void Output::flushbuf(bool linebreak)
 {
   uint offset = 60;
   std::list<char> pm = {'+', '-', '('};
@@ -50,7 +50,7 @@ void Output::flushbuf()
     ipos0 = 0;
     ipos = ipos0;
     for(char& c : buf.str()){
-      if(ipos > maxlenline+offset && InSet(c,pm)){
+      if(ipos > maxlenline+offset && InSet(c,pm) && linebreak){
         *pout <<"\\nl"<<std::endl;
         lenline=0;
         nlines+=hline;
