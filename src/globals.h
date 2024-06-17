@@ -138,7 +138,7 @@ class Output
   // end equation (+flushbuf)
   void eeq(bool doflush=true);
   // flash buffer
-  void flushbuf();
+  void flushbuf(bool linebreak=true);
   // if true: this is in an equation
   bool inequation;
   // break line if to long
