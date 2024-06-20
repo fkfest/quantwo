@@ -5,8 +5,12 @@ output,level=2
 
 DCSD doubles amplitude equation with $\exp(\op T_1)$-similiarity transformed $\op H$:
 \beq
-&&<\Phi^{ab}_{ij}| \op H (1 + \op T_2 + \half \op T_2 \op T_2 ) |0>_C + (-\frac{1}{4}*1  +\frac{1}{4}* \Perm{AB}{BA})\sum_{KLDC} \tnsr \intg{KD}{LC} \tnsr T^{KL}_{AB} \tnsr T^{IJ}_{DC} \nl
-+ ( 1 - \Perm{AB}{BA} ) \sum_{KLCD} \tnsr \intg{KD}{LC}\tnsr T^{IK}_{AC}\tnsr T^{JL}_{BD} + (-0.5 + 0.5*\Perm{IJ}{JI} ) \sum_{KLDC} \tnsr \intg{KC}{LD} \tnsr T^{IK}_{DC} \tnsr T^{JL}_{AB} \nl
+&&<\Phi^{ab}_{ij}| \op H (1 + \op T_2 + \half \op T_2 \op T_2 ) |0>_C 
++ (-\frac{1}{4}*1  +\frac{1}{4}* \Perm{AB}{BA})\sum_{KLDC} \tnsr \intg{KD}{LC} \tnsr T^{KL}_{AB} \tnsr T^{IJ}_{DC} 
+\nl
++ ( 1 - \Perm{AB}{BA} ) \sum_{KLCD} \tnsr \intg{KD}{LC}\tnsr T^{IK}_{AC}\tnsr T^{JL}_{BD} 
++ (-0.5 + 0.5*\Perm{IJ}{JI} ) \sum_{KLDC} \tnsr \intg{KC}{LD} \tnsr T^{IK}_{DC} \tnsr T^{JL}_{AB} 
+\nl
 + (-0.5 + 0.5 * \Perm{AB}{BA}) \sum_{KLDC} \tnsr \intg{KC}{LD} \tnsr T^{KL}_{CA} \tnsr T^{IJ}_{BD}
 =\nl
 (1 - \Perm{AB}{BA})\sum_{KLCD}\tnsr \intg{KC}{LD}\tnsr T^{IK}_{AC}\tnsr T^{JL}_{BD} + (0.5*1 - 0.5*\Perm{AB}{BA})\sum_{KK_{1}CD}\tnsr \intg{KC}{K_{1}D}\tnsr T^{KK_{1}}_{CA}\tnsr T^{IJ}_{BD}\nl

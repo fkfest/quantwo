@@ -1,6 +1,6 @@
 # program name
 MAIN = ../quantwo
-OBJ = ccsd ugccsd ugdcsd uccsd uccsdt udc-ccsdt tc-ccsd tc-uccsd sums ip mr names genwick connections
+OBJ = ccsd ugccsd ugdcsd dcsd uccsd uccsdt udc-ccsdt tc-ccsd tc-uccsd sums ip mr names genwick connections
 
 test : $(OBJ)
 			 @echo "All tests passed."
