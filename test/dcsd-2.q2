@@ -1,0 +1,15 @@
+prog,spinintegr=1
+prog,algo=2
+output,level=2
+
+\beq
+\bracd \op H ( 1 + \op T_2 + \half \op T_2 \op T_2 ) |0>_C 
+- \frac{3}{5} \sum_{KLDC} \tnsr \intg{KD}{LC} \tnsr T^{KL}_{AB} \tnsr T^{IJ}_{DC}
++ \frac{3}{5} \sum_{KLCD} \tnsr \intg{KD}{LC} \tnsr T^{KI}_{CA} \tnsr T^{LJ}_{DB}
++\frac{3}{5} ( -1.0 - 1.0*\Perm{IJAB}{JIBA} ) \sum_{KLCD} \tnsr \intg{KD}{LC} \tnsr T^{KI}_{AC} \tnsr T^{LJ}_{DB}
++\frac{3}{5} ( -1.0 ) \sum_{KLCD} \tnsr \intg{KD}{LC} \tnsr T^{KJ}_{AC} \tnsr T^{IL}_{DB}
++\frac{3}{5} ( +\frac{1}{2} + \frac{1}{2}*\Perm{IJAB}{JIBA} ) \sum_{KLCD} \tnsr \intg{KC}{LD}\tnsr T^{KL}_{CA} \tnsr T^{IJ}_{DB}
++\frac{3}{5} ( +\frac{1}{2} + \frac{1}{2}*\Perm{IJAB}{JIBA} ) \sum_{KLCD} \tnsr \intg{KC}{LD}\tnsr T^{KI}_{CD} \tnsr T^{LJ}_{AB}
++\frac{3}{5} ( -\frac{1}{2} - \frac{1}{2}*\Perm{IJAB}{JIBA} ) \sum_{KLCD} \tnsr \intg{KC}{LD}\tnsr T^{KL}_{AC} \tnsr T^{IJ}_{DB}
++\frac{3}{5} ( -\frac{1}{2} - \frac{1}{2}*\Perm{IJAB}{JIBA} ) \sum_{KLCD} \tnsr \intg{KD}{LC}\tnsr T^{KI}_{CD} \tnsr T^{LJ}_{AB}
+\eeq

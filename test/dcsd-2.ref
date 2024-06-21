@@ -1,0 +1,29 @@
+prog,spinintegr=1
+prog,algo=2
+output,level=2
+
+\beq
+&&\bracd \op H ( 1 + \op T_2 + \half \op T_2 \op T_2 ) |0>_C 
+- \frac{3}{5} \sum_{KLDC} \tnsr \intg{KD}{LC} \tnsr T^{KL}_{AB} \tnsr T^{IJ}_{DC}
+\nl
++ \frac{3}{5} \sum_{KLCD} \tnsr \intg{KD}{LC} \tnsr T^{KI}_{CA} \tnsr T^{LJ}_{DB}
++\frac{3}{5} ( -1.0 - 1.0*\Perm{IJAB}{JIBA} ) \sum_{KLCD} \tnsr \intg{KD}{LC} \tnsr T^{KI}_{AC} \tnsr T^{LJ}_{DB}
+\nl
++\frac{3}{5} ( -1.0 ) \sum_{KLCD} \tnsr \intg{KD}{LC} \tnsr T^{KJ}_{AC} \tnsr T^{IL}_{DB}
++\frac{3}{5} ( +\frac{1}{2} + \frac{1}{2}*\Perm{IJAB}{JIBA} ) \sum_{KLCD} \tnsr \intg{KC}{LD}\tnsr T^{KL}_{CA} \tnsr T^{IJ}_{DB}
+\nl
++\frac{3}{5} ( +\frac{1}{2} + \frac{1}{2}*\Perm{IJAB}{JIBA} ) \sum_{KLCD} \tnsr \intg{KC}{LD}\tnsr T^{KI}_{CD} \tnsr T^{LJ}_{AB}
++\frac{3}{5} \nl
+( -\frac{1}{2} - \frac{1}{2}*\Perm{IJAB}{JIBA} ) \sum_{KLCD} \tnsr \intg{KC}{LD}\tnsr T^{KL}_{AC} \tnsr T^{IJ}_{DB}
++\frac{3}{5} ( -\frac{1}{2} \nl
+- \frac{1}{2}*\Perm{IJAB}{JIBA} ) \sum_{KLCD} \tnsr \intg{KD}{LC}\tnsr T^{KI}_{CD} \tnsr T^{LJ}_{AB}
+=\nl
+4*1\sum_{klcd}\tnsr \intg{kc}{ld}\tnsr T^{ki}_{ca}\tnsr T^{lj}_{db} + (-1 - \Perm{ijab}{jiba})\sum_{kk_{1}cd}\tnsr \intg{kc}{k_{1}d}\tnsr T^{kk_{1}}_{ca}\tnsr T^{ij}_{db} + (-1\nl
+ - \Perm{ijab}{jiba})\sum_{klcc_{1}}\tnsr \intg{kc}{lc_{1}}\tnsr T^{ki}_{cc_{1}}\tnsr T^{lj}_{ab} + (-2*1\nl
+ - 2*\Perm{ijab}{jiba})\sum_{klcd_{1}}\tnsr \intg{kc}{ld_{1}}\tnsr T^{ki}_{ca}\tnsr T^{lj}_{bd_{1}} + (2*1 + 2*\Perm{ijab}{jiba})\sum_{kc}\tnsr \intg{kc}{ai}\tnsr T^{kj}_{cb}\nl
+ + (-1 - \Perm{ijab}{jiba})\sum_{k}\tnsr f_{ki}\tnsr T^{kj}_{ab} + (1 + \Perm{ijab}{jiba})\sum_{c}\tnsr f_{ac}\tnsr T^{ij}_{cb} + \sum_{kk_{1}}\tnsr \intg{ki}{k_{1}j}\tnsr T^{kk_{1}}_{ab}\nl
+ + (-1 - \Perm{ijab}{jiba})\sum_{kc}\tnsr \intg{ki}{ac}\tnsr T^{kj}_{cb} + (-1 - \Perm{ijab}{jiba})\sum_{kc_{1}}\tnsr \intg{ki}{bc_{1}}\tnsr T^{kj}_{ac_{1}} + (0.5*1\nl
+ + 0.5*\Perm{ijab}{jiba})\sum_{klcd}\tnsr \intg{kc}{ld}\tnsr T^{kl}_{ac}\tnsr T^{ij}_{db} + (0.5*1\nl
+ + 0.5*\Perm{ijab}{jiba})\sum_{klcc_{1}}\tnsr \intg{kc_{1}}{lc}\tnsr T^{ki}_{cc_{1}}\tnsr T^{lj}_{ab} + \sum_{klc_{1}d_{1}}\tnsr \intg{kc_{1}}{ld_{1}}\tnsr T^{ki}_{ac_{1}}\tnsr T^{lj}_{bd_{1}} + (-1\nl
+ - \Perm{ijab}{jiba})\sum_{kc_{1}}\tnsr \intg{kc_{1}}{ai}\tnsr T^{kj}_{bc_{1}} + \tnsr \intg{ai}{bj} + \sum_{cc_{1}}\tnsr \intg{ac_{1}}{bc}\tnsr T^{ji}_{cc_{1}}
+\eeq
