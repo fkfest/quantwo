@@ -94,7 +94,7 @@ struct LParsedName {
   std::string name, nameadd, excitation;
   bool foundsscipt, dg;
   //occ (superscript) and virt (subscript) orbitals
-  Product<Orbital> occ,virt;
+  Product<Orbital> occ,virt,_orbs;
   short int excl;
   // orbital types (first set for occ and second set for virt indices )
   std::vector<OrbitalTypes> orbtypes;
@@ -106,6 +106,7 @@ struct LParsedName {
   LParsedName( const std::string& namein, uint try2set, bool strict = true );
   bool found_excitation() const { return !excitation.empty() || excl >= 0;}
   bool found_orbs() const { return !occ.empty() || !virt.empty();}
+  bool _isinput;
   // combine occ and virt electron-wise
   Product<Orbital> orbs() const;
 private:

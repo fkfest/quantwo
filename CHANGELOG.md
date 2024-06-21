@@ -3,6 +3,7 @@
 ### Changed
 
 * separated diagram from expression
+* improved handling of input terms.
 
 ### Fixed
 
