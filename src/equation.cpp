@@ -93,8 +93,10 @@ LParsedName::LParsedName(const std::string& namein, uint try2set, bool strict)
   std::string upname, downname;
   foundsscipt = IL::nameupdown(name,upname,downname,namein);
   bool inputten = InSet(namein.substr(0,5), inputtensors);
-  if( inputten )
+  if( inputten ){
+    _isinput = true;
     this->parse_inputtensors(namein);
+  }
   if ( try2set == Name ) return;
 
   const TParArray& csfs = Input::aPars["syntax"]["csf"];
@@ -146,7 +148,6 @@ void LParsedName::parse_inputtensors( const std::string& namein )
   lui ipos,ipos1;
   // currently we only have to separately parse input integrals signified by \intg
   ipos = 5; //skip \intg
-  Product<Orbital> orbs;
   while((ipos1=IL::nextwordpos(namein,ipos,true,false))!=ipos && ipos < namein.size() ) {
     std::string word(namein.substr(ipos,ipos1-ipos));
     IL::delbrack(word);
@@ -156,19 +157,16 @@ void LParsedName::parse_inputtensors( const std::string& namein )
         std::string orbi(1,word[i]);
         Orbital occorb(orbi);
         occ.push_back(occorb);
-        orbs *= occorb;
+        _orbs *= occorb;
       }
       if(InSet(std::tolower(word[i]),Input::sPars["syntax"]["virorb"])){
         std::string orba(1,word[i]);
         Orbital virorb(orba);
         virt.push_back(virorb);
-        orbs *= virorb;
+        _orbs *= virorb;
       }
     }
     ipos=ipos1;
-  }
-  if (orbs[0].type() > orbs[1].type() || orbs[2].type() > orbs[3].type()){
-    error("This orbital order is currently not implemented.", "LParsedName::parse_inputtensors");
   }
 }
 
@@ -311,18 +309,11 @@ bool LParsedName::gen_orbtypes(const std::string& string)
 Product< Orbital > LParsedName::orbs() const
 {
   const TParArray& inputtensors = Input::aPars["syntax"]["inputtensor"];
-  bool inputten = InSet(this->name.substr(0,5), inputtensors);
   Product<Orbital> orb;
   uint nels = std::max(occ.size(),virt.size());
   for ( uint iel = 0; iel < nels; ++iel ){
-    if( inputten){
-      if ( iel < occ.size() ) orb *= occ[iel];
-      if ( iel < virt.size() ) orb *= virt[iel];
-    }
-    else{
-      if ( iel < virt.size() ) orb *= virt[iel];
-      if ( iel < occ.size() ) orb *= occ[iel];
-    }
+    if ( iel < virt.size() ) orb *= virt[iel];
+    if ( iel < occ.size() ) orb *= occ[iel];
   }
   return orb;
 }
@@ -734,8 +725,12 @@ Matrix LEquation::handle_tensor(const Lelem& lel)
     // orbitals
     if (name == "T")
       return Matrix(Ops::Exc,op.orbs(),op.excl,op.lmel,op.pmsym,name,op.spinsym);
-    else if (name.substr(1,4) == "intg")
-      return Matrix(Ops::FluctP,op.orbs(),op.excl,op.lmel,op.pmsym,"W",op.spinsym);
+    else if (name.substr(1,4) == "intg"){
+      if (op._isinput)
+        return Matrix(Ops::FluctP,op._orbs,op.excl,op.lmel,op.pmsym,"W",op.spinsym);
+      else
+        return Matrix(Ops::FluctP,op.orbs(),op.excl,op.lmel,op.pmsym,"W",op.spinsym);
+    }
     else
       return Matrix(Ops::Interm,op.orbs(),op.excl,op.lmel,op.pmsym,name,op.spinsym);
   } else if ( !op.excitation.empty() ){
