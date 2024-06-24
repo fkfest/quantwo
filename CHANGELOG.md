@@ -9,6 +9,10 @@
 
 * commented out equation block before actual equation block in the input file with a very long line is now handled correctly.
 
+### Added
+
+* DC-CCSDT closed-shell generation test file.
+
 ## Version [v1.0.1] - 2024.02.27
 
 ### Changed

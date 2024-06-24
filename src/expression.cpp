@@ -468,6 +468,16 @@ std::string Expression::elemconame(const std::string& name, const SlotTs& slotty
       else newname = "fAB";
     }
   }
+  else{
+    if (name == "R" ) newname = R[exclevel];
+    else if (name == "T" ) newname = T[exclevel];
+    else if (name == "f" ){
+      if ( slottypes[0]->type() == SlotType::Occ && slottypes[1]->type() == SlotType::Occ) newname = "fij";
+      else if ( slottypes[0]->type() == SlotType::Occ && slottypes[1]->type() == SlotType::Virt) newname = "fia";
+      else if ( slottypes[0]->type() == SlotType::Virt && slottypes[1]->type() == SlotType::Occ) newname = "fai";
+      else newname = "fab";
+    }
+  }
   return newname;
 }
 

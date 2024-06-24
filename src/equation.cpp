@@ -308,7 +308,6 @@ bool LParsedName::gen_orbtypes(const std::string& string)
 }
 Product< Orbital > LParsedName::orbs() const
 {
-  const TParArray& inputtensors = Input::aPars["syntax"]["inputtensor"];
   Product<Orbital> orb;
   uint nels = std::max(occ.size(),virt.size());
   for ( uint iel = 0; iel < nels; ++iel ){
