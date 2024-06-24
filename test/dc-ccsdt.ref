@@ -1,0 +1,129 @@
+\beq
+&&2<\Phi^{abc}_{ijk}| \op W \op T_2 \op T_3 |0>_C 
++ <\Phi^{bac}_{ijk}|\op W \op T_2 \op T_3 |0>_C
++<\Phi^{cba}_{ijk}|\op W \op T_2 \op T_3 |0>_C
+\nl
++<\Phi^{acb}_{ijk}|\op W \op T_2 \op T_3 |0>_C
++<\Phi^{bca}_{ijk}| \op W \op T_2 \op T_3 |0>_C
++<\Phi^{abc}_{ijk}| \frac{3}{4}(0.5+0.5*\Perm{IJAB}{JIBA}\nl
++0.5*\Perm{IJKABC}{KIJCAB})(1-\Perm{ABC}{CAB}) \sum_{LMED} \tnsr \intg{LD}{ME} \tnsr T^{LM}_{DA} \tnsr T^{IJK}_{EBC} |0>_C
+-<\Phi^{abc}_{ijk}| \frac{3}{2}*\nl
+(1-\Perm{ABC}{CAB}) \sum_{LMDE} \tnsr \intg{LD}{ME} \tnsr T^{LM}_{DA} \tnsr T^{JIK}_{ECB} |0>_C
++<\Phi^{abc}_{ijk}| \frac{3}{4}(0.5\nl
++0.5*\Perm{IJAB}{JIBA}+0.5*\Perm{IJKABC}{KIJCAB})(1-\Perm{ABC}{CAB}) \sum_{LMED} \tnsr \intg{LD}{ME} \tnsr T^{LI}_{DE} \tnsr T^{MJK}_{ABC} |0>_C
+\nl
+-<\Phi^{abc}_{ijk}| \frac{3}{2}*(1-\Perm{ABC}{CAB}) \sum_{LMDE} \tnsr \intg{LD}{ME} \tnsr T^{LJ}_{DE} \tnsr T^{MIK}_{ACB} |0>_C
++<\Phi^{abc}_{ijk}| \frac{3}{4}\nl
+(1+1*\Perm{IJAB}{JIBA}+1*\Perm{IJKABC}{KIJCAB})(1-\Perm{ABC}{CAB}) \sum_{LMDE} \tnsr \intg{LE}{MD} \tnsr T^{LI}_{DA} \tnsr T^{MJK}_{EBC} |0>_C
+\nl
+-<\Phi^{abc}_{ijk}| 3*(1-\Perm{ABC}{CAB}) \sum_{LMDE} \tnsr \intg{LE}{MD} \tnsr T^{LJ}_{DA} \tnsr T^{MIK}_{ECB} |0>_C
++<\Phi^{abc}_{ijk}| \frac{3}{4}\nl
+(0.5+0.5*\Perm{IJAB}{JIBA}+0.5*\Perm{IKAC}{KICA}+0.5*\Perm{JKBC}{KJCB}+0.5*\Perm{IJKABC}{JKIBCA})(1-\Perm{ABC}{CAB}) \sum_{LMED} \tnsr \intg{LE}{MD} \tnsr T^{LJ}_{AB} \tnsr T^{IMK}_{EDC} |0>_C
+\nl
++<\Phi^{abc}_{ijk}| \frac{3}{2}*(-1+1*\Perm{IKAB}{KIBA}-\Perm{IJKABC}{JKIBCA}-\Perm{IJKABC}{KIJCAB})(1-\Perm{ABC}{CAB}) \sum_{LMDE} \tnsr \intg{LE}{MD} \tnsr T^{LK}_{CB} \tnsr T^{IMJ}_{EDA} |0>_C
+\nl
++<\Phi^{abc}_{ijk}| -\frac{3}{2}*(1-\Perm{ABC}{CAB}) \sum_{LMDE} \tnsr \intg{LE}{MD} \tnsr T^{LI}_{BC} \tnsr T^{KMJ}_{EDA} |0>_C
++<\Phi^{abc}_{ijk}| \frac{3}{4}\nl
+(0.5+0.5*\Perm{IJAB}{JIBA}+0.5*\Perm{IKAC}{KICA}+0.5*\Perm{JKBC}{KJCB}+0.5*\Perm{IJKABC}{JKIBCA}+0.5*\Perm{IJKABC}{KIJCAB})(1-\Perm{ABC}{CAB}) \sum_{MLDE} \tnsr \intg{MD}{LE} \tnsr T^{IJ}_{DB} \tnsr T^{MLK}_{AEC} |0>_C
+\nl
++<\Phi^{abc}_{ijk}| \frac{3}{2}*(-1+1*\Perm{IJKABC}{JKIBCA}-\Perm{IJKABC}{KIJCAB})(1-\Perm{ABC}{CAB}) \sum_{MLDE} \tnsr \intg{MD}{LE} \tnsr T^{IK}_{DB} \tnsr T^{MLJ}_{CEA} |0>_C
+\nl
++<\Phi^{abc}_{ijk}| -3*(1-\Perm{ABC}{CAB}) \sum_{LMDE} \tnsr \intg{MD}{LE} \tnsr T^{JI}_{DC} \tnsr T^{MLK}_{AEB} |0>_C
++<\Phi^{abc}_{ijk}| \frac{3}{4}\nl
+(-0.5-0.5*\Perm{IJAB}{JIBA}-0.5*\Perm{IJKABC}{KIJCAB})(1-\Perm{ABC}{CAB}) \sum_{LMDE} \tnsr \intg{LD}{ME} \tnsr T^{LM}_{AD} \tnsr T^{IJK}_{EBC} |0>_C
+\nl
++<\Phi^{abc}_{ijk}| \frac{3}{2}*(1-\Perm{ABC}{CAB}) \sum_{LMDE} \tnsr \intg{LD}{ME} \tnsr T^{LM}_{AD} \tnsr T^{JIK}_{ECB} |0>_C
++<\Phi^{abc}_{ijk}| \frac{3}{4}\nl
+(-0.5-0.5*\Perm{IJAB}{JIBA}-0.5*\Perm{IJKABC}{KIJCAB})(1-\Perm{ABC}{CAB}) \sum_{LMDE} \tnsr \intg{LE}{MD} \tnsr T^{LI}_{DE} \tnsr T^{MJK}_{ABC} |0>_C
+\nl
++<\Phi^{abc}_{ijk}| \frac{3}{2}*(1-\Perm{ABC}{CAB}) \sum_{LMDE} \tnsr \intg{LE}{MD} \tnsr T^{LJ}_{DE} \tnsr T^{MIK}_{ACB} |0>_C
++<\Phi^{abc}_{ijk}| \frac{3}{4}\nl
+(-1.0*-1.0*\Perm{JKBC}{KJCB}-1.0*\Perm{IJKABC}{JKIBCA})(1-\Perm{ABC}{CAB}) \sum_{LMDE} \tnsr \intg{LE}{MD} \tnsr T^{LM}_{AB} \tnsr T^{IJK}_{EDC} |0>_C
+\nl
++<\Phi^{abc}_{ijk}| 3*(1-\Perm{ABC}{CAB}) \sum_{LMED} \tnsr \intg{LE}{MD} \tnsr T^{LM}_{CB} \tnsr T^{IKJ}_{EDA} |0>_C
++<\Phi^{abc}_{ijk}| \frac{3}{4}\nl
+(-1.0*-1.0*\Perm{IJAB}{JIBA}-1.0*\Perm{IJKABC}{KIJCAB})(1-\Perm{ABC}{CAB}) \sum_{LMDE} \tnsr \intg{LE}{MD} \tnsr T^{LI}_{AD} \tnsr T^{MJK}_{EBC} |0>_C
+\nl
++<\Phi^{abc}_{ijk}| 3*(1-\Perm{ABC}{CAB}) \sum_{LMDE} \tnsr \intg{LE}{MD} \tnsr T^{LJ}_{AD} \tnsr T^{MIK}_{ECB} |0>_C
++<\Phi^{abc}_{ijk}| \frac{3}{4}\nl
+(-1-1*\Perm{IJAB}{JIBA}-1*\Perm{IKAC}{KICA}-\Perm{JKBC}{KJCB}-\Perm{IJKABC}{JKIBCA}-\Perm{IJKABC}{KIJCAB})(1-\Perm{ABC}{CAB}) \sum_{LMDE} \tnsr \intg{LE}{MD} \tnsr T^{LI}_{DA} \tnsr T^{JMK}_{EBC} |0>_C
+\nl
++<\Phi^{abc}_{ijk}| 3*(1+1*\Perm{IJKABC}{JKIBCA}+\Perm{IJKABC}{KIJCAB})(1-\Perm{ABC}{CAB}) \sum_{LMDE} \tnsr \intg{LE}{MD} \tnsr T^{LI}_{DC} \tnsr T^{KMJ}_{EBA} |0>_C
+\nl
++<\Phi^{abc}_{ijk}| \frac{3}{4}(-1-1*\Perm{IJAB}{JIBA}-1*\Perm{IKAC}{KICA}-\Perm{JKBC}{KJCB}-\Perm{IJKABC}{JKIBCA}-\Perm{IJKABC}{KIJCAB})\nl
+(1-\Perm{ABC}{CAB}) \sum_{LMDE} \tnsr \intg{LE}{MD} \tnsr T^{LJ}_{AD} \tnsr T^{IMK}_{EBC} |0>_C
++<\Phi^{abc}_{ijk}| 3*(1+1*\Perm{IJKABC}{JKIBCA}\nl
++\Perm{IJKABC}{KIJCAB})(1-\Perm{ABC}{CAB}) \sum_{LMDE} \tnsr \intg{LE}{MD} \tnsr T^{LK}_{CD} \tnsr T^{IMJ}_{EBA} |0>_C
++<\Phi^{abc}_{ijk}| \frac{3}{4}\nl
+(-1-1*\Perm{JKBC}{KJCB}-1*\Perm{IJKABC}{JKIBCA})(1-\Perm{ABC}{CAB}) \sum_{LMDE} \tnsr \intg{MD}{LE} \tnsr T^{IJ}_{DE} \tnsr T^{MLK}_{ABC} |0>_C
+\nl
++<\Phi^{abc}_{ijk}| 3*(1-\Perm{ABC}{CAB}) \sum_{LMDE} \tnsr \intg{MD}{LE} \tnsr T^{IK}_{DE} \tnsr T^{MLJ}_{CBA} |0>_C
++<\Phi^{abc}_{ijk}| \frac{3}{4}\nl
+(-0.5-0.5*\Perm{IJAB}{JIBA}-0.5*\Perm{IKAC}{KICA}-0.5*\Perm{JKBC}{KJCB}-0.5*\Perm{IJKABC}{JKIBCA}-0.5*\Perm{IJKABC}{KIJCAB})(1-\Perm{ABC}{CAB}) \sum_{LMDE} \tnsr \intg{MD}{LE} \tnsr T^{IJ}_{DB} \tnsr T^{MLK}_{ACE} |0>_C
+\nl
++<\Phi^{abc}_{ijk}| \frac{3}{2}(1-\Perm{ABC}{CAB}) \sum_{LMDE} \tnsr \intg{LE}{MD} \tnsr T^{KJ}_{DA} \tnsr T^{MLI}_{BCE} |0>_C
++<\Phi^{abc}_{ijk}| \frac{3}{2}\nl
+(1-\Perm{ABC}{CAB}) \sum_{LMDE} \tnsr \intg{MD}{LE} \tnsr T^{JI}_{DC} \tnsr T^{MLK}_{ABE} |0>_C
++<\Phi^{abc}_{ijk}| -\frac{3}{2}(1-\Perm{ABC}{CAB}) \sum_{LMDE} \tnsr \intg{MD}{LE} \tnsr T^{IK}_{DA} \tnsr T^{MLJ}_{BCE} |0>_C
+\nl
++<\Phi^{abc}_{ijk}| -\frac{3}{8}(1-\Perm{ABC}{CAB}) \sum_{LMDE} \tnsr \intg{MD}{LE} \tnsr T^{IK}_{DC} \tnsr T^{MLJ}_{ABE} |0>_C
++<\Phi^{abc}_{ijk}| \frac{3}{4}\nl
+(-0.5-0.5*\Perm{IJAB}{JIBA}-0.5*\Perm{IKAC}{KICA}-0.5*\Perm{JKBC}{KJCB}-0.5*\Perm{IJKABC}{JKIBCA}-0.5*\Perm{IJKABC}{KIJCAB})(1-\Perm{ABC}{CAB}) \sum_{LMDE} \tnsr \intg{MD}{LE} \tnsr T^{IJ}_{DB} \tnsr T^{MLK}_{EAC} |0>_C
+\nl
++<\Phi^{abc}_{ijk}| \frac{3}{2}(1-\Perm{ABC}{CAB}) \sum_{LMDE} \tnsr \intg{MD}{LE} \tnsr T^{JI}_{DC} \tnsr T^{MLK}_{EAB} |0>_C
++<\Phi^{abc}_{ijk}| \frac{3}{2}\nl
+(1-\Perm{ABC}{CAB}) \sum_{LMDE} \tnsr \intg{MD}{LE} \tnsr T^{KJ}_{DA} \tnsr T^{MLI}_{EBC} |0>_C
++<\Phi^{abc}_{ijk}| -\frac{3}{2}(1-\Perm{ABC}{CAB}) \sum_{LMDE} \tnsr \intg{MD}{LE} \tnsr T^{IK}_{DA} \tnsr T^{MLJ}_{EBC} |0>_C
+\nl
++<\Phi^{abc}_{ijk}| -\frac{3}{8}(1-\Perm{ABC}{CAB}) \sum_{LMDE} \tnsr \intg{MD}{LE} \tnsr T^{IK}_{DC} \tnsr T^{MLJ}_{EAB} |0>_C
++<\Phi^{abc}_{ijk}| \frac{3}{4}\nl
+(-0.5-0.5*\Perm{IJAB}{JIBA}-0.5*\Perm{IKAC}{KICA}-0.5*\Perm{JKBC}{KJCB}-0.5*\Perm{IJKABC}{JKIBCA}-0.5*\Perm{IJKABC}{KIJCAB})(1-\Perm{ABC}{CAB}) \sum_{LMDE} \tnsr \intg{LE}{MD} \tnsr T^{LJ}_{AB} \tnsr T^{IMK}_{ECD} |0>_C
+\nl
++<\Phi^{abc}_{ijk}| \frac{3}{2}(1-\Perm{ABC}{CAB}) \sum_{LMDE} \tnsr \intg{LE}{MD} \tnsr T^{LI}_{AC} \tnsr T^{JMK}_{EBD} |0>_C
++<\Phi^{abc}_{ijk}| \frac{3}{2}\nl
+(1-\Perm{ABC}{CAB}) \sum_{LMDE} \tnsr \intg{LE}{MD} \tnsr T^{LJ}_{AC} \tnsr T^{KMI}_{EBD} |0>_C
++<\Phi^{abc}_{ijk}| \frac{6}{2}(1-\Perm{ABC}{CAB}) \sum_{LMDE} \tnsr \intg{LE}{MD} \tnsr T^{LJ}_{BA} \tnsr T^{KMI}_{ECD} |0>_C
+\nl
++<\Phi^{abc}_{ijk}| -\frac{3}{2}(1-\Perm{ABC}{CAB}) \sum_{LMDE} \tnsr \intg{LE}{MD} \tnsr T^{LK}_{BA} \tnsr T^{IMJ}_{ECD} |0>_C
++<\Phi^{abc}_{ijk}| \frac{3}{8}\nl
+(1-\Perm{ABC}{CAB}) \sum_{LMDE} \tnsr \intg{LE}{MD} \tnsr T^{LJ}_{CB} \tnsr T^{KMI}_{EAD} |0>_C
++<\Phi^{abc}_{ijk}| -\frac{3}{8}(1-\Perm{ABC}{CAB}) \sum_{LMDE} \tnsr \intg{LE}{MD} \tnsr T^{LK}_{AC} \tnsr T^{IMJ}_{EBD} |0>_C
+\nl
++<\Phi^{abc}_{ijk}| \frac{3}{4}(-0.5-0.5*\Perm{IJAB}{JIBA}-0.5*\Perm{IKAC}{KICA}-0.5*\Perm{JKBC}{KJCB}-0.5*\Perm{IJKABC}{JKIBCA}-0.5*\Perm{IJKABC}{KIJCAB})\nl
+(1-\Perm{ABC}{CAB}) \sum_{LMDE} \tnsr \intg{LE}{MD} \tnsr T^{LJ}_{AB} \tnsr T^{MIK}_{EDC} |0>_C
++<\Phi^{abc}_{ijk}| \frac{3}{2}(1-\Perm{ABC}{CAB}) \sum_{LMDE} \tnsr \intg{LE}{MD} \tnsr T^{LI}_{AC} \tnsr T^{MJK}_{EDB} |0>_C
+\nl
++<\Phi^{abc}_{ijk}| \frac{6}{2}(1-\Perm{ABC}{CAB}) \sum_{LMDE} \tnsr \intg{LE}{MD} \tnsr T^{LJ}_{BA} \tnsr T^{MKI}_{EDC} |0>_C
++<\Phi^{abc}_{ijk}| \frac{3}{2}\nl
+(1-\Perm{ABC}{CAB}) \sum_{LMDE} \tnsr \intg{LE}{MD} \tnsr T^{LJ}_{AC} \tnsr T^{MKI}_{EDB} |0>_C
++<\Phi^{abc}_{ijk}| -\frac{3}{2}(1-\Perm{ABC}{CAB}) \sum_{LMDE} \tnsr \intg{LE}{MD} \tnsr T^{LK}_{BA} \tnsr T^{MIJ}_{EDC} |0>_C
+\nl
++<\Phi^{abc}_{ijk}| -\frac{3}{8}(1-\Perm{ABC}{CAB}) \sum_{LMDE} \tnsr \intg{LE}{MD} \tnsr T^{LK}_{AC} \tnsr T^{MIJ}_{EDB} |0>_C
++<\Phi^{abc}_{ijk}| \frac{3}{8}\nl
+(1-\Perm{ABC}{CAB}) \sum_{LMDE} \tnsr \intg{LE}{MD} \tnsr T^{LJ}_{CB} \tnsr T^{MKI}_{EDA} |0>_C
+=\nl
+(4*1 + 4*\Perm{ijab}{jiba} + 4*\Perm{ijkabc}{kijcab})\sum_{lmde}\tnsr \intg{ld}{me}\tnsr T^{li}_{da}\tnsr T^{mjk}_{ebc} + (-1 \newpg
+\eeq
+\beq
+&& - \Perm{ijab}{jiba} - \Perm{ijkabc}{kijcab})\sum_{ll_{1}de}\tnsr \intg{ld}{l_{1}e}\tnsr T^{ll_{1}}_{da}\tnsr T^{ijk}_{ebc} + (-1\nl
+ - \Perm{ijab}{jiba} - \Perm{ijkabc}{kijcab})\sum_{lmdd_{1}}\tnsr \intg{ld}{md_{1}}\tnsr T^{li}_{dd_{1}}\tnsr T^{mjk}_{abc} + (-2*1\nl
+ - 2*\Perm{ijab}{jiba} - 2*\Perm{ikac}{kica} - 2*\Perm{jkbc}{kjcb} - 2*\Perm{ijkabc}{jkibca}\nl
+ - 2*\Perm{ijkabc}{kijcab})\sum_{lmde_{1}}\tnsr \intg{ld}{me_{1}}\tnsr T^{li}_{da}\tnsr T^{mjk}_{be_{1}c} + (-2*1 - 2*\Perm{ijab}{jiba}\nl
+ - 2*\Perm{ijkabc}{kijcab})\sum_{lmd_{1}e}\tnsr \intg{ld_{1}}{me}\tnsr T^{li}_{ad_{1}}\tnsr T^{mjk}_{ebc} + (-1 - \Perm{ijab}{jiba}\nl
+ - \Perm{ikac}{kica} - \Perm{jkbc}{kjcb} - \Perm{ijkabc}{jkibca}\nl
+ - \Perm{ijkabc}{kijcab})\sum_{lmde}\tnsr \intg{le}{md}\tnsr T^{lj}_{ab}\tnsr T^{imk}_{edc} + (-1 - \Perm{ijab}{jiba}\nl
+ - \Perm{ikac}{kica} - \Perm{jkbc}{kjcb} - \Perm{ijkabc}{jkibca}\nl
+ - \Perm{ijkabc}{kijcab})\sum_{lmde}\tnsr \intg{md}{le}\tnsr T^{ij}_{db}\tnsr T^{mlk}_{aec} + (0.5*1 + 0.5*\Perm{ijab}{jiba}\nl
+ + 0.5*\Perm{ijkabc}{kijcab})\sum_{lmde}\tnsr \intg{ld}{me}\tnsr T^{lm}_{ad}\tnsr T^{ijk}_{ebc} + (0.5*1\nl
+ + 0.5*\Perm{ijab}{jiba} + 0.5*\Perm{ijkabc}{kijcab})\sum_{lmdd_{1}}\tnsr \intg{ld_{1}}{md}\tnsr T^{li}_{dd_{1}}\tnsr T^{mjk}_{abc} + (1\nl
+ + \Perm{ijab}{jiba} + \Perm{ikac}{kica} + \Perm{jkbc}{kjcb} + \Perm{ijkabc}{jkibca}\nl
+ + \Perm{ijkabc}{kijcab})\sum_{lmd_{1}e_{1}}\tnsr \intg{ld_{1}}{me_{1}}\tnsr T^{li}_{ad_{1}}\tnsr T^{mjk}_{be_{1}c} + (0.5*1 + 0.5*\Perm{ijab}{jiba}\nl
+ + 0.5*\Perm{ikac}{kica} + 0.5*\Perm{jkbc}{kjcb} + 0.5*\Perm{ijkabc}{jkibca}\nl
+ + 0.5*\Perm{ijkabc}{kijcab})\sum_{lmde}\tnsr \intg{le}{md}\tnsr T^{lj}_{ab}\tnsr T^{imk}_{ecd} + (0.5*1\nl
+ + 0.5*\Perm{ijab}{jiba} + 0.5*\Perm{ikac}{kica} + 0.5*\Perm{jkbc}{kjcb}\nl
+ + 0.5*\Perm{ijkabc}{jkibca} + 0.5*\Perm{ijkabc}{kijcab})\sum_{lmde}\tnsr \intg{le}{md}\tnsr T^{lj}_{ab}\tnsr T^{mik}_{edc}\nl
+ + (0.5*1 + 0.5*\Perm{ijab}{jiba} + 0.5*\Perm{ikac}{kica} + 0.5*\Perm{jkbc}{kjcb}\nl
+ + 0.5*\Perm{ijkabc}{jkibca} + 0.5*\Perm{ijkabc}{kijcab})\sum_{lmde}\tnsr \intg{md}{le}\tnsr T^{ij}_{db}\tnsr T^{mlk}_{ace}\nl
+ + (0.5*1 + 0.5*\Perm{ijab}{jiba} + 0.5*\Perm{ikac}{kica} + 0.5*\Perm{jkbc}{kjcb}\nl
+ + 0.5*\Perm{ijkabc}{jkibca} + 0.5*\Perm{ijkabc}{kijcab})\sum_{lmde}\tnsr \intg{md}{le}\tnsr T^{ij}_{db}\tnsr T^{mlk}_{eac}
+\eeq
