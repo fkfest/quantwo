@@ -4,6 +4,8 @@
 
 * separated diagram from expression
 * improved handling of input terms.
+* penalized virtual orbitals in @tensoropt calls.
+* changed to load4idx() calls in ElemCo.jl generation.
 
 ### Fixed
 
