@@ -4,6 +4,7 @@
 
 * separated diagram from expression
 * improved handling of input terms.
+* changed to load4idx() calls in ElemCo.jl generation.
 
 ### Fixed
 
@@ -12,6 +13,7 @@
 ### Added
 
 * DC-CCSDT closed-shell generation test file.
+* penalized virtual orbitals in @tensoropt calls.
 
 ## Version [v1.0.1] - 2024.02.27
 

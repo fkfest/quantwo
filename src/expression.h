@@ -48,6 +48,10 @@ public:
   void printjulia(std::ofstream& out) const;
   // print Julia tensor load and drop
   void printjulia(std::ofstream& out, const std::string& tensorname, std::stack<std::string>& LIFO) const;
+  // penalize virtuals in tensoropt calls
+  std::string juliacost(const std::vector<SlotTs>& slottypes, const Array<std::string>& resslots, 
+                        const Array<std::string>& aslots, const Array<std::string>& bslots,
+                        const Array<std::string>& cslots) const;
   std::string elemconame(const std::string& name, const SlotTs& slottypes) const;
   // sort diagram list with elemcocompare_diags compare function
   void elemcosort_diags();

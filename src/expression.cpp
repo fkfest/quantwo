@@ -269,6 +269,63 @@ void Expression::elemcosort_diags()
   _diagrams.sort(elemcocompare_diags);
 }
 
+std::string Expression::juliacost(const std::vector<SlotTs>& slottypes, const Array<std::string>& resslots, const Array<std::string>& aslots, const Array<std::string>& bslots, const Array<std::string>& cslots) const
+{
+  std::set<std::string> uniqueindices;
+  std::string coststring = "(";
+  for(uint i = 0; i < resslots.size(); i++){
+    if ( uniqueindices.insert(resslots[i]).second){
+      coststring += resslots[i]+"=>";
+      if ( slottypes[0][i]->type() == SlotType::Type::Virt  || 
+          slottypes[0][i]->type() == SlotType::Type::VirtA || 
+          slottypes[0][i]->type() == SlotType::Type::VirtB)
+        coststring += "10*x";
+      else
+        coststring += "x";
+      coststring += ",";
+    }
+  }
+  for(uint i = 0; i < aslots.size(); i++){
+    if ( uniqueindices.insert(aslots[i]).second){
+      coststring += aslots[i]+"=>";
+      if ( slottypes[0][i]->type() == SlotType::Type::Virt  || 
+          slottypes[0][i]->type() == SlotType::Type::VirtA || 
+          slottypes[0][i]->type() == SlotType::Type::VirtB)
+        coststring += "10*x";
+      else
+        coststring += "x";
+      coststring += ",";
+    }
+  }
+  for(uint i = 0; i < bslots.size(); i++){
+    if ( uniqueindices.insert(bslots[i]).second){
+      coststring += bslots[i]+"=>";
+      if ( slottypes[0][i]->type() == SlotType::Type::Virt  || 
+          slottypes[0][i]->type() == SlotType::Type::VirtA || 
+          slottypes[0][i]->type() == SlotType::Type::VirtB)
+        coststring += "10*x";
+      else
+        coststring += "x";
+      coststring += ",";
+    }
+  }
+  for(uint i = 0; i < cslots.size(); i++){
+    if ( uniqueindices.insert(cslots[i]).second){
+      coststring += cslots[i]+"=>";
+      if ( slottypes[0][i]->type() == SlotType::Type::Virt  || 
+          slottypes[0][i]->type() == SlotType::Type::VirtA || 
+          slottypes[0][i]->type() == SlotType::Type::VirtB)
+        coststring += "10*x";
+      else
+        coststring += "x";
+      coststring += ",";
+    }
+  }
+  if ( coststring.back() == ',' ) coststring.pop_back();
+  coststring += ") ";
+  return coststring;
+}
+
 void Expression::printjulia(std::ofstream& out) const
 {
   std::stack<std::string> LIFO;
@@ -379,6 +436,7 @@ void Expression::printjulia(std::ofstream& out) const
       printjulia(out, diag._tensors[1].name(), LIFO);
 
       out << "@tensoropt ";
+      out << juliacost(slottypes,resslots,aslots,bslots,cslots);
       out << elemconame(diag._tensors[0].name(),slottypes[0]) << "[" << container2csstring(resslots) << "] ";
       if (std::abs(std::abs(diag._fac) - 1.0) > 1.e-6){
         out << sgnchar(diag._fac) << "= " << std::abs(diag._fac) << " * ";
@@ -410,7 +468,7 @@ void Expression::printjulia(std::ofstream& out, const std::string& tensorname, s
       if (upper == "OOVV" ) //undressed
         out << tensorname << " = " << "ints2(EC,\"" << tensorname << "\")" << std::endl;  
       else //dressed
-        out << tensorname << " = " << "load(EC,\"" << tensorname << "\")" << std::endl;  
+        out << tensorname << " = " << "load4idx(EC,\"" << tensorname << "\")" << std::endl;  
       LIFO.push(tensorname);
     }
   }
