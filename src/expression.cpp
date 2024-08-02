@@ -288,9 +288,9 @@ std::string Expression::juliacost(const std::vector<SlotTs>& slottypes, const Ar
   for(uint i = 0; i < aslots.size(); i++){
     if ( uniqueindices.insert(aslots[i]).second){
       coststring += aslots[i]+"=>";
-      if ( slottypes[0][i]->type() == SlotType::Type::Virt  || 
-          slottypes[0][i]->type() == SlotType::Type::VirtA || 
-          slottypes[0][i]->type() == SlotType::Type::VirtB)
+      if ( slottypes[1][i]->type() == SlotType::Type::Virt  || 
+          slottypes[1][i]->type() == SlotType::Type::VirtA || 
+          slottypes[1][i]->type() == SlotType::Type::VirtB)
         coststring += "10*x";
       else
         coststring += "x";
@@ -300,9 +300,9 @@ std::string Expression::juliacost(const std::vector<SlotTs>& slottypes, const Ar
   for(uint i = 0; i < bslots.size(); i++){
     if ( uniqueindices.insert(bslots[i]).second){
       coststring += bslots[i]+"=>";
-      if ( slottypes[0][i]->type() == SlotType::Type::Virt  || 
-          slottypes[0][i]->type() == SlotType::Type::VirtA || 
-          slottypes[0][i]->type() == SlotType::Type::VirtB)
+      if ( slottypes[2][i]->type() == SlotType::Type::Virt  || 
+          slottypes[2][i]->type() == SlotType::Type::VirtA || 
+          slottypes[2][i]->type() == SlotType::Type::VirtB)
         coststring += "10*x";
       else
         coststring += "x";
@@ -312,9 +312,9 @@ std::string Expression::juliacost(const std::vector<SlotTs>& slottypes, const Ar
   for(uint i = 0; i < cslots.size(); i++){
     if ( uniqueindices.insert(cslots[i]).second){
       coststring += cslots[i]+"=>";
-      if ( slottypes[0][i]->type() == SlotType::Type::Virt  || 
-          slottypes[0][i]->type() == SlotType::Type::VirtA || 
-          slottypes[0][i]->type() == SlotType::Type::VirtB)
+      if ( slottypes[3][i]->type() == SlotType::Type::Virt  || 
+          slottypes[3][i]->type() == SlotType::Type::VirtA || 
+          slottypes[3][i]->type() == SlotType::Type::VirtB)
         coststring += "10*x";
       else
         coststring += "x";

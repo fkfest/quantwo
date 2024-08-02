@@ -23,14 +23,14 @@ d_oooo = load4idx(EC,"d_oooo")
 @tensoropt R2[a,b,k,l] += 0.5 * d_oooo[j,i,l,k] * T2[a,b,i,j]
 d_oooo = nothing
 oovv = ints2(EC,"oovv")
-@tensoropt (a=>10*x,b=>10*x,i=>x,j=>x,l=>10*x,k=>10*x,d=>x,c=>x) R2[a,b,i,j] += 0.25 * oovv[l,k,d,c] * T2[b,a,k,l] * T2[c,d,i,j]
-@tensoropt (a=>10*x,b=>10*x,i=>x,j=>x,l=>10*x,k=>10*x,d=>x,c=>x) R2[a,b,i,j] += 0.25 * oovv[l,k,d,c] * T2[a,b,k,l] * T2[c,d,i,j]
-@tensoropt (a=>10*x,b=>10*x,j=>x,i=>x,l=>10*x,k=>10*x,d=>x,c=>x) R2[a,b,j,i] -= 0.5 * oovv[l,k,d,c] * T2[d,c,i,k] * T2[a,b,j,l]
-@tensoropt (a=>10*x,b=>10*x,i=>x,j=>x,l=>10*x,k=>10*x,d=>x,c=>x) R2[a,b,i,j] += 0.5 * oovv[l,k,d,c] * T2[d,c,i,k] * T2[a,b,j,l]
-@tensoropt (b=>10*x,a=>10*x,i=>x,j=>x,l=>10*x,k=>10*x,d=>x,c=>x) R2[b,a,i,j] -= 0.5 * oovv[l,k,d,c] * T2[c,a,k,l] * T2[b,d,i,j]
-@tensoropt (a=>10*x,b=>10*x,i=>x,j=>x,l=>10*x,k=>10*x,d=>x,c=>x) R2[a,b,i,j] += 0.5 * oovv[l,k,d,c] * T2[c,a,k,l] * T2[b,d,i,j]
-@tensoropt (b=>10*x,a=>10*x,i=>x,j=>x,l=>10*x,k=>10*x,d=>x,c=>x) R2[b,a,i,j] -= oovv[l,k,d,c] * T2[a,c,i,k] * T2[b,d,j,l]
-@tensoropt (a=>10*x,b=>10*x,i=>x,j=>x,l=>10*x,k=>10*x,d=>x,c=>x) R2[a,b,i,j] += oovv[l,k,d,c] * T2[a,c,i,k] * T2[b,d,j,l]
+@tensoropt (a=>10*x,b=>10*x,i=>x,j=>x,l=>x,k=>x,d=>10*x,c=>10*x) R2[a,b,i,j] += 0.25 * oovv[l,k,d,c] * T2[b,a,k,l] * T2[c,d,i,j]
+@tensoropt (a=>10*x,b=>10*x,i=>x,j=>x,l=>x,k=>x,d=>10*x,c=>10*x) R2[a,b,i,j] += 0.25 * oovv[l,k,d,c] * T2[a,b,k,l] * T2[c,d,i,j]
+@tensoropt (a=>10*x,b=>10*x,j=>x,i=>x,l=>x,k=>x,d=>10*x,c=>10*x) R2[a,b,j,i] -= 0.5 * oovv[l,k,d,c] * T2[d,c,i,k] * T2[a,b,j,l]
+@tensoropt (a=>10*x,b=>10*x,i=>x,j=>x,l=>x,k=>x,d=>10*x,c=>10*x) R2[a,b,i,j] += 0.5 * oovv[l,k,d,c] * T2[d,c,i,k] * T2[a,b,j,l]
+@tensoropt (b=>10*x,a=>10*x,i=>x,j=>x,l=>x,k=>x,d=>10*x,c=>10*x) R2[b,a,i,j] -= 0.5 * oovv[l,k,d,c] * T2[c,a,k,l] * T2[b,d,i,j]
+@tensoropt (a=>10*x,b=>10*x,i=>x,j=>x,l=>x,k=>x,d=>10*x,c=>10*x) R2[a,b,i,j] += 0.5 * oovv[l,k,d,c] * T2[c,a,k,l] * T2[b,d,i,j]
+@tensoropt (b=>10*x,a=>10*x,i=>x,j=>x,l=>x,k=>x,d=>10*x,c=>10*x) R2[b,a,i,j] -= oovv[l,k,d,c] * T2[a,c,i,k] * T2[b,d,j,l]
+@tensoropt (a=>10*x,b=>10*x,i=>x,j=>x,l=>x,k=>x,d=>10*x,c=>10*x) R2[a,b,i,j] += oovv[l,k,d,c] * T2[a,c,i,k] * T2[b,d,j,l]
 oovv = nothing
 @tensoropt R2[a,b,j,k] += fij[i,j] * T2[a,b,k,i]
 @tensoropt R2[a,b,k,j] -= fij[i,j] * T2[a,b,k,i]
