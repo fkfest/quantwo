@@ -2,9 +2,18 @@
 
 ### Changed
 
-* separated diagram from expression
+### Fixed
+
+### Added
+
+## Version [v1.0.2] - 2024.08.05
+
+### Changed
+
+* separated diagram from expression.
 * improved handling of input terms.
 * changed to load4idx() calls in ElemCo.jl generation.
+* bract definition in params.reg.
 
 ### Fixed
 
