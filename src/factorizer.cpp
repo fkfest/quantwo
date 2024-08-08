@@ -18,7 +18,9 @@ Factorizer::Factorizer(const std::vector<TermSum>& s)
         slotorbs[orb] = _expression.add(Translators::orb2slot(orb));
         ++iorb;
       }
-      TermSum sumt = term.resolve_permutations();
+      TermSum sumt;
+      sumt += std::make_pair(term,fac);
+      if ( Input::iPars["prog"]["algo"] != 2 ) TermSum sumt = term.resolve_permutations();
       for ( TermSum::const_iterator ist = sumt.begin();ist != sumt.end(); ++ist ) {
         Factor fact = _todouble(ist->second);
         fact *= fac;
@@ -164,6 +166,6 @@ Diagram Translators::term2diagram(Term& term, Factor fact, const std::map< Orbit
   assert( std::abs(std::abs(_todouble(term.prefac())) - 1) < Numbers::verysmall );
   diag._fac = fact;
   if ( nbareops > 1 ) error("we can handle only upto one bare operator yet...", "Translators::term2diagram");
-  expr._diagrams.push_back(diag);
+  expr._diagrams.push_back(std::make_pair(diag,term.perm()));
   return diag;
 }

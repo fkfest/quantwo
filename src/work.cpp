@@ -518,8 +518,8 @@ void Q2::SpinExpansion(Finput& finput, TermSum sum_final, std::vector<TermSum>& 
   }
   else if( upname.size() == 2 ){
     spins.push_back({Spin::Up, Spin::Up, Spin::Up, Spin::Up});
-    spins.push_back({Spin::Down, Spin::Down, Spin::Down, Spin::Down});
-    spins.push_back({Spin::Up, Spin::Down, Spin::Up, Spin::Down});
+    //spins.push_back({Spin::Down, Spin::Down, Spin::Down, Spin::Down});
+    //spins.push_back({Spin::Up, Spin::Down, Spin::Up, Spin::Down});
   }
   else if( upname.size() == 3 ){
     spins.push_back({Spin::Up, Spin::Up, Spin::Up, Spin::Up, Spin::Up, Spin::Up});
@@ -761,7 +761,7 @@ void Q2::printalgo(std::ofstream& out, const std::vector<TermSum>& s)
   }
   else if ( Input::iPars["prog"]["algo"] == 2 ){//Julia code
     say("Printing Julia TensorOperations code...");
-    fact._expression.elemcosort_diags();
+    //fact._expression.elemcosort_diags();
     fact._expression.printjulia(out);
   }
   else

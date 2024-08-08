@@ -264,10 +264,10 @@ bool Expression::elemcocompare_diags(const Diagram& diagA, const Diagram& diagB)
   return false;
 }
 
-void Expression::elemcosort_diags()
-{
-  _diagrams.sort(elemcocompare_diags);
-}
+// void Expression::elemcosort_diags()
+// {
+//   _diagrams.sort(elemcocompare_diags);
+// }
 
 std::string Expression::juliacost(const std::vector<SlotTs>& slottypes, const Array<std::string>& resslots, const Array<std::string>& aslots, const Array<std::string>& bslots, const Array<std::string>& cslots) const
 {
@@ -329,12 +329,12 @@ std::string Expression::juliacost(const std::vector<SlotTs>& slottypes, const Ar
 void Expression::printjulia(std::ofstream& out) const
 {
   std::stack<std::string> LIFO;
-  for( std::list<Diagram>::const_iterator diagcit = _diagrams.begin(); diagcit != _diagrams.end(); diagcit++ ){
+  for( std::list<std::pair<Diagram,Sum<Permut,TFactor>>>::const_iterator diagcit = _diagrams.begin(); diagcit != _diagrams.end(); diagcit++ ){
 
     std::map<SlotType::Type,std::string> slotnames;
     std::vector<Array<std::string>> slots;
     std::vector<SlotTs> slottypes;
-    Diagram diag = *diagcit;
+    Diagram diag = diagcit->first;
 
     for( auto dtit = diag._tensors.begin(); dtit != diag._tensors.end(); dtit++ ){
       Tensor ten(diag.exprTensor(*dtit));
@@ -389,7 +389,6 @@ void Expression::printjulia(std::ofstream& out) const
 
       // print load and drop statements
       printjulia(out, diag._tensors[1].name(), LIFO);
-
       out << "@tensoropt ";
       out << elemconame(diag._tensors[0].name(),slottypes[0]) << "[" << container2csstring(resslots) << "] ";
       if (std::abs(std::abs(diag._fac) - 1.0) > 1.e-6){
@@ -435,19 +434,31 @@ void Expression::printjulia(std::ofstream& out) const
       // print load and drop statements
       printjulia(out, diag._tensors[1].name(), LIFO);
 
-      out << "@tensoropt ";
+      out << "@tensoropt begin" << std::endl;
       out << juliacost(slottypes,resslots,aslots,bslots,cslots);
-      out << elemconame(diag._tensors[0].name(),slottypes[0]) << "[" << container2csstring(resslots) << "] ";
-      if (std::abs(std::abs(diag._fac) - 1.0) > 1.e-6){
-        out << sgnchar(diag._fac) << "= " << std::abs(diag._fac) << " * ";
+      out << "X" << "[" << container2csstring(resslots) << "] ";
+      if (diag._fac  > 0){
+        out << ":= ";
+        if( diag._fac - 1.0 > 1.e-6 ) 
+          out << diag._fac;
       }
       else{
-        out << sgnchar(diag._fac) << "= ";
+        out << ":= " << sgnchar(diag._fac) << " * " <<std::abs(diag._fac);
       }
       out << elemconame(diag._tensors[1].name(),slottypes[1]) << "[" << container2csstring(aslots) << "] * ";
       out << elemconame(diag._tensors[2].name(),slottypes[2]) << "[" << container2csstring(bslots) << "] * ";
       out << elemconame(diag._tensors[3].name(),slottypes[3]) << "[" << container2csstring(cslots) << "]" << std::endl;
-
+      for ( Sum<Permut,TFactor>::const_iterator itp = diagcit->second.begin(); itp != diagcit->second.end(); ++itp ){
+        out << elemconame(diag._tensors[0].name(),slottypes[0]) << "[" << container2csstring(resslots) << "] ";
+        if (std::abs(std::abs(itp->second) - 1.0) > 1.e-6){
+          out << sgnchar(itp->second) << "= " << std::abs(itp->second) << " * ";
+        }
+        else{
+          out << sgnchar(itp->second) << "= ";
+        }
+        out << "X" << "[" << container2csstring(resslots) << "]" << std::endl;
+      }
+      out << "end" << std::endl;
     }
     else
       error("printjulia not implemented for more than 4 tensors in a diagram");

@@ -17,6 +17,7 @@
 #include "tensor.h"
 #include "action.h"
 #include "diagram.h"
+#include "matrix.h"
 
 class Diagram;
 
@@ -66,7 +67,7 @@ public:
   std::list<Summation> _summations;
   std::string _lastname;
   // diagrammatic representation
-  std::list<Diagram> _diagrams;
+  std::list<std::pair<Diagram,Sum<Permut,TFactor>>> _diagrams;
   std::map<std::string,std::string> _internames;
 };
 
