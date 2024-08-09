@@ -20,7 +20,7 @@ Factorizer::Factorizer(const std::vector<TermSum>& s)
       }
       TermSum sumt;
       sumt += std::make_pair(term,fac);
-      if ( Input::iPars["prog"]["algo"] != 2 ) TermSum sumt = term.resolve_permutations();
+      if ( Input::iPars["prog"]["algo"] != 2 || term.perm().size() == 1 || term.get_mat().size() == 2 ) sumt = term.resolve_permutations();
       for ( TermSum::const_iterator ist = sumt.begin();ist != sumt.end(); ++ist ) {
         Factor fact = _todouble(ist->second);
         fact *= fac;
