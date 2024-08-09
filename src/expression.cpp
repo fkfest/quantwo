@@ -490,8 +490,7 @@ void Expression::printjulia(std::ofstream& out) const
       // print load and drop statements
       printjulia(out, diag._tensors[1].name(), LIFO);
       if( diagcit->second.size() > 1 ){
-        out << "@tensoropt begin" << std::endl;
-        out << juliacost(slottypes,resslots,aslots,bslots,cslots);
+        out << "@tensoropt " << juliacost(slottypes,resslots,aslots,bslots,cslots) << " begin" << std::endl;
         out << "X" << "[" << container2csstring(resslots) << "] ";
         if (diag._fac  > 0){
           out << ":= ";
