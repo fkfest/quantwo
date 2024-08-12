@@ -186,6 +186,7 @@ public:
 //  bool operator < ( const DiagramTensor& ten ) const;
   std::string slotTypeLetters( const SlotTs& slottypes ) const;
   const Connections& connects() const { return _connect; };
+  bool equal( const DiagramTensor& ten ) const;
 //private:
   Connections _connect;
 };

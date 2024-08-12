@@ -44,6 +44,7 @@ public:
   // add tensor
   const DiagramTensor * add( DiagramTensor dten, const Tensor * pTen = 0, bool pushfront = false );
   bool isresidual(const DiagramTensor& dten) const;
+  bool equal(const Diagram& diag) const;
   // all slot types in this diagram
   SlotTs _slottypes;
   // all tensors in diagram, including the "vacuum tensor", i.e., the "result" (_tensor[0])
