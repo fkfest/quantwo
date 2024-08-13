@@ -288,6 +288,24 @@ bool Diagram::equal(const Diagram& diag) const{
   return true;
 }
 
+void Diagram::createPermMap(const Array<std::string>& aslots, const Array<std::string>& bslots){
+  assert(aslots.size() == bslots.size());                                           
+  for(uint i = 0; i < aslots.size(); i++){                                        
+    if( aslots[i] != bslots[i] ){                                                   
+      _permmap[aslots[i]] = bslots[i];                                                 
+    }                                                                           
+  }  
+}
+
+void Diagram::permute(Array<std::string>& slots){
+  for( uint i = 0; i < slots.size(); i++ ){                                  
+    PerMap::iterator it = _permmap.find(slots[i]);                             
+    if ( it != _permmap.end()){                                                    
+      slots[i] = _permmap[slots[i]];                                         
+    }                                                                           
+  }             
+}
+
 std::ostream & operator << (std::ostream& o, const Diagram& d) {
   o << "Diagram: {";
   o << d._fac;

@@ -18,6 +18,7 @@
 #include "action.h"
 #include "expression.h"
 
+typedef std::map<std::string,std::string> PerMap;
 class Expression;
 
 // max number of tensors in a contraction(needed in binarize)
@@ -45,6 +46,8 @@ public:
   const DiagramTensor * add( DiagramTensor dten, const Tensor * pTen = 0, bool pushfront = false );
   bool isresidual(const DiagramTensor& dten) const;
   bool equal(const Diagram& diag) const;
+  void createPermMap(const Array<std::string>& aslots, const Array<std::string>& bslots);
+  void permute(Array<std::string>& slots);
   // all slot types in this diagram
   SlotTs _slottypes;
   // all tensors in diagram, including the "vacuum tensor", i.e., the "result" (_tensor[0])
@@ -52,6 +55,7 @@ public:
   // all cuts in diagram
   Cuts _cuts;
   Factor _fac;
+  PerMap _permmap;
 };
 
 //! output operator for diagrams
