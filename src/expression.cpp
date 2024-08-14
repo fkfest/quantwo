@@ -328,9 +328,16 @@ std::string Expression::juliacost(const std::vector<SlotTs>& slottypes, const Ar
 
 uint Expression::extorb(const Array<std::string>& resslots, const Array<std::string>& aslots) const{
   uint extorb = 0;
+  Array<uint> locextorb;
   for( Array<std::string>::const_iterator it = resslots.begin(); it != resslots.end(); it++ ){
-    if( std::find(aslots.begin(), aslots.end(), *it) != aslots.end() ) extorb++;
+    Array<std::string>::const_iterator jt = std::find(aslots.begin(), aslots.end(), *it);
+    if( jt != aslots.end() ){
+      locextorb.push_back(std::distance(aslots.begin(),jt));
+      extorb++;
+    }
   }
+  for(auto&n : locextorb)
+    extorb += n;
   return extorb;
 }
 
@@ -399,7 +406,7 @@ void Expression::printjulia(std::ofstream& out) const
 
       // print load and drop statements
       printjulia(out, diag._tensors[1].name(), LIFO);
-      if(std::next(diagcit,1) != _diagrams.end() && diag.equal(*(std::next(diagcit,1))) && !startedblock){
+      if(std::next(diagcit,1) != _diagrams.end() && diag.equalestimate(*(std::next(diagcit,1))) && !startedblock){
         startedblock = true;
         primR = resslots;
         primA = aslots;
@@ -420,7 +427,7 @@ void Expression::printjulia(std::ofstream& out) const
         }
         out << "X" << "[" << container2csstring(primR) << "]" << std::endl;;
       }
-      else if (std::next(diagcit,1) != _diagrams.end() && diag.equal(*(std::next(diagcit,1))) && startedblock){
+      else if (std::next(diagcit,1) != _diagrams.end() && diag.equalestimate(*(std::next(diagcit,1))) && startedblock){
         if( resslots == primR){
           if( primA != aslots ){
             assert(primB == bslots);//not implemented
@@ -441,7 +448,7 @@ void Expression::printjulia(std::ofstream& out) const
         }
         out << "X" << "[" << container2csstring(primR) << "]" << std::endl;
       }
-      else if (std::next(diagcit,1) != _diagrams.end() && !diag.equal(*(std::next(diagcit,1))) && startedblock){
+      else if (std::next(diagcit,1) != _diagrams.end() && !diag.equalestimate(*(std::next(diagcit,1))) && startedblock){
         if( resslots == primR){
           if( primA != aslots ){
             assert(primB == bslots);//not implemented
@@ -565,7 +572,7 @@ void Expression::printjulia(std::ofstream& out) const
 
         // print load and drop statements
         printjulia(out, diag._tensors[1].name(), LIFO);
-        if(diag.equal(*(std::next(diagcit,1))) && !startedblock 
+        if(diag.equalestimate(*(std::next(diagcit,1))) && !startedblock 
             && (extorb(resslots,aslots) == extorb(resslots2,aslots2))
             && (extorb(resslots,bslots) == extorb(resslots2,bslots2))
             && (extorb(resslots,cslots) == extorb(resslots2,cslots2))
@@ -593,7 +600,7 @@ void Expression::printjulia(std::ofstream& out) const
           }
           out << "X" << "[" << container2csstring(primR) << "]" << std::endl;;
         }
-        else if (diag.equal(*(std::next(diagcit,1))) && startedblock
+        else if (diag.equalestimate(*(std::next(diagcit,1))) && startedblock
             && (extorb(resslots,aslots) == extorb(resslots2,aslots2))
             && (extorb(resslots,bslots) == extorb(resslots2,bslots2))
             && (extorb(resslots,cslots) == extorb(resslots2,cslots2))
@@ -618,7 +625,7 @@ void Expression::printjulia(std::ofstream& out) const
             || (extorb(resslots,bslots) != extorb(resslots2,bslots2))
             || (extorb(resslots,cslots) != extorb(resslots2,cslots2))
             ||
-!diag.equal(*(std::next(diagcit,1)))
+!diag.equalestimate(*(std::next(diagcit,1)))
             )
         )
 {

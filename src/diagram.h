@@ -45,7 +45,7 @@ public:
   // add tensor
   const DiagramTensor * add( DiagramTensor dten, const Tensor * pTen = 0, bool pushfront = false );
   bool isresidual(const DiagramTensor& dten) const;
-  bool equal(const Diagram& diag) const;
+  bool equalestimate(const Diagram& diag) const;
   void createPermMap(const Array<std::string>& aslots, const Array<std::string>& bslots);
   void permute(Array<std::string>& slots);
   // all slot types in this diagram

@@ -276,7 +276,7 @@ bool DiagramTensor::equalestimate( const DiagramTensor& ten ) const{
   return true;
 }
 
-bool Diagram::equal(const Diagram& diag) const{
+bool Diagram::equalestimate(const Diagram& diag) const{
   if( _tensors.size() != diag._tensors.size() ) return false;
   if( _slottypes.size() != diag._slottypes.size() ) return false;
   //assuming _tensors[1] is electron integral
