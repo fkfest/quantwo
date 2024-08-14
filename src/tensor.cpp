@@ -3,10 +3,10 @@
 
 std::string TensorBase::type() const
 {
-  if (_name.size() > 4 ) return std::string("I"); //an integral
-  else if (_name == "T") return std::string("T"); // an amplitude
-  else if (_name == "R") return std::string("R"); // a residual
-  else if (_name == "f") return std::string("f"); // a fock matrix
+  if (_name[0] == 'T') return std::string("T"); // an amplitude
+  else if (_name[0] == 'R') return std::string("R"); // a residual
+  else if (_name[0] == 'f') return std::string("f"); // a fock matrix
+  else if (_name.size() > 3 ) return std::string("I"); //an integral
   else return std::string("A"); //an intermediate
 }
 
