@@ -266,24 +266,27 @@ void Diagram::binarize(Expression& expr) const
 
 }
 
-bool DiagramTensor::equal( const DiagramTensor& ten ) const{
+bool DiagramTensor::equalestimate( const DiagramTensor& ten ) const{
   uint diff = 0;
   for( uint i = 0; i < this->_connect.slotref.size(); ++i ){
     if( this->_connect.slotref[i] != ten._connect.slotref[i] ) diff++;
   }
   if( diff > 2 ) return false;
+  if((this->_connect.bitmask ^ ten._connect.bitmask).count() > 4) return false;
   return true;
 }
 
 bool Diagram::equal(const Diagram& diag) const{
   if( this->_tensors.size() != diag._tensors.size() ) return false;
   if( this->_slottypes.size() != diag._slottypes.size() ) return false;
+  //assuming _tensors[1] is electron integral
+  if( this->_tensors[1]._connect.bitmask != diag._tensors[1]._connect.bitmask ) return false;
+  if( this->_tensors[1]._connect.slotref != diag._tensors[1]._connect.slotref ) return false;
   for( uint i = 0; i < this->_tensors.size(); ++i ){
     if(_tensors[i].slotTypeLetters(this->_slottypes) != diag._tensors[i].slotTypeLetters(diag._slottypes)) return false;
   }
   for ( uint i = 0; i < this->_tensors.size(); ++i ){
-    if( !this->_tensors[i].equal(diag._tensors[i]) ) return false;
-    if((this->_tensors[i]._connect.bitmask ^ diag._tensors[i]._connect.bitmask).count() > 4) return false;
+    if( !this->_tensors[i].equalestimate(diag._tensors[i]) ) return false;
   }
   return true;
 }
