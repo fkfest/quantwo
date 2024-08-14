@@ -57,6 +57,7 @@ public:
   void elemcosort_diags();
   // compare function to sort diagrams by integral names according to order provided in the function
   static bool elemcocompare_diags(const Diagram& diagA, const Diagram& diagB);
+  uint extorb(const Array<std::string>& resslots, const Array<std::string>& aslots) const;
 
 //private:
   SlotTypes _slottypes;
