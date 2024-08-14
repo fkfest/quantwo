@@ -277,16 +277,15 @@ bool DiagramTensor::equalestimate( const DiagramTensor& ten ) const{
 }
 
 bool Diagram::equal(const Diagram& diag) const{
-  if( this->_tensors.size() != diag._tensors.size() ) return false;
-  if( this->_slottypes.size() != diag._slottypes.size() ) return false;
+  if( _tensors.size() != diag._tensors.size() ) return false;
+  if( _slottypes.size() != diag._slottypes.size() ) return false;
   //assuming _tensors[1] is electron integral
-  if( this->_tensors[1]._connect.bitmask != diag._tensors[1]._connect.bitmask ) return false;
-  if( this->_tensors[1]._connect.slotref != diag._tensors[1]._connect.slotref ) return false;
-  for( uint i = 0; i < this->_tensors.size(); ++i ){
-    if(_tensors[i].slotTypeLetters(this->_slottypes) != diag._tensors[i].slotTypeLetters(diag._slottypes)) return false;
-  }
-  for ( uint i = 0; i < this->_tensors.size(); ++i ){
-    if( !this->_tensors[i].equalestimate(diag._tensors[i]) ) return false;
+  assert( _tensors[1].type() == "I" );
+  if( _tensors[1]._connect.bitmask != diag._tensors[1]._connect.bitmask ) return false;
+  if( _tensors[1]._connect.slotref != diag._tensors[1]._connect.slotref ) return false;
+  for( uint i = 0; i < _tensors.size(); ++i ){
+    if(_tensors[i].slotTypeLetters(_slottypes) != diag._tensors[i].slotTypeLetters(diag._slottypes)) return false;
+    if( !_tensors[i].equalestimate(diag._tensors[i]) ) return false;
   }
   return true;
 }
