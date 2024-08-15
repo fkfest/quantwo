@@ -48,6 +48,7 @@ public:
   void printjulia(std::ofstream& out) const;
   // print Julia tensor load and drop
   void printjulia(std::ofstream& out, const std::string& tensorname, std::stack<std::string>& LIFO) const;
+  void printfac(std::ofstream& out, const Factor& fac) const;
   // penalize virtuals in tensoropt calls
   std::string juliacost(const std::vector<SlotTs>& slottypes, const Array<std::string>& resslots, 
                         const Array<std::string>& aslots, const Array<std::string>& bslots,
