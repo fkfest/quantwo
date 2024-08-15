@@ -546,7 +546,7 @@ void Expression::printjulia(std::ofstream& out) const
           sBinC2, sCinB2,
           sCinR2, sRinC2;
         for( auto dtit = nextdiag._tensors.begin(); dtit != nextdiag._tensors.end(); dtit++ ){
-          Tensor ten(diag.exprTensor(*dtit));
+          Tensor ten(nextdiag.exprTensor(*dtit));
           slottypes2.push_back(ten._slots);
         }
       
