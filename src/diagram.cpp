@@ -280,7 +280,7 @@ bool Diagram::equalestimate(const Diagram& diag) const{
   if( _tensors.size() != diag._tensors.size() ) return false;
   if( _slottypes.size() != diag._slottypes.size() ) return false;
   //assuming _tensors[1] is electron integral
-  assert( _tensors[1].type() == "I" );
+  assert( _tensors[1].type() == "I" || _tensors[1].type() == "f" );
   if( _tensors[1]._connect.bitmask != diag._tensors[1]._connect.bitmask ) return false;
   if( _tensors[1]._connect.slotref != diag._tensors[1]._connect.slotref ) return false;
   for( uint i = 0; i < _tensors.size(); ++i ){
