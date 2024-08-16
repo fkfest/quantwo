@@ -356,10 +356,7 @@ void Expression::equalDiagrams() {
       newdiags.push_back(Diagram(*diagcit));
     }
     else if( diagcit->_tensors.size() == 3 ){
-      Array<std::string>
-          resslots, resslotsprev,
-          aslots, aslotsprev,
-          bslots, bslotsprev;
+      Array<std::string> resslots, aslots, bslots;
       diagcit->calcSlots(resslots,aslots,bslots);
       if( diagcit == _diagrams.begin() ){
         primR = resslots;
@@ -368,23 +365,16 @@ void Expression::equalDiagrams() {
         newdiags.push_back(Diagram(*diagcit));
       }
       else{
-        if( std::prev(diagcit,1)->_tensors.size() == 3 )
-          std::prev(diagcit,1)->calcSlots(resslotsprev,aslotsprev,bslotsprev);
         if(diagcit->equalestimate(*(std::prev(diagcit,1)))
-              && (extorb(resslots,aslots) == extorb(resslotsprev,aslotsprev))
-              && (extorb(resslots,bslots) == extorb(resslotsprev,bslotsprev)))
+              && (extorb(resslots,aslots) == extorb(primR,primA))
+              && (extorb(resslots,bslots) == extorb(primR,primB)))
         {
-          xout << *diagcit << std::endl;
-          xout << *std::prev(diagcit,1) << std::endl;
-          xout << "primR: " << primR << std::endl;
-          xout << "primA: " << primA << std::endl;
-          xout << "primB: " << primB << std::endl;
-          xout << "aslots: " << aslots << std::endl;
-          diagcit->createPermMap(primA,aslots);
-          diagcit->createPermMap(primB,bslots);
-          diagcit->permute(resslots);
+          diagcit->fillPermMap(primA,aslots);
+          diagcit->fillPermMap(primB,bslots);
+          Array<std::string> permutedprimR;
+          permutedprimR = diagcit->permute(primR);
           Diagram* lastdiag = &newdiags.back();
-          lastdiag->addPermut(resslots,primR,diagcit->_fac);
+          lastdiag->addPermut(resslots,permutedprimR,diagcit->_fac);
         }
         else{
           newdiags.push_back(Diagram(*diagcit));
@@ -395,7 +385,41 @@ void Expression::equalDiagrams() {
       }
     }
     else if( diagcit->_tensors.size() == 4 ){
-      error("Diagram has 4 tensors","Expression::equalDiagrams");
+      Array<std::string>
+          resslots,aslots, 
+          bslots,cslots; 
+
+      diagcit->calcSlots(resslots,aslots,bslots,cslots);
+
+      if( diagcit == _diagrams.begin() ){
+        primR = resslots;
+        primA = aslots;
+        primB = bslots;
+        primC = cslots;
+        newdiags.push_back(Diagram(*diagcit));
+      }
+      else{
+        if(diagcit->equalestimate(*(std::prev(diagcit,1)))
+              && (extorb(resslots,aslots) == extorb(primR,primA))
+              && (extorb(resslots,bslots) == extorb(primR,primB))
+              && (extorb(resslots,cslots) == extorb(primR,primC)))
+        {
+          diagcit->fillPermMap(primA,aslots);
+          diagcit->fillPermMap(primB,bslots);
+          diagcit->fillPermMap(primC,cslots);
+          Array<std::string> permutedprimR;
+          permutedprimR = diagcit->permute(primR);
+          Diagram* lastdiag = &newdiags.back();
+          lastdiag->addPermut(resslots,permutedprimR,diagcit->_fac);
+        }
+        else{
+          newdiags.push_back(Diagram(*diagcit));
+          primR = resslots;
+          primA = aslots;
+          primB = bslots;
+          primC = cslots;
+        }
+      }
     }
     else
       error("Diagram has more than 4 tensors","Expression::equalDiagrams");
@@ -406,12 +430,10 @@ void Expression::equalDiagrams() {
 void Expression::printjulia(std::ofstream& out) const
 {
   std::stack<std::string> LIFO;
-  bool startedblock = false;
   Array<std::string> primR, primA, primB, primC;
   for( std::list<Diagram>::const_iterator diagcit = _diagrams.begin(); diagcit != _diagrams.end(); diagcit++ ){
 
-    // std::map<SlotType::Type,std::string> slotnames;
-    std::vector<SlotTs> slottypes,slottypes2;
+    std::vector<SlotTs> slottypes;
     Diagram diag = *diagcit;
 
     for( auto dtit = diag._tensors.begin(); dtit != diag._tensors.end(); dtit++ ){
@@ -443,7 +465,10 @@ void Expression::printjulia(std::ofstream& out) const
           bslots;
 
       diagcit->calcSlots(resslots,aslots,bslots);
-      xout << "perm size: " << diagcit->_permuts.size() << std::endl;
+
+      // print load and drop statements
+      printjulia(out, diag._tensors[1].name(), LIFO);
+
       if( diagcit->_permuts.size() > 0 ){
         out << "@tensoropt begin" << std::endl;
         out << "X" << "[" << container2csstring(resslots) << "] ";
@@ -468,273 +493,46 @@ void Expression::printjulia(std::ofstream& out) const
         out << elemconame(diag._tensors[1].name(),slottypes[1]) << "[" << container2csstring(aslots) << "] * ";
         out << elemconame(diag._tensors[2].name(),slottypes[2]) << "[" << container2csstring(bslots) << "]" << std::endl;
       }
-      // if( std::next(diagcit,1) != _diagrams.end()){
-      //   slotnames.clear();
-      //   Diagram nextdiag = *std::next(diagcit,1);
-      //   Slots
-      //     sAinB2, sBinA2,
-      //     sAinC2, sCinA2,
-      //     sAinR2, sRinA2,
-      //     sBinR2, sRinB2;
-
-      //   for( auto dtit = nextdiag._tensors.begin(); dtit != nextdiag._tensors.end(); dtit++ ){
-      //     Tensor ten(nextdiag.exprTensor(*dtit));
-      //     slottypes2.push_back(ten._slots);
-      //   }
-      
-      //   Array<std::string>
-      //       resslots2(slottypes2[0].size()),
-      //       aslots2(slottypes2[1].size()),
-      //       bslots2(slottypes2[2].size());
-
-      //   setContractionSlots(sAinB2,sBinA2,nextdiag._tensors[1],nextdiag._tensors[2]);
-      //   setContractionSlots(sAinR2,sRinA2,nextdiag._tensors[1],nextdiag._tensors[0]);
-      //   setContractionSlots(sBinR2,sRinB2,nextdiag._tensors[2],nextdiag._tensors[0]);
-
-      //   slotNames4Refs(resslots2,aslots2,slotnames,sRinA2,sAinR2,slottypes2[0],slottypes2[1]);
-      //   slotNames4Refs(resslots2,bslots2,slotnames,sRinB2,sBinR2,slottypes2[0],slottypes2[2]);
-      //   slotNames4Refs(aslots2,bslots2,slotnames,sAinB2,sBinA2,slottypes2[1],slottypes2[2]);
-
-      //   // print load and drop statements
-      //   printjulia(out, diag._tensors[1].name(), LIFO);
-      //   if(diag.equalestimate(*(std::next(diagcit,1))) && !startedblock
-      //       && (extorb(resslots,aslots) == extorb(resslots2,aslots2))
-      //       && (extorb(resslots,bslots) == extorb(resslots2,bslots2)))
-      //   {
-      //     startedblock = true;
-      //     primR = resslots;
-      //     primA = aslots;
-      //     primB = bslots;
-
-      //     out << "@tensoropt ";
-      //     out << "begin" << std::endl;
-      //     out << "X" << "[" << container2csstring(primR) << "] ";
-      //     out << ":= ";
-      //     out << elemconame(diag._tensors[1].name(),slottypes[1]) << "[" << container2csstring(aslots) << "] * ";
-      //     out << elemconame(diag._tensors[2].name(),slottypes[2]) << "[" << container2csstring(bslots) << "]" << std::endl;
-
-      //     out << elemconame(diag._tensors[0].name(),slottypes[0]) << "[" << container2csstring(primR) << "] ";
-      //     printfac(out,diag._fac);
-      //     out << "X" << "[" << container2csstring(primR) << "]" << std::endl;;
-      //   }
-      //   else if (diag.equalestimate(*(std::next(diagcit,1))) && startedblock
-      //         && (extorb(resslots,aslots) == extorb(resslots2,aslots2))
-      //         && (extorb(resslots,bslots) == extorb(resslots2,bslots2)))
-      //   {
-      //     diag.createPermMap(primA,aslots);
-      //     diag.createPermMap(primB,bslots);
-      //     diag.permute(resslots);
-      //     out << elemconame(diag._tensors[0].name(),slottypes[0]) << "[" << container2csstring(resslots) << "] ";
-      //     printfac(out,diag._fac);
-      //     out << "X" << "[" << container2csstring(primR) << "]" << std::endl;
-      //   }
-      //   else if (!diag.equalestimate(*(std::next(diagcit,1))) && startedblock
-      //       && (extorb(resslots,aslots) == extorb(resslots2,aslots2))
-      //       && (extorb(resslots,bslots) == extorb(resslots2,bslots2)))
-      //   {
-      //     diag.createPermMap(primA,aslots);
-      //     diag.createPermMap(primB,bslots);
-      //     diag.permute(resslots);
-      //     out << elemconame(diag._tensors[0].name(),slottypes[0]) << "[" << container2csstring(resslots) << "] ";
-      //     printfac(out,diag._fac);
-      //     out << "X" << "[" << container2csstring(primR) << "]" << std::endl;
-      //     out << "end" << std::endl;
-      //     startedblock = false;
-      //   }
-      //   else if (startedblock && ( (extorb(resslots,aslots) != extorb(resslots2,aslots2))
-      //         || (extorb(resslots,bslots) != extorb(resslots2,bslots2))
-      //         || !diag.equalestimate(*(std::next(diagcit,1)))))
-      //   {
-      //     diag.createPermMap(primA,aslots);
-      //     diag.createPermMap(primB,bslots);
-      //     diag.permute(resslots);
-      //     out << elemconame(diag._tensors[0].name(),slottypes[0]) << "[" << container2csstring(resslots) << "] ";
-      //     printfac(out,diag._fac);
-      //     out << "X" << "[" << container2csstring(primR) << "]" << std::endl;;
-      //     out << "end" << std::endl;
-      //     startedblock = false;
-      //   }
-      //   else{
-      //     out << "@tensoropt ";
-      //     out << elemconame(diag._tensors[0].name(),slottypes[0]) << "[" << container2csstring(resslots) << "] ";
-      //     printfac(out,diag._fac);
-      //     out << elemconame(diag._tensors[1].name(),slottypes[1]) << "[" << container2csstring(aslots) << "] * ";
-      //     out << elemconame(diag._tensors[2].name(),slottypes[2]) << "[" << container2csstring(bslots) << "]" << std::endl;
-      //   }
-      // }
-      // else{
-      // //print last diagram
-      //   if( startedblock ){
-      //     diag.createPermMap(primA,aslots);
-      //     diag.createPermMap(primB,bslots);
-      //     diag.permute(resslots);
-      //     out << elemconame(diag._tensors[0].name(),slottypes[0]) << "[" << container2csstring(resslots) << "] ";
-      //     printfac(out,diag._fac);
-      //     out << "X" << "[" << container2csstring(primR) << "]" << std::endl;
-      //     out << "end" << std::endl;
-      //     startedblock = false;
-      //   }
-      //   else{
-      //     out << "@tensoropt ";
-      //     out << elemconame(diag._tensors[0].name(),slottypes[0]) << "[" << container2csstring(resslots) << "] ";
-      //     printfac(out,diag._fac);
-      //     out << elemconame(diag._tensors[1].name(),slottypes[1]) << "[" << container2csstring(aslots) << "] * ";
-      //     out << elemconame(diag._tensors[2].name(),slottypes[2]) << "[" << container2csstring(bslots) << "]" << std::endl;
-      //   }
-      // }
     }
     else if ( slottypes.size() == 4 )//R=fac*A*B*C
     {
-      error("currently under construction","Expression::printjulia");
-      // Slots
-      //   sAinB, sBinA,
-      //   sAinC, sCinA,
-      //   sAinR, sRinA,
-      //   sBinR, sRinB,
-      //   sBinC, sCinB,
-      //   sCinR, sRinC;
-    
-      // Array<std::string>
-      //     resslots(slottypes[0].size()),
-      //     aslots(slottypes[1].size()),
-      //     bslots(slottypes[2].size()),
-      //     cslots(slottypes[3].size());
+      Array<std::string>
+          resslots,aslots,
+          bslots, cslots;
 
-      // setContractionSlots(sAinB,sBinA,diag._tensors[1],diag._tensors[2]);
-      // setContractionSlots(sAinC,sCinA,diag._tensors[1],diag._tensors[3]);
-      // setContractionSlots(sAinR,sRinA,diag._tensors[1],diag._tensors[0]);
-      // setContractionSlots(sBinR,sRinB,diag._tensors[2],diag._tensors[0]);
-      // setContractionSlots(sBinC,sCinB,diag._tensors[2],diag._tensors[3]);
-      // setContractionSlots(sCinR,sRinC,diag._tensors[3],diag._tensors[0]);
+      diagcit->calcSlots(resslots,aslots,bslots,cslots);
 
-      // slotNames4Refs(resslots,aslots,slotnames,sRinA,sAinR,slottypes[0],slottypes[1]);
-      // slotNames4Refs(resslots,bslots,slotnames,sRinB,sBinR,slottypes[0],slottypes[2]);
-      // slotNames4Refs(resslots,cslots,slotnames,sRinC,sCinR,slottypes[0],slottypes[3]);
-      // slotNames4Refs(aslots,bslots,slotnames,sAinB,sBinA,slottypes[1],slottypes[2]);
-      // slotNames4Refs(aslots,cslots,slotnames,sAinC,sCinA,slottypes[1],slottypes[3]);
-      // slotNames4Refs(bslots,cslots,slotnames,sBinC,sCinB,slottypes[2],slottypes[3]);
-      // if( std::next(diagcit,1) != _diagrams.end()){
-      //   slotnames.clear();
-      //   Diagram nextdiag = *std::next(diagcit,1);
-      //   Slots
-      //     sAinB2, sBinA2,
-      //     sAinC2, sCinA2,
-      //     sAinR2, sRinA2,
-      //     sBinR2, sRinB2,
-      //     sBinC2, sCinB2,
-      //     sCinR2, sRinC2;
-      //   for( auto dtit = nextdiag._tensors.begin(); dtit != nextdiag._tensors.end(); dtit++ ){
-      //     Tensor ten(nextdiag.exprTensor(*dtit));
-      //     slottypes2.push_back(ten._slots);
-      //   }
-      
-      //   Array<std::string>
-      //       resslots2(slottypes2[0].size()),
-      //       aslots2(slottypes2[1].size()),
-      //       bslots2(slottypes2[2].size()),
-      //       cslots2(slottypes2[3].size());
+      // print load and drop statements
+      printjulia(out, diag._tensors[1].name(), LIFO);
 
-      //   setContractionSlots(sAinB2,sBinA2,nextdiag._tensors[1],nextdiag._tensors[2]);
-      //   setContractionSlots(sAinC2,sCinA2,nextdiag._tensors[1],nextdiag._tensors[3]);
-      //   setContractionSlots(sAinR2,sRinA2,nextdiag._tensors[1],nextdiag._tensors[0]);
-      //   setContractionSlots(sBinR2,sRinB2,nextdiag._tensors[2],nextdiag._tensors[0]);
-      //   setContractionSlots(sBinC2,sCinB2,nextdiag._tensors[2],nextdiag._tensors[3]);
-      //   setContractionSlots(sCinR2,sRinC2,nextdiag._tensors[3],nextdiag._tensors[0]);
+      if( diagcit->_permuts.size() > 0 ){
+        out << "@tensoropt ";
+        out << juliacost(slottypes,resslots,aslots,bslots,cslots);
+        out << "begin" << std::endl;
+        out << "X" << "[" << container2csstring(resslots) << "] ";
+        out << ":= ";
+        out << elemconame(diag._tensors[1].name(),slottypes[1]) << "[" << container2csstring(aslots) << "] * ";
+        out << elemconame(diag._tensors[2].name(),slottypes[2]) << "[" << container2csstring(bslots) << "] *";
+        out << elemconame(diag._tensors[3].name(),slottypes[3]) << "[" << container2csstring(cslots) << "]" << std::endl;
 
-      //   slotNames4Refs(resslots2,aslots2,slotnames,sRinA2,sAinR2,slottypes2[0],slottypes2[1]);
-      //   slotNames4Refs(resslots2,bslots2,slotnames,sRinB2,sBinR2,slottypes2[0],slottypes2[2]);
-      //   slotNames4Refs(resslots2,cslots2,slotnames,sRinC2,sCinR2,slottypes2[0],slottypes2[3]);
-      //   slotNames4Refs(aslots2,bslots2,slotnames,sAinB2,sBinA2,slottypes2[1],slottypes2[2]);
-      //   slotNames4Refs(aslots2,cslots2,slotnames,sAinC2,sCinA2,slottypes2[1],slottypes2[3]);
-      //   slotNames4Refs(bslots2,cslots2,slotnames,sBinC2,sCinB2,slottypes2[2],slottypes2[3]);
-
-      //   // print load and drop statements
-      //   printjulia(out, diag._tensors[1].name(), LIFO);
-      //   if(diag.equalestimate(*(std::next(diagcit,1))) && !startedblock 
-      //       && (extorb(resslots,aslots) == extorb(resslots2,aslots2))
-      //       && (extorb(resslots,bslots) == extorb(resslots2,bslots2))
-      //       && (extorb(resslots,cslots) == extorb(resslots2,cslots2)))
-      //   {
-      //     startedblock = true;
-      //     primR = resslots;
-      //     primA = aslots;
-      //     primB = bslots;
-      //     primC = cslots;
-
-      //     out << "@tensoropt ";
-      //     out << juliacost(slottypes,resslots,aslots,bslots,cslots);
-      //     out << "begin" << std::endl;
-      //     out << "X" << "[" << container2csstring(primR) << "] ";
-      //     out << ":= ";
-      //     out << elemconame(diag._tensors[1].name(),slottypes[1]) << "[" << container2csstring(aslots) << "] * ";
-      //     out << elemconame(diag._tensors[2].name(),slottypes[2]) << "[" << container2csstring(bslots) << "] * ";
-      //     out << elemconame(diag._tensors[3].name(),slottypes[3]) << "[" << container2csstring(cslots) << "]" << std::endl;
-
-      //     out << elemconame(diag._tensors[0].name(),slottypes[0]) << "[" << container2csstring(primR) << "] ";
-      //     printfac(out,diag._fac);
-      //     out << "X" << "[" << container2csstring(primR) << "]" << std::endl;;
-      //   }
-      //   else if (diag.equalestimate(*(std::next(diagcit,1))) && startedblock
-      //       && (extorb(resslots,aslots) == extorb(resslots2,aslots2))
-      //       && (extorb(resslots,bslots) == extorb(resslots2,bslots2))
-      //       && (extorb(resslots,cslots) == extorb(resslots2,cslots2)))
-      //   {
-      //     diag.createPermMap(primA,aslots);
-      //     diag.createPermMap(primB,bslots);
-      //     diag.createPermMap(primC,cslots);
-      //     diag.permute(resslots);
-      //     out << elemconame(diag._tensors[0].name(),slottypes[0]) << "[" << container2csstring(resslots) << "] ";
-      //     printfac(out,diag._fac);
-      //     out << "X" << "[" << container2csstring(primR) << "]" << std::endl;
-      //   }
-      //   else if (startedblock && ( (extorb(resslots,aslots) != extorb(resslots2,aslots2))
-      //       || (extorb(resslots,bslots) != extorb(resslots2,bslots2))
-      //       || (extorb(resslots,cslots) != extorb(resslots2,cslots2))
-      //       || !diag.equalestimate(*(std::next(diagcit,1)))))
-      //   {
-      //     diag.createPermMap(primA,aslots);
-      //     diag.createPermMap(primB,bslots);
-      //     diag.createPermMap(primC,cslots);
-      //     diag.permute(primR);
-      //     out << elemconame(diag._tensors[0].name(),slottypes[0]) << "[" << container2csstring(resslots) << "] ";
-      //     printfac(out,diag._fac);
-      //     out << "X" << "[" << container2csstring(primR) << "]" << std::endl;;
-      //     out << "end" << std::endl;
-      //     startedblock = false;
-      //   }
-      //   else{
-      //     out << "@tensoropt ";
-      //     out << juliacost(slottypes,resslots,aslots,bslots,cslots);
-      //     out << elemconame(diag._tensors[0].name(),slottypes[0]) << "[" << container2csstring(resslots) << "] ";
-      //     printfac(out,diag._fac);
-      //     out << elemconame(diag._tensors[1].name(),slottypes[1]) << "[" << container2csstring(aslots) << "] * ";
-      //     out << elemconame(diag._tensors[2].name(),slottypes[2]) << "[" << container2csstring(bslots) << "] * ";
-      //     out << elemconame(diag._tensors[3].name(),slottypes[3]) << "[" << container2csstring(cslots) << "]" << std::endl;
-      //   }
-      // }
-      // else{
-      // //print last diagram
-      //   if( startedblock ){
-      //       diag.createPermMap(primA,aslots);
-      //       diag.createPermMap(primB,bslots);
-      //       diag.createPermMap(primC,cslots);
-      //       diag.permute(primR);
-      //     out << elemconame(diag._tensors[0].name(),slottypes[0]) << "[" << container2csstring(resslots) << "] ";
-      //     printfac(out,diag._fac);
-      //     out << "X" << "[" << container2csstring(primR) << "]" << std::endl;
-      //     out << "end" << std::endl;
-      //     startedblock = false;
-      //   }
-      //   else{
-      //     out << "@tensoropt ";
-      //     out << juliacost(slottypes,resslots,aslots,bslots,cslots);
-      //     out << elemconame(diag._tensors[0].name(),slottypes[0]) << "[" << container2csstring(resslots) << "] ";
-      //     printfac(out,diag._fac);
-      //     out << elemconame(diag._tensors[1].name(),slottypes[1]) << "[" << container2csstring(aslots) << "] * ";
-      //     out << elemconame(diag._tensors[2].name(),slottypes[2]) << "[" << container2csstring(bslots) << "] * ";
-      //     out << elemconame(diag._tensors[3].name(),slottypes[3]) << "[" << container2csstring(cslots) << "]" << std::endl;
-      //   }
-      // }
+        out << elemconame(diag._tensors[0].name(),slottypes[0]) << "[" << container2csstring(resslots) << "] ";
+        printfac(out,diagcit->_fac);
+        out << "X" << "[" << container2csstring(resslots) << "]" << std::endl;
+        for ( Array<DiagramPermut>::const_iterator itp = diagcit->_permuts.begin(); itp != diagcit->_permuts.end(); ++itp ){
+          out << elemconame(diag._tensors[0].name(),slottypes[0]) << "[" << container2csstring(itp->_resslots) << "] ";
+          printfac(out,itp->_fac);
+          out << "X" << "[" << container2csstring(itp->_xslots) << "]" << std::endl;
+        }
+        out << "end" << std::endl;
+      }
+      else{
+        out << "@tensoropt ";
+        out << elemconame(diag._tensors[0].name(),slottypes[0]) << "[" << container2csstring(resslots) << "] ";
+        printfac(out,diag._fac);
+        out << elemconame(diag._tensors[1].name(),slottypes[1]) << "[" << container2csstring(aslots) << "] * ";
+        out << elemconame(diag._tensors[2].name(),slottypes[2]) << "[" << container2csstring(bslots) << "] *";
+        out << elemconame(diag._tensors[3].name(),slottypes[3]) << "[" << container2csstring(cslots) << "]" << std::endl;
+      }
     }
     else
       error("printjulia not implemented for more than 4 tensors in a diagram");

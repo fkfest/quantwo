@@ -762,8 +762,7 @@ void Q2::printalgo(std::ofstream& out, const std::vector<TermSum>& s)
   else if ( Input::iPars["prog"]["algo"] == 2 ){//Julia code
     say("Printing Julia TensorOperations code...");
     fact._expression.equalDiagrams();
-    say("After equalDiagrams");
-    // fact._expression.elemcosort_diags();
+    fact._expression.elemcosort_diags();
     fact._expression.printjulia(out);
   }
   else

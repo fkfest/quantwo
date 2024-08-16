@@ -196,7 +196,43 @@ void Diagram::calcSlots( Array<std::string>& resslots, Array<std::string>& aslot
   slotNames4Refs(aslots,bslots,slotnames,sAinB,sBinA,slottypes[1],slottypes[2]);
   slotNames4Refs(resslots,aslots,slotnames,sRinA,sAinR,slottypes[0],slottypes[1]);
   slotNames4Refs(resslots,bslots,slotnames,sRinB,sBinR,slottypes[0],slottypes[2]);
+}
 
+void Diagram::calcSlots( Array<std::string>& resslots, Array<std::string>& aslots, Array<std::string>& bslots, Array<std::string>& cslots) const{
+  Slots
+    sAinB, sBinA,
+    sAinC, sCinA,
+    sAinR, sRinA,
+    sBinR, sRinB,
+    sBinC, sCinB,
+    sCinR, sRinC;
+
+  std::map<SlotType::Type,std::string> slotnames;
+  std::vector<SlotTs> slottypes;
+
+  for( auto dtit = _tensors.begin(); dtit != _tensors.end(); dtit++ ){
+    Tensor ten(this->exprTensor(*dtit));
+    slottypes.push_back(ten._slots);
+  }
+
+  resslots.resize(slottypes[0].size());
+  aslots.resize(slottypes[1].size());
+  bslots.resize(slottypes[2].size());
+  cslots.resize(slottypes[3].size());
+
+  setContractionSlots(sAinB,sBinA,_tensors[1],_tensors[2]);
+  setContractionSlots(sAinC,sCinA,_tensors[1],_tensors[3]);
+  setContractionSlots(sAinR,sRinA,_tensors[1],_tensors[0]);
+  setContractionSlots(sBinR,sRinB,_tensors[2],_tensors[0]);
+  setContractionSlots(sBinC,sCinB,_tensors[2],_tensors[3]);
+  setContractionSlots(sCinR,sRinC,_tensors[3],_tensors[0]);
+
+  slotNames4Refs(resslots,aslots,slotnames,sRinA,sAinR,slottypes[0],slottypes[1]);
+  slotNames4Refs(resslots,bslots,slotnames,sRinB,sBinR,slottypes[0],slottypes[2]);
+  slotNames4Refs(resslots,cslots,slotnames,sRinC,sCinR,slottypes[0],slottypes[3]);
+  slotNames4Refs(aslots,bslots,slotnames,sAinB,sBinA,slottypes[1],slottypes[2]);
+  slotNames4Refs(aslots,cslots,slotnames,sAinC,sCinA,slottypes[1],slottypes[3]);
+  slotNames4Refs(bslots,cslots,slotnames,sBinC,sCinB,slottypes[2],slottypes[3]);
 }
 
 void Diagram::binarize(Expression& expr) const
@@ -344,7 +380,7 @@ bool Diagram::equalestimate(const Diagram& diag) const{
   return true;
 }
 
-void Diagram::createPermMap(const Array<std::string>& aslots, const Array<std::string>& bslots){
+void Diagram::fillPermMap(const Array<std::string>& aslots, const Array<std::string>& bslots){
   assert(aslots.size() == bslots.size());                                           
   for(uint i = 0; i < aslots.size(); i++){                                        
     if( aslots[i] != bslots[i] ){                                                   
@@ -353,13 +389,15 @@ void Diagram::createPermMap(const Array<std::string>& aslots, const Array<std::s
   }  
 }
 
-void Diagram::permute(Array<std::string>& slots){
-  for( uint i = 0; i < slots.size(); i++ ){                                  
-    PerMap::iterator it = _permmap.find(slots[i]);                             
+Array<std::string> Diagram::permute(const Array<std::string>& slots){
+  Array<std::string> permutedslots(slots);
+  for( uint i = 0; i < permutedslots.size(); i++ ){                                  
+    PerMap::iterator it = _permmap.find(permutedslots[i]);                             
     if ( it != _permmap.end()){                                                    
-      slots[i] = _permmap[slots[i]];                                         
+      permutedslots[i] = _permmap[permutedslots[i]];                                         
     }                                                                           
-  }             
+  }
+  return permutedslots;
 }
   
 void Diagram::addPermut( Array<std::string>& resslots, Array<std::string>& xslots, Factor& fac){

@@ -54,10 +54,13 @@ public:
   const DiagramTensor * add( DiagramTensor dten, const Tensor * pTen = 0, bool pushfront = false );
   bool isresidual(const DiagramTensor& dten) const;
   bool equalestimate(const Diagram& diag) const;
-  void createPermMap(const Array<std::string>& aslots, const Array<std::string>& bslots);
-  void permute(Array<std::string>& slots);
+  void fillPermMap(const Array<std::string>& aslots, const Array<std::string>& bslots);
+  //returns permuted slots according to _permmap
+  Array<std::string> permute(const Array<std::string>& slots);
   void calcSlots( Array<std::string>& resslots, Array<std::string>& aslots) const;
   void calcSlots( Array<std::string>& resslots, Array<std::string>& aslots, Array<std::string>& bslots) const;
+  void calcSlots( Array<std::string>& resslots, Array<std::string>& aslots, Array<std::string>& bslots, Array<std::string>& cslots) const;
+  //create and add a DiagramPermut to _permuts
   void addPermut( Array<std::string>& resslots, Array<std::string>& xslots, Factor& fac);
   // all slot types in this diagram
   SlotTs _slottypes;
