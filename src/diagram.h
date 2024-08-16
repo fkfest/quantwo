@@ -23,6 +23,14 @@ class Expression;
 
 // max number of tensors in a contraction(needed in binarize)
 const uint MAXNTENS = 12;
+
+class DiagramPermut{
+public:
+  DiagramPermut(Array<std::string> resslots, Array<std::string> xslots, Factor fac) {_resslots=resslots, _xslots=xslots, _fac=fac;};
+  Array<std::string> _resslots, _xslots;
+  Factor _fac;
+};
+
 class Diagram {
 public:
   Diagram() : _fac(1) {};
@@ -48,6 +56,9 @@ public:
   bool equalestimate(const Diagram& diag) const;
   void createPermMap(const Array<std::string>& aslots, const Array<std::string>& bslots);
   void permute(Array<std::string>& slots);
+  void calcSlots( Array<std::string>& resslots, Array<std::string>& aslots) const;
+  void calcSlots( Array<std::string>& resslots, Array<std::string>& aslots, Array<std::string>& bslots) const;
+  void addPermut( Array<std::string>& resslots, Array<std::string>& xslots, Factor& fac);
   // all slot types in this diagram
   SlotTs _slottypes;
   // all tensors in diagram, including the "vacuum tensor", i.e., the "result" (_tensor[0])
@@ -55,6 +66,7 @@ public:
   // all cuts in diagram
   Cuts _cuts;
   Factor _fac;
+  Array<DiagramPermut> _permuts;
   PerMap _permmap;
 };
 

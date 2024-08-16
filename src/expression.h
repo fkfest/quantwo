@@ -44,6 +44,7 @@ public:
   const Tensor * find( const Tensor& tensor, bool considerprops = true ) const;
   //! new name for a tensor. TODO: Reuse some intermediate names!
   std::string newname( const Symmetries& syms, const Cuts& cuts );
+  void equalDiagrams();
   // print Julia TensorOperations code
   void printjulia(std::ofstream& out) const;
   // print Julia tensor load and drop
