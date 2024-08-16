@@ -527,10 +527,11 @@ void Expression::printjulia(std::ofstream& out) const
       }
       else{
         out << "@tensoropt ";
+        out << juliacost(slottypes,resslots,aslots,bslots,cslots);
         out << elemconame(diag._tensors[0].name(),slottypes[0]) << "[" << container2csstring(resslots) << "] ";
         printfac(out,diag._fac);
         out << elemconame(diag._tensors[1].name(),slottypes[1]) << "[" << container2csstring(aslots) << "] * ";
-        out << elemconame(diag._tensors[2].name(),slottypes[2]) << "[" << container2csstring(bslots) << "] *";
+        out << elemconame(diag._tensors[2].name(),slottypes[2]) << "[" << container2csstring(bslots) << "] * ";
         out << elemconame(diag._tensors[3].name(),slottypes[3]) << "[" << container2csstring(cslots) << "]" << std::endl;
       }
     }
