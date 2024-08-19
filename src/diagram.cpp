@@ -365,15 +365,6 @@ void Diagram::binarize(Expression& expr) const
 bool Diagram::equalestimate(const Diagram& diag) const{
   if( _tensors.size() != diag._tensors.size() ) return false;
   if( _slottypes.size() != diag._slottypes.size() ) return false;
-  if( _tensors.size() > 3 ){
-    // ternary or higher contraction
-    // one or two electron integral will have only internal indices and
-    // therefore should not be permuted
-    //assuming _tensors[1] is electron integral
-    assert( _tensors[1].type() == "I" || _tensors[1].type() == "f" );
-    if( _tensors[1]._connect.bitmask != diag._tensors[1]._connect.bitmask ) return false;
-    if( _tensors[1]._connect.slotref != diag._tensors[1]._connect.slotref ) return false;
-  }
   for( uint i = 0; i < _tensors.size(); ++i ){
     if(_tensors[i].slotTypeLetters(_slottypes) != diag._tensors[i].slotTypeLetters(diag._slottypes)) return false;
   }
