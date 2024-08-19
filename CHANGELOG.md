@@ -2,6 +2,8 @@
 
 ### Changed
 
+*added permutations to ElemCo.jl generation.
+
 ### Fixed
 
 ### Added
