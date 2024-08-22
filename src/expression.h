@@ -44,19 +44,23 @@ public:
   const Tensor * find( const Tensor& tensor, bool considerprops = true ) const;
   //! new name for a tensor. TODO: Reuse some intermediate names!
   std::string newname( const Symmetries& syms, const Cuts& cuts );
+  void equalDiagrams();
   // print Julia TensorOperations code
   void printjulia(std::ofstream& out) const;
   // print Julia tensor load and drop
   void printjulia(std::ofstream& out, const std::string& tensorname, std::stack<std::string>& LIFO) const;
-  // penalize virtuals in tensoropt calls
+  void printfac(std::ofstream& out, const Factor& fac) const;
+  //! penalize virtuals in tensoropt calls
   std::string juliacost(const std::vector<SlotTs>& slottypes, const Array<std::string>& resslots, 
                         const Array<std::string>& aslots, const Array<std::string>& bslots,
                         const Array<std::string>& cslots) const;
   std::string elemconame(const std::string& name, const SlotTs& slottypes) const;
-  // sort diagram list with elemcocompare_diags compare function
+  //! sort diagram list with elemcocompare_diags compare function
   void elemcosort_diags();
-  // compare function to sort diagrams by integral names according to order provided in the function
+  //! compare function to sort diagrams by integral names according to order provided in the function
   static bool elemcocompare_diags(const Diagram& diagA, const Diagram& diagB);
+  //! calculate a number specific to the "external orbital structure" (number and commutative position) in aslots 
+  uint extorb(const Array<std::string>& resslots, const Array<std::string>& aslots) const;
 
 //private:
   SlotTypes _slottypes;

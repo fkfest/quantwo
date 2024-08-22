@@ -1,5 +1,21 @@
 #include "diagram.h"
 
+static void setContractionSlots( Slots& sXinY, Slots& sYinX, const DiagramTensor& tenX, const DiagramTensor& tenY ) {
+  std::bitset<MAXNINDICES> overlap = tenX._connect.bitmask&tenY._connect.bitmask;
+
+  sXinY.resize(overlap.count());
+  sYinX.resize(sXinY.size());
+  for ( uint ipos = 1, ist = 0; ist < sXinY.size(); ++ipos, overlap >>= 1 ){
+    if ( overlap[0] ) {
+      uint iStRef = (tenX._connect.bitmask >> ipos).count();
+      sXinY[ist] = tenX._connect.slotref[iStRef];
+      iStRef = (tenY._connect.bitmask >> ipos).count();
+      sYinX[ist] = tenY._connect.slotref[iStRef];
+      ++ist;
+    }
+  }
+}
+
 const DiagramTensor* Diagram::add(DiagramTensor dten, const Tensor* pTen, bool pushfront)
 {
   if (pTen){
@@ -139,6 +155,86 @@ const Tensor * Diagram::transform2Expr(Expression& expr, const Array< DiagramTen
   }
 }
 
+void Diagram::calcSlots( Array<std::string>& resslots, Array<std::string>& aslots) const{
+  Slots
+    sAinR, sRinA;
+  std::map<SlotType::Type,std::string> slotnames;
+  std::vector<SlotTs> slottypes;
+
+  for( auto dtit = _tensors.begin(); dtit != _tensors.end(); dtit++ ){
+    Tensor ten(this->exprTensor(*dtit));
+    slottypes.push_back(ten._slots);
+  }
+  resslots.resize(slottypes[0].size());
+  aslots.resize(slottypes[1].size());
+  setContractionSlots(sAinR,sRinA,_tensors[1],_tensors[0]);
+  slotNames4Refs(resslots,aslots,slotnames,sRinA,sAinR,slottypes[0],slottypes[1]);
+}
+
+void Diagram::calcSlots( Array<std::string>& resslots, Array<std::string>& aslots, Array<std::string>& bslots) const{
+  Slots
+    sAinB, sBinA,
+    sAinR, sRinA,
+    sBinR, sRinB;
+
+  std::map<SlotType::Type,std::string> slotnames;
+  std::vector<SlotTs> slottypes;
+
+  for( auto dtit = _tensors.begin(); dtit != _tensors.end(); dtit++ ){
+    Tensor ten(this->exprTensor(*dtit));
+    slottypes.push_back(ten._slots);
+  }
+
+  resslots.resize(slottypes[0].size());
+  aslots.resize(slottypes[1].size());
+  bslots.resize(slottypes[2].size());
+
+  setContractionSlots(sAinB,sBinA,_tensors[1],_tensors[2]);
+  setContractionSlots(sAinR,sRinA,_tensors[1],_tensors[0]);
+  setContractionSlots(sBinR,sRinB,_tensors[2],_tensors[0]);
+
+  slotNames4Refs(aslots,bslots,slotnames,sAinB,sBinA,slottypes[1],slottypes[2]);
+  slotNames4Refs(resslots,aslots,slotnames,sRinA,sAinR,slottypes[0],slottypes[1]);
+  slotNames4Refs(resslots,bslots,slotnames,sRinB,sBinR,slottypes[0],slottypes[2]);
+}
+
+void Diagram::calcSlots( Array<std::string>& resslots, Array<std::string>& aslots, Array<std::string>& bslots, Array<std::string>& cslots) const{
+  Slots
+    sAinB, sBinA,
+    sAinC, sCinA,
+    sAinR, sRinA,
+    sBinR, sRinB,
+    sBinC, sCinB,
+    sCinR, sRinC;
+
+  std::map<SlotType::Type,std::string> slotnames;
+  std::vector<SlotTs> slottypes;
+
+  for( auto dtit = _tensors.begin(); dtit != _tensors.end(); dtit++ ){
+    Tensor ten(this->exprTensor(*dtit));
+    slottypes.push_back(ten._slots);
+  }
+
+  resslots.resize(slottypes[0].size());
+  aslots.resize(slottypes[1].size());
+  bslots.resize(slottypes[2].size());
+  cslots.resize(slottypes[3].size());
+
+  setContractionSlots(sAinB,sBinA,_tensors[1],_tensors[2]);
+  setContractionSlots(sAinC,sCinA,_tensors[1],_tensors[3]);
+  setContractionSlots(sAinR,sRinA,_tensors[1],_tensors[0]);
+  setContractionSlots(sBinR,sRinB,_tensors[2],_tensors[0]);
+  setContractionSlots(sBinC,sCinB,_tensors[2],_tensors[3]);
+  setContractionSlots(sCinR,sRinC,_tensors[3],_tensors[0]);
+
+  slotNames4Refs(resslots,aslots,slotnames,sRinA,sAinR,slottypes[0],slottypes[1]);
+  slotNames4Refs(resslots,bslots,slotnames,sRinB,sBinR,slottypes[0],slottypes[2]);
+  slotNames4Refs(resslots,cslots,slotnames,sRinC,sCinR,slottypes[0],slottypes[3]);
+  slotNames4Refs(aslots,bslots,slotnames,sAinB,sBinA,slottypes[1],slottypes[2]);
+  slotNames4Refs(aslots,cslots,slotnames,sAinC,sCinA,slottypes[1],slottypes[3]);
+  slotNames4Refs(bslots,cslots,slotnames,sBinC,sCinB,slottypes[2],slottypes[3]);
+}
+
 void Diagram::binarize(Expression& expr) const
 {
   uint nmats = _tensors.size();
@@ -266,12 +362,46 @@ void Diagram::binarize(Expression& expr) const
 
 }
 
+bool Diagram::equalestimate(const Diagram& diag) const{
+  if( _tensors.size() != diag._tensors.size() ) return false;
+  if( _slottypes.size() != diag._slottypes.size() ) return false;
+  for( uint i = 0; i < _tensors.size(); ++i ){
+    if(_tensors[i].slotTypeLetters(_slottypes) != diag._tensors[i].slotTypeLetters(diag._slottypes)) return false;
+  }
+  return true;
+}
+
+void Diagram::fillPermMap(const Array<std::string>& aslots, const Array<std::string>& bslots){
+  assert(aslots.size() == bslots.size());                                           
+  for(uint i = 0; i < aslots.size(); i++){                                        
+    if( aslots[i] != bslots[i] ){                                                   
+      _permmap[aslots[i]] = bslots[i];                                                 
+    }                                                                           
+  }  
+}
+
+Array<std::string> Diagram::permute(const Array<std::string>& slots){
+  Array<std::string> permutedslots(slots);
+  for( uint i = 0; i < permutedslots.size(); i++ ){                                  
+    PerMap::iterator it = _permmap.find(permutedslots[i]);                             
+    if ( it != _permmap.end()){                                                    
+      permutedslots[i] = _permmap[permutedslots[i]];                                         
+    }                                                                           
+  }
+  return permutedslots;
+}
+  
+void Diagram::addPermut( Array<std::string>& resslots, Array<std::string>& xslots, Factor& fac){
+  _permuts.push_back(DiagramPermut(resslots,xslots,fac));
+}
+
 std::ostream & operator << (std::ostream& o, const Diagram& d) {
   o << "Diagram: {";
   o << d._fac;
   for ( uint i = 0; i < d._tensors.size(); ++i ){
     o << d._tensors[i].name() << "["<< d._tensors[i].slotTypeLetters(d._slottypes) << "]";
     o << "(" << d._tensors[i]._connect.bitmask << ")";
+    o << "(" << d._tensors[i]._connect.slotref << ")";
   }
   o << "}";
   return o;

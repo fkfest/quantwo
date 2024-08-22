@@ -5,35 +5,68 @@ d_vvoo = load4idx(EC,"d_vvoo")
 @tensoropt R2[a,b,i,j] += d_vvoo[a,b,i,j]
 d_vvoo = nothing
 d_vovo = load4idx(EC,"d_vovo")
-@tensoropt R2[b,c,k,j] -= d_vovo[b,i,a,j] * T2[c,a,i,k]
-@tensoropt R2[c,b,j,k] -= d_vovo[b,i,a,j] * T2[c,a,i,k]
-@tensoropt R2[c,b,k,j] -= d_vovo[b,i,a,j] * T2[a,c,i,k]
-@tensoropt R2[b,c,j,k] -= d_vovo[b,i,a,j] * T2[a,c,i,k]
+@tensoropt begin
+X[c,b,j,k] := d_vovo[b,i,a,j] * T2[c,a,i,k]
+R2[c,b,j,k] -= X[c,b,j,k]
+R2[b,c,k,j] -= X[c,b,j,k]
+end
+@tensoropt begin
+X[b,c,j,k] := d_vovo[b,i,a,j] * T2[a,c,i,k]
+R2[b,c,j,k] -= X[b,c,j,k]
+R2[c,b,k,j] -= X[b,c,j,k]
+end
 d_vovo = nothing
 d_voov = load4idx(EC,"d_voov")
-@tensoropt R2[c,b,k,j] -= d_voov[b,i,j,a] * T2[c,a,i,k]
-@tensoropt R2[b,c,j,k] -= d_voov[b,i,j,a] * T2[c,a,i,k]
-@tensoropt R2[c,b,k,j] += 2 * d_voov[b,i,j,a] * T2[a,c,i,k]
-@tensoropt R2[b,c,j,k] += 2 * d_voov[b,i,j,a] * T2[a,c,i,k]
+@tensoropt begin
+X[b,c,j,k] := d_voov[b,i,j,a] * T2[c,a,i,k]
+R2[b,c,j,k] -= X[b,c,j,k]
+R2[c,b,k,j] -= X[b,c,j,k]
+end
+@tensoropt begin
+X[b,c,j,k] := d_voov[b,i,j,a] * T2[a,c,i,k]
+R2[b,c,j,k] += 2 * X[b,c,j,k]
+R2[c,b,k,j] += 2 * X[b,c,j,k]
+end
 d_voov = nothing
 d_oooo = load4idx(EC,"d_oooo")
 @tensoropt R2[a,b,k,l] += d_oooo[j,i,l,k] * T2[a,b,i,j]
 d_oooo = nothing
 oovv = ints2(EC,"oovv")
 @tensoropt (a=>10*x,b=>10*x,i=>x,j=>x,l=>x,k=>x,d=>10*x,c=>10*x) R2[a,b,i,j] += oovv[l,k,d,c] * T2[a,c,k,i] * T2[b,d,l,j]
-@tensoropt (a=>10*x,b=>10*x,j=>x,i=>x,l=>x,k=>x,c=>10*x,d=>10*x) R2[a,b,j,i] += 0.5 * oovv[l,k,c,d] * T2[c,d,k,i] * T2[b,a,l,j]
-@tensoropt (a=>10*x,b=>10*x,i=>x,j=>x,l=>x,k=>x,c=>10*x,d=>10*x) R2[a,b,i,j] += 0.5 * oovv[l,k,c,d] * T2[c,d,k,i] * T2[a,b,l,j]
-@tensoropt (b=>10*x,a=>10*x,i=>x,j=>x,l=>x,k=>x,d=>10*x,c=>10*x) R2[b,a,i,j] += 0.5 * oovv[l,k,d,c] * T2[a,c,k,l] * T2[d,b,j,i]
-@tensoropt (a=>10*x,b=>10*x,i=>x,j=>x,l=>x,k=>x,d=>10*x,c=>10*x) R2[a,b,i,j] += 0.5 * oovv[l,k,d,c] * T2[a,c,k,l] * T2[d,b,i,j]
-@tensoropt (b=>10*x,a=>10*x,j=>x,i=>x,l=>x,k=>x,d=>10*x,c=>10*x) R2[b,a,j,i] -= 2 * oovv[l,k,d,c] * T2[c,a,k,i] * T2[b,d,l,j]
-@tensoropt (a=>10*x,b=>10*x,i=>x,j=>x,l=>x,k=>x,d=>10*x,c=>10*x) R2[a,b,i,j] -= 2 * oovv[l,k,d,c] * T2[c,a,k,i] * T2[b,d,l,j]
-@tensoropt (a=>10*x,b=>10*x,j=>x,i=>x,l=>x,k=>x,d=>10*x,c=>10*x) R2[a,b,j,i] -= oovv[l,k,d,c] * T2[c,d,k,i] * T2[b,a,l,j]
-@tensoropt (a=>10*x,b=>10*x,i=>x,j=>x,l=>x,k=>x,d=>10*x,c=>10*x) R2[a,b,i,j] -= oovv[l,k,d,c] * T2[c,d,k,i] * T2[a,b,l,j]
-@tensoropt (b=>10*x,a=>10*x,i=>x,j=>x,l=>x,k=>x,d=>10*x,c=>10*x) R2[b,a,i,j] -= oovv[l,k,d,c] * T2[c,a,k,l] * T2[d,b,j,i]
-@tensoropt (a=>10*x,b=>10*x,i=>x,j=>x,l=>x,k=>x,d=>10*x,c=>10*x) R2[a,b,i,j] -= oovv[l,k,d,c] * T2[c,a,k,l] * T2[d,b,i,j]
+@tensoropt (a=>10*x,b=>10*x,i=>x,j=>x,l=>x,k=>x,c=>10*x,d=>10*x) begin
+X[a,b,i,j] := oovv[l,k,c,d] * T2[c,d,k,i] * T2[a,b,l,j]
+R2[a,b,i,j] += 0.5 * X[a,b,i,j]
+R2[a,b,j,i] += 0.5 * X[b,a,i,j]
+end
+@tensoropt (a=>10*x,b=>10*x,i=>x,j=>x,l=>x,k=>x,d=>10*x,c=>10*x) begin
+X[a,b,i,j] := oovv[l,k,d,c] * T2[a,c,k,l] * T2[d,b,i,j]
+R2[a,b,i,j] += 0.5 * X[a,b,i,j]
+R2[b,a,i,j] += 0.5 * X[a,b,j,i]
+end
+@tensoropt (a=>10*x,b=>10*x,i=>x,j=>x,l=>x,k=>x,d=>10*x,c=>10*x) begin
+X[a,b,i,j] := oovv[l,k,d,c] * T2[c,a,k,i] * T2[b,d,l,j]
+R2[a,b,i,j] -= 2 * X[a,b,i,j]
+R2[b,a,j,i] -= 2 * X[a,b,i,j]
+end
+@tensoropt (a=>10*x,b=>10*x,i=>x,j=>x,l=>x,k=>x,d=>10*x,c=>10*x) begin
+X[a,b,i,j] := oovv[l,k,d,c] * T2[c,d,k,i] * T2[a,b,l,j]
+R2[a,b,i,j] -= X[a,b,i,j]
+R2[a,b,j,i] -= X[b,a,i,j]
+end
+@tensoropt (a=>10*x,b=>10*x,i=>x,j=>x,l=>x,k=>x,d=>10*x,c=>10*x) begin
+X[a,b,i,j] := oovv[l,k,d,c] * T2[c,a,k,l] * T2[d,b,i,j]
+R2[a,b,i,j] -= X[a,b,i,j]
+R2[b,a,i,j] -= X[a,b,j,i]
+end
 @tensoropt (a=>10*x,b=>10*x,i=>x,j=>x,l=>x,k=>x,d=>10*x,c=>10*x) R2[a,b,i,j] += 4 * oovv[l,k,d,c] * T2[c,a,k,i] * T2[d,b,l,j]
 oovv = nothing
-@tensoropt R2[a,b,j,k] -= fij[i,j] * T2[a,b,i,k]
-@tensoropt R2[a,b,k,j] -= fij[i,j] * T2[b,a,i,k]
-@tensoropt R2[b,c,i,j] += fab[b,a] * T2[a,c,i,j]
-@tensoropt R2[c,b,i,j] += fab[b,a] * T2[a,c,j,i]
+@tensoropt begin
+X[a,b,j,k] := fij[i,j] * T2[a,b,i,k]
+R2[a,b,j,k] -= X[a,b,j,k]
+R2[a,b,k,j] -= X[b,a,j,k]
+end
+@tensoropt begin
+X[b,c,i,j] := fab[b,a] * T2[a,c,i,j]
+R2[b,c,i,j] += X[b,c,i,j]
+R2[c,b,i,j] += X[b,c,j,i]
+end

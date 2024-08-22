@@ -6,6 +6,8 @@
 
 ### Added
 
+* permutations to ElemCo.jl generation.
+
 ## Version [v1.0.2] - 2024.08.05
 
 ### Changed
