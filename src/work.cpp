@@ -100,7 +100,7 @@ TermSum Q2::reduceSum(TermSum s)
 
   // important for permutations in input terms
   TermSum sum2;
-  sum2 = ResolvePermutaions(sum,true);
+  sum2 = ResolvePermutations(sum,true);
   sum.clear();
 
   say("Connections...");
@@ -463,7 +463,7 @@ TermSum Q2::spinSwap(TermSum s){
   TOrbSet neworbs;
   Orbital orb;
   Spin::Type spintype;
-  sum = ResolvePermutaions(sum);
+  sum = ResolvePermutations(sum);
   for(TermSum::iterator i=sum.begin(); i!=sum.end(); ++i){
     neworbs.clear();
     for(TOrbSet::iterator it = i->first.orbs().begin(); it != i->first.orbs().end(); ++it){
@@ -580,7 +580,7 @@ void Q2::SpinExpansion(Finput& finput, TermSum sum_final, std::vector<TermSum>& 
     }
   }
   TermSum sum;
-  sum_final = ResolvePermutaions(sum_final);
+  sum_final = ResolvePermutations(sum_final);
   for( Sum<Term,TFactor>::iterator it = sum_final.begin(); it != sum_final.end(); it++ ){
       Term term = it->first;
       sum += term.spinexpansion(it->second);
@@ -622,7 +622,7 @@ bool Q2::transcorrelation(TermSum s){
   return false;
 }
 
-TermSum Q2::ResolvePermutaions(const TermSum& s, bool inputterms)
+TermSum Q2::ResolvePermutations(const TermSum& s, bool inputterms)
 {
   TermSum sum;
   Term term,term1;
@@ -632,7 +632,7 @@ TermSum Q2::ResolvePermutaions(const TermSum& s, bool inputterms)
       sum += std::make_pair(j->first,j->second);
     }
     else{
-      if(j->second != 1.0 && !term.get_isinput()) error("We are loosing factors in Q2:ResolvePermutaions");
+      if(j->second != 1.0 && !term.get_isinput()) error("We are loosing factors in Q2:ResolvePermutations");
       const Sum<Permut,TFactor>& perms = term.perm();
       term.reset_prefac();
       for ( Sum<Permut,TFactor>::const_iterator it = perms.begin(); it != perms.end(); ++it ){
@@ -682,7 +682,7 @@ TermSum Q2::postaction(const TermSum& s)
     }
     sum = sum1;
     sum1.clear();
-    sum = ResolvePermutaions(sum);
+    sum = ResolvePermutations(sum);
     say("Equal terms and permutations...");
     sum = EqualTerms(sum,minfac);
     say("Remove terms with small prefactors...");
