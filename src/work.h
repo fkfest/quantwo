@@ -38,7 +38,7 @@ namespace Q2
   TermSum VirtSpace(const TermSum& s);
   void SpinExpansion(Finput& finput, TermSum sum_final, std::vector<TermSum>& sums_final);
   TermSum spinSwap(TermSum s);
-  TermSum ResolvePermutaions(const TermSum& s, bool inputterms = false);
+  TermSum ResolvePermutations(const TermSum& s, bool inputterms = false);
   TermSum normalOrderPH(const TermSum& s);
   TermSum wick(const TermSum& s);
   //!helps EqualTerms to find equal terms. Assumes full anti-symmetry of amplitudes!
