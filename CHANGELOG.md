@@ -5,6 +5,7 @@
 ### Fixed
 
 * fixed freeze of pdf generation with empty equation and expl. spin-orbitals.
+* correct energy equation with explicit spin-orbitals.
 
 ### Added
 
