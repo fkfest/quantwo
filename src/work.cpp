@@ -588,7 +588,7 @@ void Q2::SpinExpansion(Finput& finput, TermSum sum_final, std::vector<TermSum>& 
   for( size_t i = 0; (i<spins.size() && i < 3); ++i ){
     TermSum sum_spin, sum1, sum2;
     sum2 = sum;
-    if( i==2 || transcorrelation(sum) ){
+    if( i==2 || transcorrelation(sum) || upname.size() == 0 ){
       for( auto it : sum ){
         Term term = it.first;
         sum1 += term.addpermuteT(it.second);
@@ -597,7 +597,7 @@ void Q2::SpinExpansion(Finput& finput, TermSum sum_final, std::vector<TermSum>& 
     }
 
     for( Sum<Term,TFactor>::iterator it = sum2.begin(); it != sum2.end(); it++ ){
-      if( (it->first.selectspin(spins[i]) == Return::Done && it->first.check_spin() == Return::Done) || upname.size() == 0)
+      if( (it->first.selectspin(spins[i]) == Return::Done && it->first.check_spin() == Return::Done) )
         sum_spin += std::make_pair(it->first,it->second);
     }
     sum_spin = EqualTerms(sum_spin,minfac);
