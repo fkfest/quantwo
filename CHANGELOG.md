@@ -4,6 +4,8 @@
 
 ### Fixed
 
+* fixed freeze of pdf generation with empty equation and expl. spin-orbitals.
+
 ### Added
 
 * permutations to ElemCo.jl generation.
