@@ -131,7 +131,8 @@ int main(int argc, char **argv) {
           MyOut::pcurout->buf << "=";
           MyOut::pcurout->flushbuf();
           MyOut::pcurout->newlineeqn();
-          MyOut::pcurout->buf << sums_final[i] << endl;
+          if ( !sums_final[i].empty() )
+            MyOut::pcurout->buf << sums_final[i] << endl;
           MyOut::pcurout->eeq();
         }
       }
